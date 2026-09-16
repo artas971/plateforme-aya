@@ -1,0 +1,29 @@
+{
+  "file_name": "soso.mp4",
+  "duration": 44.03,
+  "arabic_text": "بين قلم المعلم وسماعة الطبيب لم ولمسة سيدة المنزل قصص سمود لا تموت في خزة سننقش طفاصيل معاناتنا اليومية مع انقطراء الطيار الكهرباء وسنتشارك البدائل والحلول نبتكره التي سمحت لنا بالحفاظ على تجغي لخيامنا ومؤسساتنا الحياة ذلك بإذن الله سيكون يوم ثلاثاء 4 أغسطس الساعة السادسة والنصف مسهن بتوقيت غزة إن وجودكم هو دليل على دعمكم لشعب غزة",
+  "english_translation": "While the teacher's pen and the doctor's ear have not been able to handle the problem, the story of Somoud is not in the treasure. We will discuss our daily life's details with the story of the electric plane. We will share the beginning and the ending of the story which has honored us with the preservation of our life's work and our living institutions. That is why God will be the third day of August, at 6.30 pm, with the expectation of a feast. Your existence is a proof of your support for the people of the feast.",
+  "segments": [
+    {
+      "id": 0,
+      "start": 0.0,
+      "end": 18.0,
+      "arabic": "بين قلم المعلم وسماعة الطبيب لم ولمسة سيدة المنزل قصص سمود لا تموت في خزة سننقش طفاصيل معاناتنا اليومية مع انقطراء الطيار الكهرباء",
+      "english": "While the teacher's pen and the doctor's ear have not been able to handle the problem,"
+    },
+    {
+      "id": 1,
+      "start": 18.0,
+      "end": 29.0,
+      "arabic": "وسنتشارك البدائل والحلول نبتكره التي سمحت لنا بالحفاظ على تجغي لخيامنا ومؤسساتنا الحياة",
+      "english": "the story of Somoud is not in the treasure."
+    },
+    {
+      "id": 2,
+      "start": 29.0,
+      "end": 44.0,
+      "arabic": "ذلك بإذن الله سيكون يوم ثلاثاء 4 أغسطس الساعة السادسة والنصف مسهن بتوقيت غزة إن وجودكم هو دليل على دعمكم لشعب غزة",
+      "english": "We will discuss our daily life's details"
+    }
+  ]
+}

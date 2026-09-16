@@ -1,0 +1,29 @@
+{
+  "arabic": " سمع فيديو like that",
+  "english": " send me a video like that",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 2.0,
+      "text": " سمع فيديو like that",
+      "tokens": [
+        50364,
+        8608,
+        2304,
+        3615,
+        8978,
+        16254,
+        2407,
+        411,
+        300,
+        50464
+      ],
+      "temperature": 0.0,
+      "avg_logprob": -0.8851330497048118,
+      "compression_ratio": 0.75,
+      "no_speech_prob": 0.01511548925191164
+    }
+  ]
+}

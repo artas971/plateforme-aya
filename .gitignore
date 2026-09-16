@@ -1,0 +1,71 @@
+﻿# =======================================================
+# 1. SÉCURITÉ & CLÉS API (Priorité Absolue)
+# =======================================================
+.env
+.env.*
+*.env
+
+# =======================================================
+# 2. DÉPENDANCES & MODULES
+# =======================================================
+node_modules/
+
+# =======================================================
+# 3. DONNÉES DE SESSION & AUTHENTIFICATION
+# =======================================================
+.wwebjs_auth/
+users.json
+
+# =======================================================
+# 4. PYTHON CACHE & ENVIRONNEMENTS
+# =======================================================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# =======================================================
+# 5. FICHIERS MÉDIAS LOURDS & RÉPERTOIRES TEMPORAIRES
+# =======================================================
+audio_a_traiter/
+fichiers_reponse_a_envoyer/
+uploads/
+message pour john/
+archive_mk/
+
+# Extensions audio/vidéo brutes
+*.mp4
+*.mp3
+*.wav
+*.ogg
+*.aac
+*.mov
+*.m4a
+*.webm
+
+# Images de prévisualisation temporaires
+frame*.jpg
+preview*.jpg
+
+# =======================================================
+# 6. BINAIRES EXTERNES VOLUMINEUX
+# =======================================================
+cloudflared.exe
+*.exe
+
+# =======================================================
+# 7. LOGS & FICHIERS D'ÉTAT D'EXÉCUTION
+# =======================================================
+*.log
+debug_log.txt
+single_process_out.json
+reponse_result.json
+reponse_fr_result.json
+burn_payload.json
+input_payload.json
+input_ar_payload.json
+whatsapp_payload.json
+chat_db.json
+chat_status.json
+chat_archives.json

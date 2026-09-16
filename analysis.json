@@ -1,0 +1,43 @@
+{
+  "ar_text": "اليوم عانسنا اشتغل فأجد عرف ووطلعنا يعني اطلعنا انزره قريب قلنا وشان هيك اجل طولة بكرة",
+  "en_text": "Today we are going to work. I came here to know about it and we went out to visit our neighbor. That's why I came here early in the morning.",
+  "ar_segments": [
+    {
+      "start": 0.0,
+      "end": 2.0,
+      "text": "اليوم عانسنا اشتغل"
+    },
+    {
+      "start": 3.0,
+      "end": 7.0,
+      "text": "فأجد عرف ووطلعنا"
+    },
+    {
+      "start": 7.0,
+      "end": 11.0,
+      "text": "يعني اطلعنا انزره قريب قلنا"
+    },
+    {
+      "start": 11.0,
+      "end": 13.0,
+      "text": "وشان هيك اجل طولة بكرة"
+    }
+  ],
+  "en_segments": [
+    {
+      "start": 0.0,
+      "end": 2.0,
+      "text": "Today we are going to work."
+    },
+    {
+      "start": 3.0,
+      "end": 11.0,
+      "text": "I came here to know about it and we went out to visit our neighbor."
+    },
+    {
+      "start": 11.0,
+      "end": 13.0,
+      "text": "That's why I came here early in the morning."
+    }
+  ]
+}

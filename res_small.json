@@ -1,0 +1,41 @@
+{
+  "arabic": " رق Libra dens",
+  "english": " Send me a video like that.",
+  "segments": [
+    {
+      "id": 0,
+      "seek": 0,
+      "start": 0.0,
+      "end": 1.36,
+      "text": " رق Libra",
+      "tokens": [
+        50364,
+        12602,
+        4587,
+        15834,
+        424,
+        50432
+      ],
+      "temperature": 1.0,
+      "avg_logprob": -5.165869903564453,
+      "compression_ratio": 0.6521739130434783,
+      "no_speech_prob": 0.02241549640893936
+    },
+    {
+      "id": 1,
+      "seek": 0,
+      "start": 1.36,
+      "end": 8.48,
+      "text": " dens",
+      "tokens": [
+        50432,
+        24505,
+        50788
+      ],
+      "temperature": 1.0,
+      "avg_logprob": -5.165869903564453,
+      "compression_ratio": 0.6521739130434783,
+      "no_speech_prob": 0.02241549640893936
+    }
+  ]
+}

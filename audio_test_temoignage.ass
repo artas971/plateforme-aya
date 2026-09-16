@@ -1,0 +1,18 @@
+[Script Info]
+Title: Temoignage Gaza - TikTok VOSTFR
+ScriptType: v4.00+
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+YCbCr Matrix: None
+PlayResX: 1080
+PlayResY: 1920
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Impact,Impact,72,&H0000FFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,950,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.30,0:00:04.80,Impact,,0,0,0,,Mon frère Steve, la situation au Port (Al-Mina)\Nest extrêmement critique aujourd'hui.
+Dialogue: 0,0:00:05.10,0:00:09.60,Impact,,0,0,0,,Les familles de la Bande de Gaza restent dignes\Nmalgré les tirs et les blocages.
+Dialogue: 0,0:00:09.90,0:00:11.80,Impact,,0,0,0,,Nous gardons l'espoir et la mémoire\Nde notre terre intacte.
