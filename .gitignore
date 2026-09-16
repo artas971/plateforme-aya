@@ -9,6 +9,7 @@
 credentials*.json
 token*.json
 drive_synced_files.json
+cache_transcriptions/
 
 # =======================================================
 # 2. DÉPENDANCES & MODULES
