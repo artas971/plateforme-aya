@@ -232,33 +232,28 @@ def parallel_translate_segments(raw_sub_5s, max_workers=10):
     return translated_segments
 
 def format_subtitle_blocks(text, max_line_chars=32):
-    """Refonte Formatage Visuel Strict (Nadine & Max) : Garantit que chaque ligne ne dépasse JAMAIS ~30-35 caractères."""
+    """Refonte Formatage Visuel Strict (Nadine & Max) : Découpe séquentielle en 2 lignes équilibrées sans rupture d'ordre."""
     words = text.split()
     if not words:
         return ""
     if len(text) <= max_line_chars:
         return text
 
-    line1_words = []
-    line2_words = []
-    curr_len = 0
+    best_split = len(words) // 2
+    min_diff = 999
+    for i in range(1, len(words)):
+        l1 = " ".join(words[:i])
+        l2 = " ".join(words[i:])
+        if len(l1) <= max_line_chars + 8 and len(l2) <= max_line_chars + 8:
+            diff = abs(len(l1) - len(l2))
+            if diff < min_diff:
+                min_diff = diff
+                best_split = i
 
-    target_len = min(max_line_chars, len(text) // 2 + 4)
-    for w in words:
-        if curr_len + len(w) + 1 <= target_len or not line1_words:
-            line1_words.append(w)
-            curr_len += len(w) + 1
-        else:
-            line2_words.append(w)
+    line1 = " ".join(words[:best_split])
+    line2 = " ".join(words[best_split:])
+    return f"{line1}\\N{line2}" if line2 else line1
 
-    line1 = " ".join(line1_words)
-    line2 = " ".join(line2_words)
-
-    if len(line2) > max_line_chars + 8:
-        all_words = words
-        mid = (len(all_words) + 1) // 2
-        line1 = " ".join(all_words[:mid])
-        line2 = " ".join(all_words[mid:])
 
 def transcribe_via_openai_api(media_path, openai_key, mode='VOSTFR'):
     """Transcription distante via l'API OpenAI Whisper (Cloud, Zéro CPU local)."""
