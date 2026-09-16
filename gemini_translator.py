@@ -11,6 +11,16 @@ if sys.stdout and sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8'
     except Exception:
         pass
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    with open(env_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                k, v = line.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
 def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None):
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not gemini_key:

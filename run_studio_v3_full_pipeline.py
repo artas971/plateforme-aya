@@ -260,7 +260,85 @@ def format_subtitle_blocks(text, max_line_chars=32):
         line1 = " ".join(all_words[:mid])
         line2 = " ".join(all_words[mid:])
 
-    return f"{line1}\\N{line2}"
+def transcribe_via_openai_api(media_path, openai_key, mode='VOSTFR'):
+    """Transcription distante via l'API OpenAI Whisper (Cloud, Zéro CPU local)."""
+    import urllib.request
+    import uuid
+
+    temp_audio = os.path.join(AUDIO_IN_DIR, f"temp_openai_{uuid.uuid4().hex[:8]}.mp3")
+    try:
+        subprocess.run([
+            'ffmpeg', '-y', '-i', media_path,
+            '-vn', '-ar', '16000', '-ac', '1', '-b:a', '64k',
+            temp_audio
+        ], capture_output=True, check=True)
+        send_path = temp_audio
+    except Exception:
+        send_path = media_path
+
+    try:
+        with open(send_path, 'rb') as f:
+            file_bytes = f.read()
+    finally:
+        if os.path.exists(temp_audio):
+            try:
+                os.remove(temp_audio)
+            except Exception:
+                pass
+
+    boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
+    body = bytearray()
+
+    def add_field(name, value):
+        body.extend(f"--{boundary}\r\n".encode('utf-8'))
+        body.extend(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode('utf-8'))
+        body.extend(f"{value}\r\n".encode('utf-8'))
+
+    add_field('model', 'whisper-1')
+    add_field('response_format', 'verbose_json')
+    add_field('language', 'ar')
+    add_field('prompt', GAZA_INITIAL_PROMPT)
+
+    filename = os.path.basename(send_path)
+    body.extend(f"--{boundary}\r\n".encode('utf-8'))
+    body.extend(f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'.encode('utf-8'))
+    body.extend(b'Content-Type: audio/mpeg\r\n\r\n')
+    body.extend(file_bytes)
+    body.extend(b'\r\n')
+    body.extend(f"--{boundary}--\r\n".encode('utf-8'))
+
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/audio/transcriptions",
+        data=bytes(body),
+        headers={
+            "Authorization": f"Bearer {openai_key}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}"
+        }
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            raw_segments = []
+            for s in data.get("segments", []):
+                txt = s.get("text", "").strip()
+                if txt:
+                    raw_segments.append({
+                        "start": round(float(s.get("start", 0)), 2),
+                        "end": round(float(s.get("end", 0)), 2),
+                        "text": txt
+                    })
+
+            if not raw_segments and data.get("text"):
+                raw_segments = [{"start": 0.0, "end": 5.0, "text": data["text"].strip()}]
+
+            raw_sub_5s = split_segments_max_5s(raw_segments, max_duration=5.0)
+            if mode == 'VOSTFR':
+                return parallel_translate_segments(raw_sub_5s, max_workers=10)
+            return raw_sub_5s
+    except Exception as e:
+        print(f"[Pôle 3 OpenAI Whisper Cloud Error] {e}")
+        return None
 
 
 def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, title_color='#D8D0BE', sub_color='#FFFF00', title_margin=380, sub_margin=950, show_header=True, header_text='PALESTINIAN ECHO', header_color='#CE1126', project_uuid=None):
@@ -315,51 +393,20 @@ def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, 
                 segments = gemini_segments
                 print(f"[Pôle 3 Succès] {len(segments)} segments obtenus via Gemini Multimodal Gold Standard.")
         except Exception as e_gem:
-            print(f"[Pôle 3 Gemini Fallback] Erreur Gemini: {e_gem}, bascule vers Faster-Whisper...")
+            print(f"[Pôle 3 Gemini Fallback] Erreur Gemini: {e_gem}, bascule vers l'API OpenAI Whisper Cloud...")
 
-    # --- FALLBACK : FASTER-WHISPER + LLM ---
+    # --- GESTION STRICTE API CLOUD (ZÉRO CHARGE CPU LOCALE) ---
     if not segments:
-        try:
-            from faster_whisper import WhisperModel
-            num_threads = min(8, os.cpu_count() or 4)
-            fw_model = WhisperModel('small', device='cpu', compute_type='int8', cpu_threads=num_threads)
-            
-            temp_wav_path = os.path.join(AUDIO_IN_DIR, f"temp_{project_uuid or 'whisper'}.wav")
-            try:
-                subprocess.run(['ffmpeg', '-y', '-i', media_path, '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', temp_wav_path], capture_output=True)
-                audio_target = temp_wav_path if os.path.exists(temp_wav_path) else media_path
-            except Exception:
-                audio_target = media_path
+        openai_key = os.environ.get("OPENAI_API_KEY")
+        if openai_key:
+            print("[Pôle 3 Cloud Fallback] Appel de l'API distante OpenAI Whisper...")
+            segments = transcribe_via_openai_api(media_path, openai_key, mode=mode)
 
-            raw_segments, info = fw_model.transcribe(audio_target, beam_size=5, language='ar', vad_filter=True, initial_prompt=GAZA_INITIAL_PROMPT)
-            raw_segments = list(raw_segments)
-            
-            if os.path.exists(temp_wav_path):
-                try: os.remove(temp_wav_path)
-                except Exception: pass
-            
-            raw_sub_5s = split_segments_max_5s(raw_segments, max_duration=5.0)
-            
-            if mode == 'VOSTFR':
-                segments = parallel_translate_segments(raw_sub_5s, max_workers=10)
-            else:
-                segments = raw_sub_5s
-        except Exception as e:
-            print(f"Fallback transcription simple: {e}")
-            import whisper
-            model = whisper.load_model('base')
-            res_whisper = model.transcribe(media_path, fp16=False)
-            for s in res_whisper.get("segments", []):
-                if s["text"].strip():
-                    text_clean = s["text"].strip()
-                    segments.append({
-                        "start": s["start"],
-                        "end": s["end"],
-                        "text": text_clean
-                    })
-
-    if not segments or len(segments) == 0:
-        raise RuntimeError("Échec de la transcription (Jade & Nadine) : Aucun segment audio n'a pu être transcrit.")
+        if not segments or len(segments) == 0:
+            raise RuntimeError(
+                "Échec de la transcription Cloud : Ni l'API Gemini ni l'API OpenAI n'ont pu traiter l'audio. "
+                "Vérifiez vos clés API dans le fichier .env (Aucun modèle local n'a été exécuté pour préserver votre CPU)."
+            )
 
     # Apply Zero-Gap Rule (End_N == Start_N+1)
     for i in range(len(segments) - 1):
