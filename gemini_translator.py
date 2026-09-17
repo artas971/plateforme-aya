@@ -113,7 +113,23 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             except Exception:
                 pass
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+    # Recherche approfondie par correspondance de nom dans le dossier de cache
+    if os.path.exists(cache_dir):
+        for fname in os.listdir(cache_dir):
+            if not fname.endswith('.json'):
+                continue
+            if mode in fname:
+                f_clean = re.sub(r"^\d+_", "", fname)
+                if raw_stem in f_clean or f_clean.startswith(raw_stem) or raw_stem_underscores in f_clean:
+                    try:
+                        with open(os.path.join(cache_dir, fname), "r", encoding="utf-8") as cf:
+                            cached_segments = json.load(cf)
+                            if isinstance(cached_segments, list) and len(cached_segments) > 0:
+                                print(f"[Pôle 3 Gemini] ⚡ Cache global réutilisé ({fname} -> {len(cached_segments)} segments).")
+                                return cached_segments
+                    except Exception:
+                        pass
+
     payload = {
         "contents": [{
             "parts": [
@@ -133,9 +149,17 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
     }
 
     req_data = json.dumps(payload).encode("utf-8")
-    max_retries = 3
 
-    for attempt in range(1, max_retries + 1):
+    # Cascade de modèles IA Google Gemini avec bascule automatique en cas de quota épuisé (429)
+    MODELS_CASCADE = [
+        "gemini-2.5-flash",
+        "gemini-flash-lite-latest",
+        "gemini-3.5-flash-lite",
+        "gemini-3-flash-preview"
+    ]
+
+    for model_name in MODELS_CASCADE:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
         try:
             req = urllib.request.Request(
                 url,
@@ -147,7 +171,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                 out_raw = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
                 segments = json.loads(out_raw)
                 if isinstance(segments, list) and len(segments) > 0:
-                    print(f"[Pôle 3 Gemini] ✅ Succès : {len(segments)} segments traduits de haute qualité reçus en un seul appel !")
+                    print(f"[Pôle 3 Gemini] ✅ Succès avec modèle {model_name} : {len(segments)} segments reçus !")
                     # Sauvegarde dans le cache
                     try:
                         with open(cache_file, "w", encoding="utf-8") as cf:
@@ -156,12 +180,8 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                         pass
                     return segments
         except Exception as e:
-            print(f"[Pôle 3 Gemini Warning] Échec appel Gemini (tentative {attempt}/{max_retries}) : {e}")
-            if attempt < max_retries:
-                import time
-                wait_time = 15 if "429" in str(e) else attempt * 3
-                print(f"[Pôle 3 Gemini] Pause de {wait_time}s avant nouvelle tentative...")
-                time.sleep(wait_time)
+            print(f"[Pôle 3 Gemini] Modèle {model_name} indisponible ({e}). Bascule vers le modèle suivant...")
+            continue
 
     return None
 

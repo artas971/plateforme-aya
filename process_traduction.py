@@ -243,26 +243,51 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     mode = 'VOAR' if target_lang.lower() == 'ar' else 'VOSTFR'
     print(f"[PROGRESS] 40% - Analyse IA de l'audio ({total_duration:.1f}s) en mode {mode} (source: {source_lang})...", flush=True)
 
-    # Si le fichier est court (<= 35s), analyse directe
-    if total_duration <= 35.0:
-        from gemini_translator import gemini_audio_transcribe_and_translate
-        raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang)
-        if not raw_segs:
-            # Fallback Whisper Cloud
-            openai_key = os.environ.get("OPENAI_API_KEY")
-            if openai_key:
-                from run_studio_v3_full_pipeline import transcribe_via_openai_api
-                raw_segs = transcribe_via_openai_api(media_path, openai_key, mode=mode)
+    # 1. Vérification prioritaire : la transcription complète existe-t-elle déjà dans le cache ?
+    cache_dir = BASE_DIR / "cache_transcriptions"
+    base_name = Path(media_path).stem
+    raw_stem = re.sub(r"^\d+_", "", base_name)
+    found_cache = False
+    all_segments = []
 
-        all_segments = []
-        for s in (raw_segs or []):
-            all_segments.extend(split_segment_if_exceeds_5s(s, max_duration=5.0))
+    if cache_dir.exists():
+        for fname in os.listdir(cache_dir):
+            if fname.endswith(".json") and mode in fname:
+                f_clean = re.sub(r"^\d+_", "", fname)
+                if raw_stem in f_clean or f_clean.startswith(raw_stem):
+                    try:
+                        with open(cache_dir / fname, "r", encoding="utf-8") as cf:
+                            cached_segs = json.load(cf)
+                            if isinstance(cached_segs, list) and len(cached_segs) > 0:
+                                print(f"[PROTOCOLE SCAN 5S] ⚡ Cache global détecté ({fname}) : {len(cached_segs)} segments déjà transcrits.", flush=True)
+                                for s in cached_segs:
+                                    all_segments.extend(split_segment_if_exceeds_5s(s, max_duration=5.0))
+                                found_cache = True
+                                print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
+                                break
+                    except Exception:
+                        pass
 
-        print("[PROGRESS] 70% - Transcription directe terminée.", flush=True)
+    if not found_cache:
+        # Si le fichier est court (<= 35s), analyse directe
+        if total_duration <= 35.0:
+            from gemini_translator import gemini_audio_transcribe_and_translate
+            raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang)
+            if not raw_segs:
+                # Fallback Whisper Cloud
+                openai_key = os.environ.get("OPENAI_API_KEY")
+                if openai_key:
+                    from run_studio_v3_full_pipeline import transcribe_via_openai_api
+                    raw_segs = transcribe_via_openai_api(media_path, openai_key, mode=mode)
 
-    else:
-        # Long fichier : Découpage en fenêtres étanches de 30 secondes
-        WINDOW_SIZE = 30.0
+            for s in (raw_segs or []):
+                all_segments.extend(split_segment_if_exceeds_5s(s, max_duration=5.0))
+
+            print("[PROGRESS] 70% - Transcription directe terminée.", flush=True)
+
+        else:
+            # Long fichier : Découpage en fenêtres étanches de 30 secondes
+            WINDOW_SIZE = 30.0
         num_windows = int(total_duration // WINDOW_SIZE) + (1 if total_duration % WINDOW_SIZE > 0 else 0)
         print(f"[PROTOCOLE SCAN 5S] Découpage en {num_windows} fenêtres étanches de 30s (Anti-Attention Drift)...", flush=True)
 
