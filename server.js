@@ -54,4 +54,8 @@ app.use(traductionRouter);
 // Démarrage du Serveur
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:3000 (Architecture modulaire : Chat, Studio, Audio, Drive & Traduction actifs)`);
+    
+    // Démarrage du Worker autonome Google Drive (Ticket 5)
+    const { startDriveWorker } = require('./services/driveWorker');
+    startDriveWorker();
 });

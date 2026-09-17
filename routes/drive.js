@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const { spawn } = require('child_process');
 const path = require('path');
@@ -6,67 +6,41 @@ const fs = require('fs');
 
 const LEDGER_PATH = path.join(__dirname, '..', 'drive_synced_files.json');
 
+const { getDriveWorkerStatus, processDriveQueue } = require('../services/driveWorker');
+
 // GET /api/drive/status
 router.get('/status', (req, res) => {
-    const isConfigured = Boolean(process.env.GOOGLE_DRIVE_FOLDER_ID && (process.env.GOOGLE_SERVICE_ACCOUNT_FILE || fs.existsSync(path.join(__dirname, '..', 'google_service_account.json'))));
-    let syncedCount = 0;
-    let lastSynced = null;
-
-    if (fs.existsSync(LEDGER_PATH)) {
-        try {
-            const data = JSON.parse(fs.readFileSync(LEDGER_PATH, 'utf8'));
-            const files = Object.values(data.synced_files || {});
-            syncedCount = files.length;
-            if (syncedCount > 0) {
-                lastSynced = files[files.length - 1];
-            }
-        } catch (e) {
-            console.error('[DRIVE] Erreur lecture registre :', e.message);
-        }
+    try {
+        const status = getDriveWorkerStatus();
+        res.json(status);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
-
-    res.json({
-        configured: isConfigured,
-        folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || null,
-        totalSyncedFiles: syncedCount,
-        lastSynced: lastSynced
-    });
 });
 
-// POST /api/drive/sync
-router.post('/sync', (req, res) => {
-    const autoProcess = Boolean(req.body && req.body.auto_process);
-    const scriptPath = path.join(__dirname, '..', 'sync_google_drive.py');
-    const args = [scriptPath];
-
-    if (autoProcess) {
-        args.push('--auto-process');
+// POST /api/drive/sync : Déclenchement d'un scan immédiat à la demande
+router.post('/sync', async (req, res) => {
+    const status = getDriveWorkerStatus();
+    if (!status.configured) {
+        return res.status(400).json({
+            success: false,
+            error: "Google Drive non configuré. Renseignez GOOGLE_DRIVE_FOLDER_ID et google_service_account.json."
+        });
     }
 
-    const pyProcess = spawn('py', args, { cwd: path.join(__dirname, '..') });
-    let stdoutData = '';
-    let stderrData = '';
+    if (status.isProcessing) {
+        return res.json({
+            success: true,
+            message: "Un traitement Drive est déjà en cours d'exécution."
+        });
+    }
 
-    pyProcess.stdout.on('data', (data) => {
-        stdoutData += data.toString();
-    });
+    // Déclenchement asynchrone non-bloquant
+    processDriveQueue().catch(err => console.error('[API DRIVE SYNC ERROR]', err.message));
 
-    pyProcess.stderr.on('data', (data) => {
-        stderrData += data.toString();
-    });
-
-    pyProcess.on('close', (code) => {
-        if (code === 0) {
-            res.json({
-                success: true,
-                output: stdoutData.trim()
-            });
-        } else {
-            res.status(500).json({
-                success: false,
-                error: stderrData.trim() || stdoutData.trim()
-            });
-        }
+    res.json({
+        success: true,
+        message: "Scan Google Drive déclenché avec succès."
     });
 });
 
