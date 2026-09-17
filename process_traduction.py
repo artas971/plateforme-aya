@@ -373,26 +373,30 @@ def build_ass_file(
     ass_primary_color = hex_to_ass_bgr(sub_color_hex)
     print(f"[ASS ENGINE] Couleur convertie: {sub_color_hex} -> {ass_primary_color} | MarginV: {sub_margin_v}")
 
+    # Détermination dynamique de l'alignement et de la marge verticale selon le choix utilisateur
+    # sub_margin_v: 150 (Haut), 500 (Milieu), 950 (Bas)
+    if sub_margin_v <= 250:
+        alignment = 8  # En haut au centre
+        margin_v = 100 if (not is_video or height >= width) else 60
+    elif sub_margin_v <= 700:
+        alignment = 5  # Au milieu exact
+        margin_v = 0
+    else:
+        alignment = 2  # En bas au centre
+        margin_v = 140 if (not is_video or height >= width) else 80
+
     # Adaptation PlayRes proportionnelle
     if not is_video or height >= width:
         play_res_x = 1080
         play_res_y = 1920
         font_size = 72
         margin_lr = 20
-        margin_v = sub_margin_v
     else:
         # Vidéo paysage 16:9
         play_res_x = 1920
         play_res_y = 1080
         font_size = 64
         margin_lr = 40
-        # Si position haute (150) -> 80, milieu (500) -> 540, bas (950) -> 80
-        if sub_margin_v <= 250:
-            margin_v = 80 # Haut
-        elif sub_margin_v <= 700:
-            margin_v = 540 # Milieu
-        else:
-            margin_v = 90  # Bas
 
     ass_events = []
     for seg in segments:
@@ -412,7 +416,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: SubtitleStyle,Impact,{font_size},{ass_primary_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,2,{margin_lr},{margin_lr},{margin_v},1
+Style: SubtitleStyle,Impact,{font_size},{ass_primary_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,{alignment},{margin_lr},{margin_lr},{margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
