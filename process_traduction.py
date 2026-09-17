@@ -355,8 +355,14 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     if not has_silence_between(last_end, total_duration, silences):
         all_segments[-1]["end"] = total_duration
 
-    print(f"[PROTOCOLE SCAN 5S SUCCÈS] {len(all_segments)} sous-titres générés sans aucun trou non justifié.")
-    return all_segments
+    if found_cache:
+        ai_model_used = "gemini-2.5-flash (Cache)"
+    else:
+        import gemini_translator
+        ai_model_used = getattr(gemini_translator, 'LAST_MODEL_USED', 'gemini-2.5-flash')
+
+    print(f"[PROTOCOLE SCAN 5S SUCCÈS] {len(all_segments)} sous-titres générés via [{ai_model_used}].", flush=True)
+    return all_segments, ai_model_used
 
 
 def build_ass_file(
@@ -499,7 +505,7 @@ def main():
         print(f"[PROGRESS] 25% - Structure média validée ({duration:.1f}s, {'vidéo' if is_video else 'audio'}, {len(silences)} silences détectés).", flush=True)
 
         # 2. Transcription & Traduction par Protocole Scan 5s
-        segments = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang)
+        segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang)
 
         # 3. Noms des fichiers de sortie
         print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)
@@ -525,6 +531,7 @@ def main():
         response = {
             "success": True,
             "media_type": "video" if is_video else "audio",
+            "ai_model_used": ai_model_used,
             "source_lang": source_lang,
             "target_lang": target_lang,
             "sub_color": sub_color_hex,

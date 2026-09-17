@@ -905,9 +905,34 @@
                     const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
                     const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
 
+                    const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
+                    const isFallback = modelUsed.toLowerCase().includes('lite') || (modelUsed !== 'gemini-2.5-flash' && !modelUsed.includes('2.5-flash'));
+
+                    let fallbackBannerHtml = '';
+                    if (isFallback) {
+                        fallbackBannerHtml = `
+                            <div style="width: 100%; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; border-radius: 8px; padding: 0.9rem 1.1rem; display: flex; align-items: center; gap: 0.85rem; color: #FEF3C7; font-size: 0.88rem; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);">
+                                <span style="font-size: 1.6rem; flex-shrink: 0;">⚠️</span>
+                                <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                    <div style="font-weight: 700; color: #FBBF24;">Quota Premium atteint - Modèle alternatif (${modelUsed}) utilisé</div>
+                                    <div style="font-size: 0.8rem; color: #FDE68A;">
+                                        Le quota du modèle haute précision <b>Gemini 2.5 Flash</b> a été temporairement dépassé. Vos sous-titres ont été générés avec le modèle de secours. La qualité de la traduction peut être impactée. <b>Passez en compte Premium pour un accès illimité.</b>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const modelBadgeHtml = isFallback
+                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ Moteur : <b>${modelUsed} [Fallback]</b></span>`
+                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">⚡ Moteur : <b>${modelUsed} [Premium]</b></span>`;
+
                     let previewHtml = `
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; width: 100%;">
+                            ${fallbackBannerHtml}
+
                             <div class="badges-summary">
+                                ${modelBadgeHtml}
                                 <span class="summary-badge">🗣️ Source : <b>${srcLabel}</b></span>
                                 <span class="summary-badge">🎯 Cible : <b>${tgtLabel}</b></span>
                                 <span class="summary-badge">🎨 Couleur : <b style="color:${finalData.sub_color}">${colorLabel}</b></span>
