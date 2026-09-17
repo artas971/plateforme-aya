@@ -174,6 +174,102 @@ def format_subtitle_blocks(text: str, max_words_per_line: int = 7) -> str:
     return f"{line1}\\N{line2}"
 
 
+def split_long_segment(segment: dict, max_duration: float = 4.5) -> list:
+    """
+    Couche de sécurité 1 : Smart Text Splitter.
+    Scinde un segment dépassant max_duration (4.5s) en blocs équilibrés.
+    Divise la durée en deux (ex: 6s devient deux blocs de 3s).
+    Divise le texte proprement en comptant les mots, en coupant sur une virgule ou au milieu exact.
+    Fonctionne de manière récursive si un bloc résultant dépasse encore max_duration.
+    """
+    start = float(segment.get("start", 0.0))
+    end = float(segment.get("end", start + 2.0))
+    dur = round(end - start, 2)
+    text = segment.get("text", "").strip()
+
+    if dur <= max_duration or not text:
+        return [segment]
+
+    words = [w for w in text.split() if w]
+    if len(words) <= 1:
+        # Mot unique ou bruit étiré : scission temporelle simple
+        mid_time = round(start + (dur / 2.0), 2)
+        return [
+            {"start": round(start, 2), "end": mid_time, "text": text},
+            {"start": mid_time, "end": round(end, 2), "text": ""}
+        ]
+
+    # Recherche du point de coupure textuel propre (virgule ou milieu exact)
+    mid_idx = len(words) // 2
+    best_split = mid_idx
+
+    found_punct = False
+    for offset in [0, -1, 1, -2, 2, -3, 3]:
+        idx = mid_idx + offset
+        if 1 <= idx < len(words):
+            prev_word = words[idx - 1]
+            if prev_word.endswith((',', ';', ':', '.', '!', '?')):
+                best_split = idx
+                found_punct = True
+                break
+
+    if not found_punct:
+        best_split = max(1, mid_idx)
+
+    # Division de la durée en deux parts égales
+    split_time = round(start + (dur / 2.0), 2)
+    split_time = max(start + 0.3, min(split_time, end - 0.3))
+
+    part1_text = " ".join(words[:best_split]).strip()
+    part2_text = " ".join(words[best_split:]).strip()
+
+    seg1 = {"start": round(start, 2), "end": split_time, "text": part1_text}
+    seg2 = {"start": split_time, "end": round(end, 2), "text": part2_text}
+
+    # Récursion si un sous-bloc dépasse toujours max_duration
+    sub_results = []
+    for s in [seg1, seg2]:
+        if (s["end"] - s["start"]) > max_duration and len(s["text"].split()) > 1:
+            sub_results.extend(split_long_segment(s, max_duration=max_duration))
+        else:
+            sub_results.append(s)
+
+    return sub_results
+
+
+def sanitize_translation(text: str) -> str:
+    """
+    Couche de sécurité 2 : Post-Processing Lexical Anti-Hallucinations.
+    Search & Replace impitoyable sur les hallucinations et contresens phonétiques connus :
+    - 'glissé' -> 'déplacée'
+    - 'Jabalia le pays' ou 'Jabalia, le pays' -> 'Jabalia Al-Balad'
+    - 'Maïs' (début de phrase) -> ''
+    - 'ressuscité' -> 'survécu'
+    """
+    if not text:
+        return ""
+
+    cleaned = text
+
+    # 1. Élimination de 'Maïs' en début de phrase (hallucination de bruit de fond)
+    cleaned = re.sub(r'^\s*Ma[ïi]s\s*[,.:;-]?\s*', '', cleaned, flags=re.IGNORECASE)
+
+    # 2. Remplacement de 'Jabalia le pays' ou 'Jabalia, le pays' par 'Jabalia Al-Balad'
+    cleaned = re.sub(r'\bJabali[y]?a\s*(?:,\s*)?le\s+pays\b', 'Jabalia Al-Balad', cleaned, flags=re.IGNORECASE)
+
+    # 3. Remplacement de 'glissé' / 'glissée' par 'déplacée'
+    cleaned = re.sub(r'\bGliss[ée]e?s?\b', 'Déplacée', cleaned)
+    cleaned = re.sub(r'\bgliss[ée]e?s?\b', 'déplacée', cleaned)
+
+    # 4. Remplacement de 'ressuscité' / 'ressuscitée' par 'survécu'
+    cleaned = re.sub(r'\bRessuscit[ée]e?s?\b', 'Survécu', cleaned)
+    cleaned = re.sub(r'\bressuscit[ée]e?s?\b', 'survécu', cleaned)
+
+    # Nettoyage des espaces résiduels
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    return cleaned
+
+
 def find_smart_cut_point(w_start: float, total_duration: float, silences: list, min_chunk: float = 20.0, max_chunk: float = 35.0, default_chunk: float = 30.0) -> float:
     """
     Découpage adaptatif (Smart Chunking) :
@@ -414,6 +510,22 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         if seg["end"] <= seg["start"]:
             seg["end"] = min(total_duration, seg["start"] + 1.0)
 
+    # COUCHE DE SÉCURITÉ 1 : Smart Text Splitter (max 4.5s)
+    print("[POST-TRAITEMENT] Contrôle de durée maximale (<= 4.5s) et scission intelligente...", flush=True)
+    splitted_segments = []
+    for seg in all_segments:
+        splitted_segments.extend(split_long_segment(seg, max_duration=4.5))
+    all_segments = splitted_segments
+
+    # COUCHE DE SÉCURITÉ 2 : Post-Processing Lexical Anti-Hallucinations
+    print("[POST-TRAITEMENT] Application du filtre lexical (Search & Replace anti-hallucinations)...", flush=True)
+    sanitized_segments = []
+    for seg in all_segments:
+        seg["text"] = sanitize_translation(seg["text"])
+        if seg["text"].strip():
+            sanitized_segments.append(seg)
+    all_segments = sanitized_segments
+
     if found_cache:
         ai_model_used = "gemini-2.5-flash (Cache)"
     else:
@@ -478,7 +590,8 @@ def build_ass_file(
         end_sec = float(seg["end"])
         t_start = format_ass_time(start_sec)
         t_end = format_ass_time(end_sec)
-        text_clean = format_subtitle_blocks(seg["text"].strip())
+        clean_text = sanitize_translation(seg["text"].strip())
+        text_clean = format_subtitle_blocks(clean_text)
         if text_clean:
             ass_events.append(f"Dialogue: 0,{t_start},{t_end},SubtitleStyle,,0,0,0,,{text_clean}")
 
