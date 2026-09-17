@@ -174,158 +174,206 @@ def format_subtitle_blocks(text: str, max_words_per_line: int = 7) -> str:
     return f"{line1}\\N{line2}"
 
 
-def split_segment_if_exceeds_5s(segment: dict, max_duration: float = 5.0) -> list:
-    """Découpe tout segment brut dépassant 5 secondes en sous-blocs séquentiels équilibrés."""
-    start = float(segment.get("start", 0))
-    end = float(segment.get("end", start + 2.0))
-    text = segment.get("text", "").strip()
-    dur = end - start
+def find_smart_cut_point(w_start: float, total_duration: float, silences: list, min_chunk: float = 20.0, max_chunk: float = 35.0, default_chunk: float = 30.0) -> float:
+    """
+    Découpage adaptatif (Smart Chunking) :
+    Recherche le dernier vrai silence situé entre (w_start + 20s) et (w_start + 35s).
+    Si trouvé, définit la fin de la fenêtre au milieu de ce silence pour ne jamais couper un mot.
+    Sinon, bascule sur un découpage standard à default_chunk (30s).
+    """
+    remaining = total_duration - w_start
+    if remaining <= max_chunk:
+        return round(total_duration, 2)
 
-    if dur <= max_duration or not text:
-        return [{"start": start, "end": end, "text": text}]
+    search_start = w_start + min_chunk
+    search_end = w_start + max_chunk
 
-    words = text.split()
-    if len(words) <= 1:
-        return [{"start": start, "end": end, "text": text}]
+    candidate_silences = []
+    for s_start, s_end in silences:
+        if search_start <= s_start <= search_end or search_start <= s_end <= search_end:
+            candidate_silences.append((s_start, s_end))
+        elif s_start < search_start and s_end > search_end:
+            candidate_silences.append((s_start, s_end))
 
-    num_parts = int(dur // max_duration) + 1
-    words_per_part = max(1, len(words) // num_parts)
-    part_dur = dur / num_parts
+    if candidate_silences:
+        # Le dernier vrai silence situé dans la plage éligible
+        last_s = candidate_silences[-1]
+        cut_point = (last_s[0] + last_s[1]) / 2.0
+        cut_point = max(search_start, min(cut_point, search_end))
+        return round(cut_point, 2)
 
-    parts = []
-    for p in range(num_parts):
-        p_start = start + (p * part_dur)
-        p_end = start + ((p + 1) * part_dur) if p < num_parts - 1 else end
-        w_chunk = words[p * words_per_part : (p + 1) * words_per_part] if p < num_parts - 1 else words[p * words_per_part:]
-        if w_chunk:
-            parts.append({
-                "start": round(p_start, 2),
-                "end": round(p_end, 2),
-                "text": " ".join(w_chunk)
-            })
-
-    return parts
+    # Fallback si aucun silence détecté
+    return round(min(total_duration, w_start + default_chunk), 2)
 
 
-def transcribe_window_30s(chunk_path: str, mode: str, window_offset: float, window_dur: float, source_lang: str = 'auto') -> list:
-    """Appelle l'IA pour transcrire/traduire une fenêtre de 30 secondes avec le protocole Scan 5s."""
+def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_dur: float, source_lang: str = 'auto', force_reprocess: bool = False) -> list:
+    """
+    Appelle l'IA pour transcrire/traduire une fenêtre délimitée sur les silences.
+    Applique un CLAMPING STRICT (min/max) pour empêcher toute dérive temporelle ou débordement.
+    """
     from gemini_translator import gemini_audio_transcribe_and_translate
-    raw_segments = gemini_audio_transcribe_and_translate(chunk_path, mode=mode, total_duration=window_dur, source_lang=source_lang)
+    raw_segments = gemini_audio_transcribe_and_translate(chunk_path, mode=mode, total_duration=window_dur, source_lang=source_lang, force_reprocess=force_reprocess)
     
     if not raw_segments or len(raw_segments) == 0:
         return []
 
-    # Ajustement des timestamps relatifs à la fenêtre globale et sous-découpage 5s
     window_segments = []
     for seg in raw_segments:
-        s_rel = float(seg.get("start", 0))
-        e_rel = float(seg.get("end", s_rel + 2.0))
+        raw_start = float(seg.get("start", 0.0))
+        raw_end = float(seg.get("end", raw_start + 2.0))
         txt = seg.get("text", "").strip()
+        if not txt:
+            continue
+
+        # Rejeter les segments fantômes dont le début dépasse la durée de l'extrait
+        if raw_start >= window_dur - 0.2:
+            continue
+
+        # CLAMPING STRICT (ANTI-DÉRIVE) :
+        # 1. Aucun timestamp relatif ne doit dépasser la durée de la fenêtre en cours (window_dur)
+        # 2. Aucun timestamp relatif ne doit être négatif
+        s_rel = max(0.0, min(raw_start, max(0.0, window_dur - 0.3)))
+        e_rel = max(s_rel + 0.3, min(raw_end, window_dur))
 
         seg_adjusted = {
             "start": round(window_offset + s_rel, 2),
             "end": round(window_offset + e_rel, 2),
             "text": txt
         }
-        # Découpe stricte si > 5 secondes
-        sub_5s_parts = split_segment_if_exceeds_5s(seg_adjusted, max_duration=5.0)
-        window_segments.extend(sub_5s_parts)
+        window_segments.append(seg_adjusted)
 
     return window_segments
 
 
-def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: float, silences: list, source_lang: str = 'auto') -> list:
+# Alias de compatibilité descendante
+transcribe_window_30s = transcribe_window
+
+
+def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: float, silences: list, source_lang: str = 'auto', force_reprocess: bool = False) -> tuple:
     """
-    Protocole Scan 5s Anti-Résumé :
-    Divise l'audio en fenêtres de 30 secondes si le fichier est long,
-    puis applique l'analyse 5s et le raccord Zéro Gap conditionné aux silences.
+    Protocole Scan 5s Anti-Résumé & Smart Chunking sur Silences :
+    Découpe dynamique sur les silences réels (20s à 35s),
+    clamping strict anti-dérive et raccord Zéro Gap conditionné aux silences.
+    Option Bypass Cache (force_reprocess) pour réanalyse complète et assainissement du cache.
     """
     mode = 'VOAR' if target_lang.lower() == 'ar' else 'VOSTFR'
     print(f"[PROGRESS] 40% - Analyse IA de l'audio ({total_duration:.1f}s) en mode {mode} (source: {source_lang})...", flush=True)
 
-    # 1. Vérification prioritaire : la transcription complète existe-t-elle déjà dans le cache ?
     cache_dir = BASE_DIR / "cache_transcriptions"
     base_name = Path(media_path).stem
     raw_stem = re.sub(r"^\d+_", "", base_name)
     found_cache = False
     all_segments = []
 
-    if cache_dir.exists():
-        for fname in os.listdir(cache_dir):
-            if fname.endswith(".json") and mode in fname:
-                f_clean = re.sub(r"^\d+_", "", fname)
-                if raw_stem in f_clean or f_clean.startswith(raw_stem):
-                    try:
-                        with open(cache_dir / fname, "r", encoding="utf-8") as cf:
-                            cached_segs = json.load(cf)
-                            if isinstance(cached_segs, list) and len(cached_segs) > 0:
-                                print(f"[PROTOCOLE SCAN 5S] ⚡ Cache global détecté ({fname}) : {len(cached_segs)} segments déjà transcrits.", flush=True)
-                                for s in cached_segs:
-                                    all_segments.extend(split_segment_if_exceeds_5s(s, max_duration=5.0))
-                                found_cache = True
-                                print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
-                                break
-                    except Exception:
-                        pass
+    if force_reprocess:
+        print(f"[PROGRESS] 40% - 🔄 Bypass Cache activé : réanalyse complète forcée pour '{base_name}'...", flush=True)
+        # Purge préventive des anciens fichiers de cache pour ce média afin d'assainir le dossier
+        if cache_dir.exists():
+            for fname in os.listdir(cache_dir):
+                if fname.endswith(".json") and mode in fname:
+                    f_clean = re.sub(r"^\d+_", "", fname)
+                    if raw_stem in f_clean or f_clean.startswith(raw_stem):
+                        try:
+                            (cache_dir / fname).unlink()
+                            print(f"[CACHE BUSTER] 🗑️ Ancien cache purgé : {fname}", flush=True)
+                        except Exception:
+                            pass
+    else:
+        # 1. Vérification du cache si le bypass n'est pas activé
+        if cache_dir.exists():
+            for fname in os.listdir(cache_dir):
+                if fname.endswith(".json") and mode in fname:
+                    f_clean = re.sub(r"^\d+_", "", fname)
+                    if raw_stem in f_clean or f_clean.startswith(raw_stem):
+                        try:
+                            with open(cache_dir / fname, "r", encoding="utf-8") as cf:
+                                cached_segs = json.load(cf)
+                                if isinstance(cached_segs, list) and len(cached_segs) > 0:
+                                    print(f"[PROTOCOLE SMART CHUNK] ⚡ Cache global détecté ({fname}) : {len(cached_segs)} segments déjà transcrits.", flush=True)
+                                    for s in cached_segs:
+                                        s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
+                                        s_end = max(s_start + 0.2, min(float(s.get("end", s_start + 2.0)), total_duration))
+                                        txt = s.get("text", "").strip()
+                                        if txt:
+                                            all_segments.append({
+                                                "start": round(s_start, 2),
+                                                "end": round(s_end, 2),
+                                                "text": txt
+                                            })
+                                    found_cache = True
+                                    print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
+                                    break
+                        except Exception:
+                            pass
 
     if not found_cache:
         # Si le fichier est court (<= 35s), analyse directe
         if total_duration <= 35.0:
             from gemini_translator import gemini_audio_transcribe_and_translate
-            raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang)
+            raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang, force_reprocess=force_reprocess)
             if not raw_segs:
-                # Fallback Whisper Cloud
                 openai_key = os.environ.get("OPENAI_API_KEY")
                 if openai_key:
                     from run_studio_v3_full_pipeline import transcribe_via_openai_api
                     raw_segs = transcribe_via_openai_api(media_path, openai_key, mode=mode)
 
             for s in (raw_segs or []):
-                all_segments.extend(split_segment_if_exceeds_5s(s, max_duration=5.0))
+                s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
+                s_end = max(s_start + 0.2, min(float(s.get("end", s_start + 2.0)), total_duration))
+                txt = s.get("text", "").strip()
+                if txt:
+                    all_segments.append({
+                        "start": round(s_start, 2),
+                        "end": round(s_end, 2),
+                        "text": txt
+                    })
 
             print("[PROGRESS] 70% - Transcription directe terminée.", flush=True)
 
         else:
-            # Long fichier : Découpage en fenêtres étanches de 30 secondes
-            WINDOW_SIZE = 30.0
-        num_windows = int(total_duration // WINDOW_SIZE) + (1 if total_duration % WINDOW_SIZE > 0 else 0)
-        print(f"[PROTOCOLE SCAN 5S] Découpage en {num_windows} fenêtres étanches de 30s (Anti-Attention Drift)...", flush=True)
+            # Long fichier : Smart Chunking adaptatif basé sur les silences réels (20s à 35s)
+            temp_dir = BASE_DIR / "temp_chunks"
+            temp_dir.mkdir(parents=True, exist_ok=True)
 
-        all_segments = []
-        temp_dir = BASE_DIR / "temp_chunks"
-        temp_dir.mkdir(parents=True, exist_ok=True)
+            windows_plan = []
+            cursor = 0.0
+            while cursor < total_duration:
+                next_cut = find_smart_cut_point(cursor, total_duration, silences, min_chunk=20.0, max_chunk=35.0, default_chunk=30.0)
+                if next_cut <= cursor:
+                    next_cut = min(total_duration, cursor + 30.0)
+                windows_plan.append((cursor, next_cut))
+                cursor = next_cut
 
-        for w_idx in range(num_windows):
-            w_start = w_idx * WINDOW_SIZE
-            w_end = min(total_duration, (w_idx + 1) * WINDOW_SIZE)
-            w_dur = w_end - w_start
+            total_windows = len(windows_plan)
+            print(f"[SMART CHUNKING] {total_windows} fenêtre(s) adaptative(s) planifiée(s) sur les silences réels (20s-35s).", flush=True)
 
-            current_pct = int(40 + (w_idx / num_windows) * 30)
-            print(f"[PROGRESS] {current_pct}% - Analyse IA : Fenêtre {w_idx + 1}/{num_windows} [{w_start:.0f}s-{w_end:.0f}s]...", flush=True)
-            chunk_file = temp_dir / f"chunk_{os.getpid()}_{w_idx}.mp3"
+            for w_idx, (w_start, w_end) in enumerate(windows_plan):
+                w_dur = round(w_end - w_start, 2)
+                current_pct = int(40 + (w_idx / total_windows) * 30)
+                print(f"[PROGRESS] {current_pct}% - Analyse IA : Fenêtre {w_idx + 1}/{total_windows} [{w_start:.2f}s -> {w_end:.2f}s] ({w_dur:.2f}s)...", flush=True)
 
-            # Extraction sans réencodage lourd
-            cmd_cut = [
-                'ffmpeg', '-y',
-                '-ss', str(w_start), '-to', str(w_end),
-                '-i', media_path,
-                '-vn', '-ar', '24000', '-ac', '1', '-b:a', '64k',
-                str(chunk_file.resolve())
-            ]
-            subprocess.run(cmd_cut, capture_output=True, check=True)
+                chunk_file = temp_dir / f"chunk_{os.getpid()}_{w_idx}.mp3"
+                cmd_cut = [
+                    'ffmpeg', '-y',
+                    '-ss', str(w_start), '-to', str(w_end),
+                    '-i', media_path,
+                    '-vn', '-ar', '24000', '-ac', '1', '-b:a', '64k',
+                    str(chunk_file.resolve())
+                ]
+                subprocess.run(cmd_cut, capture_output=True, check=True)
 
-            try:
-                w_segs = transcribe_window_30s(str(chunk_file.resolve()), mode, w_start, w_dur, source_lang=source_lang)
-                all_segments.extend(w_segs)
-            finally:
-                if chunk_file.exists():
-                    try: chunk_file.unlink()
-                    except Exception: pass
+                try:
+                    w_segs = transcribe_window(str(chunk_file.resolve()), mode, w_start, w_dur, source_lang=source_lang, force_reprocess=force_reprocess)
+                    all_segments.extend(w_segs)
+                finally:
+                    if chunk_file.exists():
+                        try: chunk_file.unlink()
+                        except Exception: pass
 
-        if temp_dir.exists():
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
 
-        print("[PROGRESS] 70% - Toutes les fenêtres ont été transcrites avec succès.", flush=True)
+            print("[PROGRESS] 70% - Toutes les fenêtres ont été transcrites avec succès.", flush=True)
 
     if not all_segments:
         raise RuntimeError("Aucun segment de sous-titre n'a pu être produit pour ce média.")
@@ -333,8 +381,8 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     # Tri chronologique absolu
     all_segments.sort(key=lambda x: x["start"])
 
-    # RÈGLE ZÉRO GAP AVEC DÉTECTION DES SILENCES RÉELS
-    print("[POST-TRAITEMENT] Application de la règle Zéro Gap conditionnée aux silences...")
+    # RÈGLE ZÉRO GAP AVEC DÉTECTION DES SILENCES RÉELS & ANTI-CHEVAUCHEMENT
+    print("[POST-TRAITEMENT] Application de la règle Zéro Gap conditionnée aux silences...", flush=True)
     for i in range(len(all_segments) - 1):
         cur_end = all_segments[i]["end"]
         nxt_start = all_segments[i + 1]["start"]
@@ -343,25 +391,45 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         if gap > 0:
             # Vérifier si un silence réel (> 0.3s) existe dans ce trou
             is_silent = has_silence_between(cur_end, nxt_start, silences)
-            if is_silent:
-                # Silence réel : Le bloc s'arrête net à la fin de la parole
-                pass
-            else:
+            if not is_silent:
                 # Pas de silence : La personne parle ou enchaîne -> ZÉRO GAP !
                 all_segments[i]["end"] = nxt_start
+        elif gap < 0:
+            # Chevauchement anormal : réajuster la fin du segment précédent
+            all_segments[i]["end"] = max(all_segments[i]["start"] + 0.3, nxt_start)
+
+    # Clamping strict final contre toute dérive au-delà de la durée totale
+    for seg in all_segments:
+        seg["start"] = max(0.0, min(seg["start"], total_duration))
+        seg["end"] = max(seg["start"] + 0.2, min(seg["end"], total_duration))
 
     # Alignement du dernier segment sur la durée totale si la parole va jusqu'au bout
     last_end = all_segments[-1]["end"]
     if not has_silence_between(last_end, total_duration, silences):
         all_segments[-1]["end"] = total_duration
+    all_segments[-1]["end"] = max(all_segments[-1]["start"] + 0.2, min(all_segments[-1]["end"], total_duration))
+
+    # Vérification d'intégrité finale : aucune fin avant début
+    for seg in all_segments:
+        if seg["end"] <= seg["start"]:
+            seg["end"] = min(total_duration, seg["start"] + 1.0)
 
     if found_cache:
         ai_model_used = "gemini-2.5-flash (Cache)"
     else:
         import gemini_translator
         ai_model_used = getattr(gemini_translator, 'LAST_MODEL_USED', 'gemini-2.5-flash')
+        # Sauvegarde du nouveau résultat assaini dans le cache
+        try:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            cache_save_file = cache_dir / f"{base_name}_{source_lang}_{mode}.json"
+            with open(cache_save_file, "w", encoding="utf-8") as cf:
+                json.dump(all_segments, cf, ensure_ascii=False, indent=2)
+            print(f"[CACHE BUSTER] 💾 Cache assaini et mis à jour : {cache_save_file.name}", flush=True)
+        except Exception as ce:
+            print(f"[CACHE WARNING] Échec sauvegarde cache: {ce}", file=sys.stderr)
 
-    print(f"[PROTOCOLE SCAN 5S SUCCÈS] {len(all_segments)} sous-titres générés via [{ai_model_used}].", flush=True)
+    print(f"[PROTOCOLE SMART CHUNK SUCCÈS] {len(all_segments)} sous-titres générés via [{ai_model_used}].", flush=True)
     return all_segments, ai_model_used
 
 
@@ -485,6 +553,7 @@ def main():
     except ValueError:
         sub_margin_v = 950
     source_lang = sys.argv[5] if len(sys.argv) > 5 else 'auto'
+    force_reprocess = (sys.argv[6].lower() in ('true', '1', 'yes')) if len(sys.argv) > 6 else False
 
     if not os.path.exists(media_input):
         print(json.dumps({"success": False, "error": f"Fichier introuvable : {media_input}"}))
@@ -505,7 +574,7 @@ def main():
         print(f"[PROGRESS] 25% - Structure média validée ({duration:.1f}s, {'vidéo' if is_video else 'audio'}, {len(silences)} silences détectés).", flush=True)
 
         # 2. Transcription & Traduction par Protocole Scan 5s
-        segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang)
+        segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess)
 
         # 3. Noms des fichiers de sortie
         print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)

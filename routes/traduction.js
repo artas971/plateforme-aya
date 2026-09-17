@@ -75,6 +75,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         const sourceLang = (req.body.source_lang || 'auto').toLowerCase();
         const subColor = req.body.sub_color || '#FFFF00';
         const subPosition = req.body.sub_position || '950';
+        const forceReprocess = req.body.force_reprocess === 'true' || req.body.force_reprocess === true;
         const mediaPath = req.file.path;
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
 
@@ -87,6 +88,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         console.log(`  - Langue cible      : ${targetLang === 'ar' ? 'Arabe (VOAR)' : 'Français (VOSTFR)'}`);
         console.log(`  - Couleur sous-titre: ${subColor}`);
         console.log(`  - Position (MarginV): ${subPosition}`);
+        console.log(`  - Bypass Cache      : ${forceReprocess ? 'OUI (Forcé)' : 'NON (Cache actif)'}`);
         console.log('====================================================');
 
         // Configuration des en-têtes HTTP pour Chunked Streaming direct
@@ -98,7 +100,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         // Envoi du premier chunk de connexion
         res.write(`[PROGRESS] 2% - Média reçu sur le serveur. Initialisation du processus Python...\n`);
 
-        const pyProcess = spawn('py', [scriptPath, mediaPath, targetLang, subColor, subPosition, sourceLang], { cwd: ROOT_DIR });
+        const pyProcess = spawn('py', [scriptPath, mediaPath, targetLang, subColor, subPosition, sourceLang, String(forceReprocess)], { cwd: ROOT_DIR });
 
         let stdoutData = '';
         let stderrData = '';

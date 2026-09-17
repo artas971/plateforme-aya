@@ -23,14 +23,14 @@ if os.path.exists(env_file):
 
 LAST_MODEL_USED = "gemini-2.5-flash"
 
-def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto'):
+def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto', force_reprocess=False):
     global LAST_MODEL_USED
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not gemini_key:
         print("[Pole 3 Gemini] Pas de cle GEMINI_API_KEY detectee.")
         return None
 
-    print(f"[Pole 3 Gemini] Lancement transcription/traduction ({mode}, source: {source_lang}) via Gemini 2.5 Flash...")
+    print(f"[Pole 3 Gemini] Lancement transcription/traduction ({mode}, source: {source_lang}, force_reprocess: {force_reprocess}) via Gemini 2.5 Flash...")
 
     # Extraction / conversion audio optimisée (MP3 64k mono pour upload rapide)
     temp_audio = os.path.join(os.path.dirname(media_path), f"temp_gemini_{os.getpid()}.mp3")
@@ -69,23 +69,27 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "Ta mission : Restituer fidèlement 100% du discours en français authentique, percutant et soigné pour des sous-titres vidéo TikTok/Reels. "
             "(Si le discours est en arabe palestinien, traduis-le fidèlement en français. Si le discours est déjà en français, retranscris-le fidèlement mot à mot en français).\n\n"
             "RÈGLES D'OR STRICTES :\n"
-            "1. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
-            "2. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
-            "3. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, tronquer ou omettre de phrases.\n"
-            "4. SYNCHRONISATION : Fournis des segments sous-titres naturels de 2 à 4 secondes bien alignés avec la parole.\n\n"
+            "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : CHAQUE SEGMENT DOIT DURER ENTRE 1.5 ET 4.0 SECONDES (MAXIMUM STRICT 5.0 SECONDES). "
+            "Il est FORMELLEMENT INTERDIT de générer un segment de plus de 5 secondes. Si une phrase est longue, TU DOIS OBLIGATOIREMENT LA SCINDER TOI-MÊME en plusieurs sous-segments courts synchronisés avec les mots prononcés.\n"
+            "2. TIMESTAMPS RELATIFS : Les temps 'start' et 'end' doivent être exprimés en secondes (nombres flottants) relatifs au DÉBUT de cet extrait audio (0.0s = début du fichier fourni). 'end' doit toujours être supérieur à 'start'.\n"
+            "3. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
+            "4. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
+            "5. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n\n"
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (français).\n"
-            "Exemple : [{\"start\": 0.0, \"end\": 3.5, \"text\": \"Mon frère Steve, honnêtement...\"}]"
+            "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 5.0, \"text\": \"la situation est très difficile.\"}]"
         )
     else: # VOAR
         prompt = (
             "Tu es un transcripteur expert d'élite du dialecte arabe palestinien de Gaza.\n"
             f"{source_context}"
             "Écoute attentivement l'enregistrement audio ci-joint et transcris fidèlement 100% de la parole en arabe parlé authentique.\n"
-            "Découpe en sous-titres courts de 2 à 4 secondes.\n"
+            "RÈGLES D'OR STRICTES :\n"
+            "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 2 à 4 secondes). TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en sous-segments courts.\n"
+            "2. TIMESTAMPS RELATIFS : 'start' et 'end' relatifs au début du fichier (0.0s = début), avec 'end' > 'start'.\n"
             "FORMAT DE SORTIE : Tableau JSON d'objets avec 'start' (float), 'end' (float), 'text' (arabe)."
         )
 
-    # Vérification du cache local pour éviter les requêtes redondantes
+    # Gestion du cache local
     import re
     cache_dir = os.path.join(BASE_DIR, "cache_transcriptions")
     os.makedirs(cache_dir, exist_ok=True)
@@ -93,47 +97,61 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
     raw_stem = re.sub(r"^\d+_", "", base_name)
     raw_stem_spaces = raw_stem.replace("_", " ")
     raw_stem_underscores = raw_stem.replace(" ", "_")
+    cache_file = os.path.join(cache_dir, f"{base_name}_{source_lang}_{mode}.json")
 
-    candidates = [
-        os.path.join(cache_dir, f"{base_name}_{source_lang}_{mode}.json"),
-        os.path.join(cache_dir, f"{base_name}_{mode}.json"),
-        os.path.join(cache_dir, f"{raw_stem}_{source_lang}_{mode}.json"),
-        os.path.join(cache_dir, f"{raw_stem}_{mode}.json"),
-        os.path.join(cache_dir, f"{raw_stem_spaces}_{source_lang}_{mode}.json"),
-        os.path.join(cache_dir, f"{raw_stem_spaces}_{mode}.json"),
-        os.path.join(cache_dir, f"{raw_stem_underscores}_{source_lang}_{mode}.json"),
-        os.path.join(cache_dir, f"{raw_stem_underscores}_{mode}.json"),
-    ]
+    if not force_reprocess:
+        candidates = [
+            os.path.join(cache_dir, f"{base_name}_{source_lang}_{mode}.json"),
+            os.path.join(cache_dir, f"{base_name}_{mode}.json"),
+            os.path.join(cache_dir, f"{raw_stem}_{source_lang}_{mode}.json"),
+            os.path.join(cache_dir, f"{raw_stem}_{mode}.json"),
+            os.path.join(cache_dir, f"{raw_stem_spaces}_{source_lang}_{mode}.json"),
+            os.path.join(cache_dir, f"{raw_stem_spaces}_{mode}.json"),
+            os.path.join(cache_dir, f"{raw_stem_underscores}_{source_lang}_{mode}.json"),
+            os.path.join(cache_dir, f"{raw_stem_underscores}_{mode}.json"),
+        ]
 
-    for cfile in candidates:
-        if os.path.exists(cfile):
-            try:
-                with open(cfile, "r", encoding="utf-8") as cf:
-                    cached_segments = json.load(cf)
-                    if isinstance(cached_segments, list) and len(cached_segments) > 0:
-                        print(f"[Pôle 3 Gemini] ⚡ Cache réutilisé instantanément ({len(cached_segments)} segments déjà transcrits).")
-                        LAST_MODEL_USED = "gemini-2.5-flash (Cache)"
-                        return cached_segments
-            except Exception:
-                pass
+        for cfile in candidates:
+            if os.path.exists(cfile):
+                try:
+                    with open(cfile, "r", encoding="utf-8") as cf:
+                        cached_segments = json.load(cf)
+                        if isinstance(cached_segments, list) and len(cached_segments) > 0:
+                            print(f"[Pôle 3 Gemini] ⚡ Cache réutilisé instantanément ({len(cached_segments)} segments déjà transcrits).")
+                            LAST_MODEL_USED = "gemini-2.5-flash (Cache)"
+                            return cached_segments
+                except Exception:
+                    pass
 
-    # Recherche approfondie par correspondance de nom dans le dossier de cache
-    if os.path.exists(cache_dir):
-        for fname in os.listdir(cache_dir):
-            if not fname.endswith('.json'):
-                continue
-            if mode in fname:
-                f_clean = re.sub(r"^\d+_", "", fname)
-                if raw_stem in f_clean or f_clean.startswith(raw_stem) or raw_stem_underscores in f_clean:
-                    try:
-                        with open(os.path.join(cache_dir, fname), "r", encoding="utf-8") as cf:
-                            cached_segments = json.load(cf)
-                            if isinstance(cached_segments, list) and len(cached_segments) > 0:
-                                print(f"[Pôle 3 Gemini] ⚡ Cache global réutilisé ({fname} -> {len(cached_segments)} segments).")
-                                LAST_MODEL_USED = "gemini-2.5-flash (Cache)"
-                                return cached_segments
-                    except Exception:
-                        pass
+        # Recherche approfondie par correspondance de nom dans le dossier de cache
+        if os.path.exists(cache_dir):
+            for fname in os.listdir(cache_dir):
+                if not fname.endswith('.json'):
+                    continue
+                if mode in fname:
+                    f_clean = re.sub(r"^\d+_", "", fname)
+                    if raw_stem in f_clean or f_clean.startswith(raw_stem) or raw_stem_underscores in f_clean:
+                        try:
+                            with open(os.path.join(cache_dir, fname), "r", encoding="utf-8") as cf:
+                                cached_segments = json.load(cf)
+                                if isinstance(cached_segments, list) and len(cached_segments) > 0:
+                                    print(f"[Pôle 3 Gemini] ⚡ Cache global réutilisé ({fname} -> {len(cached_segments)} segments).")
+                                    LAST_MODEL_USED = "gemini-2.5-flash (Cache)"
+                                    return cached_segments
+                        except Exception:
+                            pass
+    else:
+        print(f"[Pôle 3 Gemini] 🔄 Bypass Cache activé pour '{base_name}'. Purge des anciens caches...")
+        if os.path.exists(cache_dir):
+            for fname in os.listdir(cache_dir):
+                if fname.endswith('.json') and mode in fname:
+                    f_clean = re.sub(r"^\d+_", "", fname)
+                    if raw_stem in f_clean or f_clean.startswith(raw_stem) or raw_stem_underscores in f_clean:
+                        try:
+                            os.remove(os.path.join(cache_dir, fname))
+                            print(f"[Pôle 3 Gemini] 🗑️ Ancien cache supprimé : {fname}")
+                        except Exception:
+                            pass
 
     payload = {
         "contents": [{
@@ -162,8 +180,6 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
         "gemini-3.5-flash-lite",
         "gemini-3-flash-preview"
     ]
-
-    global LAST_MODEL_USED
 
     for idx, model_name in enumerate(MODELS_CASCADE):
         if idx > 0:
