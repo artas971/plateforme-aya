@@ -61,7 +61,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
         if source_lang == 'ar':
             source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en arabe palestinien (dialecte ammiya de Gaza).\n"
         lexicon_directive = (
-            "6. RÈGLES DE TRADUCTION ABSOLUES (DIALECTE DE GAZA) :\n"
+            "8. RÈGLES DE TRADUCTION ABSOLUES (DIALECTE DE GAZA) :\n"
             "Attention aux pièges phonétiques du dialecte palestinien. Utilise impérativement ce glossaire pour ta traduction :\n"
             "- Noms propres : 'أم علاء' se traduit 'Oum Alaa' (Jamais Malaak).\n"
             "- 'جرافة' (Jarrafa) = Bulldozer (Jamais Jet ou Avion).\n"
@@ -90,9 +90,11 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : CHAQUE SEGMENT DOIT DURER ENTRE 1.5 ET 4.0 SECONDES (MAXIMUM STRICT 5.0 SECONDES). "
             "Il est FORMELLEMENT INTERDIT de générer un segment de plus de 5 secondes. Si une phrase est longue, TU DOIS OBLIGATOIREMENT LA SCINDER TOI-MÊME en plusieurs sous-segments courts synchronisés avec les mots prononcés.\n"
             "2. TIMESTAMPS RELATIFS : Les temps 'start' et 'end' doivent être exprimés en secondes (nombres flottants) relatifs au DÉBUT de cet extrait audio (0.0s = début du fichier fourni). 'end' doit toujours être supérieur à 'start'.\n"
-            "3. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
-            "4. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
-            "5. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
+            "3. LANGUE CIBLE STRICTE : Tu dois IMPÉRATIVEMENT tout traduire dans la langue cible (ex: Français). Il est FORMELLEMENT INTERDIT d'utiliser l'alphabet arabe dans ta réponse finale. Tout doit être traduit.\n"
+            "4. NUMÉROS DE TÉLÉPHONE : Si une personne dicte un numéro avec des pauses, regroupe intelligemment les chiffres dans un même segment logique pour préserver la lisibilité à l'écran.\n"
+            "5. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
+            "6. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
+            "7. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
             f"{lexicon_directive}"
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (français).\n"
             "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 5.0, \"text\": \"la situation est très difficile.\"}]"
