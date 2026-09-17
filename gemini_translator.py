@@ -21,13 +21,13 @@ if os.path.exists(env_file):
                 k, v = line.split('=', 1)
                 os.environ.setdefault(k.strip(), v.strip())
 
-def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None):
+def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto'):
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not gemini_key:
         print("[Pole 3 Gemini] Pas de cle GEMINI_API_KEY detectee.")
         return None
 
-    print("[Pole 3 Gemini] Lancement de la transcription/traduction multimodale directe via Gemini 2.5 Flash...")
+    print(f"[Pole 3 Gemini] Lancement transcription/traduction ({mode}, source: {source_lang}) via Gemini 2.5 Flash...")
 
     # Extraction / conversion audio optimisée (MP3 64k mono pour upload rapide)
     temp_audio = os.path.join(os.path.dirname(media_path), f"temp_gemini_{os.getpid()}.mp3")
@@ -51,9 +51,17 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             try: os.remove(temp_audio)
             except Exception: pass
 
+    # Contexte linguistique explicite selon la langue source
+    source_context = ""
+    if source_lang == 'ar':
+        source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en arabe palestinien (dialecte ammiya de Gaza).\n"
+    elif source_lang == 'fr':
+        source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en français.\n"
+
     if mode == 'VOSTFR':
         prompt = (
             "Tu es un traducteur et sous-titreur expert d'élite (spécialisé dans l'arabe palestinien de Gaza et le français).\n"
+            f"{source_context}"
             "Écoute attentivement l'intégralité du fichier audio ci-joint.\n"
             "Ta mission : Restituer fidèlement 100% du discours en français authentique, percutant et soigné pour des sous-titres vidéo TikTok/Reels. "
             "(Si le discours est en arabe palestinien, traduis-le fidèlement en français. Si le discours est déjà en français, retranscris-le fidèlement mot à mot en français).\n\n"
@@ -68,26 +76,42 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
     else: # VOAR
         prompt = (
             "Tu es un transcripteur expert d'élite du dialecte arabe palestinien de Gaza.\n"
+            f"{source_context}"
             "Écoute attentivement l'enregistrement audio ci-joint et transcris fidèlement 100% de la parole en arabe parlé authentique.\n"
             "Découpe en sous-titres courts de 2 à 4 secondes.\n"
             "FORMAT DE SORTIE : Tableau JSON d'objets avec 'start' (float), 'end' (float), 'text' (arabe)."
         )
 
     # Vérification du cache local pour éviter les requêtes redondantes
+    import re
     cache_dir = os.path.join(BASE_DIR, "cache_transcriptions")
     os.makedirs(cache_dir, exist_ok=True)
     base_name = os.path.splitext(os.path.basename(media_path))[0]
-    cache_file = os.path.join(cache_dir, f"{base_name}_{mode}.json")
+    raw_stem = re.sub(r"^\d+_", "", base_name)
+    raw_stem_spaces = raw_stem.replace("_", " ")
+    raw_stem_underscores = raw_stem.replace(" ", "_")
 
-    if os.path.exists(cache_file):
-        try:
-            with open(cache_file, "r", encoding="utf-8") as cf:
-                cached_segments = json.load(cf)
-                if isinstance(cached_segments, list) and len(cached_segments) > 0:
-                    print(f"[Pôle 3 Gemini] ⚡ Cache réutilisé instantanément ({len(cached_segments)} segments déjà transcrits).")
-                    return cached_segments
-        except Exception:
-            pass
+    candidates = [
+        os.path.join(cache_dir, f"{base_name}_{source_lang}_{mode}.json"),
+        os.path.join(cache_dir, f"{base_name}_{mode}.json"),
+        os.path.join(cache_dir, f"{raw_stem}_{source_lang}_{mode}.json"),
+        os.path.join(cache_dir, f"{raw_stem}_{mode}.json"),
+        os.path.join(cache_dir, f"{raw_stem_spaces}_{source_lang}_{mode}.json"),
+        os.path.join(cache_dir, f"{raw_stem_spaces}_{mode}.json"),
+        os.path.join(cache_dir, f"{raw_stem_underscores}_{source_lang}_{mode}.json"),
+        os.path.join(cache_dir, f"{raw_stem_underscores}_{mode}.json"),
+    ]
+
+    for cfile in candidates:
+        if os.path.exists(cfile):
+            try:
+                with open(cfile, "r", encoding="utf-8") as cf:
+                    cached_segments = json.load(cf)
+                    if isinstance(cached_segments, list) and len(cached_segments) > 0:
+                        print(f"[Pôle 3 Gemini] ⚡ Cache réutilisé instantanément ({len(cached_segments)} segments déjà transcrits).")
+                        return cached_segments
+            except Exception:
+                pass
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
     payload = {
@@ -135,7 +159,9 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             print(f"[Pôle 3 Gemini Warning] Échec appel Gemini (tentative {attempt}/{max_retries}) : {e}")
             if attempt < max_retries:
                 import time
-                time.sleep(attempt * 2)
+                wait_time = 15 if "429" in str(e) else attempt * 3
+                print(f"[Pôle 3 Gemini] Pause de {wait_time}s avant nouvelle tentative...")
+                time.sleep(wait_time)
 
     return None
 

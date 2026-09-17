@@ -38,18 +38,20 @@ app.use('/audio_a_traiter', express.static(AUDIO_A_TRAITER_DIR));
 app.use('/fichiers_reponse_a_envoyer', express.static(REPONSED_DIR));
 app.use('/download', express.static(REPONSED_DIR));
 
-// Montage des 4 Routeurs Modulaires
+// Montage des 5 Routeurs Modulaires
 const chatRouter = require('./routes/chat');
 const studioRouter = require('./routes/studio');
 const audioRouter = require('./routes/audio');
 const driveRouter = require('./routes/drive');
+const traductionRouter = require('./routes/traduction');
 
 app.use('/api/chat', chatRouter);
 app.use(studioRouter);
 app.use(audioRouter);
 app.use('/api/drive', driveRouter);
+app.use(traductionRouter);
 
 // Démarrage du Serveur
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:3000 (Architecture modulaire : Chat, Studio, Audio & Drive actifs)`);
+    console.log(`Server running on http://localhost:3000 (Architecture modulaire : Chat, Studio, Audio, Drive & Traduction actifs)`);
 });

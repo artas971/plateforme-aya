@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aya - Traduction & Sous-titrage Vidéo</title>
+    <style>
+        :root {
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --card-hover: #273549;
+            --accent-color: #38BDF8;
+            --accent-hover: #0EA5E9;
+            --text-color: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #334155;
+            --success-color: #10B981;
+            --error-color: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            background: #020617;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        main {
+            width: 100%;
+            max-width: 800px;
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .page-intro {
+            text-align: center;
+        }
+
+        .page-intro h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-intro p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Zone Drag & Drop */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            background: #0F172A;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--accent-color);
+            background: #132238;
+            transform: translateY(-2px);
+        }
+
+        .drop-zone-icon {
+            font-size: 2.8rem;
+        }
+
+        .drop-zone-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .drop-zone-sub {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Fichier sélectionné */
+        .file-badge {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: #132238;
+            border: 1px solid var(--accent-color);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 480px;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+        }
+
+        .btn-remove-file {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.2rem 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .btn-remove-file:hover {
+            color: var(--error-color);
+        }
+
+        /* Sélecteur de Langue Source */
+        .source-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.85rem;
+        }
+
+        .source-card {
+            background: #0F172A;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.9rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .source-card:hover {
+            background: var(--card-hover);
+            border-color: #475569;
+        }
+
+        .source-card.active {
+            border-color: var(--accent-color);
+            background: #132238;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .source-icon {
+            font-size: 1.6rem;
+        }
+
+        .source-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .source-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .source-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Sélecteur de Langue Cible */
+        .section-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .lang-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .lang-card {
+            background: #0F172A;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .lang-card:hover {
+            background: var(--card-hover);
+            border-color: #475569;
+        }
+
+        .lang-card.active {
+            border-color: var(--accent-color);
+            background: #132238;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .lang-flag {
+            font-size: 1.8rem;
+        }
+
+        .lang-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .lang-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-color);
+        }
+
+        .lang-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* Sélecteur de Couleur */
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .color-card {
+            background: #0F172A;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: all 0.2s ease;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .color-card:hover {
+            border-color: #475569;
+            background: var(--card-hover);
+        }
+
+        .color-card.active {
+            border-color: var(--accent-color);
+            background: #132238;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        }
+
+        .color-circle {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
+
+        /* Sélecteur de Position */
+        .pos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+
+        .pos-card {
+            background: #0F172A;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 0.5rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            transition: all 0.2s ease;
+            user-select: none;
+            text-align: center;
+        }
+
+        .pos-card:hover {
+            border-color: #475569;
+            background: var(--card-hover);
+        }
+
+        .pos-card.active {
+            border-color: var(--accent-color);
+            background: #132238;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+        }
+
+        .pos-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .pos-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        /* Bouton Principal */
+        .btn-submit {
+            background: linear-gradient(135deg, #0EA5E9, #0284C7);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Indicateur de Statut & Barre de Progression Temps Réel */
+        .status-box {
+            display: none;
+            flex-direction: column;
+            gap: 0.9rem;
+            padding: 1.25rem;
+            background: #0B1120;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .progress-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .progress-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .progress-percent {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            font-family: 'Consolas', monospace;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 10px;
+            background: #1E293B;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38BDF8, #0EA5E9, #10B981);
+            border-radius: 999px;
+            transition: width 0.35s ease;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+        }
+
+        .progress-log {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        /* Zone de Résultat */
+        .result-box {
+            display: none;
+            flex-direction: column;
+            gap: 1.25rem;
+            background: #0B1120;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .result-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--success-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-title.error {
+            color: var(--error-color);
+        }
+
+        .badges-summary {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .summary-badge {
+            background: #1E293B;
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-color);
+        }
+
+        pre {
+            background: #020617;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            color: #A5F3FC;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            max-height: 350px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><span>🎬</span> Plateforme Aya - Traduction & Sous-titrage</h1>
+        <nav class="nav-links">
+            <a href="/studio">Studio V3</a>
+            <a href="/">Accueil</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-intro">
+            <h2>Sous-titrage Automatique Haute Précision</h2>
+            <p>Glissez votre fichier audio ou vidéo, choisissez la langue cible et générez votre média sous-titré.</p>
+        </div>
+
+        <section class="card">
+            <!-- 1. Zone Drag & Drop -->
+            <div class="drop-zone" id="dropZone">
+                <span class="drop-zone-icon">📁</span>
+                <div class="drop-zone-text">Glissez & Déposez votre fichier média ici</div>
+                <div class="drop-zone-sub">ou cliquez pour parcourir vos dossiers (Audio ou Vidéo jusqu'à 500 Mo)</div>
+                <input type="file" id="fileInput" class="file-input" accept="audio/*,video/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.mp4,.mov,.mkv,.avi,.webm">
+            </div>
+
+            <!-- Fichier Sélectionné -->
+            <div class="file-badge" id="fileBadge">
+                <div class="file-info">
+                    <span>🎬</span>
+                    <div>
+                        <div class="file-name" id="fileName">nom_du_fichier.mp4</div>
+                        <div class="file-size" id="fileSize">0 Mo</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-remove-file" id="btnRemoveFile" title="Retirer ce fichier">✕</button>
+            </div>
+
+            <!-- 2. Sélecteur de Langue Source (Origine) -->
+            <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">1. Langue parlée d'origine (Source)</div>
+                <div class="source-grid">
+                    <div class="source-card active" data-source="auto">
+                        <span class="source-icon">🤖</span>
+                        <div class="source-details">
+                            <div class="source-title">Auto-détection</div>
+                            <div class="source-sub">Détection automatique intelligente</div>
+                        </div>
+                    </div>
+                    <div class="source-card" data-source="ar">
+                        <span class="source-icon">🇵🇸</span>
+                        <div class="source-details">
+                            <div class="source-title">Arabe palestinien</div>
+                            <div class="source-sub">Dialecte ammiya / Gaza</div>
+                        </div>
+                    </div>
+                    <div class="source-card" data-source="fr">
+                        <span class="source-icon">🇫🇷</span>
+                        <div class="source-details">
+                            <div class="source-title">Français</div>
+                            <div class="source-sub">Discours original en français</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Sélecteur de Langue Cible -->
+            <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">2. Langue cible des sous-titres</div>
+                <div class="lang-grid">
+                    <div class="lang-card active" data-lang="fr" id="langFr">
+                        <span class="lang-flag">🇫🇷</span>
+                        <div class="lang-details">
+                            <div class="lang-title">VOSTFR - Français</div>
+                            <div class="lang-sub">Sous-titres traduits ou retranscrits en français</div>
+                        </div>
+                    </div>
+                    <div class="lang-card" data-lang="ar" id="langAr">
+                        <span class="lang-flag">🇵🇸</span>
+                        <div class="lang-details">
+                            <div class="lang-title">VOAR - Arabe</div>
+                            <div class="lang-sub">Sous-titres transcrits en arabe authentique</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Sélecteur de Couleur des Sous-titres -->
+            <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">3. Couleur des sous-titres</div>
+                <div class="color-grid">
+                    <div class="color-card active" data-color="#FFFF00">
+                        <div class="color-circle" style="background: #FFFF00;"></div>
+                        <span>Jaune</span>
+                    </div>
+                    <div class="color-card" data-color="#FFFFFF">
+                        <div class="color-circle" style="background: #FFFFFF;"></div>
+                        <span>Blanc</span>
+                    </div>
+                    <div class="color-card" data-color="#00E676">
+                        <div class="color-circle" style="background: #00E676;"></div>
+                        <span>Vert</span>
+                    </div>
+                    <div class="color-card" data-color="#CE1126">
+                        <div class="color-circle" style="background: #CE1126;"></div>
+                        <span>Rouge</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Sélecteur de Position Verticale -->
+            <div>
+                <div class="section-label" style="margin-bottom: 0.75rem;">4. Position des sous-titres</div>
+                <div class="pos-grid">
+                    <div class="pos-card active" data-pos="950">
+                        <div class="pos-title">⬇️ Bas (950)</div>
+                        <div class="pos-sub">Format standard TikTok/Reels</div>
+                    </div>
+                    <div class="pos-card" data-pos="500">
+                        <div class="pos-title">↕️ Milieu (500)</div>
+                        <div class="pos-sub">Centre de l'écran</div>
+                    </div>
+                    <div class="pos-card" data-pos="150">
+                        <div class="pos-title">⬆️ Haut (150)</div>
+                        <div class="pos-sub">Sous l'en-tête</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Bouton d'action -->
+            <button type="button" class="btn-submit" id="btnSubmit" disabled>
+                <span>⚡</span> Lancer le traitement & le sous-titrage
+            </button>
+
+            <!-- 7. Indicateur de Progression en Temps Réel (Streaming) -->
+            <div class="status-box" id="statusBox">
+                <div class="progress-header">
+                    <div class="progress-header-left">
+                        <span class="pulse-dot"></span>
+                        <span id="statusText">Initialisation du pipeline...</span>
+                    </div>
+                    <span id="progressPercent" class="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+                <div class="progress-log" id="progressLog">Connexion au serveur établie...</div>
+            </div>
+
+            <!-- 8. Zone de Résultat et Lecteur Vidéo -->
+            <div class="result-box" id="resultBox">
+                <div class="result-header">
+                    <span class="result-title" id="resultStatus"><span>✅</span> Vidéo sous-titrée disponible</span>
+                </div>
+                <div id="videoPreviewContainer"></div>
+                <pre id="resultJson">// Le rapport technique s'affichera ici...</pre>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Éléments du DOM
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileBadge = document.getElementById('fileBadge');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const btnRemoveFile = document.getElementById('btnRemoveFile');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        const statusBox = document.getElementById('statusBox');
+        const statusText = document.getElementById('statusText');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressBarFill = document.getElementById('progressBarFill');
+        const progressLog = document.getElementById('progressLog');
+
+        const resultBox = document.getElementById('resultBox');
+        const resultStatus = document.getElementById('resultStatus');
+        const resultJson = document.getElementById('resultJson');
+        const videoPreviewContainer = document.getElementById('videoPreviewContainer');
+
+        let selectedFile = null;
+
+        // Configuration générique de sélection de carte
+        function enableCardGroup(selector) {
+            const cards = document.querySelectorAll(selector);
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                });
+            });
+        }
+
+        enableCardGroup('.source-card');
+        enableCardGroup('.lang-card');
+        enableCardGroup('.color-card');
+        enableCardGroup('.pos-card');
+
+        // 1. Gestion du Drag & Drop
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            selectedFile = file;
+            fileName.textContent = file.name;
+            const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
+            fileSize.textContent = `${sizeInMb} Mo`;
+
+            dropZone.style.display = 'none';
+            fileBadge.style.display = 'flex';
+            btnSubmit.disabled = false;
+            resultBox.style.display = 'none';
+        }
+
+        btnRemoveFile.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            dropZone.style.display = 'flex';
+            fileBadge.style.display = 'none';
+            btnSubmit.disabled = true;
+            resultBox.style.display = 'none';
+        });
+
+        // Mise à jour de la jauge de progression
+        function updateProgress(pct, msg) {
+            const safePct = Math.min(100, Math.max(0, pct));
+            progressBarFill.style.width = `${safePct}%`;
+            progressPercent.textContent = `${safePct}%`;
+            if (msg) {
+                statusText.textContent = msg;
+                progressLog.textContent = msg;
+            }
+        }
+
+        // 2. Soumission du Formulaire & Streaming Fetch
+        btnSubmit.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            // Récupération DIRECTE et FIABLE des cartes actuellement sélectionnées dans le DOM
+            const activeSourceCard = document.querySelector('.source-card.active');
+            const activeLangCard = document.querySelector('.lang-card.active');
+            const activeColorCard = document.querySelector('.color-card.active');
+            const activePosCard = document.querySelector('.pos-card.active');
+
+            const sourceLang = activeSourceCard ? (activeSourceCard.dataset.source || 'auto') : 'auto';
+            const targetLang = activeLangCard ? (activeLangCard.dataset.lang || 'fr') : 'fr';
+            const subColor = activeColorCard ? (activeColorCard.dataset.color || '#FFFF00') : '#FFFF00';
+            const subPosition = activePosCard ? (activePosCard.dataset.pos || '950') : '950';
+
+            // Verrouillage de l'UI
+            btnSubmit.disabled = true;
+            statusBox.style.display = 'flex';
+            resultBox.style.display = 'none';
+            videoPreviewContainer.innerHTML = '';
+            updateProgress(2, `Téléversement de "${selectedFile.name}" en cours...`);
+
+            const formData = new FormData();
+            formData.append('media', selectedFile);
+            formData.append('source_lang', sourceLang);
+            formData.append('target_lang', targetLang);
+            formData.append('sub_color', subColor);
+            formData.append('sub_position', subPosition);
+
+            try {
+                const response = await fetch('/api/traduction/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.body) {
+                    throw new Error("Impossible d'initialiser le flux de réponse du serveur.");
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let receivedText = '';
+                let lastProgressPct = 2;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    receivedText += chunk;
+
+                    // Découpage et détection des lignes [PROGRESS]
+                    const lines = receivedText.split('\n');
+                    for (const line of lines) {
+                        const m = line.match(/\[PROGRESS\]\s*(\d+)%\s*-\s*(.+)/);
+                        if (m) {
+                            const pct = parseInt(m[1], 10);
+                            const msg = m[2].trim();
+                            if (pct >= lastProgressPct) {
+                                lastProgressPct = pct;
+                                updateProgress(pct, msg);
+                            }
+                        }
+                    }
+                }
+
+                // Fin du flux : extraction de l'objet JSON final
+                btnSubmit.disabled = false;
+                resultBox.style.display = 'flex';
+
+                const jsonMatch = receivedText.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
+                let finalData = null;
+
+                if (jsonMatch) {
+                    try {
+                        finalData = JSON.parse(jsonMatch[1].trim());
+                    } catch (e) {
+                        console.error('Erreur parsing JSON:', e);
+                    }
+                }
+
+                if (finalData && finalData.success) {
+                    updateProgress(100, "Vidéo sous-titrée finalisée avec succès !");
+                    resultStatus.className = 'result-title';
+                    resultStatus.innerHTML = '<span>✅</span> Vidéo sous-titrée générée avec succès !';
+
+                    const colorNames = {
+                        '#FFFF00': 'Jaune',
+                        '#FFFFFF': 'Blanc',
+                        '#00E676': 'Vert néon',
+                        '#CE1126': 'Rouge vif'
+                    };
+                    const posNames = {
+                        '950': 'Bas (TikTok/Reels)',
+                        '500': 'Milieu',
+                        '150': 'Haut'
+                    };
+
+                    const colorLabel = colorNames[finalData.sub_color] || finalData.sub_color;
+                    const posLabel = posNames[String(finalData.sub_position)] || `${finalData.sub_position}px`;
+                    const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
+                    const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
+
+                    let previewHtml = `
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
+                            <div class="badges-summary">
+                                <span class="summary-badge">🗣️ Source : <b>${srcLabel}</b></span>
+                                <span class="summary-badge">🎯 Cible : <b>${tgtLabel}</b></span>
+                                <span class="summary-badge">🎨 Couleur : <b style="color:${finalData.sub_color}">${colorLabel}</b></span>
+                                <span class="summary-badge">📐 Position : <b>${posLabel}</b></span>
+                                <span class="summary-badge">⏱️ Durée : <b>${finalData.duration}s</b></span>
+                                <span class="summary-badge">💬 Segments : <b>${finalData.segments_count}</b></span>
+                                <span class="summary-badge">🔇 Silences : <b>${finalData.silences_count}</b></span>
+                            </div>
+
+                            <video controls autoplay style="max-width: 100%; max-height: 520px; border-radius: 10px; border: 1px solid var(--border-color); background: #000; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" src="${finalData.mp4_url}"></video>
+
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%;">
+                                <a href="${finalData.mp4_url}" download class="btn-submit" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.95rem;">
+                                    ⬇️ Télécharger la Vidéo MP4 (${finalData.media_type === 'video' ? 'Vidéo originale' : 'Format 9:16'})
+                                </a>
+                                ${finalData.ass_url ? `
+                                    <a href="${finalData.ass_url}" download class="btn-submit" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.95rem; background: #334155;">
+                                        📄 Télécharger le fichier .ASS
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+
+                    videoPreviewContainer.innerHTML = previewHtml;
+                    resultJson.textContent = JSON.stringify(finalData, null, 2);
+                } else {
+                    const errMsg = (finalData && finalData.error) ? finalData.error : "Une erreur est survenue lors du traitement.";
+                    updateProgress(100, `Erreur : ${errMsg}`);
+                    resultStatus.className = 'result-title error';
+                    resultStatus.innerHTML = '<span>❌</span> Erreur de traitement';
+                    videoPreviewContainer.innerHTML = '';
+                    resultJson.textContent = finalData ? JSON.stringify(finalData, null, 2) : receivedText;
+                }
+
+            } catch (err) {
+                btnSubmit.disabled = false;
+                resultBox.style.display = 'flex';
+                updateProgress(100, `Erreur réseau : ${err.message}`);
+                resultStatus.className = 'result-title error';
+                resultStatus.innerHTML = '<span>❌</span> Erreur de communication avec le serveur';
+                videoPreviewContainer.innerHTML = '';
+                resultJson.textContent = JSON.stringify({ error: err.message }, null, 2);
+            }
+        });
+    </script>
+</body>
+</html>
