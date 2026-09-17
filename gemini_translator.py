@@ -61,12 +61,18 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
         if source_lang == 'ar':
             source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en arabe palestinien (dialecte ammiya de Gaza).\n"
         lexicon_directive = (
-            "6. RÈGLE DE VOCABULAIRE ABSOLUE : Tu traduis des témoignages de la Bande de Gaza. Tu dois impérativement utiliser le champ lexical approprié. Par exemple :\n"
-            "- 'نزوح / نزح' (Nuzuh / Nazaha) = Déplacement forcé, être déplacé, fuir.\n"
+            "6. RÈGLES DE TRADUCTION ABSOLUES (DIALECTE DE GAZA) :\n"
+            "Attention aux pièges phonétiques du dialecte palestinien. Utilise impérativement ce glossaire pour ta traduction :\n"
+            "- Noms propres : 'أم علاء' se traduit 'Oum Alaa' (Jamais Malaak).\n"
+            "- 'جرافة' (Jarrafa) = Bulldozer (Jamais Jet ou Avion).\n"
+            "- 'راية بيضاء' (Raya beida / chrita beida) = Drapeau blanc / Tissu blanc (Jamais Matelas).\n"
+            "- 'كابونة / كابونات' (Kopon) = Coupon d'aide alimentaire (Jamais Charbon).\n"
+            "- 'جباليا' (Jabalia) = Jabalia (C'est une ville/camp, ne traduit pas par 'Montagne').\n"
+            "- 'نزوح' (Nuzuh) = Déplacement forcé / Fuir (Jamais Ressusciter).\n"
             "- 'شهيد' (Shaheed) = Martyr.\n"
             "- 'قصف' (Qasf) = Bombardement, frappe.\n"
-            "- 'مأوى' (Ma'wa) = Centre d'hébergement, abri.\n"
-            "Interdiction absolue d'utiliser des termes fantastiques ou religieux hors contexte (comme 'ressusciter' au lieu de survivre ou fuir).\n\n"
+            "- 'مأوى / مركز إيواء' = Centre d'hébergement / École.\n"
+            "Contexte : L'audio parle de survie sous les bombardements. Refuse toute traduction absurde (matelas, charbon, jet) et privilégie un vocabulaire de guerre dramatique et réaliste.\n\n"
         )
     elif source_lang == 'fr':
         source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en français.\n"
