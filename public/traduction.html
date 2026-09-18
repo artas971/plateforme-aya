@@ -925,6 +925,146 @@
             border-right: 4px solid #ef4444;
         }
 
+        /* =========================================================================
+           ÉCRAN DE SUCCÈS GRAND PUBLIC - NORME ZÉRO-JSON / ZÉRO-LOG (Lionel)
+           ========================================================================= */
+        .aya-success-card {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.35rem;
+            animation: ayaFadeInUp 0.4s ease-out forwards;
+        }
+
+        .aya-success-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            align-items: center;
+            text-align: center;
+        }
+
+        .aya-success-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.85rem;
+        }
+
+        .aya-success-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+
+        .aya-success-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--color-primary, #0b5394);
+            margin: 0;
+        }
+
+        .aya-success-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted, #64748b);
+            margin: 0.2rem 0 0 0;
+        }
+
+        .aya-success-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 0.25rem;
+        }
+
+        .aya-badge-pill {
+            background: #f8fafc;
+            border: 1px solid var(--border-color, #e2e8f0);
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            color: var(--text-color, #1e293b);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .aya-badge-model {
+            background: rgba(0, 188, 212, 0.08);
+            border-color: rgba(0, 188, 212, 0.3);
+            color: #0891b2;
+        }
+
+        .aya-video-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            background: #000000;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+            border: 1px solid var(--border-color, #e2e8f0);
+        }
+
+        .aya-video-player {
+            max-width: 100%;
+            max-height: 520px;
+            display: block;
+            outline: none;
+        }
+
+        .aya-download-actions {
+            display: flex;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .aya-btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.8rem 1.6rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+
+        .aya-btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .aya-btn-primary {
+            background: linear-gradient(135deg, #0b5394 0%, #00bcd4 100%);
+            color: #ffffff;
+        }
+
+        .aya-btn-secondary {
+            background: #1e293b;
+            color: #ffffff;
+        }
+
+        .aya-btn-accent {
+            background: #0284c7;
+            color: #ffffff;
+        }
+
+        .aya-btn-neutral {
+            background: #475569;
+            color: #ffffff;
+        }
+
+        /* Masquage absolu des conteneurs de debug */
+        #agentsCouncilContainer {
+            display: none !important;
+        }
+
         /* CONSEIL DES 7 AGENTS IA */
         .council-container {
             width: 100%;
@@ -2018,100 +2158,74 @@ ${safeText}
                     resultStatus.className = 'result-title';
                     resultStatus.innerHTML = '<span>✅</span> Vidéo sous-titrée générée avec succès !';
 
-                    const colorNames = {
-                        '#FFFF00': 'Jaune',
-                        '#FFFFFF': 'Blanc',
-                        '#00E676': 'Vert néon',
-                        '#CE1126': 'Rouge vif'
-                    };
-                    const posNames = {
-                        '950': 'Bas (TikTok/Reels)',
-                        '500': 'Milieu',
-                        '150': 'Haut'
-                    };
-
-                    const colorLabel = colorNames[finalData.sub_color] || finalData.sub_color;
-                    const posLabel = posNames[String(finalData.sub_position)] || `${finalData.sub_position}px`;
-
-                    let fallbackBannerHtml = '';
-                    if (isFallback) {
-                        fallbackBannerHtml = `
-                            <div style="width: 100%; background: rgba(245, 158, 11, 0.12); border: 1px solid #F59E0B; border-radius: 8px; padding: 0.9rem 1.1rem; display: flex; align-items: center; gap: 0.85rem; color: #FEF3C7; font-size: 0.88rem; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);">
-                                <span style="font-size: 1.6rem; flex-shrink: 0;">⚠️</span>
-                                <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                                    <div style="font-weight: 700; color: #FBBF24;">Quota Premium atteint - Modèle alternatif (${modelUsed}) utilisé</div>
-                                    <div style="font-size: 0.8rem; color: #FDE68A;">
-                                        Le quota du modèle haute précision <b>Gemini 2.5 Flash</b> a été temporairement dépassé. Vos sous-titres ont été générés avec le modèle de secours. La qualité de la traduction peut être impactée. <b>Passez en compte Premium pour un accès illimité.</b>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }
-
-                    const bgNames = {
-                        'bg_palestine': '🇵🇸 Palestine Résilience',
-                        'bg_dark': '🌑 Noir Profond',
-                        'bg_turquoise': '🌊 Turquoise Espoir',
-                        'bg_temoignage': '🎙️ Témoignage Sobre'
-                    };
-                    const bgLabel = bgNames[finalData.bg_theme] || finalData.bg_theme;
-                    const bgBadgeHtml = (finalData.media_type === 'audio' && bgLabel)
-                        ? `<span class="summary-badge">🎨 Fond 9:16 : <b>${bgLabel}</b></span>`
-                        : '';
+                    const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
+                    const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
+                    const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
+                    const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
 
                     let previewHtml = `
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; width: 100%;">
-                            ${fallbackBannerHtml}
+                        <div class="aya-success-card">
+                            <!-- 1. En-tête avec grand message de succès & Badges discrets -->
+                            <div class="aya-success-header">
+                                <div class="aya-success-banner">
+                                    <span class="aya-success-icon">✅</span>
+                                    <div>
+                                        <h3 class="aya-success-title">${dict.successTitleVideo || 'Vidéo générée avec succès !'}</h3>
+                                        <p class="aya-success-subtitle">${dict.successSubtitleVideo || 'Votre média est prêt à être prévisualisé et partagé.'}</p>
+                                    </div>
+                                </div>
 
-                            <div class="badges-summary">
-                                ${modelBadgeHtml}
-                                <span class="summary-badge">🗣️ Source : <b>${srcLabel}</b></span>
-                                <span class="summary-badge">🎯 Cible : <b>${tgtLabel}</b></span>
-                                <span class="summary-badge">🎨 Couleur : <b style="color:${finalData.sub_color}">${colorLabel}</b></span>
-                                <span class="summary-badge">📐 Position : <b>${posLabel}</b></span>
-                                ${bgBadgeHtml}
-                                <span class="summary-badge">⏱️ Durée : <b>${finalData.duration}s</b></span>
-                                <span class="summary-badge">💬 Segments : <b>${finalData.segments_count}</b></span>
-                                <span class="summary-badge">🔇 Silences : <b>${finalData.silences_count}</b></span>
+                                <div class="aya-success-badges">
+                                    <span class="aya-badge-pill">🗣️ <b>${srcLabel}</b> ➔ 🎯 <b>${tgtLabel}</b></span>
+                                    <span class="aya-badge-pill">⏱️ <b>${finalData.duration}s</b></span>
+                                    <span class="aya-badge-pill">💬 <b>${finalData.segments_count} répliques</b></span>
+                                    <span class="aya-badge-pill aya-badge-model">🧠 <b>${modelUsed}</b></span>
+                                </div>
                             </div>
 
-                            <video controls autoplay style="max-width: 100%; max-height: 520px; border-radius: 10px; border: 1px solid var(--border-color); background: #000; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" src="${finalData.mp4_url}"></video>
+                            <!-- 2. Lecteur Vidéo élégant -->
+                            <div class="aya-video-wrapper">
+                                <video class="aya-video-player" controls autoplay playsinline src="${finalData.mp4_url}"></video>
+                            </div>
 
-                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%;">
-                                <a href="${finalData.mp4_url}" download class="btn-submit" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.95rem;">
-                                    ⬇️ Télécharger la Vidéo MP4 (${finalData.media_type === 'video' ? 'Vidéo originale' : 'Format 9:16'})
+                            <!-- 3. Boutons de téléchargement stylisés et clairs -->
+                            <div class="aya-download-actions">
+                                <a href="${finalData.mp4_url}" download class="aya-btn-download aya-btn-primary">
+                                    <span>⬇️</span>
+                                    <span>${dict.btnDownloadVideoMain || 'Télécharger la Vidéo'}</span>
                                 </a>
                                 ${finalData.ass_url ? `
-                                    <a href="${finalData.ass_url}" download class="btn-submit" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.95rem; background: #334155;">
-                                        📄 Télécharger le fichier .ASS
+                                    <a href="${finalData.ass_url}" download class="aya-btn-download aya-btn-secondary">
+                                        <span>📄</span>
+                                        <span>${dict.btnDownloadSubtitlesMain || 'Télécharger les sous-titres'}</span>
                                     </a>
                                 ` : ''}
                                 ${finalData.cover_url ? `
-                                    <a href="${finalData.cover_url}" download target="_blank" class="btn-submit" id="btnDownloadCover" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.95rem; background: #0b5394;">
-                                        ${(window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']?.btnDownloadCover) || '🖼️ Télécharger la Couverture 9:16 (Lionel)'}
+                                    <a href="${finalData.cover_url}" download target="_blank" class="aya-btn-download aya-btn-accent">
+                                        <span>🖼️</span>
+                                        <span>Couverture 9:16</span>
                                     </a>
                                 ` : ''}
                                 ${finalData.desc_url ? `
-                                    <a href="${finalData.desc_url}" download target="_blank" class="btn-submit" id="btnDownloadDesc" style="text-decoration: none; padding: 0.75rem 1.5rem; font-size: 0.95rem; background: #434343;">
-                                        ${(window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']?.btnDownloadDesc) || '📝 Télécharger le Copywriting TikTok (Steve)'}
+                                    <a href="${finalData.desc_url}" download target="_blank" class="aya-btn-download aya-btn-neutral">
+                                        <span>📝</span>
+                                        <span>Copywriting TikTok</span>
                                     </a>
                                 ` : ''}
                             </div>
-
-                            ${finalData.cover_url ? `
-                                <div style="background: #ffffff; border: 1px solid rgba(153, 153, 153, 0.25); border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; width: 100%; max-width: 280px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-top: 0.5rem;">
-                                    <span style="font-weight: 700; color: var(--color-dark-gray); font-size: 0.88rem;">🎨 Vignette TikTok 9:16 (Lionel)</span>
-                                    <img src="${finalData.cover_url}" alt="Couverture TikTok 9:16" style="width: 100%; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                                    <div style="font-size: 0.75rem; color: var(--color-gray-secondary); text-align: center;">Format 1080x1920 • Zéro Humain • Charte Palestinienne</div>
-                                </div>
-                            ` : ''}
                         </div>
                     `;
 
                     videoPreviewContainer.innerHTML = previewHtml;
-                    resultJson.textContent = JSON.stringify(finalData, null, 2);
 
-                    // Lancement automatique de l'audit par le Conseil des 7 Agents IA
+                    // Standard Zéro-JSON : Logs console pour les développeurs, aucun JSON affiché à l'écran
+                    console.log("⚡ [AYA PROCESS SUCCESS RESULT] :", finalData);
+                    if (resultJson) {
+                        resultJson.style.display = 'none';
+                        resultJson.textContent = '';
+                    }
+
+                    // Lancement automatique de l'audit par le Conseil des 7 Agents IA (en arrière-plan, logs console uniquement)
                     loadAndRenderAgentCouncil(finalData);
                 } else {
                     const rawMsg = (finalData && (finalData.message || finalData.error)) || "Une erreur est survenue lors du traitement.";
@@ -2131,16 +2245,15 @@ ${safeText}
         // =========================================================================
         // MODULE CONSEIL DES 7 AGENTS IA (JADE, NADINE, LIONEL, MAX, STEVE, JIM, THOMAS)
         // =========================================================================
+        // =========================================================================
+        // MODULE CONSEIL DES 7 AGENTS IA (Audit en arrière-plan - Logs console techniques)
+        // =========================================================================
         async function loadAndRenderAgentCouncil(mediaData) {
             const container = document.getElementById('agentsCouncilContainer');
-            if (!container) return;
-
-            container.innerHTML = `
-                <div style="background: #0f172a; border: 1px dashed #334155; border-radius: 10px; padding: 1.5rem; text-align: center; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
-                    <span class="pulse-dot"></span>
-                    <span>🏛️ Le Conseil des 7 Agents IA (Jade, Nadine, Lionel, Max, Steve, Jim, Thomas) examine la production...</span>
-                </div>
-            `;
+            if (container) {
+                container.style.display = 'none';
+                container.innerHTML = '';
+            }
 
             try {
                 const res = await fetch('/api/agents/audit', {
@@ -2154,172 +2267,13 @@ ${safeText}
                 });
 
                 const data = await res.json();
-                if (!data.success || !data.audit) {
-                    container.innerHTML = `<div style="color: #F87171; font-size: 0.85rem; padding: 1rem;">⚠️ Impossible de charger l'audit des agents : ${data.error || 'Erreur inconnue'}</div>`;
-                    return;
+                if (data && data.success && data.audit) {
+                    console.log("🏛️ [CONSEIL DES 7 AGENTS IA - AUDIT QUALITÉ & STRATÉGIE INTERNE] :", data.audit);
+                } else {
+                    console.warn("⚠️ [CONSEIL DES AGENTS] Audit interne indisponible :", data?.error);
                 }
-
-                const audit = data.audit;
-                const reports = audit.reports;
-                const scoreClass = audit.overallScore >= 85 ? 'score-pill-good' : 'score-pill-warning';
-
-                // Construction des cartes des 7 agents
-                let cardsHtml = '';
-                const agentOrder = ['jim', 'jade', 'nadine', 'lionel', 'max', 'steve', 'thomas'];
-
-                agentOrder.forEach(agentKey => {
-                    const rep = reports[agentKey];
-                    if (!rep) return;
-                    const ag = rep.agent;
-                    const isGood = rep.status === 'success';
-                    const badgeBg = isGood ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
-                    const badgeBorder = isGood ? '#10B981' : '#F59E0B';
-                    const badgeColor = isGood ? '#34D399' : '#FBBF24';
-                    const badgeText = isGood ? `🟢 ${rep.score}/100` : `🟡 ${rep.score}/100`;
-
-                    cardsHtml += `
-                        <div class="agent-card">
-                            <div class="agent-card-header">
-                                <div class="agent-identity">
-                                    <div class="agent-avatar" style="border-color: ${ag.color};">${ag.avatar}</div>
-                                    <div class="agent-name-role">
-                                        <span class="agent-name" style="color: ${ag.color};">${ag.name}</span>
-                                        <span class="agent-role">${ag.role}</span>
-                                    </div>
-                                </div>
-                                <span class="agent-score-badge" style="background: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor};">
-                                    ${badgeText}
-                                </span>
-                            </div>
-                            <div class="agent-diagnosis">
-                                ${rep.diagnosis}
-                            </div>
-                            ${rep.recommendation ? `
-                                <div class="agent-reco">
-                                    <span>💡</span> <span>${rep.recommendation}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = `
-                    <div class="council-container">
-                        <div class="council-header">
-                            <div class="council-title">
-                                <span>🏛️</span>
-                                <span>Conseil des 7 Agents IA - Audit Qualité & Stratégie</span>
-                            </div>
-                            <div class="council-score-pill ${scoreClass}">
-                                <span>Note Globale :</span>
-                                <span><b>${audit.overallScore}/100</b></span>
-                                <span>— ${audit.verdict}</span>
-                            </div>
-                        </div>
-
-                        <div class="council-verdict-box">
-                            <b>Directeur Jim :</b> ${reports.jim?.diagnosis || 'Audit global réalisé.'}
-                        </div>
-
-                        <div class="agents-grid">
-                            ${cardsHtml}
-                        </div>
-
-                        <!-- Section de Consultation Interactive -->
-                        <div class="council-consult-section">
-                            <div class="consult-title">
-                                <span>💬</span>
-                                <span>Consulter le Conseil ou un Agent Spécialisé</span>
-                            </div>
-                            <div class="consult-form">
-                                <select id="consultAgentSelect" class="consult-select">
-                                    <option value="all">🏛️ Tout le Conseil (Avis collégial)</option>
-                                    <option value="jade">⏱️ Jade (Linguiste & Synchronisation)</option>
-                                    <option value="nadine">🕊️ Nadine (Dialecte Gaza & Lexique)</option>
-                                    <option value="lionel">🎨 Lionel (Graphisme & Lisibilité)</option>
-                                    <option value="max">🎬 Max (Technique FFmpeg & Encodage)</option>
-                                    <option value="steve">📈 Steve (Stratégie & Rétention TikTok)</option>
-                                    <option value="thomas">🛡️ Thomas (Architecture Back-End & I/O)</option>
-                                    <option value="jim">👔 Jim (Superviseur Général)</option>
-                                </select>
-                                <input type="text" id="consultQuestionInput" class="consult-input" placeholder="Posez une question sur le tempo, le lexique, le cadrage ou l'impact..." />
-                                <button type="button" id="btnConsultCouncil" class="consult-btn">
-                                    <span>🚀</span> Demander l'avis
-                                </button>
-                            </div>
-                            <div id="consultReplyBox" class="consult-reply-box"></div>
-                        </div>
-                    </div>
-                `;
-
-                // Événement pour la consultation interactive
-                const btnConsult = document.getElementById('btnConsultCouncil');
-                const questionInput = document.getElementById('consultQuestionInput');
-                const agentSelect = document.getElementById('consultAgentSelect');
-                const replyBox = document.getElementById('consultReplyBox');
-
-                btnConsult.addEventListener('click', async () => {
-                    const question = questionInput.value.trim();
-                    if (!question) {
-                        questionInput.focus();
-                        return;
-                    }
-
-                    const targetAgent = agentSelect.value;
-                    btnConsult.disabled = true;
-                    btnConsult.innerHTML = '<span>⏳</span> Analyse en cours...';
-                    replyBox.style.display = 'block';
-                    replyBox.innerHTML = '<span class="pulse-dot"></span> Réflexion de l\'agent en cours...';
-
-                    try {
-                        const consultRes = await fetch('/api/agents/consult', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                agent_id: targetAgent,
-                                question: question,
-                                context: {
-                                    duration: mediaData.duration,
-                                    targetLang: mediaData.target_lang,
-                                    modelUsed: mediaData.ai_model_used,
-                                    segmentsCount: mediaData.segments_count,
-                                    overallScore: audit.overallScore,
-                                    sub_position: mediaData.sub_position
-                                }
-                            })
-                        });
-
-                        const consultData = await consultRes.json();
-                        if (consultData.success && consultData.reply) {
-                            const ag = consultData.agent;
-                            replyBox.innerHTML = `
-                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: 700; color: ${ag.color};">
-                                    <span>${ag.avatar}</span>
-                                    <span>${consultData.isCouncil ? 'Avis Collégial du Conseil' : `${ag.name} (${ag.role})`} :</span>
-                                </div>
-                                <div>${consultData.reply.replace(/\n/g, '<br>')}</div>
-                            `;
-                        } else {
-                            replyBox.innerHTML = `<span style="color: #F87171;">⚠️ ${consultData.error || "Erreur lors de la réponse de l'agent."}</span>`;
-                        }
-                    } catch (err) {
-                        replyBox.innerHTML = `<span style="color: #F87171;">⚠️ Erreur de communication : ${err.message}</span>`;
-                    } finally {
-                        btnConsult.disabled = false;
-                        btnConsult.innerHTML = "<span>🚀</span> Demander l'avis";
-                    }
-                });
-
-                questionInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        btnConsult.click();
-                    }
-                });
-
-            } catch (err) {
-                console.error('Erreur chargement Conseil des Agents:', err);
-                container.innerHTML = `<div style="color: #F87171; font-size: 0.85rem; padding: 1rem;">⚠️ Erreur de chargement du Conseil des Agents : ${err.message}</div>`;
+            } catch (auditErr) {
+                console.warn("⚠️ [CONSEIL DES AGENTS] Erreur audit interne :", auditErr.message);
             }
         }
     </script>

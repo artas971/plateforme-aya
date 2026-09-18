@@ -113,6 +113,10 @@
 
             // Résultats & Téléchargements
             resultStatusReady: '<span>✅</span> Vidéo sous-titrée disponible',
+            successTitleVideo: 'Vidéo générée avec succès !',
+            successSubtitleVideo: 'Votre média est prêt à être prévisualisé et partagé.',
+            btnDownloadVideoMain: '⬇️ Télécharger la Vidéo',
+            btnDownloadSubtitlesMain: '📄 Télécharger les sous-titres',
             btnDownloadMp4Video: '⬇️ Télécharger la Vidéo MP4 (Format original)',
             btnDownloadMp4Audio: '⬇️ Télécharger la Vidéo MP4 (Format 9:16)',
             btnDownloadAss: '📄 Télécharger le fichier .ASS',
@@ -304,6 +308,10 @@
 
             // Résultats & Téléchargements
             resultStatusReady: '<span>✅</span> الفيديو المترجم جاهز للتحميل والمعاينة',
+            successTitleVideo: 'تم إنشاء الفيديو بنجاح!',
+            successSubtitleVideo: 'الوسائط المترجمة جاهزة للمعاينة والتحميل الفوري.',
+            btnDownloadVideoMain: '⬇️ تحميل الفيديو',
+            btnDownloadSubtitlesMain: '📄 تحميل ملف الترجمة',
             btnDownloadMp4Video: '⬇️ تحميل الفيديو النهائي (MP4)',
             btnDownloadMp4Audio: '⬇️ تحميل الفيديو النهائي بصيغة 9:16',
             btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
