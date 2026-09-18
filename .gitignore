@@ -39,6 +39,7 @@ fichiers_reponse_a_envoyer/
 uploads/
 message pour john/
 archive_mk/
+feedbacks/
 
 # Extensions audio/vidéo brutes
 *.mp4

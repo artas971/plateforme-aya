@@ -38,19 +38,21 @@ app.use('/audio_a_traiter', express.static(AUDIO_A_TRAITER_DIR));
 app.use('/fichiers_reponse_a_envoyer', express.static(REPONSED_DIR));
 app.use('/download', express.static(REPONSED_DIR));
 
-// Montage des 6 Routeurs Modulaires
+// Montage des 7 Routeurs Modulaires
 const chatRouter = require('./routes/chat');
 const studioRouter = require('./routes/studio');
 const audioRouter = require('./routes/audio');
 const driveRouter = require('./routes/drive');
 const traductionRouter = require('./routes/traduction');
 const agentsRouter = require('./routes/agents');
+const feedbackRouter = require('./routes/feedback');
 
 app.use('/api/chat', chatRouter);
 app.use(studioRouter);
 app.use(audioRouter);
 app.use('/api/drive', driveRouter);
 app.use('/api/agents', agentsRouter);
+app.use('/api/feedback', feedbackRouter);
 app.use(traductionRouter);
 
 // Démarrage du Serveur
