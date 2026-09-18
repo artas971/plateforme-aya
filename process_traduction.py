@@ -13,6 +13,7 @@ import json
 import subprocess
 import shutil
 import re
+import time
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -653,6 +654,33 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
     print(f"[FFMPEG SUCCÈS] Vidéo produite : {output_mp4_path.name} ({output_mp4_path.stat().st_size} octets)")
 
 
+def generate_clean_output_filenames(media_input: str, source_lang: str, target_lang: str) -> tuple:
+    """
+    Génère une nomenclature propre, courte et standardisée pour les fichiers de sortie :
+    - Vidéo : {clean_prefix}_{source_lang}_{target_lang}_{timestamp_court}.mp4
+    - Sous-titre : {clean_prefix}_{source_lang}_{target_lang}_{timestamp_court}.ass
+    Nettoie le nom d'origine (15-20 caractères significatifs, supprime les préfixes
+    d'upload et les caractères spéciaux) pour une clarté immédiate et zéro dépassement MAX_PATH.
+    """
+    raw_stem = Path(media_input).stem
+    # Suppression du préfixe temporel technique d'upload (ex: 1789738496806_...)
+    cleaned = re.sub(r"^\d{10,}_?", "", raw_stem)
+    # Suppression des caractères spéciaux, conservation alphanumérique et tirets
+    cleaned = re.sub(r"[^\w\s-]", "", cleaned)
+    # Remplacement des espaces et séparateurs multiples par un underscore unique
+    cleaned = re.sub(r"[\s_]+", "_", cleaned).strip("_")
+    # Extraction des 20 premiers caractères significatifs
+    clean_prefix = cleaned[:20].rstrip("_") if cleaned else "media"
+    if not clean_prefix:
+        clean_prefix = "media"
+
+    # Horodatage court et lisible : MMDD_HHMM (ex: 0918_1550)
+    timestamp_court = time.strftime("%m%d_%H%M")
+
+    base_name = f"{clean_prefix}_{source_lang}_{target_lang}_{timestamp_court}"
+    return f"{base_name}.mp4", f"{base_name}.ass"
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"success": False, "error": "Argument fichier média manquant."}))
@@ -695,12 +723,9 @@ def main():
         # 2. Transcription & Traduction par Protocole Scan 5s
         segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess)
 
-        # 3. Noms des fichiers de sortie
+        # 3. Noms des fichiers de sortie normalisés (courts, lisibles et standardisés)
         print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)
-        clean_stem = re.sub(r"[^\w.-]", "_", Path(media_input).stem)[:50]
-        unique_id = f"{clean_stem}_{source_lang}_{target_lang}_{sub_margin_v}"
-        ass_filename = f"subtitles_{unique_id}.ass"
-        mp4_filename = f"video_{unique_id}.mp4"
+        mp4_filename, ass_filename = generate_clean_output_filenames(media_input, source_lang, target_lang)
 
         ass_path = OUTPUT_DIR / ass_filename
         mp4_path = OUTPUT_DIR / mp4_filename
