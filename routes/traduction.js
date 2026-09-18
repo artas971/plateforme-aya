@@ -8,16 +8,61 @@ const ROOT_DIR = path.resolve(__dirname, '..');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
+/**
+ * Assainit un nom de fichier pour éliminer définitivement tout risque de Mojibake :
+ * 1. Dé-diacritise (supprime les accents : "rôle" -> "role")
+ * 2. Retire les caractères spéciaux (ne conserve que l'alphanumérique, espaces, tirets)
+ * 3. Tronque à 50 caractères max sans couper au milieu d'un mot.
+ */
+function sanitizeFileName(origName, maxLength = 50) {
+    if (!origName) return 'media';
+    let name = origName;
+
+    // Détection et redressement préventif d'un encodage Latin-1 mal interprété
+    try {
+        if (/[\xC2-\xF4][\x80-\xBF]/.test(name)) {
+            // Séquence UTF-8 valide
+        } else {
+            const decoded = Buffer.from(name, 'latin1').toString('utf8');
+            if (decoded && !decoded.includes('\uFFFD') && decoded.length < name.length) {
+                name = decoded;
+            }
+        }
+    } catch (e) {}
+
+    // Supprime les accents
+    name = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    // Ne conserve que lettres, chiffres, espaces et tirets
+    name = name.replace(/[^a-zA-Z0-9\s\-]/g, ' ');
+    // Nettoie les espaces multiples
+    name = name.replace(/\s+/g, ' ').trim();
+
+    if (!name) return 'media';
+
+    // Tronquage propre à 50 caractères max sans couper au milieu d'un mot
+    if (name.length > maxLength) {
+        let truncated = name.slice(0, maxLength);
+        const lastSpace = truncated.lastIndexOf(' ');
+        if (lastSpace > 15) {
+            name = truncated.slice(0, lastSpace).trim();
+        } else {
+            name = truncated.trim();
+        }
+    }
+
+    return name || 'media';
+}
+
 // Configuration de stockage Multer (limite 500 Mo)
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, UPLOADS_DIR);
     },
     filename: (req, file, cb) => {
-        // Préfixe timestamp + nettoyage uniquement des caractères interdits par les OS (garde espaces et accents)
         const ext = path.extname(file.originalname).toLowerCase();
-        const base = path.basename(file.originalname, ext).replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 80);
-        cb(null, `${Date.now()}_${base}${ext}`);
+        const rawBase = path.basename(file.originalname, ext);
+        const cleanBase = sanitizeFileName(rawBase, 50);
+        cb(null, `${Date.now()}_${cleanBase}${ext}`);
     }
 });
 
@@ -159,13 +204,27 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             String(generateTiktokPack),
             String(bgTheme),
             String(expressMode)
-        ], { cwd: ROOT_DIR });
+        ], {
+            cwd: ROOT_DIR,
+            env: {
+                ...process.env,
+                PYTHONIOENCODING: 'utf-8',
+                PYTHONUTF8: '1'
+            }
+        });
+
+        if (pyProcess.stdout && typeof pyProcess.stdout.setEncoding === 'function') {
+            pyProcess.stdout.setEncoding('utf8');
+        }
+        if (pyProcess.stderr && typeof pyProcess.stderr.setEncoding === 'function') {
+            pyProcess.stderr.setEncoding('utf8');
+        }
 
         let stdoutData = '';
         let stderrData = '';
 
         pyProcess.stdout.on('data', (data) => {
-            const chunk = data.toString();
+            const chunk = typeof data === 'string' ? data : data.toString('utf8');
             stdoutData += chunk;
             res.write(chunk);
         });

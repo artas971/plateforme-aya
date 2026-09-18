@@ -14,15 +14,23 @@ import subprocess
 import shutil
 import re
 import time
+import unicodedata
 import urllib.request
 from pathlib import Path
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
 
-# Encodage console sécurisé
-if sys.stdout and sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+# Forçage strict de l'encodage UTF-8 (éradication définitive du Mojibake)
+os.environ["PYTHONIOENCODING"] = "utf-8"
+os.environ["PYTHONUTF8"] = "1"
+if hasattr(sys.stdout, 'reconfigure'):
     try:
         sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+if hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
     except Exception:
         pass
 
@@ -744,37 +752,64 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
                 pass
 
 
+def sanitize_filename_stem(raw_text: str, max_length: int = 50) -> str:
+    """
+    Assainit un nom de fichier pour éliminer définitivement tout risque de Mojibake :
+    1. Supprime les préfixes techniques temporels d'upload (ex: 1789738496806_...)
+    2. Dé-diacritise (supprime tous les accents : 'rôle' -> 'role', 'mère' -> 'mere')
+    3. Retire les caractères spéciaux : ne conserve STRICTEMENT que l'alphanumérique, espaces et tirets
+    4. Tronque proprement à 50 caractères maximum sans couper au milieu d'un mot.
+    """
+    if not raw_text:
+        return "media"
+
+    # 1. Suppression des préfixes techniques d'upload
+    text = re.sub(r"^\d{10,}[_-]?", "", raw_text)
+    text = re.sub(r"^\d+_", "", text)
+    text = re.sub(r"\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$", "", text, flags=re.IGNORECASE)
+
+    # Détection et correction préventive d'un Mojibake UTF-8 préexistant (ex: 'rÃ´le' -> 'rôle')
+    try:
+        if "Ã" in text or "Â" in text or "â" in text:
+            re_encoded = text.encode('latin-1').decode('utf-8')
+            text = re_encoded
+    except Exception:
+        pass
+
+    # 2. Suppression des accents via décomposition NFKD
+    text = unicodedata.normalize('NFKD', text)
+    text = "".join(c for c in text if not unicodedata.combining(c))
+
+    # 3. Retirer les caractères spéciaux (ne garder que l'alphanumérique ASCII, espaces et tirets)
+    text = re.sub(r'[^a-zA-Z0-9\s\-]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    if not text:
+        return "media"
+
+    # 4. Tronquage à 50 caractères max sans couper au milieu d'un mot
+    if len(text) > max_length:
+        truncated = text[:max_length]
+        last_space = truncated.rfind(' ')
+        if last_space > 15:
+            text = truncated[:last_space].strip()
+        else:
+            text = truncated.strip()
+
+    return text if text else "media"
+
+
 def generate_clean_output_filenames(media_input: str, source_lang: str, target_lang: str, output_dir: Path = OUTPUT_DIR) -> tuple:
     """
-    Génère une nomenclature propre, lisible comme un titre classique avec de vrais espaces :
-    - Vidéo : {clean_title} ({TAG}).mp4
-    - Sous-titre : {clean_title} ({TAG}).ass
-    Exemple : "Amine, la mère d'Ihsane (VOSTFR).mp4"
-
-    Sécurité anti-doublon :
-    Si un fichier portant exactement le même nom existe déjà dans output_dir,
-    ajoute un compteur entre parenthèses : (1), (2)...
+    Génère une nomenclature propre, lisible et standardisée sans Mojibake :
+    - Vidéo : {clean_base} ({TAG}).mp4
+    - Sous-titre : {clean_base} ({TAG}).ass
+    Exemple : "Amine la mere d Ihsane (VOSTFR).mp4"
     """
     raw_stem = Path(media_input).stem
+    clean_base = sanitize_filename_stem(raw_stem, max_length=50)
 
-    # 1. Suppression du préfixe temporel technique d'upload (ex: 1789738496806_...)
-    cleaned = re.sub(r"^\d{10,}[_-]?", "", raw_stem)
-
-    # 2. Suppression d'un éventuel tag de langue déjà présent pour éviter les redondances
-    cleaned = re.sub(r"\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$", "", cleaned, flags=re.IGNORECASE)
-
-    # 3. Nettoyage uniquement des caractères interdits par les systèmes de fichiers : \ / : * ? " < > |
-    cleaned = re.sub(r'[\\/:*?"<>|]', '', cleaned)
-
-    # 4. Conservation des espaces naturels (réduction des espaces consécutifs)
-    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
-
-    # 5. Longueur de sécurité pour Windows MAX_PATH (max 80 caractères)
-    clean_base = cleaned[:80].strip() if cleaned else "media"
-    if not clean_base:
-        clean_base = "media"
-
-    # 6. Suffixe de traduction explicite
+    # Suffixe de traduction explicite
     suffix_map = {
         "fr": "VOSTFR",
         "ar": "VOAR",
@@ -785,7 +820,7 @@ def generate_clean_output_filenames(media_input: str, source_lang: str, target_l
     tag = suffix_map.get(tgt, f"VOST{tgt.upper()}")
     base_title = f"{clean_base} ({tag})"
 
-    # 7. Sécurité anti-doublon : ajout de (1), (2)... si le fichier existe déjà
+    # Sécurité anti-doublon : ajout de (1), (2)... si le fichier existe déjà
     candidate = base_title
     counter = 1
     while (output_dir / f"{candidate}.mp4").exists() or (output_dir / f"{candidate}.ass").exists():
@@ -1022,62 +1057,104 @@ Une réalité brute partagée sans filtre pour que personne ne puisse détourner
 
 def generate_context_summary(segments: list, media_path: str = None, target_lang: str = 'fr') -> str:
     """
-    Génère une description contextuelle intelligente (Smart Description) du média.
-    Consigne pour l'IA (Nadine & Thomas) :
-    "Décris la scène : Qui parle ? Que se passe-t-il ? Quel est le contexte ou le message principal ?" (3 à 4 phrases max).
+    Génère une description très détaillée et percutante conçue pour l'algorithme SEO de TikTok (~3500 caractères).
+    Consigne stricte (Nadine - Issue #17) :
+    "En te basant EXCLUSIVEMENT sur la transcription ci-jointe, rédige une description très détaillée
+    et percutante conçue spécifiquement pour l'algorithme SEO de TikTok. Le texte doit approcher les 3500 caractères.
+    Il doit être 100% original et adapté à ce témoignage précis. Inclus : un hook (accroche) fort, le contexte
+    détaillé des événements mentionnés, des citations directes extraites de la vidéo, une analyse humaine,
+    et un bloc massif de hashtags pertinents."
     """
     if not segments:
         return "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
 
-    sample_texts = [s.get("text", "") for s in segments if s.get("text", "").strip()]
-    full_transcript = " ".join(sample_texts)
+    raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip()
+    if not raw_testimony_text:
+        return "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
 
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    lang_desc = "en français soigné et percutant" if target_lang.lower() != 'ar' else "en arabe palestinien/arabe clair et percutant"
+    lang_instruction = "en français soigné, percutant et humain" if target_lang.lower() != 'ar' else "en arabe soigné, percutant et humain"
 
     if gemini_key:
         try:
-            prompt = f"""Tu es Nadine, linguiste et analyste de contexte humanitaire de la Plateforme Aya.
-En analysant la transcription suivante issue d'un enregistrement audio/vidéo réel, produis un résumé contextuel de 3 à 4 phrases maximum {lang_desc}.
+            prompt = f"""Tu es Nadine, linguiste, stratège de contenu et experte en algorithme de référencement (SEO) TikTok pour la Plateforme Aya.
 
-CONSIGNE STRICTE (DIRECTIVE NADINE & THOMAS) :
-"Décris la scène : Qui parle ? Que se passe-t-il ? Quel est le contexte ou le message principal ?"
+CONSIGNE STRICTE & PRIORITAIRE :
+En te basant EXCLUSIVEMENT sur la transcription ci-jointe, rédige une description très détaillée et percutante conçue spécifiquement pour l'algorithme SEO de TikTok {lang_instruction}.
+Le texte doit approcher les 3500 caractères (la limite maximale TikTok étant de 4000 caractères, utilise tout l'espace disponible pour maximiser le référencement naturel et l'indexation de mots-clés).
+Il doit être 100% original, captivant, richement documenté et adapté à ce témoignage précis.
 
-RÈGLES IMPÉRATIVES :
-1. Longueur : EXACTEMENT 3 à 4 phrases complètes, fluides et captivantes.
-2. Contenu : Identifie qui s'exprime (un habitant, un témoin, un journaliste, un soignant...), la situation vécue et la portée du message.
-3. Style : Direct, humain, digne et informatif. Pas de jargon technique, pas de puces, pas de métadonnées, pas de balises markdown.
-4. Restitue UNIQUEMENT les 3 à 4 phrases du résumé contextuel.
+STRUCTURE OBLIGATOIRE DE LA DESCRIPTION (FORMAT LISIBLE, AÉRÉ, AVEC ÉMOJIS) :
+1. 🔥 LE HOOK VIRAL (2 à 3 lignes) : Une accroche viscérale et captivante qui interpelle et stoppe net le scroll.
+2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE (Plusieurs paragraphes narratifs bien séparés par des sauts de ligne) :
+   - Décris la scène avec précision : qui parle ?
+   - Que se passe-t-il exactement ? Quel est l'environnement direct ou le lieu ?
+   - Quels événements, difficultés, épreuves du quotidien ou actes sont rapportés dans ce témoignage ?
+   - Raconte l'histoire chronologiquement et fidèlement aux faits dits dans le document audio.
+3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA (2 à 4 citations marquantes) :
+   - Mets en valeur les paroles les plus poignantes prononcées mot à mot par la personne entre guillemets.
+4. 🧠 ANALYSE HUMAINE, PSYCHOLOGIQUE & PORTÉE DU MESSAGE (2 à 3 paragraphes développés) :
+   - Quelle est la leçon de résilience, de dignité ou d'urgence transmise ?
+   - Pourquoi ce témoignage précis compte-t-il pour l'Histoire et pour l'humanité ?
+5. 👉 CALL TO ACTION ENGAGÉ (APPEL À L'ACTION) :
+   - Incite la communauté à commenter, partager et enregistrer ce contenu pour briser la censure et le silence.
+6. 🏷️ BLOC MASSIF DE HASHTAGS SEO TIKTOK :
+   - Un bloc stratégique d'au moins 25 à 35 hashtags mixtes, ultra-recherchés et ciblés (#Gaza #Palestine #Témoignage #Vérité #Humanité #Résilience #UrgenceGaza #PalestineLibre #StopWar #GazaUnderAttack #TémoinsDuRéel #Actualité #Histoire #Solidarité #Justice #AyaPlatform #TikTokNews #PourToi #FYP #Viral...).
 
-TRANSCRIPTION DU MÉDIA :
-\"\"\"{full_transcript[:3000]}\"\"\"
+RÈGLES DE FORME STRICTES :
+- Longueur cible : Entre 3000 et 3500 caractères. Sois extrêmement riche, documenté et fluide.
+- Excellente lisibilité : aère avec des retours à la ligne fréquents et des séparateurs visuels.
+- Ne rajoute AUCUNE formule d'introduction ou de conclusion externe (pas de "Voici la description :", pas de balises de code markdown ```). Commence directement par le Hook.
+
+TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
+\"\"\"
+{raw_testimony_text[:5500]}
+\"\"\"
 """
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.4,
-                    "maxOutputTokens": 350
+                    "temperature": 0.7,
+                    "maxOutputTokens": 2500
                 }
             }
             req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=35) as resp:
                 data = json.loads(resp.read().decode('utf-8'))
                 raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-                if raw_text and len(raw_text.strip()) > 20:
-                    summary = raw_text.strip().replace('```', '').replace('\n\n', ' ')
-                    print(f"[SMART CONTEXT] ✅ Résumé contextuel généré par l'IA (Nadine) : {summary[:80]}...", flush=True)
-                    return summary
+                if raw_text and len(raw_text.strip()) > 150:
+                    description = raw_text.strip().replace('```markdown', '').replace('```txt', '').replace('```', '').strip()
+                    print(f"[SMART DESCRIPTION SEO] ✅ Description TikTok générée par Nadine ({len(description)} caractères) !", flush=True)
+                    return description
         except Exception as e:
-            print(f"[SMART CONTEXT WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
+            print(f"[SMART DESCRIPTION WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique enrichi.", file=sys.stderr)
 
-    # Heuristique de secours si pas de clé API ou indisponibilité
-    meaningful = [t for t in sample_texts if len(t.split()) >= 3][:4]
-    if meaningful:
-        if target_lang.lower() == 'ar':
-            return "شهادة ميدانية حية توثق الواقع والرسالة الإنسانية المنقولة عبر هذا التسجيل. " + " ".join(meaningful[:3])
-        return "Ce média capture un témoignage direct et authentique du terrain. Les intervenants partagent leur réalité et la situation vécue. " + " ".join(meaningful[:2])
-    return "Témoignage direct documentant la situation et délivrant un message humain essentiel."
+    # Modèle de secours enrichi approchant la densité demandée
+    quotes = [s.get("text", "").strip() for s in segments if len(s.get("text", "").strip()) > 15][:4]
+    quotes_formatted = "\n".join([f"« {q} »" for q in quotes]) if quotes else f"« {raw_testimony_text[:120]}... »"
+
+    fallback_desc = f"""🔥 TÉMOIGNAGE EXCLUSIF DU TERRAIN : UNE RÉALITÉ BRUTE SANS FILTRE
+
+📌 CONTEXTE DE CE TÉMOIGNAGE DIRECT
+Chaque mot prononcé dans cet enregistrement résonne comme une archive vivante de notre époque. Les personnes qui s'expriment ici partagent sans détour la réalité de leur quotidien, marquée par une résilience hors du commun et la volonté inaltérable de faire entendre la vérité. 
+
+À travers ces paroles authentiques, nous découvrons les conditions vécues sur le terrain : l'incertitude permanente, la force des liens familiaux et communautaires, ainsi que la détermination à rester debout malgré les bouleversements qui frappent chaque foyer. Ce récit ne décrit pas seulement des événements, il incarne l'esprit et la dignité inébranlable de ceux qui refusent d'être oubliés.
+
+💬 PAROLES FORTES EXTRAITES DU MÉDIA :
+{quotes_formatted}
+
+🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE
+Ce témoignage dépasse la simple chronique du présent. Il pose une question fondamentale sur notre humanité commune et sur l'importance de préserver et documenter chaque voix pour l'Histoire. La sincérité du ton et la gravité des faits relatés nous rappellent que derrière chaque statistique, il y a des visages, des espoirs, des projets interrompus et un courage immense qui mérite d'être relayé avec respect et fidélité.
+
+La transmission de ces messages à travers le monde est un devoir de mémoire et de solidarité. En refusant l'indifférence, chaque spectateur devient un maillon de la transmission de ces vérités indispensables.
+
+👉 REJOIGNEZ LA VOIX DE LA SOLIDARITÉ
+Ne laissez pas cette voix disparaître dans les méandres de l'algorithme. Commentez pour soutenir la démarche, partagez massivement autour de vous et enregistrez cette publication pour garantir sa visibilité à grande échelle. Ensemble, brisons le mur du silence.
+
+🏷️ #Gaza #Palestine #Témoignage #Vérité #Humanité #Résilience #UrgenceGaza #PalestineLibre #StopWar #GazaUnderAttack #TémoinsDuRéel #Actualité #Histoire #Solidarité #Justice #AyaPlatform #TikTokNews #PourToi #FYP #Viral #Explore #Documentation #DroitsHumains #Paix #VoixDeGaza #Résistance #Courage #ReportageTerrain"""
+
+    return fallback_desc.strip()
 
 
 def main():
@@ -1131,7 +1208,7 @@ def main():
         if express_mode:
             print("[PROGRESS] 85% - Formatage Markdown structuré du texte traduit (Mode Express)...", flush=True)
             raw_stem = Path(media_input).stem
-            clean_stem = re.sub(r'^\d+_', '', raw_stem)
+            clean_stem = sanitize_filename_stem(raw_stem, max_length=50)
             md_filename = f"{clean_stem} (Traduction Express).md"
             md_path = OUTPUT_DIR / md_filename
 
@@ -1172,7 +1249,7 @@ def main():
             with open(md_path, 'w', encoding='utf-8') as f:
                 f.write(md_content)
 
-            print(f"[PROGRESS] 98% - 📝 Nadine & Thomas rédigent le résumé contextuel de la scène...", flush=True)
+            print(f"[PROGRESS] 96% - 📝 Nadine rédige la description SEO TikTok détaillée (~3500 caractères)...", flush=True)
             context_summary = generate_context_summary(segments, media_path=media_input, target_lang=target_lang)
             print(f"[PROGRESS] 100% - Traduction Express prête en Markdown ({len(segments)} segments) !", flush=True)
 
@@ -1198,7 +1275,7 @@ def main():
             print("---JSON_OUTPUT_END---", flush=True)
             return
 
-        # 3. Noms des fichiers de sortie normalisés (courts, lisibles et standardisés)
+        # 3. Noms des fichiers de sortie normalisés (courts, lisibles et standardisés sans Mojibake)
         print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)
         mp4_filename, ass_filename = generate_clean_output_filenames(media_input, source_lang, target_lang)
 
@@ -1213,12 +1290,15 @@ def main():
         print("[PROGRESS] 92% - Encodage et incrustation vidéo FFmpeg en cours...", flush=True)
         render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme, has_audio=has_audio)
 
-        # 5bis. Pack Assets Post-Vidéo Optionnel (Lionel & Steve)
+        # 6. Description SEO TikTok & Pack Assets Optionnel
+        print("[PROGRESS] 96% - 📝 Nadine rédige la description SEO TikTok détaillée (~3500 caractères)...", flush=True)
+        context_summary = generate_context_summary(segments, media_path=media_input, target_lang=target_lang)
+
         cover_filename = None
         desc_filename = None
         if generate_tiktok_pack:
-            print("[PROGRESS] 96% - 🎨 Lionel prépare la Couverture 9:16 & 📝 Steve rédige le Copywriting TikTok...", flush=True)
-            clean_stem = Path(mp4_filename).stem
+            print("[PROGRESS] 98% - 🎨 Lionel prépare la Couverture 9:16 & 📝 Export de la description TikTok...", flush=True)
+            clean_stem = sanitize_filename_stem(Path(mp4_filename).stem, max_length=50)
             cover_filename = f"{clean_stem} (Couverture 9-16).jpg"
             desc_filename = f"{clean_stem} (Description TikTok).txt"
 
@@ -1226,11 +1306,9 @@ def main():
             desc_path = OUTPUT_DIR / desc_filename
 
             generate_lionel_cover(clean_stem, cover_path, episode_num=1, target_lang=target_lang)
-            generate_steve_description(clean_stem, segments, desc_path, target_lang=target_lang)
+            with open(desc_path, 'w', encoding='utf-8') as df:
+                df.write(context_summary.strip() + '\n')
             print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
-
-        print("[PROGRESS] 98% - 📝 Nadine & Thomas rédigent le résumé contextuel de la scène...", flush=True)
-        context_summary = generate_context_summary(segments, media_path=media_input, target_lang=target_lang)
 
         print("[PROGRESS] 100% - Vidéo sous-titrée finalisée avec succès !", flush=True)
 
