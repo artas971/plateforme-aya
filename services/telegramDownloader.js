@@ -1,24 +1,48 @@
 /**
  * Service de Téléchargement & Pont Telegram - Plateforme Aya
- * Conçu par Thomas & Max (Issue #15)
+ * Conçu par Thomas & Max (Issue #15 & Correctif Vidéos Lourdes)
  * 
  * Permet d'importer des vidéos et notes vocales depuis un lien public Telegram (ex: t.me/canal/123)
  * Moteur hybride :
- * 1. py -m yt_dlp (Extraction native directe haute vitesse)
- * 2. Scraping direct du widget embed t.me (Secours autonome sans dépendance)
+ * 1. py -m yt_dlp (Extraction native directe haute vitesse avec paramètres optimisés)
+ * 2. Scraping direct du widget embed t.me (Secours autonome avec gestion 'Media is too big')
  */
 
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+let lastYtDlpUpdateCheck = 0;
+
+/**
+ * Vérifie et met à jour yt-dlp de manière asynchrone non-bloquante (au max une fois toutes les 6 heures)
+ */
+function ensureYtDlpUpdated() {
+    const now = Date.now();
+    if (now - lastYtDlpUpdateCheck < 6 * 60 * 60 * 1000) {
+        return Promise.resolve();
+    }
+    lastYtDlpUpdateCheck = now;
+
+    return new Promise((resolve) => {
+        const proc = spawn('py', ['-m', 'pip', 'install', '-U', 'yt-dlp'], { windowsHide: true });
+        proc.on('close', (code) => {
+            if (code === 0) {
+                console.log("[Telegram Downloader] yt-dlp vérifié et à jour.");
+            } else {
+                console.warn(`[Telegram Downloader] Vérification yt-dlp code: ${code}`);
+            }
+            resolve();
+        });
+        proc.on('error', (err) => {
+            console.warn("[Telegram Downloader] Avertissement MAJ yt-dlp:", err.message);
+            resolve();
+        });
+    });
+}
+
 /**
  * Valide et normalise une URL Telegram
- * Formats acceptés :
- * - https://t.me/channel_name/123
- * - http://t.me/channel_name/123
- * - t.me/channel_name/123
- * - https://telegram.me/channel_name/123
  */
 function parseTelegramUrl(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return null;
@@ -52,21 +76,30 @@ function parseTelegramUrl(rawUrl) {
 }
 
 /**
- * Téléchargement via yt-dlp
+ * Téléchargement via yt-dlp optimisé pour fichiers lourds
  */
 function downloadWithYtDlp(url, outputDir, onProgress) {
     return new Promise((resolve, reject) => {
+        // Déclencher la vérification en tâche de fond
+        ensureYtDlpUpdated().catch(() => {});
+
         const outputTemplate = path.join(outputDir, `tg_${Date.now()}_%(id)s.%(ext)s`);
         const args = [
             '-m', 'yt_dlp',
             '--no-playlist',
             '--no-warnings',
             '--newline',
+            '--format', 'bestvideo+bestaudio/best',
+            '--no-check-certificates',
+            '--geo-bypass',
+            '--retries', '3',
+            '--fragment-retries', '3',
+            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             '-o', outputTemplate,
             url
         ];
 
-        if (onProgress) onProgress(15, "Connexion et analyse du flux Telegram...");
+        if (onProgress) onProgress(15, "Connexion et extraction du flux Telegram via yt-dlp...");
 
         const proc = spawn('py', args, { windowsHide: true });
         let downloadedFilePath = null;
@@ -74,7 +107,9 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
 
         proc.stdout.on('data', (data) => {
             const line = data.toString();
-            // Détection du chemin de destination
+            if (/media\s+is\s+too\s+big/i.test(line)) {
+                lastError += " Media is too big";
+            }
             const destMatch = line.match(/\[download\] Destination:\s*(.+)/i) || 
                               line.match(/\[Merger\] Merging formats into "(.+)"/i) || 
                               line.match(/\[download\]\s+(.+)\s+has already been downloaded/i);
@@ -82,7 +117,6 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
                 downloadedFilePath = destMatch[1].trim();
             }
 
-            // Progression
             const progMatch = line.match(/\[download\]\s+([\d\.]+)%/);
             if (progMatch && onProgress) {
                 const pct = Math.round(15 + (parseFloat(progMatch[1]) * 0.25)); // 15% à 40%
@@ -99,7 +133,6 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
                 if (downloadedFilePath && fs.existsSync(downloadedFilePath)) {
                     return resolve(downloadedFilePath);
                 }
-                // Recherche du fichier le plus récent dans outputDir correspondant au préfixe
                 const files = fs.readdirSync(outputDir)
                     .filter(f => f.startsWith('tg_'))
                     .map(f => ({ name: f, time: fs.statSync(path.join(outputDir, f)).mtimeMs }))
@@ -109,6 +142,13 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
                     return resolve(path.join(outputDir, files[0].name));
                 }
             }
+
+            if (/media\s+is\s+too\s+big/i.test(lastError)) {
+                const bigErr = new Error("MEDIA_TOO_BIG: Cette vidéo Telegram est trop lourde pour un import automatique.");
+                bigErr.code = "MEDIA_TOO_BIG";
+                return reject(bigErr);
+            }
+
             reject(new Error(lastError || `yt-dlp exited with code ${code}`));
         });
 
@@ -118,6 +158,7 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
 
 /**
  * Téléchargement de secours par Scraping de l'Embed public Telegram
+ * Avec détection explicite de l'erreur "Media is too big"
  */
 async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
     if (onProgress) onProgress(20, "Tentative d'extraction directe via le widget public Telegram...");
@@ -125,7 +166,7 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
 
     const res = await fetch(embedUrl, {
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
     });
 
@@ -135,7 +176,14 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
 
     const html = await res.text();
 
-    // Recherche de <video src="..."></video> ou <audio src="...">
+    // 2. Détection explicite de l'erreur Telegram "Media is too big"
+    if (/media\s+is\s+too\s+big/i.test(html)) {
+        const bigErr = new Error("MEDIA_TOO_BIG: Cette vidéo Telegram est trop lourde pour un import automatique.");
+        bigErr.code = "MEDIA_TOO_BIG";
+        throw bigErr;
+    }
+
+    // Recherche de <video src="..."> ou <audio src="...">
     const videoMatch = html.match(/<video[^>]+src="([^">]+)"/i) || html.match(/src="([^">]+telesco\.pe\/file\/[^">]+)"/i);
     const audioMatch = html.match(/<audio[^>]+src="([^">]+)"/i);
     const mediaSrc = videoMatch ? videoMatch[1] : (audioMatch ? audioMatch[1] : null);
@@ -196,6 +244,9 @@ async function downloadTelegramMedia(rawUrl, outputDir = null, onProgress = null
             method: 'yt-dlp'
         };
     } catch (ytErr) {
+        if (ytErr.code === 'MEDIA_TOO_BIG' || (ytErr.message && ytErr.message.includes('MEDIA_TOO_BIG'))) {
+            throw ytErr;
+        }
         console.warn(`[Telegram Downloader] yt-dlp a échoué: ${ytErr.message}. Bascule sur le scraper d'embed...`);
     }
 
@@ -211,6 +262,9 @@ async function downloadTelegramMedia(rawUrl, outputDir = null, onProgress = null
             method: 'embed-scraping'
         };
     } catch (scrapErr) {
+        if (scrapErr.code === 'MEDIA_TOO_BIG' || (scrapErr.message && scrapErr.message.includes('MEDIA_TOO_BIG'))) {
+            throw scrapErr;
+        }
         console.error(`[Telegram Downloader] Échec du scraper: ${scrapErr.message}`);
         throw new Error(`Impossible de récupérer le média depuis Telegram : ${scrapErr.message}`);
     }
@@ -218,5 +272,6 @@ async function downloadTelegramMedia(rawUrl, outputDir = null, onProgress = null
 
 module.exports = {
     parseTelegramUrl,
-    downloadTelegramMedia
+    downloadTelegramMedia,
+    ensureYtDlpUpdated
 };

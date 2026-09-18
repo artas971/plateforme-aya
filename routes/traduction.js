@@ -112,8 +112,17 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                 res.write(`[PROGRESS] 40% - Fichier Telegram importé (${fileSizeMb} Mo via ${dlResult.method}). Lancement de l'analyse acoustique...\n`);
             } catch (dlErr) {
                 console.error("[Telegram Import Error]:", dlErr);
-                res.write(`[PROGRESS] 100% - Erreur Telegram : ${dlErr.message}\n`);
-                res.write(`---JSON_OUTPUT_START---\n${JSON.stringify({ success: false, error: dlErr.message })}\n---JSON_OUTPUT_END---\n`);
+                const isMediaTooBig = dlErr.code === 'MEDIA_TOO_BIG' || (dlErr.message && dlErr.message.includes('MEDIA_TOO_BIG'));
+                const errorMsg = isMediaTooBig 
+                    ? "Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l'envoi de fichier classique."
+                    : (dlErr.message || "Erreur lors de la récupération du média Telegram.");
+
+                res.write(`[PROGRESS] 100% - Erreur Telegram : ${errorMsg}\n`);
+                res.write(`---JSON_OUTPUT_START---\n${JSON.stringify({ 
+                    success: false, 
+                    error: errorMsg,
+                    code: isMediaTooBig ? "MEDIA_TOO_BIG" : "TELEGRAM_ERROR"
+                })}\n---JSON_OUTPUT_END---\n`);
                 return res.end();
             }
         }

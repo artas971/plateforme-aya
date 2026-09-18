@@ -1844,6 +1844,38 @@ ${safeText}
                     if (errMsg.includes("temporairement surchargés") || errMsg.includes("surchargés")) {
                         errMsg = dict.errAiOverloaded || errMsg;
                     }
+
+                    const isMediaTooBig = (finalData && finalData.code === 'MEDIA_TOO_BIG') || 
+                                          errMsg.includes('MEDIA_TOO_BIG') || 
+                                          /media\s+is\s+too\s+big/i.test(errMsg) ||
+                                          errMsg.includes('trop lourde pour un import automatique');
+
+                    if (isMediaTooBig) {
+                        const alertMsg = dict.errTelegramTooBig || "⚠️ Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l'envoi de fichier classique.";
+                        updateProgress(100, alertMsg);
+                        resultStatus.className = 'result-title';
+                        resultStatus.innerHTML = '<span style="color: #f59e0b;">⚠️</span> Média Telegram volumineux';
+                        videoPreviewContainer.innerHTML = `
+                            <div style="width: 100%; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; padding: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; color: #78350f; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);">
+                                <span style="font-size: 2.4rem; flex-shrink: 0; line-height: 1;">⚠️</span>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div style="font-weight: 700; color: #b45309; font-size: 1.05rem;">Média Telegram trop volumineux pour l'import direct</div>
+                                    <div style="font-size: 0.95rem; line-height: 1.6; color: #92400e;">
+                                        ${alertMsg}
+                                    </div>
+                                    <div style="background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b; padding: 0.6rem 0.9rem; border-radius: 6px; font-size: 0.88rem; color: #78350f; margin-top: 0.25rem;">
+                                        💡 <b>Solution recommandée :</b> Enregistrez la vidéo sur votre ordinateur depuis l'application Telegram, puis glissez-la simplement dans la zone de dépôt ci-dessus. L'envoi direct supporte jusqu'à <b>500 Mo</b> !
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        const councilBox = document.getElementById('agentsCouncilContainer');
+                        if (councilBox) councilBox.innerHTML = '';
+                        resultJson.textContent = finalData ? JSON.stringify(finalData, null, 2) : receivedText;
+                        alert(alertMsg);
+                        return;
+                    }
+
                     updateProgress(100, `Erreur : ${errMsg}`);
                     resultStatus.className = 'result-title error';
                     resultStatus.innerHTML = '<span>❌</span> Erreur de traitement';

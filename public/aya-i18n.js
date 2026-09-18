@@ -143,7 +143,8 @@
 
             // Résilience Anti-Quota & Modèle IA
             badgeModelPrefix: '🧠 Modèle :',
-            errAiOverloaded: 'Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.'
+            errAiOverloaded: 'Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.',
+            errTelegramTooBig: '⚠️ Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l\'envoi de fichier classique.'
         },
         ar: {
             dir: 'rtl',
@@ -280,7 +281,8 @@
 
             // Résilience Anti-Quota & Modèle IA
             badgeModelPrefix: '🧠 النموذج:',
-            errAiOverloaded: 'خوادم الذكاء الاصطناعي محملة بشكل زائد مؤقتاً. يرجى إعادة المحاولة بعد بضع دقائق.'
+            errAiOverloaded: 'خوادم الذكاء الاصطناعي محملة بشكل زائد مؤقتاً. يرجى إعادة المحاولة بعد بضع دقائق.',
+            errTelegramTooBig: '⚠️ هذا الفيديو من تيليجرام كبير جداً ولا يمكن استيراده تلقائياً عبر الرابط. يرجى تنزيله يدوياً من تيليجرام ورفعه مباشرة كملف.'
         }
     };
 
