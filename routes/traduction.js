@@ -61,14 +61,16 @@ router.get('/traduction', (req, res) => {
 });
 
 const { spawn } = require('child_process');
+const { downloadTelegramMedia } = require('../services/telegramDownloader');
 
-// 2. POST /api/traduction/process : Réception du média et déclenchement de la traduction / sous-titrage avec Streaming Temps Réel
-router.post('/api/traduction/process', upload.single('media'), (req, res) => {
+// 2. POST /api/traduction/process : Réception du média (Upload ou Lien Telegram) et déclenchement de la traduction / sous-titrage avec Streaming Temps Réel
+router.post('/api/traduction/process', upload.single('media'), async (req, res) => {
     try {
-        if (!req.file) {
+        const telegramUrl = (req.body.telegram_url || '').trim();
+        if (!req.file && !telegramUrl) {
             return res.status(400).json({
                 success: false,
-                error: "Aucun fichier média reçu sous le champ 'media'."
+                error: "Aucun fichier média reçu sous le champ 'media' ni aucun lien Telegram."
             });
         }
 
@@ -80,15 +82,49 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         const generateTiktokPack = req.body.generate_tiktok_pack === 'true' || req.body.generate_tiktok_pack === true;
         const bgTheme = req.body.bg_theme || 'bg_palestine';
         const expressMode = req.body.express_mode === 'true' || req.body.express_mode === true;
-        const mediaPath = req.file.path;
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
+
+        // Configuration des en-têtes HTTP pour Chunked Streaming direct
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+
+        let mediaPath = '';
+        let originalName = '';
+        let fileSizeMb = '0.00';
+
+        if (req.file) {
+            mediaPath = req.file.path;
+            originalName = req.file.originalname;
+            fileSizeMb = (req.file.size / (1024 * 1024)).toFixed(2);
+            res.write(`[PROGRESS] 2% - Média reçu sur le serveur. Initialisation du processus Python...\n`);
+        } else {
+            res.write(`[PROGRESS] 5% - Lien Telegram reçu (${telegramUrl}). Connexion et analyse...\n`);
+            try {
+                const targetDir = path.join(ROOT_DIR, 'audio_a_traiter');
+                const dlResult = await downloadTelegramMedia(telegramUrl, targetDir, (pct, msg) => {
+                    res.write(`[PROGRESS] ${pct}% - ${msg}\n`);
+                });
+                mediaPath = dlResult.filePath;
+                originalName = dlResult.filename;
+                fileSizeMb = (dlResult.size / (1024 * 1024)).toFixed(2);
+                res.write(`[PROGRESS] 40% - Fichier Telegram importé (${fileSizeMb} Mo via ${dlResult.method}). Lancement de l'analyse acoustique...\n`);
+            } catch (dlErr) {
+                console.error("[Telegram Import Error]:", dlErr);
+                res.write(`[PROGRESS] 100% - Erreur Telegram : ${dlErr.message}\n`);
+                res.write(`---JSON_OUTPUT_START---\n${JSON.stringify({ success: false, error: dlErr.message })}\n---JSON_OUTPUT_END---\n`);
+                return res.end();
+            }
+        }
 
         console.log('====================================================');
         console.log('[TRADUCTION PROCESS] Lancement du pipeline (Streaming) :');
         console.log(`  - Mode traitement   : ${expressMode ? '⚡ EXPRESS (Texte Markdown < 5s)' : '🎬 COMPLET (Vidéo & Sous-titres)'}`);
-        console.log(`  - Fichier source    : ${req.file.originalname}`);
+        console.log(`  - Source média      : ${telegramUrl ? `✈️ Télégram (${telegramUrl})` : '📁 Upload Direct'}`);
+        console.log(`  - Fichier           : ${originalName}`);
         console.log(`  - Chemin local      : ${mediaPath}`);
-        console.log(`  - Taille            : ${(req.file.size / (1024 * 1024)).toFixed(2)} Mo`);
+        console.log(`  - Taille            : ${fileSizeMb} Mo`);
         console.log(`  - Langue d'origine  : ${sourceLang}`);
         console.log(`  - Langue cible      : ${targetLang === 'ar' ? 'Arabe (VOAR)' : 'Français (VOSTFR)'}`);
         console.log(`  - Couleur sous-titre: ${subColor}`);
@@ -97,15 +133,6 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         console.log(`  - Bypass Cache      : ${forceReprocess ? 'OUI (Forcé)' : 'NON (Cache actif)'}`);
         console.log(`  - Pack TikTok       : ${generateTiktokPack ? 'OUI (Couverture & Copywriting)' : 'NON'}`);
         console.log('====================================================');
-
-        // Configuration des en-têtes HTTP pour Chunked Streaming direct
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Transfer-Encoding', 'chunked');
-        res.setHeader('Cache-Control', 'no-cache, no-transform');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-
-        // Envoi du premier chunk de connexion
-        res.write(`[PROGRESS] 2% - Média reçu sur le serveur. Initialisation du processus Python...\n`);
 
         const pyProcess = spawn('py', [
             scriptPath,

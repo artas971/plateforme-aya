@@ -178,6 +178,20 @@ Style: Default,Impact,72,&H0000FFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,10
 * Traduction textuelle directe d'un fichier audio en Texte Brut Markdown (`.md`) ou pour affichage interactif direct avec bouton **Copier**.
 * Court-circuite l'encodage vidéo FFmpeg pour une restitution en moins de 5 secondes.
 
+### 5.3 Module 3 : Pont Telegram (Importation & Traduction via Lien Public) — Issue #15
+* **Intégration du Bot** : Connexion avec le bot Telegram officiel `@johncreasybotbot` via variable d'environnement `TELEGRAM_BOT_TOKEN`.
+* **Entrées acceptées** : Liens publics Telegram (`https://t.me/canal/123`, `t.me/canal/123`, ou `t.me/c/...`).
+* **Stratégie de Téléchargement Hybride & Résiliente** :
+  1. *Téléchargement haute performance via yt-dlp* (`py -m yt_dlp`) avec extraction directe des flux vidéo et audio sans restriction de quota bot.
+  2. *Scraping Fallback Intégré* : En cas d'indisponibilité ou lien léger, scraping de la page publique de post Telegram (`https://t.me/{canal}/{id}?embed=1`) et extraction du tag `<video src>` / `<audio src>`.
+* **Interface UI Unifiée** :
+  * Séparateur stylisé "OU" et champ d'importation Telegram responsive avec bouton "Coller" (Presse-papier) et bouton d'effacement rapide.
+  * Support bilingue FR/AR instantané avec adaptation RTL automatique.
+* **Pipeline Asynchrone & Streaming** :
+  * Envoi d'événements de progression temps réel `[PROGRESS] 5% - Connexion au lien Telegram...`, `[PROGRESS] 25% - Téléchargement du média...`, etc.
+  * Stockage immédiat dans le dossier tampon `audio_a_traiter/` avec normalisation du nom de fichier.
+  * Relais transparent vers le pipeline `process_traduction.py` (transcription, traduction Ammiya Gaza, sous-titres `.ass`, et encodage vidéo/pack post-vidéo).
+
 ---
 
 ## 6. PACK POST-VIDÉO OPTIONNEL (COUVERTURE 9:16 & COPYWRITING TIKTOK)

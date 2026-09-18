@@ -26,10 +26,15 @@
             pageIntroTitle: 'Sous-titrage Automatique Haute Précision',
             pageIntroSub: 'Glissez votre fichier audio ou vidéo, choisissez la langue cible et générez votre média sous-titré.',
 
-            // Zone Dépose Média
+            // Zone Dépose Média & Import Telegram
             dropZoneText: 'Glissez & Déposez votre fichier média ici',
             dropZoneSub: 'ou cliquez pour parcourir vos dossiers (Audio ou Vidéo jusqu\'à 500 Mo)',
             btnRemoveFileTitle: 'Retirer ce fichier',
+            uploadOrDivider: 'OU',
+            placeholderTelegramUrl: '🔗 Ou coller un lien public Telegram (ex: t.me/canal/123)...',
+            btnPasteTelegramTitle: 'Coller depuis le presse-papier',
+            telegramHint: '✈️ Importation et sous-titrage automatique depuis tout canal ou message Telegram public.',
+            alertNoMediaOrTelegram: 'Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide.',
 
             // Mode de traitement (Module 1 vs Module 2)
             labelProcessingMode: '0. Mode de traitement',
@@ -158,10 +163,15 @@
             pageIntroTitle: 'إنشاء وتوليد الترجمة التلقائية فائقة الدقة',
             pageIntroSub: 'اسحب وأفلت الملف الصوتي أو المرئي، اختر لغة الترجمة واستلم الفيديو مدمجاً باحترافية.',
 
-            // Zone Dépose Média
+            // Zone Dépose Média & Import Telegram
             dropZoneText: 'اسحب وأفلت ملف الوسائط هنا للبدء',
             dropZoneSub: 'أو انقر لاختيار ملف من جهازك (صوت أو فيديو حتى 500 ميغابايت)',
             btnRemoveFileTitle: 'إزالة هذا الملف',
+            uploadOrDivider: 'أو',
+            placeholderTelegramUrl: '🔗 أو الصق رابط تيليجرام عام (مثال: t.me/canal/123)...',
+            btnPasteTelegramTitle: 'لصق من الحافظة',
+            telegramHint: '✈️ استيراد وترجمة تلقائية من أي قناة أو منشور تيليجرام عام.',
+            alertNoMediaOrTelegram: 'يرجى اختيار ملف وسائط أو إدخال رابط تيليجرام عام صحيح.',
 
             // Mode de traitement (Module 1 vs Module 2)
             labelProcessingMode: '٠. نمط المعالجة',
@@ -326,6 +336,9 @@
             updateElementText('pageIntroSub', dict.pageIntroSub);
             updateElementText('dropZoneText', dict.dropZoneText);
             updateElementText('dropZoneSub', dict.dropZoneSub);
+            updateElementText('uploadOrText', dict.uploadOrDivider);
+            updateElementPlaceholder('telegramUrlInput', dict.placeholderTelegramUrl);
+            updateElementText('telegramHintText', dict.telegramHint);
 
             // Mode de traitement
             updateElementText('labelProcessingMode', dict.labelProcessingMode);

@@ -1185,6 +1185,115 @@ textarea:focus {
     font-size: 0.8rem;
 }
 
+/* Séparateur & Import Télégram (Issue #15) */
+.upload-or-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.25rem 0;
+    user-select: none;
+}
+
+.upload-or-divider .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(153, 153, 153, 0.35), transparent);
+}
+
+.upload-or-divider .divider-text {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--color-gray-secondary);
+    background: #f1f5f9;
+    padding: 0.25rem 0.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(153, 153, 153, 0.25);
+}
+
+.telegram-import-box {
+    background: linear-gradient(135deg, rgba(0, 188, 212, 0.04) 0%, rgba(11, 83, 148, 0.03) 100%);
+    border: 2px dashed rgba(0, 188, 212, 0.4);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    transition: all 0.25s ease;
+}
+
+.telegram-import-box:focus-within {
+    border-color: var(--color-turquoise);
+    background: rgba(0, 188, 212, 0.08);
+    box-shadow: 0 4px 18px rgba(0, 188, 212, 0.15);
+}
+
+.telegram-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    border: 1px solid rgba(153, 153, 153, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem 0.85rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.telegram-input-wrapper:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(11, 83, 148, 0.12);
+}
+
+.telegram-input-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.telegram-url-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.92rem;
+    color: var(--color-dark-gray);
+    background: transparent;
+    font-family: inherit;
+}
+
+.telegram-url-input::placeholder {
+    color: #94a3b8;
+}
+
+.btn-paste-telegram, .btn-clear-telegram {
+    background: #f1f5f9;
+    border: 1px solid rgba(153, 153, 153, 0.25);
+    border-radius: 6px;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-paste-telegram:hover {
+    background: rgba(0, 188, 212, 0.15);
+    border-color: var(--color-turquoise);
+    transform: scale(1.05);
+}
+
+.btn-clear-telegram:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.telegram-hint {
+    font-size: 0.8rem;
+    color: var(--color-gray-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
 /* RTL Typography & Direction Support */
 html[dir="rtl"] {
     font-family: var(--font-arabic);

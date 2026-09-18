@@ -1054,6 +1054,25 @@
                 <button type="button" class="btn-remove-file" id="btnRemoveFile" title="Retirer ce fichier">✕</button>
             </div>
 
+            <!-- Séparateur & Option Import Télégram (Issue #15) -->
+            <div class="upload-or-divider" id="uploadOrDivider">
+                <span class="divider-line"></span>
+                <span class="divider-text" id="uploadOrText">OU</span>
+                <span class="divider-line"></span>
+            </div>
+
+            <div class="telegram-import-box" id="telegramImportBox">
+                <div class="telegram-input-wrapper">
+                    <span class="telegram-input-icon">✈️</span>
+                    <input type="url" id="telegramUrlInput" class="telegram-url-input" placeholder="🔗 Ou coller un lien public Telegram (ex: t.me/canal/123)..." autocomplete="off">
+                    <button type="button" class="btn-paste-telegram" id="btnPasteTelegram" title="Coller depuis le presse-papier">📋</button>
+                    <button type="button" class="btn-clear-telegram" id="btnClearTelegram" title="Effacer" style="display: none;">✕</button>
+                </div>
+                <div class="telegram-hint" id="telegramHintText">
+                    ✈️ Importation et sous-titrage automatique depuis tout canal ou message Telegram public.
+                </div>
+            </div>
+
             <!-- 0. Sélecteur de Mode de Traitement -->
             <div>
                 <div class="section-label" id="labelProcessingMode" style="margin-bottom: 0.75rem;">0. Mode de traitement</div>
@@ -1365,6 +1384,10 @@
 
             dropZone.style.display = 'none';
             fileBadge.style.display = 'flex';
+            if (telegramUrlInput) {
+                telegramUrlInput.value = '';
+                if (btnClearTelegram) btnClearTelegram.style.display = 'none';
+            }
             btnSubmit.disabled = false;
             resultBox.style.display = 'none';
         }
@@ -1374,7 +1397,8 @@
             fileInput.value = '';
             dropZone.style.display = 'flex';
             fileBadge.style.display = 'none';
-            btnSubmit.disabled = true;
+            const hasTg = telegramUrlInput && telegramUrlInput.value.trim().length > 0;
+            btnSubmit.disabled = !hasTg;
             resultBox.style.display = 'none';
             const badgeEl = document.getElementById('audioNoticeBadge');
             const bgSec = document.getElementById('bgThemeSection');
@@ -1385,6 +1409,57 @@
                 bgSec.style.background = 'transparent';
             }
         });
+
+        // Gestion du champ Telegram (Issue #15)
+        const telegramUrlInput = document.getElementById('telegramUrlInput');
+        const btnPasteTelegram = document.getElementById('btnPasteTelegram');
+        const btnClearTelegram = document.getElementById('btnClearTelegram');
+
+        function checkFormCanSubmit() {
+            const hasFile = !!selectedFile;
+            const hasTg = telegramUrlInput && telegramUrlInput.value.trim().length > 0;
+            btnSubmit.disabled = !(hasFile || hasTg);
+            if (btnClearTelegram) {
+                btnClearTelegram.style.display = hasTg ? 'inline-block' : 'none';
+            }
+        }
+
+        if (telegramUrlInput) {
+            telegramUrlInput.addEventListener('input', () => {
+                if (telegramUrlInput.value.trim().length > 0) {
+                    if (selectedFile) {
+                        selectedFile = null;
+                        fileInput.value = '';
+                        dropZone.style.display = 'flex';
+                        fileBadge.style.display = 'none';
+                    }
+                }
+                checkFormCanSubmit();
+            });
+        }
+
+        if (btnPasteTelegram) {
+            btnPasteTelegram.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text && telegramUrlInput) {
+                        telegramUrlInput.value = text.trim();
+                        telegramUrlInput.dispatchEvent(new Event('input'));
+                    }
+                } catch (e) {
+                    console.warn("Clipboard read error:", e);
+                }
+            });
+        }
+
+        if (btnClearTelegram) {
+            btnClearTelegram.addEventListener('click', () => {
+                if (telegramUrlInput) {
+                    telegramUrlInput.value = '';
+                    telegramUrlInput.dispatchEvent(new Event('input'));
+                }
+            });
+        }
 
         // Mise à jour de la jauge de progression
         function updateProgress(pct, msg) {
@@ -1399,7 +1474,12 @@
 
         // 2. Soumission du Formulaire & Streaming Fetch
         btnSubmit.addEventListener('click', async () => {
-            if (!selectedFile) return;
+            const telegramUrl = telegramUrlInput ? telegramUrlInput.value.trim() : '';
+            if (!selectedFile && !telegramUrl) {
+                const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
+                alert(dict.alertNoMediaOrTelegram || "Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide.");
+                return;
+            }
 
             // Récupération DIRECTE et FIABLE des cartes actuellement sélectionnées dans le DOM
             const activeSourceCard = document.querySelector('.source-card.active');
@@ -1417,10 +1497,15 @@
             statusBox.style.display = 'flex';
             resultBox.style.display = 'none';
             videoPreviewContainer.innerHTML = '';
-            updateProgress(2, `Téléversement de "${selectedFile.name}" en cours...`);
 
             const formData = new FormData();
-            formData.append('media', selectedFile);
+            if (selectedFile) {
+                formData.append('media', selectedFile);
+                updateProgress(2, `Téléversement de "${selectedFile.name}" en cours...`);
+            } else if (telegramUrl) {
+                formData.append('telegram_url', telegramUrl);
+                updateProgress(4, `Connexion au lien Telegram...`);
+            }
             formData.append('source_lang', sourceLang);
             formData.append('target_lang', targetLang);
             formData.append('sub_color', subColor);
