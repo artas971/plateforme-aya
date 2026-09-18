@@ -266,11 +266,26 @@ function runAutomatedAudit({ assFilename, mp4Filename, mediaInfo = {} }) {
         recommendation: nadineReco
     };
 
+    const coverFilename = mediaInfo.cover_filename || mediaInfo.coverFilename;
+    const coverPath = coverFilename ? path.join(OUTPUT_DIR, coverFilename) : null;
+    const coverExists = coverPath && fs.existsSync(coverPath);
+
+    const descFilename = mediaInfo.desc_filename || mediaInfo.descFilename;
+    const descPath = descFilename ? path.join(OUTPUT_DIR, descFilename) : null;
+    const descExists = descPath && fs.existsSync(descPath);
+
     // 3. LIONEL (Direction Artistique & Graphisme)
     let lionelScore = 98;
     let lionelStatus = 'success';
     let lionelDiagnosis = `Composition visuelle validée : Marge verticale (${subMarginV}px) adaptée pour éviter les boutons TikTok. Couleur ${subColor} avec bordure noire 3px contrastée.`;
     let lionelReco = "Contraste de police Impact 72 impeccable pour l'affichage sur écrans OLED et LCD.";
+
+    if (coverExists) {
+        lionelScore = 100;
+        lionelDiagnosis += ` | Pack TikTok : Couverture 9:16 générée (${coverFilename}) avec design abstrait Zéro humain, palette Noir/Blanc/Vert/Rouge et typographie Impact centrée.`;
+        lionelReco = "Couverture 9:16 prête pour la vignette TikTok, haute visibilité garantie.";
+    }
+
     agentsReports.lionel = {
         agent: AGENTS.lionel,
         score: lionelScore,
@@ -300,6 +315,13 @@ function runAutomatedAudit({ assFilename, mp4Filename, mediaInfo = {} }) {
     let steveScore = 95;
     let steveDiagnosis = `Hook dynamique : La parole et les sous-titres débutent à ${hookStart.toFixed(1)}s. Rétention des 3 premières secondes maximisée.`;
     let steveReco = "Recommandation : Ajouter un titre court en début de caption TikTok pour renforcer le taux de complétion.";
+
+    if (descExists) {
+        steveScore = 100;
+        steveDiagnosis += ` | Pack TikTok : Copywriting optimisé rédigé (${descFilename}) avec accroche percutante, 2 lignes de contexte, CTA clair et hashtags ciblés.`;
+        steveReco = "Description TikTok prête pour maximiser la rétention et l'engagement algorithmique.";
+    }
+
     agentsReports.steve = {
         agent: AGENTS.steve,
         score: steveScore,

@@ -77,6 +77,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         const subColor = req.body.sub_color || '#FFFF00';
         const subPosition = req.body.sub_position || '950';
         const forceReprocess = req.body.force_reprocess === 'true' || req.body.force_reprocess === true;
+        const generateTiktokPack = req.body.generate_tiktok_pack === 'true' || req.body.generate_tiktok_pack === true;
         const mediaPath = req.file.path;
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
 
@@ -90,6 +91,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         console.log(`  - Couleur sous-titre: ${subColor}`);
         console.log(`  - Position (MarginV): ${subPosition}`);
         console.log(`  - Bypass Cache      : ${forceReprocess ? 'OUI (Forcé)' : 'NON (Cache actif)'}`);
+        console.log(`  - Pack TikTok       : ${generateTiktokPack ? 'OUI (Couverture & Copywriting)' : 'NON'}`);
         console.log('====================================================');
 
         // Configuration des en-têtes HTTP pour Chunked Streaming direct
@@ -101,7 +103,16 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         // Envoi du premier chunk de connexion
         res.write(`[PROGRESS] 2% - Média reçu sur le serveur. Initialisation du processus Python...\n`);
 
-        const pyProcess = spawn('py', [scriptPath, mediaPath, targetLang, subColor, subPosition, sourceLang, String(forceReprocess)], { cwd: ROOT_DIR });
+        const pyProcess = spawn('py', [
+            scriptPath,
+            mediaPath,
+            targetLang,
+            subColor,
+            subPosition,
+            sourceLang,
+            String(forceReprocess),
+            String(generateTiktokPack)
+        ], { cwd: ROOT_DIR });
 
         let stdoutData = '';
         let stderrData = '';
@@ -124,8 +135,30 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
             res.end();
         });
 
-        pyProcess.on('close', (code) => {
+        pyProcess.on('close', async (code) => {
             console.log(`[TRADUCTION PROCESS] Script Python terminé avec le code : ${code}`);
+
+            // Téléversement conditionnel Google Drive vers 03_TERMINE si configuré
+            try {
+                const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
+                if (jsonMatch) {
+                    const finalData = JSON.parse(jsonMatch[1].trim());
+                    if (finalData && finalData.success) {
+                        const { uploadDeliverablesToDrive } = require('../services/driveWorker');
+                        if (typeof uploadDeliverablesToDrive === 'function') {
+                            res.write(`[PROGRESS] 100% - Synchronisation avec Google Drive (03_TERMINE)...\n`);
+                            await uploadDeliverablesToDrive({
+                                mp4Filename: finalData.mp4_filename,
+                                assFilename: finalData.ass_filename,
+                                coverFilename: finalData.cover_filename,
+                                descFilename: finalData.desc_filename
+                            });
+                        }
+                    }
+                }
+            } catch (syncErr) {
+                console.warn('[DRIVE SYNC WARNING] Téléversement silencieux vers Drive ignoré :', syncErr.message);
+            }
 
             // Si pour une raison quelconque le bloc JSON final n'a pas été émis par Python
             if (!stdoutData.includes('---JSON_OUTPUT_START---')) {

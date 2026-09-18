@@ -14,8 +14,10 @@ import subprocess
 import shutil
 import re
 import time
+import urllib.request
 from pathlib import Path
 from dotenv import load_dotenv
+from PIL import Image, ImageDraw, ImageFont
 
 # Encodage console sécurisé
 if sys.stdout and sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
@@ -715,6 +717,231 @@ def generate_clean_output_filenames(media_input: str, source_lang: str, target_l
     return f"{candidate}.mp4", f"{candidate}.ass"
 
 
+FONT_IMPACT = 'C:/Windows/Fonts/impact.ttf' if os.path.exists('C:/Windows/Fonts/impact.ttf') else 'arial.ttf'
+FONT_SEGOE = 'C:/Windows/Fonts/segoeui.ttf' if os.path.exists('C:/Windows/Fonts/segoeui.ttf') else 'arial.ttf'
+
+
+def _wrap_cover_text(text: str, max_chars_per_line: int = 18) -> list:
+    """Découpe un texte en lignes équilibrées sans couper les mots."""
+    words = text.strip().split()
+    lines = []
+    current_line = []
+    current_len = 0
+
+    for w in words:
+        if current_len + len(w) + (1 if current_line else 0) <= max_chars_per_line:
+            current_line.append(w)
+            current_len += len(w) + (1 if len(current_line) > 1 else 0)
+        else:
+            if current_line:
+                lines.append(" ".join(current_line))
+            current_line = [w]
+            current_len = len(w)
+
+    if current_line:
+        lines.append(" ".join(current_line))
+
+    return lines if lines else [text]
+
+
+def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num: int = 1, target_lang: str = 'fr') -> str:
+    """
+    Génère la Couverture 9:16 officielle par l'Agent Lionel :
+    - Format 1080x1920 (9:16 vertical)
+    - Design abstrait géométrique (Zéro humain)
+    - Palette stricte : Noir (#070B12), Blanc (#FFFFFF), Vert (#007A3D), Rouge (#CE1126)
+    - Titre et n° d'épisode centrés en police Impact
+    """
+    width, height = 1080, 1920
+    img = Image.new('RGB', (width, height), color=(7, 11, 18))
+    draw = ImageDraw.Draw(img)
+
+    # 1. Rubans géométriques abstraits aux couleurs de la Palestine
+    # Coin supérieur droit : Rouge, Blanc, Vert
+    draw.polygon([(650, 0), (1080, 0), (1080, 430), (820, 0)], fill=(206, 17, 38))
+    draw.polygon([(820, 0), (1080, 430), (1080, 490), (880, 0)], fill=(255, 255, 255))
+    draw.polygon([(880, 0), (1080, 490), (1080, 720), (1010, 0)], fill=(0, 122, 61))
+
+    # Coin inférieur gauche : Vert, Blanc, Rouge
+    draw.polygon([(0, 1500), (280, 1920), (0, 1920)], fill=(0, 122, 61))
+    draw.polygon([(0, 1440), (40, 1440), (340, 1920), (280, 1920), (0, 1500)], fill=(255, 255, 255))
+    draw.polygon([(0, 1240), (210, 1240), (520, 1920), (340, 1920), (0, 1440)], fill=(206, 17, 38))
+
+    # 2. Cadre néon blanc avec coins d'accentuation
+    padding = 48
+    draw.rectangle([(padding, padding), (width - padding, height - padding)], outline=(255, 255, 255), width=2)
+    c_len = 40
+    draw.line([(padding, padding), (padding + c_len, padding)], fill=(206, 17, 38), width=6)
+    draw.line([(padding, padding), (padding, padding + c_len)], fill=(206, 17, 38), width=6)
+    draw.line([(width - padding - c_len, height - padding), (width - padding, height - padding)], fill=(0, 122, 61), width=6)
+    draw.line([(width - padding, height - padding - c_len), (width - padding, height - padding)], fill=(0, 122, 61), width=6)
+
+    # 3. En-tête : Badge Officiel AYA STUDIO
+    try:
+        font_badge = ImageFont.truetype(FONT_SEGOE, 28)
+    except Exception:
+        font_badge = ImageFont.load_default()
+
+    draw.text((width // 2, 220), "AYA STUDIO • PALESTINIAN ECHO", font=font_badge, fill=(255, 255, 255), anchor='mm')
+    draw.line([(width // 2 - 160, 250), (width // 2 + 160, 250)], fill=(206, 17, 38), width=3)
+
+    # 4. Numéro d'épisode centré en police Impact
+    try:
+        font_ep_num = ImageFont.truetype(FONT_IMPACT, 120)
+        font_ep_label = ImageFont.truetype(FONT_IMPACT, 42)
+    except Exception:
+        font_ep_num = ImageFont.load_default()
+        font_ep_label = ImageFont.load_default()
+
+    ep_label_text = "ÉPISODE" if target_lang != 'ar' else "الحلقة"
+    ep_num_text = f"#{episode_num}"
+
+    box_w, box_h = 320, 150
+    box_x1 = (width - box_w) // 2
+    box_y1 = 580
+    box_x2 = box_x1 + box_w
+    box_y2 = box_y1 + box_h
+
+    draw.rectangle([(box_x1, box_y1), (box_x2, box_y2)], fill=(15, 23, 42), outline=(0, 122, 61), width=3)
+    draw.text((width // 2, box_y1 + 35), ep_label_text, font=font_ep_label, fill=(206, 17, 38), anchor='mm')
+    draw.text((width // 2, box_y1 + 95), ep_num_text, font=font_ep_num, fill=(255, 255, 255), anchor='mm')
+
+    # 5. Titre Centré en Police Impact (Haute Visibilité & Ombre Portée)
+    clean_title = title_text.replace('\\N', ' ').replace('\n', ' ')
+    clean_title = re.sub(r'\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$', '', clean_title, flags=re.IGNORECASE)
+    clean_title = clean_title.upper().strip()
+
+    title_lines = _wrap_cover_text(clean_title, max_chars_per_line=18)
+    if len(title_lines) > 4:
+        title_lines = title_lines[:4]
+        title_lines[-1] += '...'
+
+    font_size = 86 if len(title_lines) <= 2 else (74 if len(title_lines) <= 3 else 62)
+    try:
+        font_title = ImageFont.truetype(FONT_IMPACT, font_size)
+    except Exception:
+        font_title = ImageFont.load_default()
+
+    line_spacing = int(font_size * 1.25)
+    total_text_h = len(title_lines) * line_spacing
+    start_y = 1040 - (total_text_h // 2)
+
+    for i, line in enumerate(title_lines):
+        y = start_y + (i * line_spacing)
+        # Ombre portée 4px noire
+        for ox in (-4, 4):
+            for oy in (-4, 4):
+                draw.text((width // 2 + ox, y + oy), line, font=font_title, fill=(0, 0, 0), anchor='mm')
+        # Texte pur blanc
+        draw.text((width // 2, y), line, font=font_title, fill=(255, 255, 255), anchor='mm')
+
+    # 6. Séparateur bicolore (Rouge / Blanc / Vert)
+    sep_y = start_y + total_text_h + 40
+    draw.line([(width // 2 - 180, sep_y), (width // 2, sep_y)], fill=(206, 17, 38), width=5)
+    draw.line([(width // 2, sep_y), (width // 2 + 180, sep_y)], fill=(0, 122, 61), width=5)
+    draw.polygon([
+        (width // 2, sep_y - 8),
+        (width // 2 + 8, sep_y),
+        (width // 2, sep_y + 8),
+        (width // 2 - 8, sep_y)
+    ], fill=(255, 255, 255))
+
+    # 7. Pied d'affiche & Badge VOSTFR / VOAR
+    tag = "VOAR" if target_lang.lower() == 'ar' else "VOSTFR"
+    try:
+        font_foot = ImageFont.truetype(FONT_SEGOE, 30)
+        font_tag = ImageFont.truetype(FONT_IMPACT, 34)
+    except Exception:
+        font_foot = ImageFont.load_default()
+        font_tag = ImageFont.load_default()
+
+    draw.text((width // 2, 1700), "DOCUMENT & TÉMOIGNAGE EXCLUSIF", font=font_foot, fill=(156, 163, 175), anchor='mm')
+    tag_box_w, tag_box_h = 160, 48
+    draw.rounded_rectangle(
+        [(width // 2 - tag_box_w // 2, 1740), (width // 2 + tag_box_w // 2, 1740 + tag_box_h)],
+        radius=8,
+        fill=(206, 17, 38) if tag == 'VOSTFR' else (0, 122, 61)
+    )
+    draw.text((width // 2, 1740 + tag_box_h // 2), tag, font=font_tag, fill=(255, 255, 255), anchor='mm')
+
+    output_cover_path.parent.mkdir(parents=True, exist_ok=True)
+    img.save(str(output_cover_path), quality=95)
+    print(f"[AGENT LIONEL] Couverture 9:16 produite : {output_cover_path.name}", flush=True)
+    return str(output_cover_path)
+
+
+def generate_steve_description(title_text: str, segments: list, output_desc_path: Path, target_lang: str = 'fr') -> str:
+    """
+    Génère la Description TikTok via LLM par l'Agent Steve :
+    - Fichier .txt prêt pour TikTok
+    - Hook percutant en 1ère ligne
+    - Exactement 2 lignes de contexte
+    - CTA incisif
+    - Hashtags mixtes stratégiques
+    """
+    clean_title = title_text.replace('\\N', ' ').replace('\n', ' ').strip()
+    tag = "VOAR" if target_lang.lower() == 'ar' else "VOSTFR"
+
+    sample_texts = [s.get("text", "") for s in (segments[:8] if segments else [])]
+    context_sample = " ".join(sample_texts)[:400]
+
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    desc_content = ""
+
+    if gemini_key:
+        try:
+            prompt = f"""Tu es l'Agent Steve, chef de projet et stratège de rétention TikTok de la Plateforme Aya.
+Rédige la description TikTok officielle (.txt) pour cette vidéo :
+
+Titre de la vidéo : {clean_title}
+Extrait du témoignage ({tag}) :
+"{context_sample}"
+
+STRUCTURE OBLIGATOIRE DU FICHIER .TXT :
+Ligne 1 : Un HOOK percutant avec un émoji captivant (ex: 🔥 [Accroche]).
+Ligne 2 : [Ligne vide]
+Ligne 3-4 : CONTEXTE EN EXACTEMENT 2 LIGNES sincères, fortes et humaines résumant le sujet.
+Ligne 5 : [Ligne vide]
+Ligne 6 : Un CALL TO ACTION (CTA) incisif invitant au partage et à l'abonnement pour amplifier la voix.
+Ligne 7 : [Ligne vide]
+Ligne 8 : Une sélection de hashtags mixtes pertinents (ex: #Gaza #Palestine #Témoignage #{tag} #TikTok #UrgenceGaza).
+
+Ne renvoie QUE le texte brut final, sans balises de code markdown (pas de ```txt), sans introduction ni conclusion."""
+
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.7, "maxOutputTokens": 500}
+            }
+
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                if raw_text:
+                    desc_content = raw_text.strip()
+        except Exception as e:
+            print(f"[AGENT STEVE WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
+
+    if not desc_content:
+        # Fallback de haute performance rédigé selon les consignes Steve
+        desc_content = f"""🔥 {clean_title}
+
+📌 Témoignage exclusif en direct du terrain : un message authentique empreint d'une résilience poignante.
+Une réalité brute partagée sans filtre pour que personne ne puisse détourner le regard.
+
+👉 Partagez massivement cette vidéo et abonnez-vous pour faire entendre ces voix indispensables.
+
+#Gaza #Palestine #Témoignage #UrgenceGaza #AyaStudio #TikTok #PourToi #{tag}"""
+
+    output_desc_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_desc_path, 'w', encoding='utf-8') as f:
+        f.write(desc_content.strip() + '\n')
+
+    print(f"[AGENT STEVE] Description TikTok produite : {output_desc_path.name}", flush=True)
+    return str(output_desc_path)
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"success": False, "error": "Argument fichier média manquant."}))
@@ -735,6 +962,7 @@ def main():
         sub_margin_v = 950
     source_lang = sys.argv[5] if len(sys.argv) > 5 else 'auto'
     force_reprocess = (sys.argv[6].lower() in ('true', '1', 'yes')) if len(sys.argv) > 6 else False
+    generate_tiktok_pack = (sys.argv[7].lower() in ('true', '1', 'yes')) if len(sys.argv) > 7 else False
 
     if not os.path.exists(media_input):
         print(json.dumps({"success": False, "error": f"Fichier introuvable : {media_input}"}))
@@ -772,6 +1000,22 @@ def main():
         print("[PROGRESS] 92% - Encodage et incrustation vidéo FFmpeg en cours...", flush=True)
         render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration)
 
+        # 5bis. Pack Assets Post-Vidéo Optionnel (Lionel & Steve)
+        cover_filename = None
+        desc_filename = None
+        if generate_tiktok_pack:
+            print("[PROGRESS] 96% - 🎨 Lionel prépare la Couverture 9:16 & 📝 Steve rédige le Copywriting TikTok...", flush=True)
+            clean_stem = Path(mp4_filename).stem
+            cover_filename = f"{clean_stem} (Couverture 9-16).jpg"
+            desc_filename = f"{clean_stem} (Description TikTok).txt"
+
+            cover_path = OUTPUT_DIR / cover_filename
+            desc_path = OUTPUT_DIR / desc_filename
+
+            generate_lionel_cover(clean_stem, cover_path, episode_num=1, target_lang=target_lang)
+            generate_steve_description(clean_stem, segments, desc_path, target_lang=target_lang)
+            print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
+
         print("[PROGRESS] 100% - Vidéo sous-titrée finalisée avec succès !", flush=True)
 
         # 6. Réponse finale JSON
@@ -788,6 +1032,11 @@ def main():
             "mp4_url": f"/download/{mp4_filename}",
             "ass_filename": ass_filename,
             "ass_url": f"/download/{ass_filename}",
+            "generate_tiktok_pack": generate_tiktok_pack,
+            "cover_filename": cover_filename,
+            "cover_url": f"/download/{cover_filename}" if cover_filename else None,
+            "desc_filename": desc_filename,
+            "desc_url": f"/download/{desc_filename}" if desc_filename else None,
             "segments_count": len(segments),
             "silences_count": len(silences)
         }

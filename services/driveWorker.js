@@ -220,13 +220,13 @@ async function uploadErrorLog(drive, targetFolderId, sourceFileName, errorDetail
 /**
  * Exécute le pipeline de traduction & sous-titrage Python (process_traduction.py)
  */
-function runPythonPipeline(mediaPath, sourceLang, targetLang, subColor, subPosition) {
+function runPythonPipeline(mediaPath, sourceLang, targetLang, subColor, subPosition, generateTiktokPack = false) {
     return new Promise((resolve, reject) => {
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
         const forceReprocess = 'false';
 
         console.log(`[DRIVE PIPELINE] 🚀 Lancement du traitement pour : ${path.basename(mediaPath)}`);
-        console.log(`  - Langue source : ${sourceLang} | Cible : ${targetLang} | Couleur : ${subColor} | Position : ${subPosition}`);
+        console.log(`  - Langue source : ${sourceLang} | Cible : ${targetLang} | Couleur : ${subColor} | Position : ${subPosition} | Pack TikTok : ${generateTiktokPack}`);
 
         const pyProcess = spawn('py', [
             scriptPath,
@@ -235,7 +235,8 @@ function runPythonPipeline(mediaPath, sourceLang, targetLang, subColor, subPosit
             subColor,
             subPosition,
             sourceLang,
-            forceReprocess
+            forceReprocess,
+            String(generateTiktokPack)
         ], { cwd: ROOT_DIR });
 
         let stdoutData = '';
@@ -390,6 +391,15 @@ async function processDriveQueue() {
 
                     console.log(`[DRIVE WORKER] ⬆️ Upload des sous-titres ASS (${result.ass_filename}) vers 03_TERMINE...`);
                     uploadedAss = await uploadLocalFile(drive, assLocalPath, folders.COMPLETED, 'text/plain');
+
+                    if (result.cover_filename && fs.existsSync(path.join(OUTPUT_DIR, result.cover_filename))) {
+                        console.log(`[DRIVE WORKER] ⬆️ Upload de la couverture 9:16 (${result.cover_filename}) vers 03_TERMINE...`);
+                        await uploadLocalFile(drive, path.join(OUTPUT_DIR, result.cover_filename), folders.COMPLETED, 'image/jpeg');
+                    }
+                    if (result.desc_filename && fs.existsSync(path.join(OUTPUT_DIR, result.desc_filename))) {
+                        console.log(`[DRIVE WORKER] ⬆️ Upload de la description TikTok (${result.desc_filename}) vers 03_TERMINE...`);
+                        await uploadLocalFile(drive, path.join(OUTPUT_DIR, result.desc_filename), folders.COMPLETED, 'text/plain');
+                    }
                 } catch (uploadErr) {
                     if (uploadErr.message && uploadErr.message.includes('storage quota')) {
                         driveUploadWarning = "Quota Service Account : Les comptes de service ne peuvent pas uploader de nouveaux fichiers sur un compte Gmail personnel standard sans Disque Partagé Workspace. La vidéo est disponible en local et téléchargeable via l'interface web.";
@@ -525,8 +535,57 @@ function getDriveWorkerStatus() {
     };
 }
 
+/**
+ * Téléverse les livrables finaux vers le dossier 03_TERMINE sur Google Drive.
+ */
+async function uploadDeliverablesToDrive({ mp4Filename, assFilename, coverFilename, descFilename }) {
+    const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+    if (!rootFolderId) return null;
+
+    try {
+        const drive = getDriveClient();
+        const folders = await ensureStateFolders(drive, rootFolderId);
+        const uploads = {};
+
+        if (mp4Filename) {
+            const mp4Path = path.join(OUTPUT_DIR, mp4Filename);
+            if (fs.existsSync(mp4Path)) {
+                uploads.mp4 = await uploadLocalFile(drive, mp4Path, folders.COMPLETED, 'video/mp4');
+                console.log(`[DRIVE SYNC] ⬆️ Vidéo uploadée vers 03_TERMINE : ${mp4Filename}`);
+            }
+        }
+        if (assFilename) {
+            const assPath = path.join(OUTPUT_DIR, assFilename);
+            if (fs.existsSync(assPath)) {
+                uploads.ass = await uploadLocalFile(drive, assPath, folders.COMPLETED, 'text/plain');
+                console.log(`[DRIVE SYNC] ⬆️ Sous-titres uploadés vers 03_TERMINE : ${assFilename}`);
+            }
+        }
+        if (coverFilename) {
+            const coverPath = path.join(OUTPUT_DIR, coverFilename);
+            if (fs.existsSync(coverPath)) {
+                uploads.cover = await uploadLocalFile(drive, coverPath, folders.COMPLETED, 'image/jpeg');
+                console.log(`[DRIVE SYNC] ⬆️ Couverture 9:16 uploadée vers 03_TERMINE : ${coverFilename}`);
+            }
+        }
+        if (descFilename) {
+            const descPath = path.join(OUTPUT_DIR, descFilename);
+            if (fs.existsSync(descPath)) {
+                uploads.desc = await uploadLocalFile(drive, descPath, folders.COMPLETED, 'text/plain');
+                console.log(`[DRIVE SYNC] ⬆️ Description TikTok uploadée vers 03_TERMINE : ${descFilename}`);
+            }
+        }
+
+        return uploads;
+    } catch (err) {
+        console.warn(`[DRIVE SYNC WARNING] Erreur upload Drive 03_TERMINE : ${err.message}`);
+        return null;
+    }
+}
+
 module.exports = {
     startDriveWorker,
     processDriveQueue,
-    getDriveWorkerStatus
+    getDriveWorkerStatus,
+    uploadDeliverablesToDrive
 };

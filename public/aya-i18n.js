@@ -71,6 +71,8 @@
             btnSubmitDefault: '<span>⚡</span> Lancer le traitement & le sous-titrage',
             btnSubmitLoading: '<span>⏳</span> Traitement du média en cours...',
             chkForceReprocess: '🔄 Forcer le retraitement (Ignorer le cache)',
+            chkTiktokPackText: 'Générer le Pack TikTok (Couverture 9:16 & Copywriting)',
+            chkTiktokPackSub: 'Optionnel : Couverture 9:16 abstraite (Lionel) & Rédaction optimisée (Steve)',
 
             // Progression
             statusInit: 'Initialisation du pipeline...',
@@ -81,6 +83,8 @@
             btnDownloadMp4Video: '⬇️ Télécharger la Vidéo MP4 (Format original)',
             btnDownloadMp4Audio: '⬇️ Télécharger la Vidéo MP4 (Format 9:16)',
             btnDownloadAss: '📄 Télécharger le fichier .ASS',
+            btnDownloadCover: '🖼️ Télécharger la Couverture 9:16 (Lionel)',
+            btnDownloadDesc: '📝 Télécharger le Copywriting TikTok (Steve)',
 
             // Conseil des Agents
             councilTitle: 'Conseil des 7 Agents IA - Audit & Stratégie',
@@ -167,6 +171,8 @@
             btnSubmitDefault: '<span>⚡</span> بدء المعالجة والتوليد الفوري',
             btnSubmitLoading: '<span>⏳</span> جاري معالجة الفيديو والترجمة...',
             chkForceReprocess: '🔄 إعادة المعالجة الإجبارية (تجاوز الذاكرة المؤقتة)',
+            chkTiktokPackText: 'إنشاء حزمة تيك توك (غلاف 9:16 ونصوص النشر)',
+            chkTiktokPackSub: 'اختياري: غلاف تجريدي 9:16 (ليونيل) ونصوص ترويجية محسنة (ستيف)',
 
             // Progression
             statusInit: 'جاري تشغيل خط الإنتاج...',
@@ -177,6 +183,8 @@
             btnDownloadMp4Video: '⬇️ تحميل الفيديو النهائي (MP4)',
             btnDownloadMp4Audio: '⬇️ تحميل الفيديو النهائي بصيغة 9:16',
             btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
+            btnDownloadCover: '🖼️ تحميل غلاف تيك توك 9:16 (ليونيل)',
+            btnDownloadDesc: '📝 تحميل نصوص النشر والوصف (ستيف)',
 
             // Conseil des Agents
             councilTitle: 'مجلس الوكلاء السبعة - تدقيق الجودة والاستراتيجية',
@@ -283,6 +291,10 @@
             updateElementText('posTopTitle', dict.posTopTitle);
             updateElementText('posTopSub', dict.posTopSub);
             updateElementText('chkForceReprocessText', dict.chkForceReprocess);
+            updateElementText('chkTiktokPackText', dict.chkTiktokPackText);
+            updateElementText('chkTiktokPackSub', dict.chkTiktokPackSub);
+            updateElementText('btnDownloadCover', dict.btnDownloadCover);
+            updateElementText('btnDownloadDesc', dict.btnDownloadDesc);
 
             const btnSubmit = document.getElementById('btnSubmit');
             if (btnSubmit && !btnSubmit.disabled) {
