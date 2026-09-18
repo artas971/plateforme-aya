@@ -17,6 +17,7 @@
             userAnonymous: 'Invité / Testeur',
             logoutBtnTitle: 'Se déconnecter',
             navHomeText: 'Accueil / Vocal',
+            navTraductionText: 'Traduction & Sous-titres',
             navStudioText: 'Studio TikTok V3',
             navbarLiveText: 'Serveur Actif',
 
@@ -112,6 +113,7 @@
             userAnonymous: 'زائر / فاحص',
             logoutBtnTitle: 'تسجيل الخروج',
             navHomeText: 'الرئيسية / صوتي',
+            navTraductionText: 'الترجمة والدبلجة',
             navStudioText: 'استوديو تيك توك V3',
             navbarLiveText: 'الخادم نشط ومتصل',
 
@@ -234,6 +236,7 @@
         updateElementText('navbarBrandTitle', dict.navbarBrandTitle, true);
         updateElementText('navbarBrandSub', dict.navbarBrandSub);
         updateElementText('navHomeText', dict.navHomeText);
+        updateElementText('navTraductionText', dict.navTraductionText);
         updateElementText('navStudioText', dict.navStudioText);
         updateElementText('navbarLiveText', dict.navbarLiveText);
 
@@ -331,7 +334,12 @@
         existingHeader.className = 'app-header';
         existingHeader.id = 'ayaGlobalNavbar';
 
-        const isStudio = window.location.pathname.includes('traduction') || window.location.pathname.includes('studio');
+        const path = window.location.pathname;
+        const isTraduction = path.includes('traduction');
+        const isStudio = path.includes('studio');
+        const isHome = !isTraduction && !isStudio;
+
+        const dict = translations[currentLang] || translations.fr;
 
         existingHeader.innerHTML = `
             <div class="brand">
@@ -340,30 +348,34 @@
                     <span class="status-dot"></span>
                 </div>
                 <div>
-                    <h1 id="navbarBrandTitle">وكيل التَّرْجَمَة آيَة <span class="badge-tag green">عربي فلسطيني ↔ فرنسي</span></h1>
-                    <p class="subtitle" id="navbarBrandSub">استوديو الدبلجة والترجمة الفورية للفيديوهات والتسجيلات</p>
+                    <h1 id="navbarBrandTitle">${dict.navbarBrandTitle}</h1>
+                    <p class="subtitle" id="navbarBrandSub">${dict.navbarBrandSub}</p>
                 </div>
             </div>
             <div class="header-actions">
                 <!-- Statut Utilisateur & Déconnexion -->
                 <div class="user-badge" id="navbarUserBadge">
                     <span id="navbarUserName">👤 متصل</span>
-                    <button class="btn-logout" id="navbarLogoutBtn" title="تسجيل الخروج">🚪</button>
+                    <button class="btn-logout" id="navbarLogoutBtn" title="${dict.logoutBtnTitle}">🚪</button>
                 </div>
                 <!-- Sélecteur de Langue Dynamique -->
                 <div class="lang-switcher">
                     <button class="lang-toggle-btn ${currentLang === 'fr' ? 'active' : ''}" id="langFrBtn">🇫🇷 FR</button>
                     <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn">🇵🇸 العربية</button>
                 </div>
-                <!-- Lien Accueil / Vocal -->
-                <a href="/" class="btn-nav-link ${!isStudio ? 'active' : ''}" id="navHomeLink" style="text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${!isStudio ? 'background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
-                    <span>💬</span> <span id="navHomeText">الرئيسية / صوتي</span>
+                <!-- Lien 1 : Accueil / Vocal -->
+                <a href="/" class="btn-nav-link ${isHome ? 'active' : ''}" id="navHomeLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isHome ? 'background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                    <span>💬</span> <span id="navHomeText">${dict.navHomeText}</span>
                 </a>
-                <!-- Lien Studio TikTok V3 -->
-                <a href="/traduction" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink" style="text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isStudio ? 'background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid #0284C7;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
-                    <span>🎬</span> <span id="navStudioText">استوديو تيك توك V3</span>
+                <!-- Lien 2 : Traduction & Sous-titres -->
+                <a href="/traduction" class="btn-nav-link ${isTraduction ? 'active' : ''}" id="navTraductionLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isTraduction ? 'background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid #0284C7;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                    <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
                 </a>
-                <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">الخادم نشط ومتصل</span></span>
+                <!-- Lien 3 : Studio TikTok V3 -->
+                <a href="/studio" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isStudio ? 'background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid #D97706;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                    <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
+                </a>
+                <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">${dict.navbarLiveText}</span></span>
             </div>
         `;
 

@@ -24,7 +24,8 @@ html[dir="rtl"] .brand {
 }
 
 html[dir="rtl"] .header-actions {
-    flex-direction: row-reverse;
+    flex-direction: row;
+    gap: 10px;
 }
 
 html[dir="rtl"] .nav-links a {

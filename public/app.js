@@ -178,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'Traduisez vos audios et générez vos réponses en un clic',
             userConnectedPrefix: '👤 Connecté :',
             logoutBtnTitle: 'Se déconnecter',
+            navTraductionText: 'Traduction & Sous-titres',
             navStudioText: 'Studio TikTok V3',
             liveIndicatorText: '<span class="pulse"></span> Serveur Actif (localhost:3000)',
             titleReceived: "Fichiers Audio reçus d'Aya",
@@ -320,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'ترجمة التسجيلات الصوتية وإنشاء الردود الصوتية بنقرة واحدة',
             userConnectedPrefix: '👤 تسجيل الدخول باسم:',
             logoutBtnTitle: 'تسجيل الخروج',
+            navTraductionText: 'الترجمة والدبلجة',
             navStudioText: 'استوديو تيك توك V3',
             liveIndicatorText: '<span class="pulse"></span> الخادم نشط ومتصل',
             titleReceived: 'الملفات والتسجيلات الصوتية الواردة',
@@ -504,6 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Header Translations
         setInnerHTML('headerTitle', dict.headerTitle);
         setInnerHTML('headerSub', dict.headerSub);
+        setInnerHTML('navTraductionText', dict.navTraductionText);
         setInnerHTML('navStudioText', dict.navStudioText);
         setInnerHTML('liveIndicatorText', dict.liveIndicatorText);
         if (logoutBtn) logoutBtn.setAttribute('title', dict.logoutBtnTitle);

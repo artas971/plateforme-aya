@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
@@ -21,7 +21,7 @@ const studioStorage = multer.diskStorage({
 const uploadStudio = multer({ storage: studioStorage });
 
 // Servir l'interface graphique du Studio
-router.get(['/studio', '/aya_studio.html', '/aya_studio'], (req, res) => {
+router.get(['/studio', '/studio.html', '/aya_studio.html', '/aya_studio'], (req, res) => {
     res.sendFile(path.join(ROOT_DIR, 'public', 'studio.html'));
 });
 
