@@ -1097,22 +1097,22 @@
             <!-- 1. Sélecteur de Langue Source (Origine) -->
             <div>
                 <div class="section-label" id="labelSourceLang" style="margin-bottom: 0.75rem;">1. Langue parlée d'origine (Source)</div>
-                <div class="source-grid">
-                    <div class="source-card active" data-source="auto">
+                <div class="source-grid" id="sourceLangGrid">
+                    <div class="source-card active" data-source="auto" id="sourceCardAuto">
                         <span class="source-icon">🤖</span>
                         <div class="source-details">
                             <div class="source-title" id="sourceAutoTitle">Auto-détection</div>
                             <div class="source-sub" id="sourceAutoSub">Détection automatique intelligente</div>
                         </div>
                     </div>
-                    <div class="source-card" data-source="ar">
+                    <div class="source-card" data-source="ar" id="sourceCardAr">
                         <span class="source-icon">🇵🇸</span>
                         <div class="source-details">
                             <div class="source-title" id="sourceArTitle">Arabe palestinien</div>
                             <div class="source-sub" id="sourceArSub">Dialecte ammiya / Gaza</div>
                         </div>
                     </div>
-                    <div class="source-card" data-source="fr">
+                    <div class="source-card" data-source="fr" id="sourceCardFr">
                         <span class="source-icon">🇫🇷</span>
                         <div class="source-details">
                             <div class="source-title" id="sourceFrTitle">Français</div>
@@ -1188,12 +1188,15 @@
                 </div>
 
                 <!-- 5. Choix du Visuel pour Notes Vocales -->
-                <div id="bgThemeSection">
+                <div id="bgThemeSection" style="transition: all 0.3s ease;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-                        <div class="section-label" id="labelBgTheme">5. Choix du visuel (Pour les notes vocales)</div>
+                        <div class="section-label" id="labelBgTheme">5. Choix du visuel (Notes vocales & Audios purs uniquement)</div>
                         <span style="font-size: 0.78rem; color: var(--accent-color); font-weight: 600;" id="audioNoticeBadge">✨ Vidéo 9:16 automatique pour audios</span>
                     </div>
-                    <div class="bg-grid">
+                    <div id="videoVisualNotice" style="display: none; background: rgba(11, 83, 148, 0.08); border: 1px dashed var(--color-primary); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--color-primary); margin-bottom: 0.75rem; align-items: center; gap: 0.5rem;">
+                        <span>🎬</span> <span><b>Vidéo détectée :</b> La vidéo originale est conservée intacte. Le choix du visuel est désactivé car réservé aux audios purs.</span>
+                    </div>
+                    <div class="bg-grid" id="bgThemeGrid">
                         <div class="bg-card active" data-bg="bg_palestine">
                             <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
                             <div class="bg-details">
@@ -1358,6 +1361,29 @@
             }
         });
 
+        function resetBgThemeSection() {
+            const badgeEl = document.getElementById('audioNoticeBadge');
+            const bgSec = document.getElementById('bgThemeSection');
+            const bgGrid = document.getElementById('bgThemeGrid');
+            const videoNotice = document.getElementById('videoVisualNotice');
+
+            if (bgSec) {
+                bgSec.style.opacity = '1';
+                bgSec.style.border = 'none';
+                bgSec.style.padding = '0';
+                bgSec.style.background = 'transparent';
+            }
+            if (bgGrid) {
+                bgGrid.style.opacity = '1';
+                bgGrid.style.pointerEvents = 'auto';
+            }
+            if (videoNotice) videoNotice.style.display = 'none';
+            if (badgeEl) {
+                badgeEl.style.display = 'inline-block';
+                badgeEl.textContent = '✨ Vidéo 9:16 automatique pour audios';
+            }
+        }
+
         function handleFileSelect(file) {
             selectedFile = file;
             fileName.textContent = file.name;
@@ -1365,20 +1391,43 @@
             fileSize.textContent = `${sizeInMb} Mo`;
 
             const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name);
+            const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|mkv|avi|webm)$/i.test(file.name);
             const badgeEl = document.getElementById('audioNoticeBadge');
             const bgSec = document.getElementById('bgThemeSection');
-            if (badgeEl && bgSec) {
+            const bgGrid = document.getElementById('bgThemeGrid');
+            const videoNotice = document.getElementById('videoVisualNotice');
+
+            if (bgSec) {
                 if (isAudio) {
-                    badgeEl.style.display = 'inline-block';
+                    bgSec.style.opacity = '1';
+                    if (bgGrid) {
+                        bgGrid.style.opacity = '1';
+                        bgGrid.style.pointerEvents = 'auto';
+                    }
+                    if (videoNotice) videoNotice.style.display = 'none';
+                    if (badgeEl) {
+                        badgeEl.style.display = 'inline-block';
+                        badgeEl.textContent = '✨ Vidéo 9:16 automatique pour audios';
+                    }
                     bgSec.style.border = '2px solid var(--accent-color)';
                     bgSec.style.padding = '0.75rem';
                     bgSec.style.borderRadius = '10px';
                     bgSec.style.background = 'rgba(0, 188, 212, 0.04)';
+                } else if (isVideo) {
+                    // Vidéo locale détectée : griser et désactiver le choix de visuel
+                    bgSec.style.opacity = '0.6';
+                    if (bgGrid) {
+                        bgGrid.style.opacity = '0.35';
+                        bgGrid.style.pointerEvents = 'none';
+                    }
+                    if (videoNotice) videoNotice.style.display = 'flex';
+                    if (badgeEl) badgeEl.style.display = 'none';
+                    bgSec.style.border = '1px dashed rgba(153, 153, 153, 0.35)';
+                    bgSec.style.padding = '0.75rem';
+                    bgSec.style.borderRadius = '10px';
+                    bgSec.style.background = '#f8fafc';
                 } else {
-                    badgeEl.style.display = 'none';
-                    bgSec.style.border = 'none';
-                    bgSec.style.padding = '0';
-                    bgSec.style.background = 'transparent';
+                    resetBgThemeSection();
                 }
             }
 
@@ -1400,14 +1449,7 @@
             const hasTg = telegramUrlInput && telegramUrlInput.value.trim().length > 0;
             btnSubmit.disabled = !hasTg;
             resultBox.style.display = 'none';
-            const badgeEl = document.getElementById('audioNoticeBadge');
-            const bgSec = document.getElementById('bgThemeSection');
-            if (badgeEl && bgSec) {
-                badgeEl.style.display = 'inline-block';
-                bgSec.style.border = 'none';
-                bgSec.style.padding = '0';
-                bgSec.style.background = 'transparent';
-            }
+            resetBgThemeSection();
         });
 
         // Gestion du champ Telegram (Issue #15)
@@ -1433,6 +1475,7 @@
                         dropZone.style.display = 'flex';
                         fileBadge.style.display = 'none';
                     }
+                    resetBgThemeSection();
                 }
                 checkFormCanSubmit();
             });
@@ -1714,11 +1757,6 @@ ${safeText}
 
                     const colorLabel = colorNames[finalData.sub_color] || finalData.sub_color;
                     const posLabel = posNames[String(finalData.sub_position)] || `${finalData.sub_position}px`;
-                    const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
-                    const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
-
-                    const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
-                    const isFallback = modelUsed.toLowerCase().includes('lite') || (modelUsed !== 'gemini-2.5-flash' && !modelUsed.includes('2.5-flash'));
 
                     let fallbackBannerHtml = '';
                     if (isFallback) {
@@ -1734,10 +1772,6 @@ ${safeText}
                             </div>
                         `;
                     }
-
-                    const modelBadgeHtml = isFallback
-                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ ${modelPrefix} <b>${modelUsed} [Secours]</b></span>`
-                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">${modelPrefix} <b>${modelUsed}</b></span>`;
 
                     const bgNames = {
                         'bg_palestine': '🇵🇸 Palestine Résilience',

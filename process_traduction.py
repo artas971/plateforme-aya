@@ -115,7 +115,7 @@ def probe_media(media_path: str) -> dict:
     """Analyse les flux et la durée du média via ffprobe."""
     cmd = [
         'ffprobe', '-v', 'error',
-        '-show_entries', 'stream=codec_type,codec_name,width,height:format=duration',
+        '-show_entries', 'stream=codec_type,codec_name,width,height,disposition:format=duration',
         '-of', 'json', media_path
     ]
     try:
@@ -133,20 +133,47 @@ def probe_media(media_path: str) -> dict:
             duration = 30.0
 
     is_video = False
+    has_audio = False
     width = 1080
     height = 1920
 
     for stream in data.get("streams", []):
-        if stream.get("codec_type") == "video":
+        ctype = stream.get("codec_type")
+        if ctype == "audio":
+            has_audio = True
+        elif ctype == "video":
             cname = stream.get("codec_name", "").lower()
-            if cname not in ["mjpeg", "png", "bmp"]:
+            disposition = stream.get("disposition", {})
+            # Ignorer les pochettes d'album / images fixes attachées dans les audios
+            if disposition and disposition.get("attached_pic") == 1:
+                continue
+            if cname in ["mjpeg", "png", "bmp", "gif"]:
+                continue
+
+            # Flux vidéo authentique détecté
+            is_video = True
+            w_val = stream.get("width")
+            h_val = stream.get("height")
+            width = int(w_val) if w_val else 1080
+            height = int(h_val) if h_val else 1920
+
+    # Sécurité supplémentaire basée sur l'extension si ffprobe a retourné des flux ambigus
+    ext = Path(media_path).suffix.lower()
+    if not is_video and ext in [".mp4", ".mov", ".mkv", ".avi", ".webm"]:
+        for stream in data.get("streams", []):
+            if stream.get("codec_type") == "video":
                 is_video = True
-                width = int(stream.get("width", 1080))
-                height = int(stream.get("height", 1920))
+                w_val = stream.get("width")
+                h_val = stream.get("height")
+                width = int(w_val) if w_val else 1080
+                height = int(h_val) if h_val else 1920
                 break
+
+    print(f"[PROBE MEDIA] Fichier : {Path(media_path).name} | Détection : {'VIDÉO' if is_video else 'AUDIO PUR'} ({width}x{height}) | Audio : {has_audio} | Durée : {duration:.2f}s", flush=True)
 
     return {
         "is_video": is_video,
+        "has_audio": has_audio,
         "duration": duration,
         "width": width,
         "height": height
@@ -581,18 +608,37 @@ def build_ass_file(
         alignment = 2  # En bas au centre
         margin_v = 140 if (not is_video or height >= width) else 80
 
-    # Adaptation PlayRes proportionnelle
-    if not is_video or height >= width:
+    # Adaptation PlayRes et taille de police proportionnelle
+    if is_video:
+        play_res_x = width
+        play_res_y = height
+        # Échelle de police proportionnelle à la hauteur (72px pour une base 1920)
+        font_size = max(24, int(height * (72 / 1920)))
+        margin_lr = max(15, int(width * 0.025))
+        if sub_margin_v <= 250:
+            alignment = 8
+            margin_v = max(20, int(height * 0.05))
+        elif sub_margin_v <= 700:
+            alignment = 5
+            margin_v = 0
+        else:
+            alignment = 2
+            margin_v = max(30, int(height * 0.075))
+    else:
+        # Audio pur : standard 1080x1920 vertical
         play_res_x = 1080
         play_res_y = 1920
         font_size = 72
         margin_lr = 20
-    else:
-        # Vidéo paysage 16:9
-        play_res_x = 1920
-        play_res_y = 1080
-        font_size = 64
-        margin_lr = 40
+        if sub_margin_v <= 250:
+            alignment = 8
+            margin_v = 100
+        elif sub_margin_v <= 700:
+            alignment = 5
+            margin_v = 0
+        else:
+            alignment = 2
+            margin_v = 140
 
     ass_events = []
     for seg in segments:
@@ -625,25 +671,34 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     print(f"[ASS SUCCÈS] Fichier généré : {output_ass_path.name}")
 
 
-def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, is_video: bool, duration: float, bg_theme: str = 'bg_palestine'):
-    """Incruste les sous-titres via FFmpeg sans toucher aux proportions d'origine (ou fond 9:16 sélectionné pour l'audio)."""
-    # Copie temporaire sûre pour éviter les conflits d'échappement FFmpeg sur les apostrophes ou caractères spéciaux
+def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, is_video: bool, duration: float, bg_theme: str = 'bg_palestine', has_audio: bool = True):
+    """
+    Incruste les sous-titres via FFmpeg :
+    - SI VIDÉO : Conserve la vidéo originale intacte (aucun fond, aucun recadrage, dimensions d'origine préservées).
+    - SI AUDIO PUR : Applique la logique Issue #7 (Fond 9:16 avec thème choisi).
+    """
     temp_burn_ass = ass_path.parent / f"_temp_burn_{os.getpid()}.ass"
     shutil.copy2(ass_path, temp_burn_ass)
     escaped_ass = str(temp_burn_ass.resolve()).replace("\\", "/").replace(":", "\\:")
 
     try:
         if is_video:
-            print("[FFMPEG] Incrustation sur flux vidéo original (aucun recadrage forcé)...")
+            print(f"[FFMPEG] Incrustation sur flux vidéo original ({output_mp4_path.name}) - Thème de fond ({bg_theme}) ignoré, vidéo originale conservée intacte.", flush=True)
+            # Sécurisation de la parité des dimensions pour l'encodeur libx264 (évite l'erreur width not divisible by 2)
+            vf_filter = f"pad=ceil(iw/2)*2:ceil(ih/2)*2,subtitles='{escaped_ass}'"
             cmd = [
                 'ffmpeg', '-y',
                 '-i', media_path,
-                '-vf', f"subtitles='{escaped_ass}'",
+                '-vf', vf_filter,
                 '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22',
-                '-c:a', 'aac', '-b:a', '192k',
-                '-movflags', '+faststart',
-                str(output_mp4_path.resolve())
+                '-pix_fmt', 'yuv420p',
+                '-movflags', '+faststart'
             ]
+            if has_audio:
+                cmd.extend(['-c:a', 'aac', '-b:a', '192k'])
+            else:
+                cmd.extend(['-an'])
+            cmd.append(str(output_mp4_path.resolve()))
         else:
             bg_target = BACKGROUND_MAP.get(bg_theme)
             if not bg_target or not bg_target.exists():
@@ -653,7 +708,7 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
             if not bg_target.exists():
                 bg_target = DEFAULT_BG
 
-            print(f"[FFMPEG] Génération vidéo 9:16 pour note vocale avec fond : {bg_target.name} (thème: {bg_theme})...")
+            print(f"[FFMPEG] Audio pur détecté : Génération vidéo 9:16 avec fond : {bg_target.name} (thème: {bg_theme})...", flush=True)
             bg_image = str(bg_target.resolve())
             cmd = [
                 'ffmpeg', '-y',
@@ -994,6 +1049,7 @@ def main():
         print("[PROGRESS] 12% - Analyse acoustique et cartographie des silences FFmpeg...", flush=True)
         media_info = probe_media(media_input)
         is_video = media_info["is_video"]
+        has_audio = media_info.get("has_audio", True)
         duration = media_info["duration"]
         width = media_info["width"]
         height = media_info["height"]
@@ -1085,7 +1141,7 @@ def main():
 
         # 5. Incrustation vidéo FFmpeg
         print("[PROGRESS] 92% - Encodage et incrustation vidéo FFmpeg en cours...", flush=True)
-        render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme)
+        render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme, has_audio=has_audio)
 
         # 5bis. Pack Assets Post-Vidéo Optionnel (Lionel & Steve)
         cover_filename = None

@@ -89,8 +89,8 @@
             posTopSub: 'Sous l\'en-tête',
 
             // Choix du Visuel pour Audios
-            labelBgTheme: '5. Choix du visuel (Pour les notes vocales & audios)',
-            audioNoticeBadge: '✨ Vidéo 9:16 automatique pour audios',
+            labelBgTheme: '5. Choix du visuel (Notes vocales & Audios purs uniquement)',
+            audioNoticeBadge: '✨ Vidéo 9:16 automatique pour audios purs',
             bgPalestineTitle: '🇵🇸 Palestine Résilience',
             bgPalestineSub: 'Noir, Blanc, Vert, Rouge abstrait',
             bgDarkTitle: '🌑 Noir Profond',
@@ -226,8 +226,8 @@
             posTopSub: 'أسفل الشريط العلوي',
 
             // Choix du Visuel pour Audios
-            labelBgTheme: '٥. اختيار المظهر والخلفية (للتسجيلات الصوتية)',
-            audioNoticeBadge: '✨ فيديو 9:16 تلقائي للتسجيلات الصوتية',
+            labelBgTheme: '٥. اختيار الخلفية المرئية (خاص بالتسجيلات الصوتية فقط)',
+            audioNoticeBadge: '✨ فيديو 9:16 تلقائي للملفات الصوتية فقط',
             bgPalestineTitle: '🇵🇸 صمود فلسطين',
             bgPalestineSub: 'ألوان العلم الفلسطيني بنمط تجريدي',
             bgDarkTitle: '🌑 أسود ملكي داكن',
