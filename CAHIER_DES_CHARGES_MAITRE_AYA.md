@@ -13,6 +13,7 @@
 7. [Charte Graphique Officielle & Design System (UI/UX)](#7-charte-graphique-officielle--design-system-uiux)
 8. [Module Feedback Testeur & Connecteur GitHub Automatisé](#8-module-feedback-testeur--connecteur-github-automatisé)
 9. [Infrastructure Technique, I/O, Cache & Synchronisation Drive](#9-infrastructure-technique-io-cache--synchronisation-drive)
+10. [Phase 2 : Plateforme Publique, Communauté & Monétisation](#10-phase-2--plateforme-publique-communauté--monétisation)
 
 ---
 
@@ -299,3 +300,85 @@ Le service d'arrière-plan surveille les 3 dossiers Google Drive en boucle ferm�
 2. `02_EN_COURS` : Verrouillage exclusif, traitement par le pipeline local.
 3. `03_TERMINE` : Dépôt sécurisé des livrables finaux (`.mp4`, `.ass`, et si demandé `.jpg` et `.txt`).
 * En cas de dépassement de quota Service Account, le worker capture l'exception avec grâce, préserve les livrables locaux intacts et ne bloque jamais la réponse utilisateur.
+
+---
+
+## 10. PHASE 2 : PLATEFORME PUBLIQUE, COMMUNAUTÉ & MONÉTISATION
+
+### 10.1 Vision de la Phase 2 : De l'Outil de Production au Média Communautaire
+La Phase 1 a doté le Projet Aya d'un moteur industriel complet de traduction dialectale, de transcription acoustique et d'encodage audiovisuel. La Phase 2 étend ce périmètre en construisant un écosystème public bilingue complet, permettant d'amplifier la voix des civils palestiniens, de fédérer une communauté solidaire mondiale et d'assurer l'autonomie financière et opérationnelle du projet.
+
+---
+
+### 10.2 Espace Front-End Public & Fil d'Actualité Communautaire
+* **Fil d'actualité moderne & réactif (Newsfeed / Wall)** :
+  * Espace public accessible sans restriction technique pour consulter des annonces vérifiées, des alertes de terrain, des témoignages textuels, des notes vocales et des vidéos sous-titrées.
+  * Système de filtres par thématiques (Urgence humanitaire, Récits de vie, Témoignages d'enfants, Analyses factuelles).
+  * Affichage en cartes multimédias riches (lecteur vidéo 9:16 intégré, lecteur audio interactif avec onde sonore, transcription bilingue déroulante).
+* **Espace d'expression & de dépôt participatif** :
+  * Formulaire public permettant aux utilisateurs de déposer des annonces de soutien, des messages de solidarité et des vidéos/audios documentant la situation palestinienne.
+  * File d'attente de modération préalable (automatisée via l'Agent Jim pour détection de spam/contenus haineux + validation humaine) avant publication officielle.
+* **Ergonomie & Internationalisation Native** :
+  * Conception bilingue Français 🇫🇷 / Arabe 🇵🇸 avec support bidirectionnel (LTR / RTL) et polices officielles `Plus Jakarta Sans` / `Amiri` / `Cairo`.
+  * Optimisation mobile-first adaptée à une consommation fluide sur smartphone.
+
+---
+
+### 10.3 Création de l'Identité Visuelle & Logo Officiel
+* **Direction Artistique par Lionel** :
+  * Création d'un logo officiel professionnel, moderne et intemporel incarnant la mission d'Aya : la transmission fidèle de la parole palestinienne par la lumière et la technologie.
+  * Respect strict de la charte graphique : Bleu Primaire (`#0b5394`), Turquoise marque (`#00bcd4`), Noir profond, Blanc pur et accents aux couleurs palestiniennes (Noir, Blanc, Vert, Rouge).
+  * Règle d'or maintenue : Approche symbolique et géométrique "Zéro Humain" (ondes vocales stylisées, calligraphie arabe moderne du prénom "آية / Aya", typographie contemporaine).
+* **Déclinaisons & Kit de Marque** :
+  * Formats vectoriels haute résolution (SVG master, PNG transparent 4K).
+  * Variantes responsive : Favicon (32x32, 64x64), avatar réseaux sociaux (1:1), logo horizontal pour Navbar, et logo vertical pour écrans de chargement et miniatures.
+  * Guidelines d'utilisation, zones d'exclusion et contrastes accessibilité (WCAG AA).
+
+---
+
+### 10.4 Architecture de Base de Données Persistante
+* **Transition Technologique** :
+  * Remplacement du stockage temporaire en mémoire et des fichiers JSON plats par une base de données relationnelle ou documentaire scalable (ex: **PostgreSQL** avec Prisma/TypeORM ou **MongoDB** avec Mongoose).
+* **Modélisation des Données & Schémas** :
+  * **Utilisateurs & Profils (`users`)** : Identifiant unique, email vérifié, hash de mot de passe sécurisé (Argon2 / bcrypt), rôle (`public`, `contributor`, `subscriber`, `moderator`, `admin`), langue préférée, date d'inscription.
+  * **Abonnements & Transactions (`subscriptions` / `payments`)** : Statut de l'abonnement (`active`, `past_due`, `canceled`), identifiant client Stripe/PayPal, plan souscrit, historique des factures et dates de renouvellement.
+  * **Publications & Annonces (`posts`)** : Type de contenu (`announcement`, `testimony`, `audio`, `video`), texte source, traduction, URL des médias (Drive/S3/CDN), statut de modération (`pending`, `approved`, `rejected`), compteurs de vues et de partages.
+  * **Interactions & Commentaires (`interactions`)** : Réactions de solidarité, commentaires bilingues modérés, signalements de contenu.
+* **Indexation, Cache & Haute Disponibilité** :
+  * Indexation full-text multilingue (recherche en français et en arabe).
+  * Cache Redis pour les flux publics à fort trafic et les sessions utilisateurs.
+
+---
+
+### 10.5 Modèle Économique Freemium & Monétisation Durable
+Afin de financer les coûts récurrents d'infrastructure (appels API Gemini, serveurs GPU d'encodage vidéo, bande passante de streaming, hébergement base de données), la plateforme adopte un modèle Freemium transparent :
+
+* **Niveaux d'Accès & Fonctionnalités** :
+  1. **Niveau Gratuit (Public & Visiteurs)** :
+     * Consultation libre et illimitée du fil d'actualité et des médias publics.
+     * Soumission de messages de soutien et annonces (soumises à modération).
+     * Quota de découverte pour l'outil de traduction (ex: 2 traductions express par jour, vidéos limitées à 30 secondes en résolution standard).
+  2. **Niveau Soutien / Membre Engagé (Abonnement Mensuel / Annuel ou Don Libre)** :
+     * Traduction audio et vidéo illimitée en haute résolution (1080x1920 60fps).
+     * Priorité absolue dans la file de rendu FFmpeg et de transcription IA.
+     * Déblocage complet du Pack TikTok (Génération automatique de la Couverture 9:16 HD & Copywriting optimisé par Steve).
+     * Badge donateur exclusif à côté du nom sur le mur communautaire.
+     * Accès anticipé aux nouvelles fonctionnalités et aux rapports d'impact.
+* **Passerelles de Paiement Sécurisées** :
+  * Intégration de **Stripe** pour les paiements par cartes bancaires (CB, Visa, Mastercard) et prélèvements SEPA avec webhooks automatiques de synchronisation d'état.
+  * Intégration de **PayPal** pour les dons ponctuels et paiements internationaux simplifiés.
+  * Génération automatique de reçus de don et factures conformes.
+
+---
+
+### 10.6 Stricte Conformité Légale France & RGPD
+* **Cadre Juridique Français & Européen** :
+  * Rédaction et intégration des **Mentions Légales** obligatoires (loi LCEN) : identification de l'éditeur du site, coordonnées du directeur de publication, coordonnées complètes de l'hébergeur.
+  * **Conditions Générales d'Utilisation (CGU)** : Règles de respect mutuel, charte de bienveillance, interdiction des propos diffamatoires ou haineux, clauses de modération et de responsabilité.
+  * **Conditions Générales de Vente (CGV)** : Tarifs clairs en euros TTC, droit de rétractation et modalités de désabonnement en un clic pour les souscriptions.
+* **Protection des Données Personnelles (RGPD / CNIL)** :
+  * Politique de confidentialité transparente détaillant les finalités de chaque traitement de données.
+  * Gestion du consentement pour les cookies et traceurs via un bandeau conforme CNIL (avec choix explicite d'acceptation et de refus).
+  * Droits des utilisateurs garantis : droit d'accès, de rectification, de portabilité et de suppression définitive de leurs données personnelles ("Droit à l'oubli").
+  * Chiffrement des données en transit (HTTPS / TLS 1.3) et au repos (base de données chiffrée AES-256).
+
