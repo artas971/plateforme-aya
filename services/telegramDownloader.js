@@ -41,8 +41,36 @@ function ensureYtDlpUpdated() {
     });
 }
 
+const MIN_MEDIA_SIZE_BYTES = 150 * 1024; // 150 Ko minimum pour un vrai média vidéo/audio
+
 /**
- * Valide et normalise une URL Telegram
+ * Valide que le fichier téléchargé existe et fait au moins 150 Ko.
+ * En deçà, le fichier est considéré comme un faux positif (ex: page HTML d'erreur Telegram),
+ * il est supprimé immédiatement et lève une erreur MEDIA_TOO_BIG.
+ */
+function validateMediaFileSize(filePath) {
+    if (!filePath || !fs.existsSync(filePath)) {
+        const err = new Error("MEDIA_TOO_BIG: Fichier média introuvable après téléchargement.");
+        err.code = "MEDIA_TOO_BIG";
+        throw err;
+    }
+    const stats = fs.statSync(filePath);
+    if (stats.size < MIN_MEDIA_SIZE_BYTES) {
+        try {
+            fs.unlinkSync(filePath);
+            console.warn(`[Telegram Downloader] Fichier sous-dimensionné (${stats.size} octets < 150 Ko) supprimé : ${filePath}`);
+        } catch (unlinkErr) {
+            console.warn("[Telegram Downloader] Erreur suppression fichier temporaire:", unlinkErr.message);
+        }
+        const bigErr = new Error("MEDIA_TOO_BIG: Fichier invalide ou bloqué par Telegram.");
+        bigErr.code = "MEDIA_TOO_BIG";
+        throw bigErr;
+    }
+    return stats;
+}
+
+/**
+ * Valide et normalise une URL Telegram (nettoyage strict des paramètres d'URL comme ?t=2)
  */
 function parseTelegramUrl(rawUrl) {
     if (!rawUrl || typeof rawUrl !== 'string') return null;
@@ -58,18 +86,22 @@ function parseTelegramUrl(rawUrl) {
             return null;
         }
 
-        const parts = parsed.pathname.split('/').filter(Boolean);
+        // Nettoyage strict des paramètres d'URL (?t=2, etc.)
+        const cleanPath = parsed.pathname.replace(/\/+$/, '');
+        const cleanUrl = `${parsed.protocol}//${parsed.host}${cleanPath}`;
+
+        const parts = cleanPath.split('/').filter(Boolean);
         if (parts.length >= 2) {
             const channel = parts[0] === 'c' ? parts[1] : parts[0];
             const messageId = parts[0] === 'c' ? parts[2] : parts[1];
             return {
-                cleanUrl: url,
+                cleanUrl,
                 channel,
                 messageId,
                 embedUrl: `https://t.me/${parts.join('/')}?embed=1`
             };
         }
-        return { cleanUrl: url, embedUrl: `${url}?embed=1` };
+        return { cleanUrl, embedUrl: `${cleanUrl}?embed=1` };
     } catch (e) {
         return null;
     }
@@ -130,21 +162,32 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
 
         proc.on('close', (code) => {
             if (code === 0) {
+                let finalPath = null;
                 if (downloadedFilePath && fs.existsSync(downloadedFilePath)) {
-                    return resolve(downloadedFilePath);
-                }
-                const files = fs.readdirSync(outputDir)
-                    .filter(f => f.startsWith('tg_'))
-                    .map(f => ({ name: f, time: fs.statSync(path.join(outputDir, f)).mtimeMs }))
-                    .sort((a, b) => b.time - a.time);
+                    finalPath = downloadedFilePath;
+                } else {
+                    const files = fs.readdirSync(outputDir)
+                        .filter(f => f.startsWith('tg_'))
+                        .map(f => ({ name: f, time: fs.statSync(path.join(outputDir, f)).mtimeMs }))
+                        .sort((a, b) => b.time - a.time);
 
-                if (files.length > 0) {
-                    return resolve(path.join(outputDir, files[0].name));
+                    if (files.length > 0) {
+                        finalPath = path.join(outputDir, files[0].name);
+                    }
+                }
+
+                if (finalPath) {
+                    try {
+                        validateMediaFileSize(finalPath);
+                        return resolve(finalPath);
+                    } catch (valErr) {
+                        return reject(valErr);
+                    }
                 }
             }
 
             if (/media\s+is\s+too\s+big/i.test(lastError)) {
-                const bigErr = new Error("MEDIA_TOO_BIG: Cette vidéo Telegram est trop lourde pour un import automatique.");
+                const bigErr = new Error("MEDIA_TOO_BIG: Fichier invalide ou bloqué par Telegram.");
                 bigErr.code = "MEDIA_TOO_BIG";
                 return reject(bigErr);
             }
@@ -176,9 +219,9 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
 
     const html = await res.text();
 
-    // 2. Détection explicite de l'erreur Telegram "Media is too big"
+    // Détection explicite de l'erreur Telegram "Media is too big"
     if (/media\s+is\s+too\s+big/i.test(html)) {
-        const bigErr = new Error("MEDIA_TOO_BIG: Cette vidéo Telegram est trop lourde pour un import automatique.");
+        const bigErr = new Error("MEDIA_TOO_BIG: Fichier invalide ou bloqué par Telegram.");
         bigErr.code = "MEDIA_TOO_BIG";
         throw bigErr;
     }
@@ -212,6 +255,9 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
     const arrayBuf = await mediaRes.arrayBuffer();
     fs.writeFileSync(targetPath, Buffer.from(arrayBuf));
 
+    // Validation stricte du poids minimum (anti faux-positif / pages d'erreur HTML)
+    validateMediaFileSize(targetPath);
+
     if (onProgress) onProgress(40, "Média Telegram récupéré avec succès !");
     return targetPath;
 }
@@ -235,7 +281,7 @@ async function downloadTelegramMedia(rawUrl, outputDir = null, onProgress = null
     // 1. Essai prioritaire via yt-dlp
     try {
         const filePath = await downloadWithYtDlp(parsed.cleanUrl, targetDir, onProgress);
-        const stats = fs.statSync(filePath);
+        const stats = validateMediaFileSize(filePath);
         return {
             success: true,
             filePath,
@@ -253,7 +299,7 @@ async function downloadTelegramMedia(rawUrl, outputDir = null, onProgress = null
     // 2. Fallback via scraping direct d'embed public
     try {
         const filePath = await downloadViaEmbedScraping(parsed, targetDir, onProgress);
-        const stats = fs.statSync(filePath);
+        const stats = validateMediaFileSize(filePath);
         return {
             success: true,
             filePath,

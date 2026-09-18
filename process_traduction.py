@@ -122,15 +122,22 @@ def probe_media(media_path: str) -> dict:
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(res.stdout)
     except Exception as e:
-        print(f"[PROBE WARNING] Erreur ffprobe: {e}", file=sys.stderr)
-        data = {"streams": [], "format": {"duration": "30.0"}}
+        print(f"[PROBE ERROR] Erreur ffprobe: {e}", file=sys.stderr)
+        raise ValueError("Erreur : Média invalide, vide ou corrompu. Analyse ffprobe impossible.")
 
-    duration = 30.0
+    streams = data.get("streams", [])
+    if not streams or len(streams) == 0:
+        raise ValueError("Erreur : Média invalide, vide ou corrompu. Analyse ffprobe impossible.")
+
+    duration = 0.0
     if "format" in data and "duration" in data["format"]:
         try:
             duration = float(data["format"]["duration"])
         except Exception:
-            duration = 30.0
+            duration = 0.0
+
+    if duration <= 0.0:
+        raise ValueError("Erreur : Média invalide, vide ou corrompu. Analyse ffprobe impossible.")
 
     is_video = False
     has_audio = False
