@@ -108,6 +108,14 @@
             gap: 0.75rem;
         }
 
+        .drop-zone * {
+            pointer-events: none;
+        }
+
+        .drop-zone input[type="file"] {
+            pointer-events: auto;
+        }
+
         .drop-zone:hover, .drop-zone.dragover {
             border-color: var(--accent-color);
             background: rgba(0, 188, 212, 0.05);
@@ -1013,6 +1021,77 @@
             outline: none;
         }
 
+        /* 2bis. Bloc Contexte de la vidéo (Smart Description - Issue #16) */
+        .aya-context-box {
+            width: 100%;
+            background: #f8fafc;
+            border: 1px solid rgba(11, 83, 148, 0.16);
+            border-radius: 12px;
+            padding: 1.15rem 1.35rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            text-align: left;
+            transition: all 0.25s ease;
+        }
+
+        .aya-context-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-bottom: 1px solid rgba(11, 83, 148, 0.09);
+            padding-bottom: 0.55rem;
+        }
+
+        .aya-context-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-primary, #0b5394);
+        }
+
+        .aya-btn-copy-context {
+            background: #ffffff;
+            border: 1px solid rgba(11, 83, 148, 0.25);
+            color: var(--color-primary, #0b5394);
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .aya-btn-copy-context:hover {
+            background: var(--color-primary, #0b5394);
+            color: #ffffff;
+            border-color: var(--color-primary, #0b5394);
+            transform: translateY(-1px);
+        }
+
+        .aya-context-text {
+            font-size: 0.95rem;
+            line-height: 1.75;
+            color: #334155;
+            margin: 0;
+        }
+
+        [dir="rtl"] .aya-context-box {
+            text-align: right;
+        }
+
+        [dir="rtl"] .aya-context-header {
+            flex-direction: row-reverse;
+        }
+
         .aya-download-actions {
             display: flex;
             gap: 0.85rem;
@@ -1654,7 +1733,12 @@
         });
 
         // 1. Gestion du Drag & Drop
-        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('click', (e) => {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+        fileInput.addEventListener('click', (e) => e.stopPropagation());
 
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -2158,11 +2242,6 @@ ${safeText}
                     resultStatus.className = 'result-title';
                     resultStatus.innerHTML = '<span>✅</span> Vidéo sous-titrée générée avec succès !';
 
-                    const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
-                    const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
-                    const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
-                    const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
-
                     let previewHtml = `
                         <div class="aya-success-card">
                             <!-- 1. En-tête avec grand message de succès & Badges discrets -->
@@ -2187,6 +2266,25 @@ ${safeText}
                             <div class="aya-video-wrapper">
                                 <video class="aya-video-player" controls autoplay playsinline src="${finalData.mp4_url}"></video>
                             </div>
+
+                            <!-- 2bis. Contexte de la vidéo (Smart Description - Issue #16) -->
+                            ${finalData.context_summary ? `
+                                <div class="aya-context-box">
+                                    <div class="aya-context-header">
+                                        <div class="aya-context-title">
+                                            <span>📝</span>
+                                            <span data-i18n="labelVideoContext">${dict.labelVideoContext || 'Contexte de la vidéo'}</span>
+                                        </div>
+                                        <button type="button" id="btnCopyContext" class="aya-btn-copy-context" title="Copier la description contextuelle">
+                                            <span id="btnCopyContextIcon">📋</span>
+                                            <span id="btnCopyContextLabel" data-i18n="btnCopyContext">${dict.btnCopyContext || 'Copier le texte'}</span>
+                                        </button>
+                                    </div>
+                                    <p class="aya-context-text" id="videoContextText" style="${finalData.target_lang === 'ar' ? 'direction: rtl; text-align: right; font-family: Cairo, sans-serif;' : ''}">
+                                        ${(finalData.context_summary || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]))}
+                                    </p>
+                                </div>
+                            ` : ''}
 
                             <!-- 3. Boutons de téléchargement stylisés et clairs -->
                             <div class="aya-download-actions">
@@ -2217,6 +2315,34 @@ ${safeText}
                     `;
 
                     videoPreviewContainer.innerHTML = previewHtml;
+
+                    // Bouton de copie du résumé contextuel avec retour visuel Turquoise
+                    const btnCopyCtx = document.getElementById('btnCopyContext');
+                    const btnCopyCtxIcon = document.getElementById('btnCopyContextIcon');
+                    const btnCopyCtxLabel = document.getElementById('btnCopyContextLabel');
+                    if (btnCopyCtx && finalData.context_summary) {
+                        btnCopyCtx.addEventListener('click', async () => {
+                            try {
+                                await navigator.clipboard.writeText(finalData.context_summary);
+                                const origBg = btnCopyCtx.style.background;
+                                const origColor = btnCopyCtx.style.color;
+                                btnCopyCtx.style.background = '#00bcd4';
+                                btnCopyCtx.style.color = '#ffffff';
+                                btnCopyCtx.style.borderColor = '#00bcd4';
+                                btnCopyCtxIcon.textContent = '✅';
+                                btnCopyCtxLabel.textContent = dict.btnContextCopied || 'Copié !';
+                                setTimeout(() => {
+                                    btnCopyCtx.style.background = origBg;
+                                    btnCopyCtx.style.color = origColor;
+                                    btnCopyCtx.style.borderColor = '';
+                                    btnCopyCtxIcon.textContent = '📋';
+                                    btnCopyCtxLabel.textContent = dict.btnCopyContext || 'Copier le texte';
+                                }, 2000);
+                            } catch (err) {
+                                console.error('Erreur copie contexte:', err);
+                            }
+                        });
+                    }
 
                     // Standard Zéro-JSON : Logs console pour les développeurs, aucun JSON affiché à l'écran
                     console.log("⚡ [AYA PROCESS SUCCESS RESULT] :", finalData);

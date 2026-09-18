@@ -1020,6 +1020,66 @@ Une réalité brute partagée sans filtre pour que personne ne puisse détourner
     return str(output_desc_path)
 
 
+def generate_context_summary(segments: list, media_path: str = None, target_lang: str = 'fr') -> str:
+    """
+    Génère une description contextuelle intelligente (Smart Description) du média.
+    Consigne pour l'IA (Nadine & Thomas) :
+    "Décris la scène : Qui parle ? Que se passe-t-il ? Quel est le contexte ou le message principal ?" (3 à 4 phrases max).
+    """
+    if not segments:
+        return "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+
+    sample_texts = [s.get("text", "") for s in segments if s.get("text", "").strip()]
+    full_transcript = " ".join(sample_texts)
+
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    lang_desc = "en français soigné et percutant" if target_lang.lower() != 'ar' else "en arabe palestinien/arabe clair et percutant"
+
+    if gemini_key:
+        try:
+            prompt = f"""Tu es Nadine, linguiste et analyste de contexte humanitaire de la Plateforme Aya.
+En analysant la transcription suivante issue d'un enregistrement audio/vidéo réel, produis un résumé contextuel de 3 à 4 phrases maximum {lang_desc}.
+
+CONSIGNE STRICTE (DIRECTIVE NADINE & THOMAS) :
+"Décris la scène : Qui parle ? Que se passe-t-il ? Quel est le contexte ou le message principal ?"
+
+RÈGLES IMPÉRATIVES :
+1. Longueur : EXACTEMENT 3 à 4 phrases complètes, fluides et captivantes.
+2. Contenu : Identifie qui s'exprime (un habitant, un témoin, un journaliste, un soignant...), la situation vécue et la portée du message.
+3. Style : Direct, humain, digne et informatif. Pas de jargon technique, pas de puces, pas de métadonnées, pas de balises markdown.
+4. Restitue UNIQUEMENT les 3 à 4 phrases du résumé contextuel.
+
+TRANSCRIPTION DU MÉDIA :
+\"\"\"{full_transcript[:3000]}\"\"\"
+"""
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.4,
+                    "maxOutputTokens": 350
+                }
+            }
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                if raw_text and len(raw_text.strip()) > 20:
+                    summary = raw_text.strip().replace('```', '').replace('\n\n', ' ')
+                    print(f"[SMART CONTEXT] ✅ Résumé contextuel généré par l'IA (Nadine) : {summary[:80]}...", flush=True)
+                    return summary
+        except Exception as e:
+            print(f"[SMART CONTEXT WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
+
+    # Heuristique de secours si pas de clé API ou indisponibilité
+    meaningful = [t for t in sample_texts if len(t.split()) >= 3][:4]
+    if meaningful:
+        if target_lang.lower() == 'ar':
+            return "شهادة ميدانية حية توثق الواقع والرسالة الإنسانية المنقولة عبر هذا التسجيل. " + " ".join(meaningful[:3])
+        return "Ce média capture un témoignage direct et authentique du terrain. Les intervenants partagent leur réalité et la situation vécue. " + " ".join(meaningful[:2])
+    return "Témoignage direct documentant la situation et délivrant un message humain essentiel."
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"success": False, "error": "Argument fichier média manquant."}))
@@ -1112,6 +1172,8 @@ def main():
             with open(md_path, 'w', encoding='utf-8') as f:
                 f.write(md_content)
 
+            print(f"[PROGRESS] 98% - 📝 Nadine & Thomas rédigent le résumé contextuel de la scène...", flush=True)
+            context_summary = generate_context_summary(segments, media_path=media_input, target_lang=target_lang)
             print(f"[PROGRESS] 100% - Traduction Express prête en Markdown ({len(segments)} segments) !", flush=True)
 
             response = {
@@ -1122,6 +1184,7 @@ def main():
                 "source_lang": source_lang,
                 "target_lang": target_lang,
                 "duration": round(duration, 2),
+                "context_summary": context_summary,
                 "clean_text": full_text,
                 "markdown_text": md_content,
                 "markdown_filename": md_filename,
@@ -1166,6 +1229,9 @@ def main():
             generate_steve_description(clean_stem, segments, desc_path, target_lang=target_lang)
             print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
 
+        print("[PROGRESS] 98% - 📝 Nadine & Thomas rédigent le résumé contextuel de la scène...", flush=True)
+        context_summary = generate_context_summary(segments, media_path=media_input, target_lang=target_lang)
+
         print("[PROGRESS] 100% - Vidéo sous-titrée finalisée avec succès !", flush=True)
 
         # 6. Réponse finale JSON
@@ -1178,6 +1244,7 @@ def main():
             "sub_color": sub_color_hex,
             "sub_position": sub_margin_v,
             "duration": round(duration, 2),
+            "context_summary": context_summary,
             "mp4_filename": mp4_filename,
             "mp4_url": f"/download/{mp4_filename}",
             "ass_filename": ass_filename,

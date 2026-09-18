@@ -122,6 +122,9 @@
             btnDownloadAss: '📄 Télécharger le fichier .ASS',
             btnDownloadCover: '🖼️ Télécharger la Couverture 9:16 (Lionel)',
             btnDownloadDesc: '📝 Télécharger le Copywriting TikTok (Steve)',
+            labelVideoContext: '📝 Contexte de la vidéo',
+            btnCopyContext: '📋 Copier le texte',
+            btnContextCopied: '✅ Copié !',
 
             // Conseil des Agents
             councilTitle: 'Conseil des 7 Agents IA - Audit & Stratégie',
@@ -317,6 +320,9 @@
             btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
             btnDownloadCover: '🖼️ تحميل غلاف تيك توك 9:16 (ليونيل)',
             btnDownloadDesc: '📝 تحميل نصوص النشر والوصف (ستيف)',
+            labelVideoContext: '📝 سياق الفيديو',
+            btnCopyContext: '📋 نسخ النص',
+            btnContextCopied: '✅ تم النسخ!',
 
             // Conseil des Agents
             councilTitle: 'مجلس الوكلاء السبعة - تدقيق الجودة والاستراتيجية',

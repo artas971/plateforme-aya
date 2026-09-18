@@ -95,6 +95,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "5. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
             "6. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
             "7. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
+            "8. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse attentivement la scène : qui parle, ce qui se passe, le contexte émotionnel et le message principal pour guider la justesse du sous-titrage.\n"
             f"{lexicon_directive}"
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (français).\n"
             "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 5.0, \"text\": \"la situation est très difficile.\"}]"
@@ -125,7 +126,8 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "4. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 1.5 à 4.0 secondes). "
             "TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en plusieurs sous-segments courts synchronisés.\n"
             "5. TIMESTAMPS RELATIFS : Les temps 'start' et 'end' doivent être exprimés en secondes (nombres flottants) relatifs au DÉBUT de cet extrait audio (0.0s = début du fichier fourni), avec 'end' > 'start'.\n"
-            "6. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n\n"
+            "6. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
+            "7. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse la scène (qui parle, ce qui se passe, le contexte et le message principal) pour garantir l'adéquation parfaite des sous-titres avec la réalité vécue.\n\n"
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (arabe palestinien de Gaza).\n"
             "Exemple : [{\"start\": 0.0, \"end\": 2.8, \"text\": \"أخوي ستيف، العنف مش بس بالسلاح...\"}, {\"start\": 2.8, \"end\": 4.5, \"text\": \"في وجع تاني الناس مش شايفتو.\"}]"
         )
