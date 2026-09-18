@@ -31,14 +31,48 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Fichiers Statiques
-app.use(express.static(path.join(__dirname, 'public')));
+// Session Express (Authentification des Testeurs Habilités)
+const session = require('express-session');
+const { authRouter, requireAuth } = require('./routes/auth');
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'aya_secret_key_palestine_2026',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24, // 24 heures
+        httpOnly: true,
+        secure: false
+    }
+}));
+
+// Routeur d'authentification publique (/api/auth/login, /api/auth/session, /logout)
+app.use(authRouter);
+
+// Page de connexion publique (redirection vers / si déjà connecté)
+app.get('/login', (req, res) => {
+    if (req.session && req.session.user && req.session.user.authenticated) {
+        return res.redirect('/');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Fichiers Statiques (avec index: false pour que '/' passe obligatoirement par requireAuth)
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));
 app.use('/audio_a_traiter', express.static(AUDIO_A_TRAITER_DIR));
 app.use('/fichiers_reponse_a_envoyer', express.static(REPONSED_DIR));
 app.use('/download', express.static(REPONSED_DIR));
 
-// Montage des 7 Routeurs Modulaires
+// Route racine protégée
+app.get('/', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Verrouillage de sécurité global : toutes les routes applicatives et API suivantes nécessitent d'être connecté
+app.use(requireAuth);
+
+// Montage des 7 Routeurs Modulaires Protégés
 const chatRouter = require('./routes/chat');
 const studioRouter = require('./routes/studio');
 const audioRouter = require('./routes/audio');

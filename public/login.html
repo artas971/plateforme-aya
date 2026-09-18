@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Testeurs - Plateforme Aya</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Amiri', serif;
+            color: var(--color-dark-gray);
+        }
+
+        html[dir="rtl"] body {
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 440px;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border: 1px solid rgba(153, 153, 153, 0.25);
+            border-radius: 14px;
+            padding: 2.25rem 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        .login-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .avatar-badge-login {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary-blue), #073763);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border: 2px solid var(--color-turquoise);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.35);
+        }
+
+        .login-title-group h1 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--color-primary-blue);
+            line-height: 1.2;
+        }
+
+        .login-title-group p {
+            margin: 0.2rem 0 0 0;
+            font-size: 0.8rem;
+            color: var(--color-gray-secondary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html[dir="rtl"] .login-title-group p {
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        .lang-switch-login {
+            display: flex;
+            gap: 0.3rem;
+            background: #f1f5f9;
+            padding: 0.25rem;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.3rem 0.6rem;
+            border-radius: 16px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--color-dark-gray);
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #ffffff;
+            color: var(--color-primary-blue);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .security-badge {
+            background: rgba(11, 83, 148, 0.08);
+            border: 1px solid rgba(11, 83, 148, 0.25);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.8rem;
+            color: var(--color-primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--color-dark-gray);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html[dir="rtl"] .form-label {
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid rgba(153, 153, 153, 0.35);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: var(--color-dark-gray);
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--color-turquoise);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.18);
+        }
+
+        .btn-submit-login {
+            background: var(--color-turquoise);
+            color: #ffffff;
+            border: none;
+            padding: 0.95rem;
+            border-radius: 8px;
+            font-size: 1.02rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.35);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html[dir="rtl"] .btn-submit-login {
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        .btn-submit-login:hover:not(:disabled) {
+            background: #0097a7;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.45);
+        }
+
+        .btn-submit-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-banner {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #b91c1c;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .login-footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-gray-secondary);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <!-- Barre supérieure & Switcher de Langue -->
+            <div class="login-top-bar">
+                <div class="login-brand">
+                    <div class="avatar-badge-login">آية</div>
+                    <div class="login-title-group">
+                        <h1 id="txtTitle">Plateforme Aya</h1>
+                        <p id="txtSubtitle">Sas de Sécurité Testeurs</p>
+                    </div>
+                </div>
+                <div class="lang-switch-login">
+                    <button type="button" class="lang-btn active" id="btnFr">FR</button>
+                    <button type="button" class="lang-btn" id="btnAr">العربية</button>
+                </div>
+            </div>
+
+            <!-- Badge Sécurisé -->
+            <div class="security-badge">
+                <span style="font-size: 1.3rem;">🛡️</span>
+                <span id="txtBadge">Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve et John.</span>
+            </div>
+
+            <!-- Message d'Erreur -->
+            <div class="error-banner" id="errorBanner"></div>
+
+            <!-- Formulaire d'Authentification -->
+            <form id="loginForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <!-- 1. Sélection de l'Identité -->
+                <div class="form-group">
+                    <label class="form-label" for="selectTester" id="labelTester">1. Qui êtes-vous ?</label>
+                    <select class="form-select" id="selectTester" required>
+                        <option value="" disabled selected id="optPlaceholder">-- Sélectionnez votre identité --</option>
+                        <option value="anais">Anaïs</option>
+                        <option value="aya">Aya</option>
+                        <option value="soso">Soso</option>
+                        <option value="steve">Steve</option>
+                        <option value="john">John</option>
+                    </select>
+                </div>
+
+                <!-- 2. Code d'accès -->
+                <div class="form-group">
+                    <label class="form-label" for="inputCode" id="labelCode">2. Code d'accès</label>
+                    <input type="password" class="form-input" id="inputCode" placeholder="Entrez le code d'accès..." required autocomplete="current-password">
+                </div>
+
+                <!-- Bouton Connexion -->
+                <button type="submit" class="btn-submit-login" id="btnSubmit">
+                    <span>🔐</span> <span id="txtSubmit">Déverrouiller & Accéder</span>
+                </button>
+            </form>
+
+            <div class="login-footer-note" id="txtFooter">
+                Projet Aya &copy; 2026 • Accès restreint et chiffré
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dict = {
+            fr: {
+                dir: 'ltr',
+                title: 'Plateforme Aya',
+                subtitle: 'Sas de Sécurité Testeurs',
+                badge: 'Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve et John.',
+                labelTester: '1. Qui êtes-vous ?',
+                optPlaceholder: '-- Sélectionnez votre identité --',
+                labelCode: '2. Code d\'accès',
+                placeholderCode: 'Entrez le code d\'accès...',
+                submit: 'Déverrouiller & Accéder',
+                submitting: 'Vérification des accès...',
+                footer: 'Projet Aya © 2026 • Accès restreint et chiffré',
+                errEmpty: 'Veuillez sélectionner votre nom et saisir le code d\'accès.',
+                errFailed: 'Échec de connexion : code d\'accès invalide.'
+            },
+            ar: {
+                dir: 'rtl',
+                title: 'منصة آية الذكية',
+                subtitle: 'بوابة الدخول الآمنة للفاحصين',
+                badge: 'منطقة مخصصة حصرياً لفريق الفحص المعتمد: أنس، آية، سوسو، ستيف، جون.',
+                labelTester: '١. من أنت؟ (اختر هويتك)',
+                optPlaceholder: '-- اختر اسمك من القائمة --',
+                labelCode: '٢. رمز الدخول السري',
+                placeholderCode: 'أدخل رمز الدخول المعتمد...',
+                submit: 'فتح الدخول والانتقال للمنصة',
+                submitting: 'جاري التحقق من الصلاحيات...',
+                footer: 'مشروع آية © 2026 • دخول مشفر ومحمي',
+                errEmpty: 'يرجى اختيار اسمك وكتابة رمز الدخول السري.',
+                errFailed: 'فشل تسجيل الدخول: رمز الدخول غير صحيح.'
+            }
+        };
+
+        let currentLang = localStorage.getItem('aya_lang') || 'fr';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('aya_lang', lang);
+            const d = dict[lang] || dict.fr;
+
+            document.documentElement.setAttribute('dir', d.dir);
+            document.documentElement.setAttribute('lang', lang);
+
+            document.getElementById('txtTitle').textContent = d.title;
+            document.getElementById('txtSubtitle').textContent = d.subtitle;
+            document.getElementById('txtBadge').textContent = d.badge;
+            document.getElementById('labelTester').textContent = d.labelTester;
+            document.getElementById('optPlaceholder').textContent = d.optPlaceholder;
+            document.getElementById('labelCode').textContent = d.labelCode;
+            document.getElementById('inputCode').placeholder = d.placeholderCode;
+            document.getElementById('txtSubmit').textContent = d.submit;
+            document.getElementById('txtFooter').textContent = d.footer;
+
+            if (lang === 'ar') {
+                document.getElementById('btnAr').classList.add('active');
+                document.getElementById('btnFr').classList.remove('active');
+            } else {
+                document.getElementById('btnFr').classList.add('active');
+                document.getElementById('btnAr').classList.remove('active');
+            }
+        }
+
+        document.getElementById('btnFr').addEventListener('click', () => setLanguage('fr'));
+        document.getElementById('btnAr').addEventListener('click', () => setLanguage('ar'));
+        setLanguage(currentLang);
+
+        // Soumission du formulaire
+        const loginForm = document.getElementById('loginForm');
+        const selectTester = document.getElementById('selectTester');
+        const inputCode = document.getElementById('inputCode');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const txtSubmit = document.getElementById('txtSubmit');
+        const errorBanner = document.getElementById('errorBanner');
+
+        // Pré-sélectionner si utilisateur déjà en mémoire locale
+        try {
+            const cachedUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
+            if (cachedUser.id && ['anais', 'aya', 'soso', 'steve', 'john'].includes(cachedUser.id)) {
+                selectTester.value = cachedUser.id;
+            }
+        } catch(e) {}
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBanner.style.display = 'none';
+
+            const testerId = selectTester.value;
+            const code = inputCode.value;
+            const d = dict[currentLang] || dict.fr;
+
+            if (!testerId || !code) {
+                errorBanner.textContent = d.errEmpty;
+                errorBanner.style.display = 'block';
+                return;
+            }
+
+            btnSubmit.disabled = true;
+            txtSubmit.textContent = d.submitting;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tester_id: testerId,
+                        access_code: code
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success && data.user) {
+                    // Sauvegarde du testeur dans localStorage
+                    localStorage.setItem('aya_user', JSON.stringify(data.user));
+                    
+                    // Redirection vers l'accueil ou studio
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect') || '/';
+                    window.location.href = redirect;
+                } else {
+                    errorBanner.textContent = data.error || d.errFailed;
+                    errorBanner.style.display = 'block';
+                    btnSubmit.disabled = false;
+                    txtSubmit.textContent = d.submit;
+                }
+            } catch (err) {
+                errorBanner.textContent = `Erreur réseau : ${err.message}`;
+                errorBanner.style.display = 'block';
+                btnSubmit.disabled = false;
+                txtSubmit.textContent = d.submit;
+            }
+        });
+    </script>
+</body>
+</html>

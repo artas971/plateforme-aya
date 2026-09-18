@@ -437,8 +437,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('aya_user');
-                alert(currentLang === 'ar' ? 'تم تسجيل الخروج بنجاح.' : 'Vous avez été déconnecté avec succès.');
-                window.location.reload();
+                window.location.href = '/logout';
             });
         }
 
