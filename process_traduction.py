@@ -980,13 +980,15 @@ def main():
     force_reprocess = (sys.argv[6].lower() in ('true', '1', 'yes')) if len(sys.argv) > 6 else False
     generate_tiktok_pack = (sys.argv[7].lower() in ('true', '1', 'yes')) if len(sys.argv) > 7 else False
     bg_theme = sys.argv[8] if len(sys.argv) > 8 else 'bg_palestine'
+    express_mode = (sys.argv[9].lower() in ('true', '1', 'yes')) if len(sys.argv) > 9 else False
 
     if not os.path.exists(media_input):
         print(json.dumps({"success": False, "error": f"Fichier introuvable : {media_input}"}))
         sys.exit(1)
 
     try:
-        print("[PROGRESS] 5% - Initialisation du pipeline de traduction & sous-titrage...", flush=True)
+        mode_label = "⚡ Mode Express (Texte Uniquement)" if express_mode else "🎬 Vidéo Complète"
+        print(f"[PROGRESS] 5% - Initialisation du pipeline de traduction ({mode_label})...", flush=True)
 
         # 1. Analyse média & Silences réels
         print("[PROGRESS] 12% - Analyse acoustique et cartographie des silences FFmpeg...", flush=True)
@@ -1001,6 +1003,74 @@ def main():
 
         # 2. Transcription & Traduction par Protocole Scan 5s
         segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess)
+
+        # ⚡ COURT-CIRCUIT MODE EXPRESS (MODULE 2 : TEXTE MARKDOWN EN < 5S)
+        if express_mode:
+            print("[PROGRESS] 85% - Formatage Markdown structuré du texte traduit (Mode Express)...", flush=True)
+            raw_stem = Path(media_input).stem
+            clean_stem = re.sub(r'^\d+_', '', raw_stem)
+            md_filename = f"{clean_stem} (Traduction Express).md"
+            md_path = OUTPUT_DIR / md_filename
+
+            full_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text")]).strip()
+
+            src_display = "Arabe palestinien (Gaza)" if source_lang == 'ar' else ("Français" if source_lang == 'fr' else "Détection automatique")
+            tgt_display = "Arabe palestinien (VOAR)" if target_lang == 'ar' else "Français (VOSTFR)"
+
+            md_lines = [
+                "# 📝 Traduction Texte Express - Plateforme Aya",
+                f"**Fichier source** : `{Path(media_input).name}`  ",
+                f"**Sens** : `{src_display} ➔ {tgt_display}`  ",
+                f"**Durée du média** : `{duration:.1f}s` | **Segments** : `{len(segments)}` | **Moteur IA** : `{ai_model_used}`  ",
+                "",
+                "---",
+                "",
+                "### 📜 Texte Traduit Intégral",
+                "",
+                f"{full_text}",
+                "",
+                "---",
+                "",
+                "### ⏱️ Découpage Horodaté des Répliques",
+                ""
+            ]
+
+            for s in segments:
+                st = format_ass_time(float(s.get("start", 0.0)))
+                et = format_ass_time(float(s.get("end", 0.0)))
+                txt = s.get("text", "").strip()
+                md_lines.append(f"- **[{st} ➔ {et}]** : {txt}")
+
+            md_lines.append("")
+            md_lines.append("---")
+            md_lines.append("*Généré instantanément par le Module 2 de la Plateforme Aya (Protocole V3 - Zéro FFmpeg).*")
+
+            md_content = "\n".join(md_lines)
+            with open(md_path, 'w', encoding='utf-8') as f:
+                f.write(md_content)
+
+            print(f"[PROGRESS] 100% - Traduction Express prête en Markdown ({len(segments)} segments) !", flush=True)
+
+            response = {
+                "success": True,
+                "express_mode": True,
+                "media_type": "audio" if not is_video else "video",
+                "ai_model_used": ai_model_used,
+                "source_lang": source_lang,
+                "target_lang": target_lang,
+                "duration": round(duration, 2),
+                "clean_text": full_text,
+                "markdown_text": md_content,
+                "markdown_filename": md_filename,
+                "markdown_url": f"/download/{md_filename}",
+                "segments_count": len(segments),
+                "segments": segments,
+                "silences_count": len(silences)
+            }
+            print("\n---JSON_OUTPUT_START---", flush=True)
+            print(json.dumps(response, ensure_ascii=False, indent=2), flush=True)
+            print("---JSON_OUTPUT_END---", flush=True)
+            return
 
         # 3. Noms des fichiers de sortie normalisés (courts, lisibles et standardisés)
         print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)

@@ -181,6 +181,60 @@
             color: var(--error-color);
         }
 
+        /* Sélecteur de Mode de Traitement */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .mode-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+
+        .mode-card:hover {
+            border-color: var(--accent-color);
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+
+        .mode-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 14px rgba(0, 188, 212, 0.25);
+        }
+
+        .mode-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .mode-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .mode-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .mode-sub {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
         /* Sélecteur de Langue Source */
         .source-grid {
             display: grid;
@@ -1000,7 +1054,28 @@
                 <button type="button" class="btn-remove-file" id="btnRemoveFile" title="Retirer ce fichier">✕</button>
             </div>
 
-            <!-- 2. Sélecteur de Langue Source (Origine) -->
+            <!-- 0. Sélecteur de Mode de Traitement -->
+            <div>
+                <div class="section-label" id="labelProcessingMode" style="margin-bottom: 0.75rem;">0. Mode de traitement</div>
+                <div class="mode-grid">
+                    <div class="mode-card active" data-mode="video" id="modeCardVideo">
+                        <span class="mode-icon">🎬</span>
+                        <div class="mode-details">
+                            <div class="mode-title" id="modeVideoTitle">🎬 Vidéo Complète</div>
+                            <div class="mode-sub" id="modeVideoSub">Incrustation sous-titres 9:16 & encodage FFmpeg</div>
+                        </div>
+                    </div>
+                    <div class="mode-card" data-mode="express" id="modeCardExpress">
+                        <span class="mode-icon">⚡</span>
+                        <div class="mode-details">
+                            <div class="mode-title" id="modeExpressTitle">⚡ Mode Express (Texte Uniquement)</div>
+                            <div class="mode-sub" id="modeExpressSub">Traduction directe en texte Markdown (&lt; 5s)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. Sélecteur de Langue Source (Origine) -->
             <div>
                 <div class="section-label" id="labelSourceLang" style="margin-bottom: 0.75rem;">1. Langue parlée d'origine (Source)</div>
                 <div class="source-grid">
@@ -1049,100 +1124,103 @@
                 </div>
             </div>
 
-            <!-- 4. Sélecteur de Couleur des Sous-titres -->
-            <div>
-                <div class="section-label" id="labelSubColor" style="margin-bottom: 0.75rem;">3. Couleur des sous-titres</div>
-                <div class="color-grid">
-                    <div class="color-card active" data-color="#FFFF00">
-                        <div class="color-circle" style="background: #FFFF00;"></div>
-                        <span id="colorYellowTitle">Jaune</span>
-                    </div>
-                    <div class="color-card" data-color="#FFFFFF">
-                        <div class="color-circle" style="background: #FFFFFF;"></div>
-                        <span id="colorWhiteTitle">Blanc</span>
-                    </div>
-                    <div class="color-card" data-color="#00E676">
-                        <div class="color-circle" style="background: #00E676;"></div>
-                        <span id="colorGreenTitle">Vert</span>
-                    </div>
-                    <div class="color-card" data-color="#38BDF8">
-                        <div class="color-circle" style="background: #38BDF8;"></div>
-                        <span id="colorCyanTitle">Cyan</span>
+            <!-- Options strictement vidéo (masquées en mode express) -->
+            <div id="videoOptionsWrapper" style="display: flex; flex-direction: column; gap: 1.75rem;">
+                <!-- 4. Sélecteur de Couleur des Sous-titres -->
+                <div>
+                    <div class="section-label" id="labelSubColor" style="margin-bottom: 0.75rem;">3. Couleur des sous-titres</div>
+                    <div class="color-grid">
+                        <div class="color-card active" data-color="#FFFF00">
+                            <div class="color-circle" style="background: #FFFF00;"></div>
+                            <span id="colorYellowTitle">Jaune</span>
+                        </div>
+                        <div class="color-card" data-color="#FFFFFF">
+                            <div class="color-circle" style="background: #FFFFFF;"></div>
+                            <span id="colorWhiteTitle">Blanc</span>
+                        </div>
+                        <div class="color-card" data-color="#00E676">
+                            <div class="color-circle" style="background: #00E676;"></div>
+                            <span id="colorGreenTitle">Vert</span>
+                        </div>
+                        <div class="color-card" data-color="#38BDF8">
+                            <div class="color-circle" style="background: #38BDF8;"></div>
+                            <span id="colorCyanTitle">Cyan</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 5. Sélecteur de Position Verticale -->
-            <div>
-                <div class="section-label" id="labelSubPosition" style="margin-bottom: 0.75rem;">4. Position des sous-titres</div>
-                <div class="pos-grid">
-                    <div class="pos-card active" data-pos="950">
-                        <div class="pos-title" id="posBottomTitle">⬇️ Bas (950)</div>
-                        <div class="pos-sub" id="posBottomSub">Format standard TikTok/Reels</div>
-                    </div>
-                    <div class="pos-card" data-pos="500">
-                        <div class="pos-title" id="posMidTitle">↕️ Milieu (500)</div>
-                        <div class="pos-sub" id="posMidSub">Centre de l'écran</div>
-                    </div>
-                    <div class="pos-card" data-pos="150">
-                        <div class="pos-title" id="posTopTitle">⬆️ Haut (150)</div>
-                        <div class="pos-sub" id="posTopSub">Sous l'en-tête</div>
+                <!-- 5. Sélecteur de Position Verticale -->
+                <div>
+                    <div class="section-label" id="labelSubPosition" style="margin-bottom: 0.75rem;">4. Position des sous-titres</div>
+                    <div class="pos-grid">
+                        <div class="pos-card active" data-pos="950">
+                            <div class="pos-title" id="posBottomTitle">⬇️ Bas (950)</div>
+                            <div class="pos-sub" id="posBottomSub">Format standard TikTok/Reels</div>
+                        </div>
+                        <div class="pos-card" data-pos="500">
+                            <div class="pos-title" id="posMidTitle">↕️ Milieu (500)</div>
+                            <div class="pos-sub" id="posMidSub">Centre de l'écran</div>
+                        </div>
+                        <div class="pos-card" data-pos="150">
+                            <div class="pos-title" id="posTopTitle">⬆️ Haut (150)</div>
+                            <div class="pos-sub" id="posTopSub">Sous l'en-tête</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 5. Choix du Visuel pour Notes Vocales -->
-            <div id="bgThemeSection">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <div class="section-label" id="labelBgTheme">5. Choix du visuel (Pour les notes vocales)</div>
-                    <span style="font-size: 0.78rem; color: var(--accent-color); font-weight: 600;" id="audioNoticeBadge">✨ Vidéo 9:16 automatique pour audios</span>
+                <!-- 5. Choix du Visuel pour Notes Vocales -->
+                <div id="bgThemeSection">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div class="section-label" id="labelBgTheme">5. Choix du visuel (Pour les notes vocales)</div>
+                        <span style="font-size: 0.78rem; color: var(--accent-color); font-weight: 600;" id="audioNoticeBadge">✨ Vidéo 9:16 automatique pour audios</span>
+                    </div>
+                    <div class="bg-grid">
+                        <div class="bg-card active" data-bg="bg_palestine">
+                            <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
+                            <div class="bg-details">
+                                <div class="bg-title" id="bgPalestineTitle">🇵🇸 Palestine Résilience</div>
+                                <div class="bg-sub" id="bgPalestineSub">Noir, Blanc, Vert, Rouge abstrait</div>
+                            </div>
+                        </div>
+                        <div class="bg-card" data-bg="bg_dark">
+                            <img src="/assets/backgrounds/bg_dark.jpg" alt="Noir Profond" class="bg-thumb">
+                            <div class="bg-details">
+                                <div class="bg-title" id="bgDarkTitle">🌑 Noir Profond</div>
+                                <div class="bg-sub" id="bgDarkSub">Minimaliste & contraste OLED</div>
+                            </div>
+                        </div>
+                        <div class="bg-card" data-bg="bg_turquoise">
+                            <img src="/assets/backgrounds/bg_turquoise.jpg" alt="Turquoise Espoir" class="bg-thumb">
+                            <div class="bg-details">
+                                <div class="bg-title" id="bgTurquoiseTitle">🌊 Turquoise Espoir</div>
+                                <div class="bg-sub" id="bgTurquoiseSub">Couleur officielle Aya #00bcd4</div>
+                            </div>
+                        </div>
+                        <div class="bg-card" data-bg="bg_temoignage">
+                            <img src="/assets/backgrounds/bg_temoignage.jpg" alt="Témoignage" class="bg-thumb">
+                            <div class="bg-details">
+                                <div class="bg-title" id="bgTemoignageTitle">🎙️ Témoignage Sobre</div>
+                                <div class="bg-sub" id="bgTemoignageSub">Cadre solennel pour récits</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-grid">
-                    <div class="bg-card active" data-bg="bg_palestine">
-                        <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
-                        <div class="bg-details">
-                            <div class="bg-title" id="bgPalestineTitle">🇵🇸 Palestine Résilience</div>
-                            <div class="bg-sub" id="bgPalestineSub">Noir, Blanc, Vert, Rouge abstrait</div>
-                        </div>
-                    </div>
-                    <div class="bg-card" data-bg="bg_dark">
-                        <img src="/assets/backgrounds/bg_dark.jpg" alt="Noir Profond" class="bg-thumb">
-                        <div class="bg-details">
-                            <div class="bg-title" id="bgDarkTitle">🌑 Noir Profond</div>
-                            <div class="bg-sub" id="bgDarkSub">Minimaliste & contraste OLED</div>
-                        </div>
-                    </div>
-                    <div class="bg-card" data-bg="bg_turquoise">
-                        <img src="/assets/backgrounds/bg_turquoise.jpg" alt="Turquoise Espoir" class="bg-thumb">
-                        <div class="bg-details">
-                            <div class="bg-title" id="bgTurquoiseTitle">🌊 Turquoise Espoir</div>
-                            <div class="bg-sub" id="bgTurquoiseSub">Couleur officielle Aya #00bcd4</div>
-                        </div>
-                    </div>
-                    <div class="bg-card" data-bg="bg_temoignage">
-                        <img src="/assets/backgrounds/bg_temoignage.jpg" alt="Témoignage" class="bg-thumb">
-                        <div class="bg-details">
-                            <div class="bg-title" id="bgTemoignageTitle">🎙️ Témoignage Sobre</div>
-                            <div class="bg-sub" id="bgTemoignageSub">Cadre solennel pour récits</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 5bis. Pack Assets TikTok Optionnel (Couverture 9:16 & Copywriting) -->
-            <label class="tiktok-pack-box" for="chkGenerateTiktokPack">
-                <div class="tiktok-pack-left">
-                    <span class="tiktok-pack-icon">🎨</span>
-                    <div>
-                        <div class="tiktok-pack-title" id="chkTiktokPackText">Générer le Pack TikTok (Couverture 9:16 & Copywriting)</div>
-                        <div class="tiktok-pack-sub" id="chkTiktokPackSub">Optionnel : Couverture 9:16 abstraite (Lionel) & Rédaction optimisée (Steve)</div>
+                <!-- 5bis. Pack Assets TikTok Optionnel (Couverture 9:16 & Copywriting) -->
+                <label class="tiktok-pack-box" for="chkGenerateTiktokPack">
+                    <div class="tiktok-pack-left">
+                        <span class="tiktok-pack-icon">🎨</span>
+                        <div>
+                            <div class="tiktok-pack-title" id="chkTiktokPackText">Générer le Pack TikTok (Couverture 9:16 & Copywriting)</div>
+                            <div class="tiktok-pack-sub" id="chkTiktokPackSub">Optionnel : Couverture 9:16 abstraite (Lionel) & Rédaction optimisée (Steve)</div>
+                        </div>
                     </div>
-                </div>
-                <div class="toggle-switch">
-                    <input type="checkbox" id="chkGenerateTiktokPack">
-                    <span class="toggle-slider"></span>
-                </div>
-            </label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="chkGenerateTiktokPack">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
 
             <!-- 6. Bouton d'action & Option Bypass Cache -->
             <button type="button" class="btn-submit" id="btnSubmit" disabled>
@@ -1216,11 +1294,24 @@
             });
         }
 
+        enableCardGroup('.mode-card');
         enableCardGroup('.source-card');
         enableCardGroup('.lang-card');
         enableCardGroup('.color-card');
         enableCardGroup('.pos-card');
         enableCardGroup('.bg-card');
+
+        // Bascule dynamique des options selon le mode de traitement sélectionné
+        const modeCards = document.querySelectorAll('.mode-card');
+        const videoOptionsWrapper = document.getElementById('videoOptionsWrapper');
+        modeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const mode = card.dataset.mode;
+                if (videoOptionsWrapper) {
+                    videoOptionsWrapper.style.display = (mode === 'express') ? 'none' : 'flex';
+                }
+            });
+        });
 
         // 1. Gestion du Drag & Drop
         dropZone.addEventListener('click', () => fileInput.click());
@@ -1341,6 +1432,9 @@
             const activeBgCard = document.querySelector('.bg-card.active');
             const bgTheme = activeBgCard ? (activeBgCard.dataset.bg || 'bg_palestine') : 'bg_palestine';
             formData.append('bg_theme', bgTheme);
+            const activeModeCard = document.querySelector('.mode-card.active');
+            const expressMode = (activeModeCard && activeModeCard.dataset.mode === 'express') ? 'true' : 'false';
+            formData.append('express_mode', expressMode);
 
             try {
                 const response = await fetch('/api/traduction/process', {
@@ -1395,6 +1489,127 @@
                 }
 
                 if (finalData && finalData.success) {
+                    const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
+                    const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
+                    const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
+                    const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
+                    const isFallback = modelUsed.toLowerCase().includes('lite') || (modelUsed !== 'gemini-2.5-flash' && !modelUsed.includes('2.5-flash'));
+
+                    const modelBadgeHtml = isFallback
+                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ Moteur : <b>${modelUsed} [Fallback]</b></span>`
+                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">⚡ Moteur : <b>${modelUsed} [Premium]</b></span>`;
+
+                    // CAS 1 : MODE EXPRESS (TEXTE MARKDOWN < 5S)
+                    if (finalData.express_mode) {
+                        updateProgress(100, "Traduction Texte Express finalisée en moins de 5 secondes !");
+                        resultStatus.className = 'result-title';
+                        resultStatus.innerHTML = dict.expressResultTitle || '<span>⚡</span> Traduction Texte Express prête';
+
+                        const isRtl = finalData.target_lang === 'ar';
+                        const safeText = (finalData.clean_text || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+                        const formatTime = (sec) => {
+                            const m = Math.floor(sec / 60);
+                            const s = Math.floor(sec % 60);
+                            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                        };
+
+                        let expressHtml = `
+                            <div style="display: flex; flex-direction: column; gap: 1.25rem; width: 100%;">
+                                <div style="background: linear-gradient(135deg, rgba(0, 188, 212, 0.1), rgba(11, 83, 148, 0.1)); border: 2px solid var(--accent-color); border-radius: 12px; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; box-shadow: 0 4px 20px rgba(0, 188, 212, 0.12);">
+                                    <div style="display: flex; align-items: center; gap: 0.85rem;">
+                                        <span style="font-size: 2.2rem;">⚡</span>
+                                        <div>
+                                            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary);">${dict.expressResultTitle ? dict.expressResultTitle.replace(/<[^>]+>/g, '').trim() : 'Traduction Texte Express'}</h3>
+                                            <p style="font-size: 0.82rem; color: var(--text-muted);">${dict.expressSubTitle || 'Restitution instantanée sans encodage vidéo • Format Markdown'}</p>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                        <button type="button" id="btnCopyExpress" class="btn-submit" style="padding: 0.7rem 1.4rem; font-size: 0.92rem; background: var(--color-primary); display: flex; align-items: center; gap: 0.5rem; transition: all 0.25s ease;">
+                                            <span id="btnCopyIcon">📋</span> <span id="btnCopyLabel">${dict.btnCopyText || 'Copier le texte'}</span>
+                                        </button>
+                                        <a href="${finalData.markdown_url}" download class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.4rem; font-size: 0.92rem; background: var(--color-turquoise); display: flex; align-items: center; gap: 0.5rem;">
+                                            <span>⬇️</span> <span>${dict.btnDownloadMarkdown || 'Télécharger le Markdown (.md)'}</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="badges-summary">
+                                    ${modelBadgeHtml}
+                                    <span class="summary-badge">🗣️ Source : <b>${srcLabel}</b></span>
+                                    <span class="summary-badge">🎯 Cible : <b>${tgtLabel}</b></span>
+                                    <span class="summary-badge">⏱️ Durée : <b>${finalData.duration}s</b></span>
+                                    <span class="summary-badge">💬 Segments : <b>${finalData.segments_count}</b></span>
+                                </div>
+
+                                <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(153, 153, 153, 0.2); padding-bottom: 0.75rem;">
+                                        <span style="font-weight: 700; font-size: 1rem; color: var(--color-dark-gray);">${dict.labelFullText || '📜 Texte Traduit Intégral'}</span>
+                                        <span style="font-size: 0.8rem; color: var(--color-turquoise); font-weight: 600;">✨ Mode Direct Markdown</span>
+                                    </div>
+                                    <div id="expressTextContainer" style="font-size: 1.08rem; line-height: 1.85; color: var(--color-dark-gray); white-space: pre-wrap; ${isRtl ? 'direction: rtl; font-family: Cairo, Amiri, sans-serif; text-align: right;' : 'direction: ltr; font-family: Plus Jakarta Sans, sans-serif; text-align: left;'}">
+${safeText}
+                                    </div>
+                                </div>
+
+                                <details style="background: #f8fafc; border: 1px solid rgba(153, 153, 153, 0.25); border-radius: 10px; padding: 0.9rem 1.1rem; cursor: pointer;">
+                                    <summary style="font-weight: 700; font-size: 0.9rem; color: var(--color-dark-gray); user-select: none;">
+                                        ${dict.labelTimestamps || '⏱️ Découpage Horodaté des Répliques'} (${finalData.segments_count} segments)
+                                    </summary>
+                                    <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; padding-right: 0.5rem;">
+                                        ${(finalData.segments || []).map(s => {
+                                            const sTxt = (s.text || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+                                            return `
+                                                <div style="display: flex; gap: 0.75rem; align-items: baseline; font-size: 0.88rem; padding: 0.45rem 0.7rem; background: #ffffff; border-radius: 6px; border: 1px solid rgba(153,153,153,0.18);">
+                                                    <code style="font-weight: 700; color: var(--color-primary); font-size: 0.8rem; background: rgba(11,83,148,0.08); padding: 0.15rem 0.45rem; border-radius: 4px; flex-shrink: 0;">${formatTime(s.start)} ➔ ${formatTime(s.end)}</code>
+                                                    <span style="${isRtl ? 'direction: rtl; text-align: right; width: 100%; font-family: Cairo, sans-serif;' : ''}">${sTxt}</span>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </details>
+                            </div>
+                        `;
+
+                        videoPreviewContainer.innerHTML = expressHtml;
+                        resultJson.textContent = JSON.stringify(finalData, null, 2);
+
+                        // Gestion interactive du bouton copier avec feedback Turquoise
+                        const copyBtn = document.getElementById('btnCopyExpress');
+                        const copyIcon = document.getElementById('btnCopyIcon');
+                        const copyLabel = document.getElementById('btnCopyLabel');
+                        if (copyBtn) {
+                            copyBtn.addEventListener('click', async () => {
+                                try {
+                                    await navigator.clipboard.writeText(finalData.clean_text);
+                                    const origBg = copyBtn.style.background;
+                                    const origLabel = copyLabel.textContent;
+                                    const origIcon = copyIcon.textContent;
+
+                                    copyBtn.style.background = '#00bcd4';
+                                    copyBtn.style.transform = 'scale(1.04)';
+                                    copyIcon.textContent = '✅';
+                                    copyLabel.textContent = dict.btnCopied || 'Copié !';
+
+                                    setTimeout(() => {
+                                        copyBtn.style.background = origBg;
+                                        copyBtn.style.transform = 'scale(1)';
+                                        copyIcon.textContent = origIcon;
+                                        copyLabel.textContent = origLabel;
+                                    }, 2000);
+                                } catch (e) {
+                                    console.error('Erreur lors de la copie :', e);
+                                }
+                            });
+                        }
+
+                        // Boîte du conseil non requise en mode express
+                        const councilBox = document.getElementById('agentsCouncilContainer');
+                        if (councilBox) councilBox.innerHTML = '';
+                        return;
+                    }
+
+                    // CAS 2 : MODE VIDÉO COMPLÈTE
                     updateProgress(100, "Vidéo sous-titrée finalisée avec succès !");
                     resultStatus.className = 'result-title';
                     resultStatus.innerHTML = '<span>✅</span> Vidéo sous-titrée générée avec succès !';

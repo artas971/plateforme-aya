@@ -79,11 +79,13 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         const forceReprocess = req.body.force_reprocess === 'true' || req.body.force_reprocess === true;
         const generateTiktokPack = req.body.generate_tiktok_pack === 'true' || req.body.generate_tiktok_pack === true;
         const bgTheme = req.body.bg_theme || 'bg_palestine';
+        const expressMode = req.body.express_mode === 'true' || req.body.express_mode === true;
         const mediaPath = req.file.path;
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
 
         console.log('====================================================');
         console.log('[TRADUCTION PROCESS] Lancement du pipeline (Streaming) :');
+        console.log(`  - Mode traitement   : ${expressMode ? '⚡ EXPRESS (Texte Markdown < 5s)' : '🎬 COMPLET (Vidéo & Sous-titres)'}`);
         console.log(`  - Fichier source    : ${req.file.originalname}`);
         console.log(`  - Chemin local      : ${mediaPath}`);
         console.log(`  - Taille            : ${(req.file.size / (1024 * 1024)).toFixed(2)} Mo`);
@@ -114,7 +116,8 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
             sourceLang,
             String(forceReprocess),
             String(generateTiktokPack),
-            String(bgTheme)
+            String(bgTheme),
+            String(expressMode)
         ], { cwd: ROOT_DIR });
 
         let stdoutData = '';

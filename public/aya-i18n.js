@@ -31,6 +31,22 @@
             dropZoneSub: 'ou cliquez pour parcourir vos dossiers (Audio ou Vidéo jusqu\'à 500 Mo)',
             btnRemoveFileTitle: 'Retirer ce fichier',
 
+            // Mode de traitement (Module 1 vs Module 2)
+            labelProcessingMode: '0. Mode de traitement',
+            modeVideoTitle: '🎬 Vidéo Complète',
+            modeVideoSub: 'Incrustation sous-titres 9:16 & encodage FFmpeg',
+            modeExpressTitle: '⚡ Mode Express (Texte Uniquement)',
+            modeExpressSub: 'Traduction directe en texte Markdown (< 5s)',
+
+            // Restitution Express
+            expressResultTitle: '<span>⚡</span> Traduction Texte Express prête',
+            expressSubTitle: 'Restitution instantanée sans encodage vidéo • Format Markdown',
+            btnCopyText: '📋 Copier le texte',
+            btnCopied: '✅ Copié !',
+            btnDownloadMarkdown: '⬇️ Télécharger le Markdown (.md)',
+            labelFullText: '📜 Texte Traduit Intégral',
+            labelTimestamps: '⏱️ Découpage Horodaté',
+
             // Sélecteur Langue Source
             labelSourceLang: '1. Langue parlée d\'origine (Source)',
             sourceAutoTitle: 'Détection Automatique',
@@ -142,6 +158,22 @@
             dropZoneText: 'اسحب وأفلت ملف الوسائط هنا للبدء',
             dropZoneSub: 'أو انقر لاختيار ملف من جهازك (صوت أو فيديو حتى 500 ميغابايت)',
             btnRemoveFileTitle: 'إزالة هذا الملف',
+
+            // Mode de traitement (Module 1 vs Module 2)
+            labelProcessingMode: '٠. نمط المعالجة',
+            modeVideoTitle: '🎬 فيديو كامل مدمج',
+            modeVideoSub: 'دمج شريط الترجمة بالكامل وترميز الفيديو 9:16',
+            modeExpressTitle: '⚡ النمط السريع (نص فقط)',
+            modeExpressSub: 'ترجمة نصية مباشرة بتنسيق ماركداون (< 5 ثوانٍ)',
+
+            // Restitution Express
+            expressResultTitle: '<span>⚡</span> الترجمة النصية السريعة جاهزة',
+            expressSubTitle: 'تسليم فوري بدون ترميز الفيديو • بتنسيق ماركداون',
+            btnCopyText: '📋 نسخ النص',
+            btnCopied: '✅ تم النسخ!',
+            btnDownloadMarkdown: '⬇️ تحميل ملف ماركداون (.md)',
+            labelFullText: '📜 النص الكامل المترجم',
+            labelTimestamps: '⏱️ التوقيتات والأجزاء',
 
             // Sélecteur Langue Source
             labelSourceLang: '١. لغة التسجيل الأصلية (المصدر)',
@@ -286,6 +318,21 @@
             updateElementText('pageIntroSub', dict.pageIntroSub);
             updateElementText('dropZoneText', dict.dropZoneText);
             updateElementText('dropZoneSub', dict.dropZoneSub);
+
+            // Mode de traitement
+            updateElementText('labelProcessingMode', dict.labelProcessingMode);
+            updateElementText('modeVideoTitle', dict.modeVideoTitle);
+            updateElementText('modeVideoSub', dict.modeVideoSub);
+            updateElementText('modeExpressTitle', dict.modeExpressTitle);
+            updateElementText('modeExpressSub', dict.modeExpressSub);
+
+            // Restitution Express
+            updateElementText('expressSubTitle', dict.expressSubTitle);
+            updateElementText('btnCopyExpressText', dict.btnCopyText);
+            updateElementText('btnDownloadMdText', dict.btnDownloadMarkdown);
+            updateElementText('labelFullTextTitle', dict.labelFullText);
+            updateElementText('labelTimestampsTitle', dict.labelTimestamps);
+
             updateElementText('labelSourceLang', dict.labelSourceLang);
             updateElementText('sourceAutoTitle', dict.sourceAutoTitle);
             updateElementText('sourceAutoSub', dict.sourceAutoSub);
