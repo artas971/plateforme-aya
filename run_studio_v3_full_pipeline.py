@@ -435,6 +435,21 @@ def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, 
         formatted_sub = format_subtitle_blocks(seg["text"])
         ass_events.append(f"Dialogue: 0,{t_start},{t_end},SubtitleStyle,,0,0,0,,{formatted_sub}")
 
+    try:
+        sub_m_int = int(sub_margin)
+        # Dans l'UI et le Canvas (résolution 1080x1920), la valeur du slider (500 à 1850px)
+        # représente la position Y depuis le HAUT de l'écran (ex: 1630px = en bas).
+        # Dans le format .ASS, le style SubtitleStyle a Alignment: 2 (Bas-Centre).
+        # Pour Alignment 2, MarginV est la distance mesurée depuis le BAS de l'écran.
+        # Donc pour placer le texte à Y=1630px depuis le haut dans un cadre de 1920px :
+        # MarginV = 1920 - Y = 1920 - 1630 = 290px depuis le bas.
+        if sub_m_int > 300:
+            ass_sub_margin = max(10, 1920 - sub_m_int)
+        else:
+            ass_sub_margin = max(10, sub_m_int)
+    except Exception:
+        ass_sub_margin = 970
+
     ass_content = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1080
@@ -445,7 +460,7 @@ ScaledBorderAndShadow: yes
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: HeaderStyle, Arial, 32, &H00FFFFFF, &H00000000, {ass_header_color}, {ass_header_color}, -1, 0, 0, 0, 100, 100, 0, 0, 3, 10, 0, 8, 40, 40, 60, 1
 Style: TitleStyle, Arial Black, 46, {ass_title_color}, &H00000000, &H00000000, &H00000000, -1, 0, 0, 0, 100, 100, 0, 0, 1, 3, 0, 8, 50, 50, {title_margin}, 1
-Style: SubtitleStyle,Impact,72,{ass_sub_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,{sub_margin},1
+Style: SubtitleStyle,Impact,72,{ass_sub_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,{ass_sub_margin},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text

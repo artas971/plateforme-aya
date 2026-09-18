@@ -1,4 +1,4 @@
-# PIPELINE MULTI-AGENTS "METAMORPHOSIS / AYA" – SPÉCIFICATION D'ARCHITECTURE & WORKFLOW (V5 avec Boucle d'Apprentissage Pôle 6)
+# PIPELINE DU CONSEIL DES AGENTS AYA – SPÉCIFICATION D'ARCHITECTURE & WORKFLOW (V5 avec Boucle d'Apprentissage Pôle 6)
 
 ## 📌 OVERVIEW PROJET
 Système d'orchestration multi-agents autonome pour la transcription, la traduction dialectale (Arabe Palestinien de Gaza <-> Français), la création visuelle 9:16, l'encodage vidéo FFmpeg, l'assurance qualité, l'auto-guérison avec **boucle d'apprentissage continu**, et la création du package final de publication TikTok.

@@ -1,4 +1,4 @@
-# JOURNAL DU PÔLE 6 : BILAN DES INCIDENTS & AUTO-GUÉRISON (METAMORPHOSIS / AYA V5)
+# JOURNAL DU PÔLE 6 : BILAN DES INCIDENTS & AUTO-GUÉRISON (PROJET AYA V5)
 
 **Observateur / Rapporteur :** Victor (`victor_logger`)  
 **Expert Résolution & DevOps :** Alexandre (`alexandre_devops`)  
