@@ -98,8 +98,9 @@ router.post(['/login', '/api/auth/login'], (req, res) => {
         // Enregistrement en session Express
         req.session.user = {
             id: matched.id,
+            username: matched.id,
             name: matched.name,
-            role: 'testeur',
+            role: (matched.id.toLowerCase() === 'john' ? 'admin' : 'testeur'),
             authenticated: true,
             loginAt: new Date().toISOString()
         };

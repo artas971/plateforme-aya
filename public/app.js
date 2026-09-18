@@ -144,8 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentArabicTranslation = "";
     let currentAudioUrl = "";
     let currentReceivedAudioUrl = "";
-    let currentReceivedAudioFile = "";
     let currentUser = JSON.parse(localStorage.getItem('aya_user') || 'null');
+    if (currentUser) {
+        if (!currentUser.username && currentUser.id) currentUser.username = currentUser.id;
+        if (!currentUser.name && currentUser.username) currentUser.name = currentUser.username;
+    }
     let currentLang = localStorage.getItem('aya_lang') || 'ar';
     let currentChatAudio = null;
 
@@ -792,18 +795,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Login Modal & Status Verification
-    function checkLoginStatus() {
+    // Login Verification & Status (Synchronisation avec l'authentification officielle)
+    async function checkLoginStatus() {
         const dict = i18n[currentLang];
-        if (currentUser && currentUser.username) {
-            if (loginModal) loginModal.classList.add('hidden');
+
+        if (!currentUser) {
+            try {
+                const sessRes = await safeFetchJson('/api/auth/session');
+                if (sessRes && sessRes.authenticated && sessRes.user) {
+                    currentUser = sessRes.user;
+                    localStorage.setItem('aya_user', JSON.stringify(currentUser));
+                }
+            } catch (e) {}
+        }
+
+        if (currentUser) {
+            if (!currentUser.username && currentUser.id) currentUser.username = currentUser.id;
+            if (!currentUser.name && currentUser.username) currentUser.name = currentUser.username;
+        }
+
+        if (currentUser && (currentUser.username || currentUser.id)) {
             if (userNameDisplay) {
-                const name = currentUser.name || currentUser.username;
+                const name = currentUser.name || currentUser.username || currentUser.id;
                 userNameDisplay.textContent = `${dict.userConnectedPrefix} ${name}`;
             }
 
-            // Only display local computer files section and admin chat toolbar for Admin / Owner (John)
-            const isAdmin = (currentUser.role === 'admin' || currentUser.username.toLowerCase() === 'john');
+            // Affichage local admin pour John
+            const isAdmin = (currentUser.role === 'admin' || 
+                (currentUser.username && currentUser.username.toLowerCase() === 'john') ||
+                (currentUser.id && currentUser.id.toLowerCase() === 'john'));
+
             if (adminLocalFilesSection) {
                 if (isAdmin) {
                     adminLocalFilesSection.classList.remove('hidden');
@@ -821,50 +842,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             loadAudioMessages();
         } else {
-            if (loginModal) loginModal.classList.remove('hidden');
-            if (adminLocalFilesSection) adminLocalFilesSection.classList.add('hidden');
-            if (adminChatToolbar) adminChatToolbar.classList.add('hidden');
+            // Utilisateur non identifié : redirection vers la page de login officielle
+            window.location.href = '/login';
         }
-    }
-
-    if (loginBtn && loginUsernameInput && loginPasswordInput) {
-        loginBtn.addEventListener('click', async () => {
-            const username = loginUsernameInput.value.trim();
-            const password = loginPasswordInput.value.trim();
-            if (!username || !password) return;
-
-            try {
-                const data = await safeFetchJson('/api/login', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, password })
-                });
-                if (data.success) {
-                    currentUser = data.user;
-                    localStorage.setItem('aya_user', JSON.stringify(currentUser));
-                    localStorage.setItem('aya_auth_token', data.token);
-                    if (loginError) loginError.classList.add('hidden');
-                    checkLoginStatus();
-                } else {
-                    if (loginError) loginError.classList.remove('hidden');
-                }
-            } catch (err) {
-                if (loginError) loginError.classList.remove('hidden');
-            }
-        });
-
-        loginPasswordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loginBtn.click();
-        });
     }
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             localStorage.removeItem('aya_user');
             localStorage.removeItem('aya_auth_token');
-            currentUser = null;
-            if (loginUsernameInput) loginUsernameInput.value = '';
-            if (loginPasswordInput) loginPasswordInput.value = '';
-            checkLoginStatus();
+            window.location.href = '/logout';
         });
     }
 
