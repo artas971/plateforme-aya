@@ -274,6 +274,15 @@
         overlay.style.display = 'flex';
         form.style.display = 'flex';
         successBox.style.display = 'none';
+
+        // Auto-détection de l'utilisateur connecté (Anaïs, Aya, Soso, John, etc.)
+        try {
+            const savedUser = JSON.parse(localStorage.getItem('aya_user') || 'null');
+            if (savedUser && (savedUser.name || savedUser.username)) {
+                nameInput.value = savedUser.name || savedUser.username;
+            }
+        } catch (e) {}
+
         rawInput.focus();
     });
 
