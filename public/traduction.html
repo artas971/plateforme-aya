@@ -544,6 +544,247 @@
             overflow-x: auto;
             max-height: 350px;
         }
+
+        /* CONSEIL DES 7 AGENTS IA */
+        .council-container {
+            width: 100%;
+            background: linear-gradient(180deg, #0d1527 0%, #070d19 100%);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
+        }
+
+        .council-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .council-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #F8FAFC;
+        }
+
+        .council-score-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .score-pill-good {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid #10B981;
+            color: #34D399;
+        }
+
+        .score-pill-warning {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid #F59E0B;
+            color: #FBBF24;
+        }
+
+        .council-verdict-box {
+            background: rgba(30, 41, 59, 0.5);
+            border-left: 4px solid var(--accent-color);
+            border-radius: 6px;
+            padding: 0.85rem 1rem;
+            font-size: 0.88rem;
+            color: #CBD5E1;
+            line-height: 1.5;
+        }
+
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .agent-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-2px);
+            border-color: #334155;
+        }
+
+        .agent-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .agent-identity {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .agent-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .agent-name-role {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .agent-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #F1F5F9;
+        }
+
+        .agent-role {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .agent-score-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .agent-diagnosis {
+            font-size: 0.82rem;
+            color: #CBD5E1;
+            line-height: 1.45;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 6px;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .agent-reco {
+            font-size: 0.75rem;
+            color: #94A3B8;
+            font-style: italic;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.35rem;
+        }
+
+        /* SECTION DE CONSULTATION INTERACTIVE */
+        .council-consult-section {
+            background: #0B1120;
+            border: 1px solid #1E293B;
+            border-radius: 10px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .consult-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #E2E8F0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .consult-form {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .consult-select {
+            background: #1E293B;
+            color: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .consult-input {
+            flex: 1;
+            min-width: 260px;
+            background: #1E293B;
+            color: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            font-size: 0.88rem;
+            outline: none;
+        }
+
+        .consult-input:focus, .consult-select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .consult-btn {
+            background: var(--accent-color);
+            color: #0F172A;
+            border: none;
+            border-radius: 8px;
+            padding: 0.65rem 1.25rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .consult-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .consult-reply-box {
+            display: none;
+            background: #131d33;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            color: #E2E8F0;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -706,6 +947,7 @@
                     <span class="result-title" id="resultStatus"><span>✅</span> Vidéo sous-titrée disponible</span>
                 </div>
                 <div id="videoPreviewContainer"></div>
+                <div id="agentsCouncilContainer"></div>
                 <pre id="resultJson">// Le rapport technique s'affichera ici...</pre>
             </div>
         </section>
@@ -967,12 +1209,17 @@
 
                     videoPreviewContainer.innerHTML = previewHtml;
                     resultJson.textContent = JSON.stringify(finalData, null, 2);
+
+                    // Lancement automatique de l'audit par le Conseil des 7 Agents IA
+                    loadAndRenderAgentCouncil(finalData);
                 } else {
                     const errMsg = (finalData && finalData.error) ? finalData.error : "Une erreur est survenue lors du traitement.";
                     updateProgress(100, `Erreur : ${errMsg}`);
                     resultStatus.className = 'result-title error';
                     resultStatus.innerHTML = '<span>❌</span> Erreur de traitement';
                     videoPreviewContainer.innerHTML = '';
+                    const councilBox = document.getElementById('agentsCouncilContainer');
+                    if (councilBox) councilBox.innerHTML = '';
                     resultJson.textContent = finalData ? JSON.stringify(finalData, null, 2) : receivedText;
                 }
 
@@ -983,9 +1230,206 @@
                 resultStatus.className = 'result-title error';
                 resultStatus.innerHTML = '<span>❌</span> Erreur de communication avec le serveur';
                 videoPreviewContainer.innerHTML = '';
+                const councilBox = document.getElementById('agentsCouncilContainer');
+                if (councilBox) councilBox.innerHTML = '';
                 resultJson.textContent = JSON.stringify({ error: err.message }, null, 2);
             }
         });
+
+        // =========================================================================
+        // MODULE CONSEIL DES 7 AGENTS IA (JADE, NADINE, LIONEL, MAX, STEVE, JIM, THOMAS)
+        // =========================================================================
+        async function loadAndRenderAgentCouncil(mediaData) {
+            const container = document.getElementById('agentsCouncilContainer');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div style="background: #0f172a; border: 1px dashed #334155; border-radius: 10px; padding: 1.5rem; text-align: center; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                    <span class="pulse-dot"></span>
+                    <span>🏛️ Le Conseil des 7 Agents IA (Jade, Nadine, Lionel, Max, Steve, Jim, Thomas) examine la production...</span>
+                </div>
+            `;
+
+            try {
+                const res = await fetch('/api/agents/audit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ass_filename: mediaData.ass_filename,
+                        mp4_filename: mediaData.mp4_filename,
+                        media_info: mediaData
+                    })
+                });
+
+                const data = await res.json();
+                if (!data.success || !data.audit) {
+                    container.innerHTML = `<div style="color: #F87171; font-size: 0.85rem; padding: 1rem;">⚠️ Impossible de charger l'audit des agents : ${data.error || 'Erreur inconnue'}</div>`;
+                    return;
+                }
+
+                const audit = data.audit;
+                const reports = audit.reports;
+                const scoreClass = audit.overallScore >= 85 ? 'score-pill-good' : 'score-pill-warning';
+
+                // Construction des cartes des 7 agents
+                let cardsHtml = '';
+                const agentOrder = ['jim', 'jade', 'nadine', 'lionel', 'max', 'steve', 'thomas'];
+
+                agentOrder.forEach(agentKey => {
+                    const rep = reports[agentKey];
+                    if (!rep) return;
+                    const ag = rep.agent;
+                    const isGood = rep.status === 'success';
+                    const badgeBg = isGood ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)';
+                    const badgeBorder = isGood ? '#10B981' : '#F59E0B';
+                    const badgeColor = isGood ? '#34D399' : '#FBBF24';
+                    const badgeText = isGood ? `🟢 ${rep.score}/100` : `🟡 ${rep.score}/100`;
+
+                    cardsHtml += `
+                        <div class="agent-card">
+                            <div class="agent-card-header">
+                                <div class="agent-identity">
+                                    <div class="agent-avatar" style="border-color: ${ag.color};">${ag.avatar}</div>
+                                    <div class="agent-name-role">
+                                        <span class="agent-name" style="color: ${ag.color};">${ag.name}</span>
+                                        <span class="agent-role">${ag.role}</span>
+                                    </div>
+                                </div>
+                                <span class="agent-score-badge" style="background: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor};">
+                                    ${badgeText}
+                                </span>
+                            </div>
+                            <div class="agent-diagnosis">
+                                ${rep.diagnosis}
+                            </div>
+                            ${rep.recommendation ? `
+                                <div class="agent-reco">
+                                    <span>💡</span> <span>${rep.recommendation}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div class="council-container">
+                        <div class="council-header">
+                            <div class="council-title">
+                                <span>🏛️</span>
+                                <span>Conseil des 7 Agents IA - Audit Qualité & Stratégie</span>
+                            </div>
+                            <div class="council-score-pill ${scoreClass}">
+                                <span>Note Globale :</span>
+                                <span><b>${audit.overallScore}/100</b></span>
+                                <span>— ${audit.verdict}</span>
+                            </div>
+                        </div>
+
+                        <div class="council-verdict-box">
+                            <b>Directeur Jim :</b> ${reports.jim?.diagnosis || 'Audit global réalisé.'}
+                        </div>
+
+                        <div class="agents-grid">
+                            ${cardsHtml}
+                        </div>
+
+                        <!-- Section de Consultation Interactive -->
+                        <div class="council-consult-section">
+                            <div class="consult-title">
+                                <span>💬</span>
+                                <span>Consulter le Conseil ou un Agent Spécialisé</span>
+                            </div>
+                            <div class="consult-form">
+                                <select id="consultAgentSelect" class="consult-select">
+                                    <option value="all">🏛️ Tout le Conseil (Avis collégial)</option>
+                                    <option value="jade">⏱️ Jade (Linguiste & Synchronisation)</option>
+                                    <option value="nadine">🕊️ Nadine (Dialecte Gaza & Lexique)</option>
+                                    <option value="lionel">🎨 Lionel (Graphisme & Lisibilité)</option>
+                                    <option value="max">🎬 Max (Technique FFmpeg & Encodage)</option>
+                                    <option value="steve">📈 Steve (Stratégie & Rétention TikTok)</option>
+                                    <option value="thomas">🛡️ Thomas (Architecture Back-End & I/O)</option>
+                                    <option value="jim">👔 Jim (Superviseur Général)</option>
+                                </select>
+                                <input type="text" id="consultQuestionInput" class="consult-input" placeholder="Posez une question sur le tempo, le lexique, le cadrage ou l'impact..." />
+                                <button type="button" id="btnConsultCouncil" class="consult-btn">
+                                    <span>🚀</span> Demander l'avis
+                                </button>
+                            </div>
+                            <div id="consultReplyBox" class="consult-reply-box"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Événement pour la consultation interactive
+                const btnConsult = document.getElementById('btnConsultCouncil');
+                const questionInput = document.getElementById('consultQuestionInput');
+                const agentSelect = document.getElementById('consultAgentSelect');
+                const replyBox = document.getElementById('consultReplyBox');
+
+                btnConsult.addEventListener('click', async () => {
+                    const question = questionInput.value.trim();
+                    if (!question) {
+                        questionInput.focus();
+                        return;
+                    }
+
+                    const targetAgent = agentSelect.value;
+                    btnConsult.disabled = true;
+                    btnConsult.innerHTML = '<span>⏳</span> Analyse en cours...';
+                    replyBox.style.display = 'block';
+                    replyBox.innerHTML = '<span class="pulse-dot"></span> Réflexion de l\'agent en cours...';
+
+                    try {
+                        const consultRes = await fetch('/api/agents/consult', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                agent_id: targetAgent,
+                                question: question,
+                                context: {
+                                    duration: mediaData.duration,
+                                    targetLang: mediaData.target_lang,
+                                    modelUsed: mediaData.ai_model_used,
+                                    segmentsCount: mediaData.segments_count,
+                                    overallScore: audit.overallScore,
+                                    sub_position: mediaData.sub_position
+                                }
+                            })
+                        });
+
+                        const consultData = await consultRes.json();
+                        if (consultData.success && consultData.reply) {
+                            const ag = consultData.agent;
+                            replyBox.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: 700; color: ${ag.color};">
+                                    <span>${ag.avatar}</span>
+                                    <span>${consultData.isCouncil ? 'Avis Collégial du Conseil' : `${ag.name} (${ag.role})`} :</span>
+                                </div>
+                                <div>${consultData.reply.replace(/\n/g, '<br>')}</div>
+                            `;
+                        } else {
+                            replyBox.innerHTML = `<span style="color: #F87171;">⚠️ ${consultData.error || "Erreur lors de la réponse de l'agent."}</span>`;
+                        }
+                    } catch (err) {
+                        replyBox.innerHTML = `<span style="color: #F87171;">⚠️ Erreur de communication : ${err.message}</span>`;
+                    } finally {
+                        btnConsult.disabled = false;
+                        btnConsult.innerHTML = "<span>🚀</span> Demander l'avis";
+                    }
+                });
+
+                questionInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        btnConsult.click();
+                    }
+                });
+
+            } catch (err) {
+                console.error('Erreur chargement Conseil des Agents:', err);
+                container.innerHTML = `<div style="color: #F87171; font-size: 0.85rem; padding: 1rem;">⚠️ Erreur de chargement du Conseil des Agents : ${err.message}</div>`;
+            }
+        }
     </script>
 </body>
 </html>
