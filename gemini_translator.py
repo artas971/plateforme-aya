@@ -99,15 +99,35 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (français).\n"
             "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 5.0, \"text\": \"la situation est très difficile.\"}]"
         )
-    else: # VOAR
+    else: # VOAR (Français ou autre vers Arabe Palestinien de Gaza)
         prompt = (
-            "Tu es un transcripteur expert d'élite du dialecte arabe palestinien de Gaza.\n"
+            "Tu es un traducteur et transcripteur expert d'élite, linguiste assermenté du dialecte arabe palestinien de Gaza (Ammiya de Gaza - العامية الغزاوية) et du français.\n"
             f"{source_context}"
-            "Écoute attentivement l'enregistrement audio ci-joint et transcris fidèlement 100% de la parole en arabe parlé authentique.\n"
-            "RÈGLES D'OR STRICTES :\n"
-            "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 2 à 4 secondes). TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en sous-segments courts.\n"
-            "2. TIMESTAMPS RELATIFS : 'start' et 'end' relatifs au début du fichier (0.0s = début), avec 'end' > 'start'.\n"
-            "FORMAT DE SORTIE : Tableau JSON d'objets avec 'start' (float), 'end' (float), 'text' (arabe)."
+            "Écoute attentivement l'enregistrement audio ci-joint.\n"
+            "Ta mission : Restituer fidèlement 100% du discours en ARABE PALESTINIEN AUTHENTIQUE DE GAZA pour des sous-titres vidéo et transcriptions (VOAR).\n"
+            "(Si le discours est en français ou autre langue, traduis-le fidèlement en arabe dialectal de Gaza. Si le discours est déjà en arabe palestinien, retranscris-le fidèlement mot à mot).\n\n"
+            "DIRECTIVES LINGUISTIQUES MAJEURES (AGENT THOMAS & NADINE) :\n\n"
+            "1. RÈGLE STRICTE DU DIALECTE (AMMIYA DE GAZA) :\n"
+            "Si la traduction est du Français vers l'Arabe (VOAR), TU DOIS OBLIGATOIREMENT utiliser l'Arabe Palestinien dialectal (Ammiya de Gaza). "
+            "N'utilise JAMAIS l'arabe classique (Fusha). Utilise le vocabulaire quotidien (ex: 'صحون' au lieu de 'أطباق', 'اللي' au lieu de 'أولئك الذين', "
+            "'هلقيت / هسا' au lieu de 'الآن', 'بدي / بدنا' au lieu de 'أريد / نريد', 'عشان' au lieu de 'من أجل / لكي', 'مش' au lieu de 'ليس', 'شو' au lieu de 'ماذا', 'حكي' au lieu de 'كلام', 'كتير' au lieu de 'كثيراً').\n\n"
+            "2. RÈGLE DES NUANCES & ANALYSE SÉMANTIQUE PROFONDE :\n"
+            "Fais une analyse sémantique profonde des expressions idiomatiques et des doubles négations françaises (ex: 'ne... que') avant de traduire, pour préserver le sens originel exact.\n"
+            "ATTENTION MAJEURE AUX TOURNURES RESTRICTIVES :\n"
+            "Par exemple, la phrase 'Il n'y a pas de violence qu'avec des armes' signifie qu'il existe d'autres formes de violence en dehors des armes (la violence n'est pas uniquement armée). "
+            "Traduis rigoureusement par le sens authentique en ammiya : 'العنف مش بس بالسلاح' ou 'في عنف مش بس بالسلاح'. "
+            "Il est STRICTEMENT INTERDIT de faire un contre-sens en affirmant l'inverse (ex: 'العنف بس بالسلاح' est proscrit).\n\n"
+            "3. VOCATIFS & TERMES FRATERNELS DE SOUTIEN :\n"
+            "- 'Mon frère Steve' ➔ 'أخوي ستيف'\n"
+            "- 'Ma sœur Soso' ➔ 'أختي سوسو'\n"
+            "- 'Prends soin de toi' ➔ 'ديري بالك على حالك' (féminin) / 'دير بالك على حالك' (masculin)\n"
+            "- 'On est avec vous / On est ensemble' ➔ 'إحنا معكم / إحنا معكم على طول'\n\n"
+            "4. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 1.5 à 4.0 secondes). "
+            "TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en plusieurs sous-segments courts synchronisés.\n"
+            "5. TIMESTAMPS RELATIFS : Les temps 'start' et 'end' doivent être exprimés en secondes (nombres flottants) relatifs au DÉBUT de cet extrait audio (0.0s = début du fichier fourni), avec 'end' > 'start'.\n"
+            "6. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n\n"
+            "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (arabe palestinien de Gaza).\n"
+            "Exemple : [{\"start\": 0.0, \"end\": 2.8, \"text\": \"أخوي ستيف، العنف مش بس بالسلاح...\"}, {\"start\": 2.8, \"end\": 4.5, \"text\": \"في وجع تاني الناس مش شايفتو.\"}]"
         )
 
     # Gestion du cache local
