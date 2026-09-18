@@ -379,12 +379,25 @@ async function processDriveQueue() {
                 const mp4LocalPath = path.join(OUTPUT_DIR, result.mp4_filename);
                 const assLocalPath = path.join(OUTPUT_DIR, result.ass_filename);
 
-                // ÉTAPE 4 : Téléversement des résultats dans "03_TERMINE"
-                console.log(`[DRIVE WORKER] ⬆️ Upload de la vidéo incrustée (${result.mp4_filename}) vers 03_TERMINE...`);
-                const uploadedMp4 = await uploadLocalFile(drive, mp4LocalPath, folders.COMPLETED, 'video/mp4');
+                let uploadedMp4 = null;
+                let uploadedAss = null;
+                let driveUploadWarning = null;
 
-                console.log(`[DRIVE WORKER] ⬆️ Upload des sous-titres ASS (${result.ass_filename}) vers 03_TERMINE...`);
-                const uploadedAss = await uploadLocalFile(drive, assLocalPath, folders.COMPLETED, 'text/plain');
+                // ÉTAPE 4 : Téléversement des résultats vers "03_TERMINE"
+                try {
+                    console.log(`[DRIVE WORKER] ⬆️ Upload de la vidéo incrustée (${result.mp4_filename}) vers 03_TERMINE...`);
+                    uploadedMp4 = await uploadLocalFile(drive, mp4LocalPath, folders.COMPLETED, 'video/mp4');
+
+                    console.log(`[DRIVE WORKER] ⬆️ Upload des sous-titres ASS (${result.ass_filename}) vers 03_TERMINE...`);
+                    uploadedAss = await uploadLocalFile(drive, assLocalPath, folders.COMPLETED, 'text/plain');
+                } catch (uploadErr) {
+                    if (uploadErr.message && uploadErr.message.includes('storage quota')) {
+                        driveUploadWarning = "Quota Service Account : Les comptes de service ne peuvent pas uploader de nouveaux fichiers sur un compte Gmail personnel standard sans Disque Partagé Workspace. La vidéo est disponible en local et téléchargeable via l'interface web.";
+                        console.warn(`[DRIVE WORKER] ⚠️ ${driveUploadWarning}`);
+                    } else {
+                        throw uploadErr;
+                    }
+                }
 
                 // Déplacement du fichier source original dans "03_TERMINE"
                 await moveDriveFile(drive, file.id, folders.IN_PROGRESS, folders.COMPLETED);
@@ -393,24 +406,31 @@ async function processDriveQueue() {
                 ledger.synced_files[file.id] = {
                     id: file.id,
                     name: file.name,
-                    status: 'DONE',
+                    status: uploadedMp4 ? 'DONE' : 'DONE_LOCAL',
                     ai_model_used: result.ai_model_used,
                     completed_at: new Date().toISOString(),
-                    output_mp4_id: uploadedMp4.id,
-                    output_mp4_name: uploadedMp4.name,
-                    output_ass_id: uploadedAss.id,
-                    output_ass_name: uploadedAss.name
+                    local_mp4_url: `/download/${result.mp4_filename}`,
+                    local_ass_url: `/download/${result.ass_filename}`,
+                    output_mp4_id: uploadedMp4 ? uploadedMp4.id : null,
+                    output_mp4_name: uploadedMp4 ? uploadedMp4.name : result.mp4_filename,
+                    output_ass_id: uploadedAss ? uploadedAss.id : null,
+                    output_ass_name: uploadedAss ? uploadedAss.name : result.ass_filename,
+                    drive_upload_warning: driveUploadWarning
                 };
                 saveLedger(ledger);
 
-                console.log(`[DRIVE WORKER] 🌟 Média "${file.name}" finalisé avec succès ! (Modèle: ${result.ai_model_used})`);
+                console.log(`[DRIVE WORKER] 🌟 Média "${file.name}" finalisé avec succès ! (Modèle: ${result.ai_model_used} | Fichier: ${result.mp4_filename})`);
 
             } catch (mediaError) {
                 console.error(`[DRIVE WORKER] ❌ Échec sur "${file.name}" :`, mediaError.message);
 
-                // En cas d'erreur : transfert dans "04_ERREURS" et téléversement du rapport d'erreur
-                await moveDriveFile(drive, file.id, folders.IN_PROGRESS, folders.ERRORS);
-                await uploadErrorLog(drive, folders.ERRORS, file.name, mediaError.stack || mediaError.message);
+                // En cas d'erreur : transfert dans "04_ERREURS" et tentative de téléversement du rapport d'erreur
+                try {
+                    await moveDriveFile(drive, file.id, folders.IN_PROGRESS, folders.ERRORS);
+                    await uploadErrorLog(drive, folders.ERRORS, file.name, mediaError.stack || mediaError.message);
+                } catch (e) {
+                    console.warn('[DRIVE WORKER] Erreur lors du transfert vers 04_ERREURS :', e.message);
+                }
 
                 ledger.synced_files[file.id] = {
                     id: file.id,
