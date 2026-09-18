@@ -332,7 +332,7 @@ async function processDriveQueue() {
         // Traitement séquentiel fichier par fichier
         for (const file of pendingFiles) {
             const ext = path.extname(file.name).toLowerCase();
-            const cleanStem = path.parse(file.name).name.replace(/[^\w.-]/g, '_');
+            const cleanStem = path.parse(file.name).name.replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 80);
             const localTempFile = path.join(TEMP_DOWNLOAD_DIR, `${Date.now()}_${cleanStem}${ext}`);
 
             // Validation du type de fichier

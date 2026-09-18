@@ -618,67 +618,101 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, is_video: bool, duration: float):
     """Incruste les sous-titres via FFmpeg sans toucher aux proportions d'origine."""
-    escaped_ass = str(ass_path.resolve()).replace("\\", "/").replace(":", "\\:")
+    # Copie temporaire sûre pour éviter les conflits d'échappement FFmpeg sur les apostrophes ou caractères spéciaux
+    temp_burn_ass = ass_path.parent / f"_temp_burn_{os.getpid()}.ass"
+    shutil.copy2(ass_path, temp_burn_ass)
+    escaped_ass = str(temp_burn_ass.resolve()).replace("\\", "/").replace(":", "\\:")
 
-    if is_video:
-        print("[FFMPEG] Incrustation sur flux vidéo original (aucun recadrage forcé)...")
-        cmd = [
-            'ffmpeg', '-y',
-            '-i', media_path,
-            '-vf', f"subtitles='{escaped_ass}'",
-            '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-movflags', '+faststart',
-            str(output_mp4_path.resolve())
-        ]
-    else:
-        print("[FFMPEG] Génération vidéo avec image de fond standard modern_dark_bg.jpg...")
-        bg_image = str(DEFAULT_BG.resolve())
-        cmd = [
-            'ffmpeg', '-y',
-            '-threads', '0',
-            '-loop', '1', '-i', bg_image,
-            '-i', media_path,
-            '-vf', f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles='{escaped_ass}'",
-            '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-pix_fmt', 'yuv420p',
-            '-shortest',
-            str(output_mp4_path.resolve())
-        ]
+    try:
+        if is_video:
+            print("[FFMPEG] Incrustation sur flux vidéo original (aucun recadrage forcé)...")
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', media_path,
+                '-vf', f"subtitles='{escaped_ass}'",
+                '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22',
+                '-c:a', 'aac', '-b:a', '192k',
+                '-movflags', '+faststart',
+                str(output_mp4_path.resolve())
+            ]
+        else:
+            print("[FFMPEG] Génération vidéo avec image de fond standard modern_dark_bg.jpg...")
+            bg_image = str(DEFAULT_BG.resolve())
+            cmd = [
+                'ffmpeg', '-y',
+                '-threads', '0',
+                '-loop', '1', '-i', bg_image,
+                '-i', media_path,
+                '-vf', f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles='{escaped_ass}'",
+                '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
+                '-c:a', 'aac', '-b:a', '192k',
+                '-pix_fmt', 'yuv420p',
+                '-shortest',
+                str(output_mp4_path.resolve())
+            ]
 
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
-        raise RuntimeError(f"Erreur d'encodage FFmpeg: {res.stderr[-500:]}")
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode != 0:
+            raise RuntimeError(f"Erreur d'encodage FFmpeg: {res.stderr[-500:]}")
 
-    print(f"[FFMPEG SUCCÈS] Vidéo produite : {output_mp4_path.name} ({output_mp4_path.stat().st_size} octets)")
+        print(f"[FFMPEG SUCCÈS] Vidéo produite : {output_mp4_path.name} ({output_mp4_path.stat().st_size} octets)")
+    finally:
+        if temp_burn_ass.exists():
+            try:
+                temp_burn_ass.unlink()
+            except Exception:
+                pass
 
 
-def generate_clean_output_filenames(media_input: str, source_lang: str, target_lang: str) -> tuple:
+def generate_clean_output_filenames(media_input: str, source_lang: str, target_lang: str, output_dir: Path = OUTPUT_DIR) -> tuple:
     """
-    Génère une nomenclature propre, courte et standardisée pour les fichiers de sortie :
-    - Vidéo : {clean_prefix}_{source_lang}_{target_lang}_{timestamp_court}.mp4
-    - Sous-titre : {clean_prefix}_{source_lang}_{target_lang}_{timestamp_court}.ass
-    Nettoie le nom d'origine (15-20 caractères significatifs, supprime les préfixes
-    d'upload et les caractères spéciaux) pour une clarté immédiate et zéro dépassement MAX_PATH.
+    Génère une nomenclature propre, lisible comme un titre classique avec de vrais espaces :
+    - Vidéo : {clean_title} ({TAG}).mp4
+    - Sous-titre : {clean_title} ({TAG}).ass
+    Exemple : "Amine, la mère d'Ihsane (VOSTFR).mp4"
+
+    Sécurité anti-doublon :
+    Si un fichier portant exactement le même nom existe déjà dans output_dir,
+    ajoute un compteur entre parenthèses : (1), (2)...
     """
     raw_stem = Path(media_input).stem
-    # Suppression du préfixe temporel technique d'upload (ex: 1789738496806_...)
-    cleaned = re.sub(r"^\d{10,}_?", "", raw_stem)
-    # Suppression des caractères spéciaux, conservation alphanumérique et tirets
-    cleaned = re.sub(r"[^\w\s-]", "", cleaned)
-    # Remplacement des espaces et séparateurs multiples par un underscore unique
-    cleaned = re.sub(r"[\s_]+", "_", cleaned).strip("_")
-    # Extraction des 20 premiers caractères significatifs
-    clean_prefix = cleaned[:20].rstrip("_") if cleaned else "media"
-    if not clean_prefix:
-        clean_prefix = "media"
 
-    # Horodatage court et lisible : MMDD_HHMM (ex: 0918_1550)
-    timestamp_court = time.strftime("%m%d_%H%M")
+    # 1. Suppression du préfixe temporel technique d'upload (ex: 1789738496806_...)
+    cleaned = re.sub(r"^\d{10,}[_-]?", "", raw_stem)
 
-    base_name = f"{clean_prefix}_{source_lang}_{target_lang}_{timestamp_court}"
-    return f"{base_name}.mp4", f"{base_name}.ass"
+    # 2. Suppression d'un éventuel tag de langue déjà présent pour éviter les redondances
+    cleaned = re.sub(r"\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$", "", cleaned, flags=re.IGNORECASE)
+
+    # 3. Nettoyage uniquement des caractères interdits par les systèmes de fichiers : \ / : * ? " < > |
+    cleaned = re.sub(r'[\\/:*?"<>|]', '', cleaned)
+
+    # 4. Conservation des espaces naturels (réduction des espaces consécutifs)
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    # 5. Longueur de sécurité pour Windows MAX_PATH (max 80 caractères)
+    clean_base = cleaned[:80].strip() if cleaned else "media"
+    if not clean_base:
+        clean_base = "media"
+
+    # 6. Suffixe de traduction explicite
+    suffix_map = {
+        "fr": "VOSTFR",
+        "ar": "VOAR",
+        "en": "VOSTEN",
+        "es": "VOSTES"
+    }
+    tgt = (target_lang or "fr").lower()
+    tag = suffix_map.get(tgt, f"VOST{tgt.upper()}")
+    base_title = f"{clean_base} ({tag})"
+
+    # 7. Sécurité anti-doublon : ajout de (1), (2)... si le fichier existe déjà
+    candidate = base_title
+    counter = 1
+    while (output_dir / f"{candidate}.mp4").exists() or (output_dir / f"{candidate}.ass").exists():
+        candidate = f"{base_title} ({counter})"
+        counter += 1
+
+    return f"{candidate}.mp4", f"{candidate}.ass"
 
 
 def main():
