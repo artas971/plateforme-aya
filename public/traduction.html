@@ -745,6 +745,184 @@
             font-size: 0.85rem;
             overflow-x: auto;
             max-height: 350px;
+            display: none; /* Norme Zéro-JSON : masqué pour les utilisateurs */
+        }
+
+        /* =========================================================================
+           CARTES D'ALERTE UX GRAND PUBLIC - NORME ZÉRO-JSON (Lionel)
+           ========================================================================= */
+        .aya-alert-card {
+            width: 100%;
+            border-radius: 14px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            box-sizing: border-box;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            animation: ayaFadeInUp 0.35s ease-out forwards;
+        }
+
+        @keyframes ayaFadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Gravité : Avertissement (Orange pastel) */
+        .aya-alert-warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1.5px solid #f59e0b;
+            color: #78350f;
+        }
+
+        .aya-alert-warning .aya-alert-icon-wrap {
+            background: rgba(245, 158, 11, 0.18);
+            border: 1.5px solid rgba(245, 158, 11, 0.4);
+            color: #d97706;
+        }
+
+        .aya-alert-warning .aya-alert-title {
+            color: #b45309;
+        }
+
+        .aya-alert-warning .aya-alert-solution {
+            background: rgba(245, 158, 11, 0.12);
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+        }
+
+        /* Gravité : Bloquant / Critique (Rouge pastel) */
+        .aya-alert-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 1.5px solid #ef4444;
+            color: #7f1d1d;
+        }
+
+        .aya-alert-danger .aya-alert-icon-wrap {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1.5px solid rgba(239, 68, 68, 0.35);
+            color: #dc2626;
+        }
+
+        .aya-alert-danger .aya-alert-title {
+            color: #b91c1c;
+        }
+
+        .aya-alert-danger .aya-alert-solution {
+            background: rgba(239, 68, 68, 0.10);
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .aya-alert-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .aya-alert-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .aya-alert-title {
+            font-size: 1.08rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .aya-alert-desc {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .aya-alert-solution {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            margin-top: 0.25rem;
+        }
+
+        .aya-alert-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .aya-alert-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .aya-alert-btn-primary {
+            background: var(--color-primary);
+            color: #ffffff;
+        }
+
+        .aya-alert-btn-primary:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .aya-alert-btn-secondary {
+            background: #ffffff;
+            color: var(--color-dark-gray);
+            border: 1px solid var(--border-color);
+        }
+
+        .aya-alert-btn-secondary:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        /* Support RTL pour les alertes graphiques */
+        [dir="rtl"] .aya-alert-card {
+            direction: rtl;
+            text-align: right;
+        }
+
+        [dir="rtl"] .aya-alert-warning .aya-alert-solution {
+            border-left: none;
+            border-right: 4px solid #f59e0b;
+        }
+
+        [dir="rtl"] .aya-alert-danger .aya-alert-solution {
+            border-left: none;
+            border-right: 4px solid #ef4444;
         }
 
         /* CONSEIL DES 7 AGENTS IA */
@@ -1277,7 +1455,7 @@
                 </div>
                 <div id="videoPreviewContainer"></div>
                 <div id="agentsCouncilContainer"></div>
-                <pre id="resultJson">// Le rapport technique s'affichera ici...</pre>
+                <pre id="resultJson" style="display: none !important;"></pre>
             </div>
         </section>
     </main>
@@ -1515,12 +1693,109 @@
             }
         }
 
+        // =========================================================================
+        // COMPOSANT D'ALERTE GRAPHIQUE UX GRAND PUBLIC - NORME ZÉRO-JSON (Lionel & Nadine)
+        // =========================================================================
+        function renderUiErrorCard({ code, rawMessage, onAction }) {
+            const errInfo = (window.AyaI18n && typeof window.AyaI18n.getErrorInfo === 'function')
+                ? window.AyaI18n.getErrorInfo(code, rawMessage)
+                : {
+                    code: code || 'DEFAULT',
+                    title: code === 'MEDIA_TOO_BIG' ? "Vidéo trop lourde pour l'import direct" : "Erreur de traitement",
+                    message: rawMessage || "Une erreur inattendue est survenue.",
+                    solution: code === 'MEDIA_TOO_BIG' 
+                        ? "⚠️ Vidéo trop lourde. Solution : Enregistrez-la depuis Telegram et glissez-la directement ici (jusqu'à 500 Mo)."
+                        : "Veuillez vérifier votre fichier et réessayer.",
+                    severity: (code === 'MEDIA_TOO_BIG' || code === 'NO_MEDIA_PROVIDED' || code === 'AI_QUOTA_EXCEEDED') ? 'warning' : 'danger',
+                    actionLabel: code === 'MEDIA_TOO_BIG' ? "📁 Choisir le fichier sur mon appareil" : "🔄 Réessayer"
+                };
+
+            const isWarning = errInfo.severity === 'warning';
+            const cardClass = isWarning ? 'aya-alert-warning' : 'aya-alert-danger';
+            const iconSymbol = isWarning ? '⚠️' : '❌';
+            const isMediaTooBig = errInfo.code === 'MEDIA_TOO_BIG';
+
+            const cardHtml = `
+                <div class="aya-alert-card ${cardClass}" id="ayaCurrentAlertCard">
+                    <div class="aya-alert-icon-wrap">
+                        ${iconSymbol}
+                    </div>
+                    <div class="aya-alert-content">
+                        <h4 class="aya-alert-title">${errInfo.title}</h4>
+                        <p class="aya-alert-desc">${errInfo.message}</p>
+                        ${errInfo.solution ? `
+                            <div class="aya-alert-solution">
+                                <b>${errInfo.solution}</b>
+                            </div>
+                        ` : ''}
+                        <div class="aya-alert-actions">
+                            <button type="button" class="aya-alert-btn aya-alert-btn-primary" id="btnAlertPrimaryAction">
+                                ${errInfo.actionLabel}
+                            </button>
+                            <button type="button" class="aya-alert-btn aya-alert-btn-secondary" id="btnAlertDismiss">
+                                Masquer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            videoPreviewContainer.innerHTML = cardHtml;
+            resultStatus.className = `result-title ${isWarning ? 'warning' : 'error'}`;
+            resultStatus.innerHTML = `<span>${iconSymbol}</span> ${errInfo.title}`;
+
+            // Dissimulation absolue de toute trace JSON
+            if (resultJson) {
+                resultJson.style.display = 'none';
+                resultJson.textContent = '';
+            }
+
+            const councilBox = document.getElementById('agentsCouncilContainer');
+            if (councilBox) councilBox.innerHTML = '';
+
+            // Événements des boutons d'action
+            const primaryBtn = document.getElementById('btnAlertPrimaryAction');
+            if (primaryBtn) {
+                primaryBtn.addEventListener('click', () => {
+                    if (isMediaTooBig || errInfo.code === 'NO_MEDIA_PROVIDED') {
+                        if (fileInput) fileInput.click();
+                        const telegramInput = document.getElementById('telegramUrl');
+                        if (telegramInput) telegramInput.value = '';
+                    } else if (typeof onAction === 'function') {
+                        onAction();
+                    } else {
+                        dropZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            }
+
+            currentActiveError = { code, rawMessage, onAction };
+
+            const dismissBtn = document.getElementById('btnAlertDismiss');
+            if (dismissBtn) {
+                dismissBtn.addEventListener('click', () => {
+                    resultBox.style.display = 'none';
+                    currentActiveError = null;
+                    updateProgress(0, "Prêt pour un nouveau média.");
+                });
+            }
+        }
+
+        let currentActiveError = null;
+        window.addEventListener('aya:languageChanged', () => {
+            if (currentActiveError && document.getElementById('ayaCurrentAlertCard')) {
+                renderUiErrorCard(currentActiveError);
+            }
+        });
+
         // 2. Soumission du Formulaire & Streaming Fetch
         btnSubmit.addEventListener('click', async () => {
+            currentActiveError = null;
             const telegramUrl = telegramUrlInput ? telegramUrlInput.value.trim() : '';
             if (!selectedFile && !telegramUrl) {
-                const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
-                alert(dict.alertNoMediaOrTelegram || "Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide.");
+                resultBox.style.display = 'flex';
+                renderUiErrorCard({ code: 'NO_MEDIA_PROVIDED' });
+                dropZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
@@ -1839,70 +2114,17 @@ ${safeText}
                     // Lancement automatique de l'audit par le Conseil des 7 Agents IA
                     loadAndRenderAgentCouncil(finalData);
                 } else {
-                    let errMsg = (finalData && finalData.error) ? finalData.error : "Une erreur est survenue lors du traitement.";
-                    const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
-                    if (errMsg.includes("temporairement surchargés") || errMsg.includes("surchargés")) {
-                        errMsg = dict.errAiOverloaded || errMsg;
-                    }
-
-                    const isMediaTooBig = (finalData && finalData.code === 'MEDIA_TOO_BIG') || 
-                                          errMsg.includes('MEDIA_TOO_BIG') || 
-                                          /media\s+is\s+too\s+big/i.test(errMsg) ||
-                                          errMsg.includes('trop lourde pour un import automatique');
-
-                    if (isMediaTooBig) {
-                        const alertMsg = dict.errTelegramTooBig || "⚠️ Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l'envoi de fichier classique.";
-                        updateProgress(100, alertMsg);
-                        resultStatus.className = 'result-title';
-                        resultStatus.innerHTML = '<span style="color: #f59e0b;">⚠️</span> Média Telegram volumineux';
-                        videoPreviewContainer.innerHTML = `
-                            <div style="width: 100%; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; padding: 1.5rem; display: flex; align-items: flex-start; gap: 1.25rem; color: #78350f; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);">
-                                <span style="font-size: 2.4rem; flex-shrink: 0; line-height: 1;">⚠️</span>
-                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                    <div style="font-weight: 700; color: #b45309; font-size: 1.05rem;">Média Telegram trop volumineux pour l'import direct</div>
-                                    <div style="font-size: 0.95rem; line-height: 1.6; color: #92400e;">
-                                        ${alertMsg}
-                                    </div>
-                                    <div style="background: rgba(245, 158, 11, 0.15); border-left: 4px solid #f59e0b; padding: 0.6rem 0.9rem; border-radius: 6px; font-size: 0.88rem; color: #78350f; margin-top: 0.25rem;">
-                                        💡 <b>Solution recommandée :</b> Enregistrez la vidéo sur votre ordinateur depuis l'application Telegram, puis glissez-la simplement dans la zone de dépôt ci-dessus. L'envoi direct supporte jusqu'à <b>500 Mo</b> !
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        const councilBox = document.getElementById('agentsCouncilContainer');
-                        if (councilBox) councilBox.innerHTML = '';
-                        resultJson.textContent = finalData ? JSON.stringify(finalData, null, 2) : receivedText;
-                        alert(alertMsg);
-                        return;
-                    }
-
-                    updateProgress(100, `Erreur : ${errMsg}`);
-                    resultStatus.className = 'result-title error';
-                    resultStatus.innerHTML = '<span>❌</span> Erreur de traitement';
-                    videoPreviewContainer.innerHTML = `
-                        <div style="width: 100%; background: rgba(239, 68, 68, 0.08); border: 1px solid var(--error-color); border-radius: 10px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; color: var(--color-dark-gray);">
-                            <span style="font-size: 2rem; flex-shrink: 0;">⚠️</span>
-                            <div>
-                                <div style="font-weight: 700; color: var(--error-color); font-size: 0.95rem; margin-bottom: 0.25rem;">Erreur de traitement IA</div>
-                                <div style="font-size: 0.88rem; line-height: 1.5;">${errMsg}</div>
-                            </div>
-                        </div>
-                    `;
-                    const councilBox = document.getElementById('agentsCouncilContainer');
-                    if (councilBox) councilBox.innerHTML = '';
-                    resultJson.textContent = finalData ? JSON.stringify(finalData, null, 2) : receivedText;
+                    const rawMsg = (finalData && (finalData.message || finalData.error)) || "Une erreur est survenue lors du traitement.";
+                    const errCode = (finalData && finalData.code) || '';
+                    renderUiErrorCard({ code: errCode, rawMessage: rawMsg });
+                    updateProgress(100, `Erreur : ${rawMsg}`);
                 }
 
             } catch (err) {
                 btnSubmit.disabled = false;
                 resultBox.style.display = 'flex';
+                renderUiErrorCard({ code: 'NETWORK_ERROR', rawMessage: err.message });
                 updateProgress(100, `Erreur réseau : ${err.message}`);
-                resultStatus.className = 'result-title error';
-                resultStatus.innerHTML = '<span>❌</span> Erreur de communication avec le serveur';
-                videoPreviewContainer.innerHTML = '';
-                const councilBox = document.getElementById('agentsCouncilContainer');
-                if (councilBox) councilBox.innerHTML = '';
-                resultJson.textContent = JSON.stringify({ error: err.message }, null, 2);
             }
         });
 

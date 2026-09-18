@@ -144,7 +144,60 @@
             // Résilience Anti-Quota & Modèle IA
             badgeModelPrefix: '🧠 Modèle :',
             errAiOverloaded: 'Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.',
-            errTelegramTooBig: '⚠️ Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l\'envoi de fichier classique.'
+            errTelegramTooBig: '⚠️ Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l\'envoi de fichier classique.',
+
+            // Dictionnaire d'Erreurs Grand Public - Norme Zéro-JSON (Nadine & Thomas)
+            errors: {
+                MEDIA_TOO_BIG: {
+                    title: "Vidéo trop lourde pour l'import direct",
+                    message: "Cette vidéo Telegram dépasse la capacité autorisée pour le téléchargement direct par lien.",
+                    solution: "⚠️ Vidéo trop lourde. Solution : Enregistrez-la depuis Telegram et glissez-la directement ici (jusqu'à 500 Mo).",
+                    severity: "warning",
+                    actionLabel: "📁 Choisir le fichier sur mon appareil"
+                },
+                INVALID_MEDIA: {
+                    title: "Fichier média corrompu ou illisible",
+                    message: "Le fichier ne contient aucun flux audio ou vidéo authentique exploitable.",
+                    solution: "Vérifiez que votre fichier n'est pas endommagé et réessayez avec un format standard (MP4, MP3, WAV, MOV).",
+                    severity: "danger",
+                    actionLabel: "🔄 Réessayer"
+                },
+                TELEGRAM_ERROR: {
+                    title: "Lien Telegram inaccessible",
+                    message: "Le lien public Telegram n'a pas pu être récupéré ou le média n'est plus disponible.",
+                    solution: "Vérifiez que le canal est public et que le lien ressemble à t.me/canal/123, ou téléchargez le média manuellement.",
+                    severity: "warning",
+                    actionLabel: "🔄 Réessayer"
+                },
+                AI_QUOTA_EXCEEDED: {
+                    title: "Serveurs IA temporairement surchargés",
+                    message: "Les ressources des modèles de transcription et de traduction sont momentanément saturées.",
+                    solution: "Veuillez patienter 1 à 2 minutes avant de relancer votre demande.",
+                    severity: "warning",
+                    actionLabel: "🔄 Réessayer"
+                },
+                NETWORK_ERROR: {
+                    title: "Erreur de communication réseau",
+                    message: "La connexion avec le serveur a été interrompue pendant le traitement.",
+                    solution: "Vérifiez votre connexion Internet et réessayez l'opération.",
+                    severity: "danger",
+                    actionLabel: "🔄 Réessayer"
+                },
+                NO_MEDIA_PROVIDED: {
+                    title: "Aucun média sélectionné",
+                    message: "Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide.",
+                    solution: "Glissez un fichier audio/vidéo ou collez un lien Telegram.",
+                    severity: "warning",
+                    actionLabel: "📁 Choisir un fichier"
+                },
+                DEFAULT: {
+                    title: "Incident lors de la génération",
+                    message: "Une anomalie s'est produite lors de la préparation de vos sous-titres.",
+                    solution: "Vérifiez votre fichier ou réessayez dans quelques instants.",
+                    severity: "danger",
+                    actionLabel: "🔄 Réessayer"
+                }
+            }
         },
         ar: {
             dir: 'rtl',
@@ -282,7 +335,60 @@
             // Résilience Anti-Quota & Modèle IA
             badgeModelPrefix: '🧠 النموذج:',
             errAiOverloaded: 'خوادم الذكاء الاصطناعي محملة بشكل زائد مؤقتاً. يرجى إعادة المحاولة بعد بضع دقائق.',
-            errTelegramTooBig: '⚠️ هذا الفيديو من تيليجرام كبير جداً ولا يمكن استيراده تلقائياً عبر الرابط. يرجى تنزيله يدوياً من تيليجرام ورفعه مباشرة كملف.'
+            errTelegramTooBig: '⚠️ هذا الفيديو من تيليجرام كبير جداً ولا يمكن استيراده تلقائياً عبر الرابط. يرجى تنزيله يدوياً من تيليجرام ورفعه مباشرة كملف.',
+
+            // قاموس الأخطاء الموجه للمستخدم العام - معيار انعدام كود جيسون (نادين وتوما)
+            errors: {
+                MEDIA_TOO_BIG: {
+                    title: "حجم الفيديو كبير جداً للاستيراد المباشر",
+                    message: "هذا الفيديو من تيليجرام يتجاوز الحجم المسموح به للتنزيل التلقائي عبر الرابط.",
+                    solution: "⚠️ الفيديو كبير جداً. الحل: احفظه من تطبيق تيليجرام على جهازك واسحبه هنا مباشرة (ندعم حتى 500 ميغابايت).",
+                    severity: "warning",
+                    actionLabel: "📁 اختيار الملف من الجهاز"
+                },
+                INVALID_MEDIA: {
+                    title: "ملف تالف أو تعذر قراءته",
+                    message: "الملف لا يحتوي على أي مسار صوتي أو مرئي حقيقي صالح للاستخدام.",
+                    solution: "يرجى التأكد من سلامة الملف وتجربة صيغة قياسية معروفة مثل (MP4, MP3, WAV, MOV).",
+                    severity: "danger",
+                    actionLabel: "🔄 إعادة المحاولة"
+                },
+                TELEGRAM_ERROR: {
+                    title: "تعذر الاستيراد من تيليجرام",
+                    message: "لم نتمكن من الوصول للمحتوى عبر رابط تيليجرام أو أن المنشور غير متاح.",
+                    solution: "تأكد من أن القناة عامة وأن الرابط بصيغة t.me/canal/123، أو قم بتنزيل الملف ورفعه يدوياً.",
+                    severity: "warning",
+                    actionLabel: "🔄 إعادة المحاولة"
+                },
+                AI_QUOTA_EXCEEDED: {
+                    title: "ضغط مؤقت على خوادم الذكاء الاصطناعي",
+                    message: "خوادم نماذج التفريغ والترجمة مشغولة حالياً بأقصى طاقتها.",
+                    solution: "يرجى الانتظار لمدة دقيقة أو دقيقتين ثم إعادة المحاولة.",
+                    severity: "warning",
+                    actionLabel: "🔄 إعادة المحاولة"
+                },
+                NETWORK_ERROR: {
+                    title: "انقطاع الاتصال بالشبكة",
+                    message: "انقطع الاتصال مع الخادم أثناء معالجة الطلب.",
+                    solution: "يرجى التحقق من اتصال الإنترنت لديك ثم المحاولة مجدداً.",
+                    severity: "danger",
+                    actionLabel: "🔄 إعادة المحاولة"
+                },
+                NO_MEDIA_PROVIDED: {
+                    title: "لم يتم تحديد أي وسائط",
+                    message: "يرجى اختيار ملف وسائط أو إدخال رابط تيليجرام عام صحيح.",
+                    solution: "اسحب ملفاً صوتياً/مرئياً أو الصق رابط تيليجرام عام للمتابعة.",
+                    severity: "warning",
+                    actionLabel: "📁 اختيار ملف"
+                },
+                DEFAULT: {
+                    title: "تعذر إتمام المعالجة",
+                    message: "حدث خطأ غير متوقع أثناء معالجة وإنشاء شريط الترجمة.",
+                    solution: "يرجى التحقق من الملف أو المحاولة مرة أخرى بعد لحظات.",
+                    severity: "danger",
+                    actionLabel: "🔄 إعادة المحاولة"
+                }
+            }
         }
     };
 
@@ -515,12 +621,56 @@
         setLanguage(currentLang);
     }
 
+    /**
+     * Récupère les informations d'une erreur adaptée au Grand Public selon la langue courante
+     */
+    function getErrorInfo(code, rawMessage = null) {
+        const lang = currentLang || localStorage.getItem('aya_lang') || 'fr';
+        const dict = translations[lang] || translations.fr;
+        const errDict = dict.errors || {};
+
+        let key = code;
+        if (!key || !errDict[key]) {
+            if (rawMessage && (/media\s+is\s+too\s+big/i.test(rawMessage) || rawMessage.includes('trop lourde') || rawMessage.includes('trop volumineux'))) {
+                key = 'MEDIA_TOO_BIG';
+            } else if (rawMessage && (/ffprobe/i.test(rawMessage) || rawMessage.includes('invalide') || rawMessage.includes('corrompu') || rawMessage.includes('aucun flux'))) {
+                key = 'INVALID_MEDIA';
+            } else if (rawMessage && (/quota/i.test(rawMessage) || rawMessage.includes('429') || rawMessage.includes('surchargés') || rawMessage.includes('resource_exhausted'))) {
+                key = 'AI_QUOTA_EXCEEDED';
+            } else if (rawMessage && (/network/i.test(rawMessage) || rawMessage.includes('réseau') || rawMessage.includes('Failed to fetch') || rawMessage.includes('communication'))) {
+                key = 'NETWORK_ERROR';
+            } else if (rawMessage && (rawMessage.includes('aucun fichier') || rawMessage.includes('aucun média'))) {
+                key = 'NO_MEDIA_PROVIDED';
+            } else {
+                key = 'DEFAULT';
+            }
+        }
+
+        const info = errDict[key] || errDict.DEFAULT || {
+            title: lang === 'ar' ? "تعذر إتمام المعالجة" : "Incident de traitement",
+            message: rawMessage || (lang === 'ar' ? "حدث خطأ غير متوقع." : "Une erreur inattendue est survenue."),
+            solution: lang === 'ar' ? "يرجى التحقق من الملف والمحاولة مرة أخرى." : "Veuillez vérifier votre fichier et réessayer.",
+            severity: "danger",
+            actionLabel: lang === 'ar' ? "إعادة المحاولة" : "Réessayer"
+        };
+
+        return {
+            code: key,
+            title: info.title,
+            message: info.message || rawMessage,
+            solution: info.solution,
+            severity: info.severity || 'danger',
+            actionLabel: info.actionLabel || (lang === 'ar' ? "إعادة المحاولة" : "Réessayer")
+        };
+    }
+
     // Exposition globale
     window.AyaI18n = {
-        currentLang,
+        get currentLang() { return currentLang; },
         translations,
         setLanguage,
-        initSharedNavbar
+        initSharedNavbar,
+        getErrorInfo
     };
 
     // Initialisation automatique au chargement du DOM

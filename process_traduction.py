@@ -1196,10 +1196,26 @@ def main():
         print("---JSON_OUTPUT_END---", flush=True)
 
     except Exception as e:
-        err_msg = str(e)
-        if any(k in err_msg.lower() for k in ["429", "resource_exhausted", "resourceexhausted", "quota", "surchargés", "overloaded", "exhausted"]):
+        raw_msg = str(e)
+        code = "PROCESSING_ERROR"
+        if "MEDIA_TOO_BIG" in raw_msg:
+            code = "MEDIA_TOO_BIG"
+            err_msg = "Cette vidéo Telegram est trop lourde pour un import automatique. Enregistrez-la depuis Telegram et glissez-la directement ici (jusqu'à 500 Mo)."
+        elif any(k in raw_msg.lower() for k in ["429", "resource_exhausted", "resourceexhausted", "quota", "surchargés", "overloaded", "exhausted"]):
+            code = "AI_QUOTA_EXCEEDED"
             err_msg = "Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes."
-        err_res = {"success": False, "error": err_msg}
+        elif any(k in raw_msg.lower() for k in ["ffprobe", "invalide", "corrompu", "aucun flux"]):
+            code = "INVALID_MEDIA"
+            err_msg = "Le fichier média est corrompu, vide ou dans un format non reconnu."
+        else:
+            err_msg = "Une anomalie s'est produite lors de la génération des sous-titres."
+
+        err_res = {
+            "success": False,
+            "code": code,
+            "message": err_msg,
+            "error": err_msg
+        }
         print("\n---JSON_OUTPUT_START---", flush=True)
         print(json.dumps(err_res, ensure_ascii=False, indent=2), flush=True)
         print("---JSON_OUTPUT_END---", flush=True)

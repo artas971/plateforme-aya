@@ -66,22 +66,25 @@ const { downloadTelegramMedia } = require('../services/telegramDownloader');
 // 2. POST /api/traduction/process : Réception du média (Upload ou Lien Telegram) et déclenchement de la traduction / sous-titrage avec Streaming Temps Réel
 router.post('/api/traduction/process', upload.single('media'), async (req, res) => {
     try {
-        const telegramUrl = (req.body.telegram_url || '').trim();
+        const b = req.body || {};
+        const telegramUrl = (b.telegram_url || '').trim();
         if (!req.file && !telegramUrl) {
             return res.status(400).json({
                 success: false,
-                error: "Aucun fichier média reçu sous le champ 'media' ni aucun lien Telegram."
+                code: "NO_MEDIA_PROVIDED",
+                message: "Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide.",
+                error: "Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide."
             });
         }
 
-        const targetLang = (req.body.target_lang || 'fr').toLowerCase();
-        const sourceLang = (req.body.source_lang || 'auto').toLowerCase();
-        const subColor = req.body.sub_color || '#FFFF00';
-        const subPosition = req.body.sub_position || '950';
-        const forceReprocess = req.body.force_reprocess === 'true' || req.body.force_reprocess === true;
-        const generateTiktokPack = req.body.generate_tiktok_pack === 'true' || req.body.generate_tiktok_pack === true;
-        const bgTheme = req.body.bg_theme || 'bg_palestine';
-        const expressMode = req.body.express_mode === 'true' || req.body.express_mode === true;
+        const targetLang = (b.target_lang || 'fr').toLowerCase();
+        const sourceLang = (b.source_lang || 'auto').toLowerCase();
+        const subColor = b.sub_color || '#FFFF00';
+        const subPosition = b.sub_position || '950';
+        const forceReprocess = b.force_reprocess === 'true' || b.force_reprocess === true;
+        const generateTiktokPack = b.generate_tiktok_pack === 'true' || b.generate_tiktok_pack === true;
+        const bgTheme = b.bg_theme || 'bg_palestine';
+        const expressMode = b.express_mode === 'true' || b.express_mode === true;
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
 
         // Configuration des en-têtes HTTP pour Chunked Streaming direct
@@ -113,15 +116,17 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             } catch (dlErr) {
                 console.error("[Telegram Import Error]:", dlErr);
                 const isMediaTooBig = dlErr.code === 'MEDIA_TOO_BIG' || (dlErr.message && dlErr.message.includes('MEDIA_TOO_BIG'));
+                const errCode = isMediaTooBig ? "MEDIA_TOO_BIG" : "TELEGRAM_ERROR";
                 const errorMsg = isMediaTooBig 
-                    ? "Cette vidéo Telegram est trop lourde pour un import automatique. Veuillez la télécharger manuellement depuis Telegram et utiliser l'envoi de fichier classique."
-                    : (dlErr.message || "Erreur lors de la récupération du média Telegram.");
+                    ? "Cette vidéo Telegram est trop lourde pour un import automatique. Enregistrez-la depuis Telegram et glissez-la directement ici (jusqu'à 500 Mo)."
+                    : "Impossible de récupérer ce média depuis Telegram. Vérifiez le lien ou téléchargez-le manuellement.";
 
                 res.write(`[PROGRESS] 100% - Erreur Telegram : ${errorMsg}\n`);
                 res.write(`---JSON_OUTPUT_START---\n${JSON.stringify({ 
                     success: false, 
-                    error: errorMsg,
-                    code: isMediaTooBig ? "MEDIA_TOO_BIG" : "TELEGRAM_ERROR"
+                    code: errCode,
+                    message: errorMsg,
+                    error: errorMsg
                 })}\n---JSON_OUTPUT_END---\n`);
                 return res.end();
             }
@@ -173,7 +178,12 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
         pyProcess.on('error', (err) => {
             console.error('[TRADUCTION SPAWN ERROR]', err);
-            res.write(`\n---JSON_OUTPUT_START---\n{"success": false, "error": "Échec lancement script Python: ${err.message}"}\n---JSON_OUTPUT_END---\n`);
+            res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify({
+                success: false,
+                code: "PROCESS_SPAWN_ERROR",
+                message: "Le moteur de traitement n'a pas pu démarrer sur le serveur.",
+                error: "Le moteur de traitement n'a pas pu démarrer sur le serveur."
+            })}\n---JSON_OUTPUT_END---\n`);
             res.end();
         });
 
@@ -206,7 +216,9 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             if (!stdoutData.includes('---JSON_OUTPUT_START---')) {
                 const fallbackRes = {
                     success: code === 0,
-                    error: code === 0 ? null : (stderrData.trim() || `Le script s'est arrêté avec le code d'erreur ${code}`)
+                    code: code === 0 ? null : "PROCESS_FAILED",
+                    message: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres.",
+                    error: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres."
                 };
                 res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(fallbackRes)}\n---JSON_OUTPUT_END---\n`);
             }
@@ -216,10 +228,16 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
     } catch (err) {
         console.error('[TRADUCTION ERROR]', err);
+        const errPayload = {
+            success: false,
+            code: "SERVER_ERROR",
+            message: "Une erreur interne temporaire est survenue sur le serveur.",
+            error: "Une erreur interne temporaire est survenue sur le serveur."
+        };
         if (!res.headersSent) {
-            res.status(500).json({ success: false, error: err.message });
+            res.status(500).json(errPayload);
         } else {
-            res.write(`\n---JSON_OUTPUT_START---\n{"success": false, "error": "${err.message}"}\n---JSON_OUTPUT_END---\n`);
+            res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(errPayload)}\n---JSON_OUTPUT_END---\n`);
             res.end();
         }
     }
