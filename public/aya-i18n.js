@@ -134,7 +134,11 @@
             fbBtnSubmit: '<span>📤</span> <span>Envoyer le feedback</span>',
             fbBtnSubmitting: '<span>⏳</span> Triage IA & création GitHub...',
             fbSuccessTitle: 'Retour transmis et analysé !',
-            fbLinkGitHub: '<span>🐙</span> Voir l\'Issue sur GitHub &rarr;'
+            fbLinkGitHub: '<span>🐙</span> Voir l\'Issue sur GitHub &rarr;',
+
+            // Résilience Anti-Quota & Modèle IA
+            badgeModelPrefix: '🧠 Modèle :',
+            errAiOverloaded: 'Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.'
         },
         ar: {
             dir: 'rtl',
@@ -262,7 +266,11 @@
             fbBtnSubmit: '<span>📤</span> <span>إرسال التقرير الآن</span>',
             fbBtnSubmitting: '<span>⏳</span> جاري التصنيف الذكي وإنشاء التذكرة...',
             fbSuccessTitle: 'تم استلام التقرير وتصنيفه بنجاح!',
-            fbLinkGitHub: '<span>🐙</span> معاينة التذكرة على غيت هاب &rarr;'
+            fbLinkGitHub: '<span>🐙</span> معاينة التذكرة على غيت هاب &rarr;',
+
+            // Résilience Anti-Quota & Modèle IA
+            badgeModelPrefix: '🧠 النموذج:',
+            errAiOverloaded: 'خوادم الذكاء الاصطناعي محملة بشكل زائد مؤقتاً. يرجى إعادة المحاولة بعد بضع دقائق.'
         }
     };
 

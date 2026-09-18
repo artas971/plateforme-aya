@@ -482,7 +482,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
             print("[PROGRESS] 70% - Toutes les fenêtres ont été transcrites avec succès.", flush=True)
 
     if not all_segments:
-        raise RuntimeError("Aucun segment de sous-titre n'a pu être produit pour ce média.")
+        raise RuntimeError("Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.")
 
     # Tri chronologique absolu
     all_segments.sort(key=lambda x: x["start"])
@@ -1133,7 +1133,10 @@ def main():
         print("---JSON_OUTPUT_END---", flush=True)
 
     except Exception as e:
-        err_res = {"success": False, "error": str(e)}
+        err_msg = str(e)
+        if any(k in err_msg.lower() for k in ["429", "resource_exhausted", "resourceexhausted", "quota", "surchargés", "overloaded", "exhausted"]):
+            err_msg = "Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes."
+        err_res = {"success": False, "error": err_msg}
         print("\n---JSON_OUTPUT_START---", flush=True)
         print(json.dumps(err_res, ensure_ascii=False, indent=2), flush=True)
         print("---JSON_OUTPUT_END---", flush=True)

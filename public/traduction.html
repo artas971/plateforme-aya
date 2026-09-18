@@ -1494,10 +1494,11 @@
                     const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
                     const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
                     const isFallback = modelUsed.toLowerCase().includes('lite') || (modelUsed !== 'gemini-2.5-flash' && !modelUsed.includes('2.5-flash'));
+                    const modelPrefix = dict.badgeModelPrefix || '🧠 Modèle :';
 
                     const modelBadgeHtml = isFallback
-                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ Moteur : <b>${modelUsed} [Fallback]</b></span>`
-                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">⚡ Moteur : <b>${modelUsed} [Premium]</b></span>`;
+                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ ${modelPrefix} <b>${modelUsed} [Secours]</b></span>`
+                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">${modelPrefix} <b>${modelUsed}</b></span>`;
 
                     // CAS 1 : MODE EXPRESS (TEXTE MARKDOWN < 5S)
                     if (finalData.express_mode) {
@@ -1650,8 +1651,8 @@ ${safeText}
                     }
 
                     const modelBadgeHtml = isFallback
-                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ Moteur : <b>${modelUsed} [Fallback]</b></span>`
-                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">⚡ Moteur : <b>${modelUsed} [Premium]</b></span>`;
+                        ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ ${modelPrefix} <b>${modelUsed} [Secours]</b></span>`
+                        : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">${modelPrefix} <b>${modelUsed}</b></span>`;
 
                     const bgNames = {
                         'bg_palestine': '🇵🇸 Palestine Résilience',
@@ -1719,11 +1720,23 @@ ${safeText}
                     // Lancement automatique de l'audit par le Conseil des 7 Agents IA
                     loadAndRenderAgentCouncil(finalData);
                 } else {
-                    const errMsg = (finalData && finalData.error) ? finalData.error : "Une erreur est survenue lors du traitement.";
+                    let errMsg = (finalData && finalData.error) ? finalData.error : "Une erreur est survenue lors du traitement.";
+                    const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
+                    if (errMsg.includes("temporairement surchargés") || errMsg.includes("surchargés")) {
+                        errMsg = dict.errAiOverloaded || errMsg;
+                    }
                     updateProgress(100, `Erreur : ${errMsg}`);
                     resultStatus.className = 'result-title error';
                     resultStatus.innerHTML = '<span>❌</span> Erreur de traitement';
-                    videoPreviewContainer.innerHTML = '';
+                    videoPreviewContainer.innerHTML = `
+                        <div style="width: 100%; background: rgba(239, 68, 68, 0.08); border: 1px solid var(--error-color); border-radius: 10px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; color: var(--color-dark-gray);">
+                            <span style="font-size: 2rem; flex-shrink: 0;">⚠️</span>
+                            <div>
+                                <div style="font-weight: 700; color: var(--error-color); font-size: 0.95rem; margin-bottom: 0.25rem;">Erreur de traitement IA</div>
+                                <div style="font-size: 0.88rem; line-height: 1.5;">${errMsg}</div>
+                            </div>
+                        </div>
+                    `;
                     const councilBox = document.getElementById('agentsCouncilContainer');
                     if (councilBox) councilBox.innerHTML = '';
                     resultJson.textContent = finalData ? JSON.stringify(finalData, null, 2) : receivedText;

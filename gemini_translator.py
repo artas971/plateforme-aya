@@ -194,18 +194,27 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
 
     req_data = json.dumps(payload).encode("utf-8")
 
-    # Cascade de modèles IA Google Gemini avec bascule automatique en cas de quota épuisé (429)
-    MODELS_CASCADE = [
-        "gemini-2.5-flash",
+    # Cascade de modèles IA Google Gemini avec bascule automatique en cas de quota épuisé (429 / ResourceExhausted)
+    PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
+    FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
+
+    # Liste ordonnée de cascade avec élimination des doublons
+    raw_cascade = [
+        PRIMARY_MODEL,
+        FALLBACK_MODEL,
+        "gemini-2.5-flash-lite",
         "gemini-flash-lite-latest",
+        "gemini-flash-latest",
         "gemini-3.5-flash-lite",
-        "gemini-3-flash-preview"
+        "gemini-3-flash-preview",
+        "gemini-2.5-pro"
     ]
+    MODELS_CASCADE = []
+    for m in raw_cascade:
+        if m and m not in MODELS_CASCADE:
+            MODELS_CASCADE.append(m)
 
     for idx, model_name in enumerate(MODELS_CASCADE):
-        if idx > 0:
-            print(f"[PROGRESS] ⚠️ Quota Premium atteint. Bascule sur modèle alternatif ({model_name})...", flush=True)
-
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
         try:
             req = urllib.request.Request(
@@ -213,7 +222,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                 data=req_data,
                 headers={"Content-Type": "application/json"}
             )
-            with urllib.request.urlopen(req, timeout=90) as resp:
+            with urllib.request.urlopen(req, timeout=35) as resp:
                 res_data = json.loads(resp.read().decode("utf-8"))
                 out_raw = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
                 segments = json.loads(out_raw)
@@ -227,11 +236,29 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                     except Exception:
                         pass
                     return segments
+        except urllib.error.HTTPError as he:
+            is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
+            if is_quota:
+                print("⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours...", flush=True)
+                next_model = MODELS_CASCADE[idx + 1] if idx + 1 < len(MODELS_CASCADE) else "modèle suivant"
+                print(f"[PROGRESS] ⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours ({next_model})...", flush=True)
+            else:
+                print(f"[Pôle 3 Gemini] Erreur HTTP {he.code} sur {model_name} : {he}. Bascule vers le modèle suivant...", flush=True)
+            continue
         except Exception as e:
-            print(f"[Pôle 3 Gemini] Modèle {model_name} indisponible ({e}). Bascule vers le modèle suivant...", flush=True)
+            err_str = str(e).lower()
+            is_quota = any(q in err_str for q in ["429", "quota", "resource_exhausted", "resourceexhausted"])
+            if is_quota:
+                print("⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours...", flush=True)
+                next_model = MODELS_CASCADE[idx + 1] if idx + 1 < len(MODELS_CASCADE) else "modèle suivant"
+                print(f"[PROGRESS] ⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours ({next_model})...", flush=True)
+            else:
+                print(f"[Pôle 3 Gemini] Modèle {model_name} indisponible ({e}). Bascule vers le modèle suivant...", flush=True)
             continue
 
-    return None
+    # Si même le modèle de secours et toute la cascade échouent (panne globale de l'API)
+    print("❌ [PANNE CRITIQUE] Échec de l'ensemble des modèles IA de la cascade.", flush=True)
+    raise RuntimeError("Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.")
 
 if __name__ == "__main__":
     media = r"c:\Users\artas\Desktop\aya\audio_a_traiter\soso18.ogg"
