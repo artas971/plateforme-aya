@@ -356,7 +356,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     print(f"[PROGRESS] 40% - Analyse IA de l'audio ({total_duration:.1f}s) en mode {mode} (source: {source_lang})...", flush=True)
 
     cache_dir = BASE_DIR / "cache_transcriptions"
-    base_name = Path(media_path).stem
+    base_name = Path(media_path).stem[:50]
     raw_stem = re.sub(r"^\d+_", "", base_name)
     found_cache = False
     all_segments = []
@@ -658,7 +658,13 @@ def main():
         print(json.dumps({"success": False, "error": "Argument fichier média manquant."}))
         sys.exit(1)
 
-    media_input = sys.argv[1]
+    raw_input = sys.argv[1]
+    # Prise en charge des chemins longs sous Windows (anti-erreur MAX_PATH)
+    if os.name == 'nt' and not raw_input.startswith('\\\\?\\') and len(os.path.abspath(raw_input)) >= 240:
+        media_input = '\\\\?\\' + os.path.abspath(raw_input)
+    else:
+        media_input = os.path.abspath(raw_input)
+
     target_lang = sys.argv[2] if len(sys.argv) > 2 else 'fr'
     sub_color_hex = sys.argv[3] if len(sys.argv) > 3 else '#FFFF00'
     try:
@@ -691,7 +697,7 @@ def main():
 
         # 3. Noms des fichiers de sortie
         print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)
-        clean_stem = re.sub(r"[^\w.-]", "_", Path(media_input).stem)
+        clean_stem = re.sub(r"[^\w.-]", "_", Path(media_input).stem)[:50]
         unique_id = f"{clean_stem}_{source_lang}_{target_lang}_{sub_margin_v}"
         ass_filename = f"subtitles_{unique_id}.ass"
         mp4_filename = f"video_{unique_id}.mp4"

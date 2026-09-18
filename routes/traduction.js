@@ -14,9 +14,10 @@ const storage = multer.diskStorage({
         cb(null, UPLOADS_DIR);
     },
     filename: (req, file, cb) => {
-        // Préfixe timestamp + assainissement du nom de fichier
-        const cleanName = file.originalname.replace(/[^\w.-]/g, '_');
-        cb(null, `${Date.now()}_${cleanName}`);
+        // Préfixe timestamp + assainissement et limitation de longueur (anti-dépassement Windows MAX_PATH)
+        const ext = path.extname(file.originalname).toLowerCase();
+        const base = path.basename(file.originalname, ext).replace(/[^\w.-]/g, '_').slice(0, 60);
+        cb(null, `${Date.now()}_${base}${ext}`);
     }
 });
 
