@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
@@ -164,6 +164,127 @@ router.post('/archive', (req, res) => {
     }
 });
 
+function containsArabic(str) {
+    return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(str);
+}
+
+/**
+ * Traduction Bidirectionnelle Automatique (Thomas & Nadine)
+ * Détecte la langue source du texte.
+ * - Français -> Arabe Palestinien (Ammiya de Gaza)
+ * - Arabe -> Français fluide et naturel
+ * Cascade de modèles Gemini pour résilience 429/quota
+ */
+async function translateChatBidirectional(text) {
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    const systemPrompt = `Tu es le traducteur expert du chat d'urgence de la plateforme Aya.
+Détecte la langue source du texte. Si le texte est en Français, traduis-le en Arabe Palestinien (Ammiya de Gaza). Si le texte est en Arabe, traduis-le en Français fluide et naturel. Ne répète jamais le texte source.
+
+Tu dois impérativement répondre au format JSON strict avec exactement ces deux champs :
+{
+  "detected_lang": "fr" ou "ar",
+  "translated_text": "traduction ici"
+}`;
+
+    if (geminiKey) {
+        const models = [
+            'gemini-2.5-flash',
+            'gemini-flash-latest',
+            'gemini-flash-lite-latest',
+            'gemini-3.5-flash',
+            'gemini-3.5-flash-lite',
+            'gemini-pro-latest'
+        ];
+
+        for (const model of models) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                role: 'user',
+                                parts: [{ text: `Texte à analyser et traduire :\n${text}` }]
+                            }
+                        ],
+                        systemInstruction: {
+                            parts: [{ text: systemPrompt }]
+                        },
+                        generationConfig: {
+                            responseMimeType: 'application/json',
+                            temperature: 0.2
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    if (response.status === 429 || response.status === 503 || errText.includes('RESOURCE_EXHAUSTED')) {
+                        console.warn(`⚠️ [Chat Quota] Modèle ${model} indisponible (${response.status}), bascule sur modèle de secours...`);
+                        continue;
+                    }
+                    console.warn(`[Chat IA Warning] ${model} HTTP ${response.status}: ${errText.substring(0, 120)}`);
+                    continue;
+                }
+
+                const data = await response.json();
+                const candidate = data.candidates && data.candidates[0];
+                const contentPart = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0];
+                const textResponse = contentPart ? contentPart.text : '';
+
+                if (textResponse) {
+                    const cleanJson = textResponse.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+                    const parsed = JSON.parse(cleanJson);
+                    const detected_lang = (parsed.detected_lang === 'ar' || parsed.detected_lang === 'fr') 
+                        ? parsed.detected_lang 
+                        : (containsArabic(text) ? 'ar' : 'fr');
+                    const translated_text = (parsed.translated_text || '').trim();
+
+                    console.log(`[Chat IA Succès] Modèle: ${model} | Langue: ${detected_lang} -> ${translated_text.substring(0, 40)}...`);
+                    return {
+                        detected_lang,
+                        translated_text,
+                        model_used: model
+                    };
+                }
+            } catch (err) {
+                console.warn(`⚠️ [Chat IA Exception] Modèle ${model} : ${err.message}`);
+            }
+        }
+    }
+
+    // Fallback de secours rapide si tous les quotas Gemini sont temporairement épuisés
+    console.warn("⚠️ [Chat IA Fallback] Utilisation du secours rapide pour la traduction.");
+    const isAr = containsArabic(text);
+    const target = isAr ? 'fr' : 'ar';
+    try {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=` + encodeURIComponent(text.substring(0, 1500));
+        const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const data = await res.json();
+        let translated = '';
+        if (data && Array.isArray(data[0])) {
+            translated = data[0].map(chunk => chunk[0]).join('');
+        }
+        if (translated) {
+            return {
+                detected_lang: isAr ? 'ar' : 'fr',
+                translated_text: translated,
+                model_used: 'gtx-fallback'
+            };
+        }
+    } catch (e) {
+        console.warn("[Fallback gtx error]:", e.message);
+    }
+
+    return {
+        detected_lang: isAr ? 'ar' : 'fr',
+        translated_text: text,
+        model_used: 'fallback-emergency'
+    };
+}
+
 router.get('/messages', (req, res) => {
     try {
         const status = getChatStatus();
@@ -174,6 +295,7 @@ router.get('/messages', (req, res) => {
     }
 });
 
+// Étape 1 : Envoi & Traduction Textuelle Immédiate (Moins de 1 à 2 secondes)
 router.post('/send', async (req, res) => {
     try {
         const status = getChatStatus();
@@ -181,53 +303,31 @@ router.post('/send', async (req, res) => {
             return res.status(403).json({ error: "Le chat est actuellement désactivé par l'administrateur." });
         }
 
-        const { text, sender, userLang } = req.body;
+        const { text, sender } = req.body;
         if (!text || !text.trim()) return res.status(400).json({ error: 'Texte requis' });
 
-        const isFrenchSender = (userLang === 'fr');
-        let originalText = text.trim();
-        let translatedText = "";
-        let audioFile = "";
-        let audioUrl = "";
+        const originalText = text.trim();
 
-        if (isFrenchSender) {
-            fs.writeFileSync(path.join(ROOT_DIR, 'input_payload.json'), JSON.stringify({
-                text_fr: originalText,
-                voice: 'ar-JO-SanaNeural'
-            }), 'utf8');
+        // Traduction bidirectionnelle automatique par Gemini
+        const result = await translateChatBidirectional(originalText);
+        const detectedLang = result.detected_lang;
+        const translatedText = result.translated_text;
 
-            await runPython(`py translate_fr_to_ar.py`);
-            const resultPath = path.join(ROOT_DIR, 'reponse_result.json');
-            if (fs.existsSync(resultPath)) {
-                const data = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
-                translatedText = data.arabic_translation;
-                audioFile = data.audio_file;
-                audioUrl = `/fichiers_reponse_a_envoyer/${audioFile}`;
-            }
-        } else {
-            fs.writeFileSync(path.join(ROOT_DIR, 'input_ar_payload.json'), JSON.stringify({
-                text_ar: originalText,
-                voice: 'fr-FR-VivienneMultilingualNeural'
-            }), 'utf8');
-
-            await runPython(`py translate_ar_to_fr.py`);
-            const resultPath = path.join(ROOT_DIR, 'reponse_fr_result.json');
-            if (fs.existsSync(resultPath)) {
-                const data = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
-                translatedText = data.french_translation;
-                audioFile = data.audio_file;
-                audioUrl = `/fichiers_reponse_a_envoyer/${audioFile}`;
-            }
-        }
+        const defaultSender = detectedLang === 'fr' ? 'John' : 'Aya';
+        const finalSender = (sender && sender.trim() && sender !== 'Utilisateur' && sender !== 'آية') 
+            ? sender.trim() 
+            : defaultSender;
 
         const newMessage = {
             id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-            sender: sender || (isFrenchSender ? 'John' : 'Aya'),
-            userLang: isFrenchSender ? 'fr' : 'ar',
+            sender: finalSender,
+            userLang: detectedLang,
             originalText: originalText,
             translatedText: translatedText,
-            audioFile: audioFile,
-            audioUrl: audioUrl,
+            audioFile: null,
+            audioUrl: null,
+            audioStatus: 'pending',
+            ai_model_used: result.model_used,
             timestamp: Date.now(),
             expiresAt: Date.now() + TWENTY_FOUR_HOURS_MS
         };
@@ -236,9 +336,83 @@ router.post('/send', async (req, res) => {
         messages.push(newMessage);
         saveChatMessages(messages);
 
+        console.log(`[Chat Send Immédiat] ID: ${newMessage.id} | De: ${newMessage.sender} (${newMessage.userLang})`);
         res.json({ success: true, message: newMessage });
     } catch (err) {
         console.error("Chat send error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Étape 2 : Génération Audio TTS Asynchrone Découplée (Arrière-plan)
+router.post('/tts', async (req, res) => {
+    try {
+        const { messageId } = req.body;
+        if (!messageId) {
+            return res.status(400).json({ error: "messageId requis" });
+        }
+
+        const messages = getChatMessages();
+        const msgIndex = messages.findIndex(m => m.id === messageId);
+        if (msgIndex === -1) {
+            return res.status(404).json({ error: "Message introuvable" });
+        }
+
+        const msg = messages[msgIndex];
+
+        // Si l'audio existe déjà sur disque
+        if (msg.audioUrl && msg.audioFile && fs.existsSync(path.join(REPONSED_DIR, msg.audioFile))) {
+            return res.json({ success: true, messageId: msg.id, audioUrl: msg.audioUrl });
+        }
+
+        // Détermination de la voix et du texte à vocaliser
+        // Le but est de vocaliser le texte traduit pour le destinataire :
+        // Si la source était le Français (userLang === 'fr'), la traduction est en Arabe Palestinien -> voix ar-JO-SanaNeural
+        // Si la source était l'Arabe (userLang === 'ar'), la traduction est en Français -> voix fr-FR-VivienneMultilingualNeural
+        const isFrenchSource = (msg.userLang === 'fr');
+        const voice = isFrenchSource ? 'ar-JO-SanaNeural' : 'fr-FR-VivienneMultilingualNeural';
+        const textToSpeak = msg.translatedText;
+
+        if (!textToSpeak || !textToSpeak.trim()) {
+            return res.status(400).json({ error: "Texte traduit vide pour la synthèse vocale" });
+        }
+
+        if (!fs.existsSync(REPONSED_DIR)) {
+            fs.mkdirSync(REPONSED_DIR, { recursive: true });
+        }
+
+        const audioFileName = `chat_tts_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.mp3`;
+        const outputMp3Path = path.join(REPONSED_DIR, audioFileName);
+
+        const payloadPath = path.join(ROOT_DIR, `temp_chat_tts_${Date.now()}.json`);
+        fs.writeFileSync(payloadPath, JSON.stringify({
+            text: textToSpeak,
+            voice: voice,
+            output_path: outputMp3Path
+        }), 'utf8');
+
+        try {
+            await runPython(`py generate_tts_quick.py "${payloadPath}"`);
+        } finally {
+            if (fs.existsSync(payloadPath)) {
+                try { fs.unlinkSync(payloadPath); } catch (e) {}
+            }
+        }
+
+        if (fs.existsSync(outputMp3Path)) {
+            msg.audioFile = audioFileName;
+            msg.audioUrl = `/fichiers_reponse_a_envoyer/${audioFileName}`;
+            msg.audioStatus = 'ready';
+            messages[msgIndex] = msg;
+            saveChatMessages(messages);
+
+            console.log(`[Chat TTS Généré] ID: ${msg.id} -> ${audioFileName}`);
+            return res.json({ success: true, messageId: msg.id, audioUrl: msg.audioUrl });
+        } else {
+            return res.status(500).json({ error: "Échec de génération du fichier audio TTS" });
+        }
+    } catch (err) {
+        console.error("Chat TTS error:", err);
         res.status(500).json({ error: err.message });
     }
 });

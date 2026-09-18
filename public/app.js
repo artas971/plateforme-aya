@@ -248,6 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnChatSendText: 'Envoyer',
             chatEmptyNotice: '💬 Aucune conversation en cours. Tapez votre premier message !',
             chatPlayAudioText: 'Écouter l\'audio',
+            chatStopAudioText: 'Arrêter',
+            chatAudioGenerating: 'Génération audio en cours...',
             adminToggleChatDisable: '⏸️ Désactiver le Chat',
             adminToggleChatEnable: '▶️ Réactiver le Chat',
             adminArchiveChatBtn: '📦 Archiver la Conversation',
@@ -391,6 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnChatSendText: 'إرسال',
             chatEmptyNotice: '💬 لا توجد رسائل حالياً في المحادثة المؤقتة. اكتبي رسالتك الأولى!',
             chatPlayAudioText: 'استماع للتسجيل',
+            chatStopAudioText: 'إيقاف',
+            chatAudioGenerating: 'جاري توليد الصوت...',
             adminToggleChatDisable: '⏸️ تعطيل المحادثة',
             adminToggleChatEnable: '▶️ إعادة تفعيل المحادثة',
             adminArchiveChatBtn: '📦 أرشفة المحادثة',
@@ -1543,6 +1547,189 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
     // CHAT ÉPHÉMÈRE 24H LOGIC & REAL-TIME SYNC
     // -------------------------------------------------------------
+    let renderedChatMessageIds = new Set();
+
+    function escapeChatHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function renderAudioPlayerHtml(msgId, audioUrl, dict) {
+        if (!audioUrl) {
+            return `
+                <div class="chat-audio-loading" id="audio-loading-${msgId}">
+                    <span class="chat-loading-spinner">⏳</span>
+                    <span class="chat-loading-text">${dict.chatAudioGenerating || 'Génération audio...'}</span>
+                </div>
+            `;
+        }
+        return `
+            <div class="chat-audio-player" id="audio-player-${msgId}" data-audio-url="${audioUrl}">
+                <button type="button" class="chat-audio-btn chat-btn-play" data-msg-id="${msgId}" title="Lecture / Pause">
+                    <span class="chat-btn-icon">▶️</span>
+                    <span class="chat-btn-label">${dict.chatPlayAudioText || 'Écouter'}</span>
+                </button>
+                <button type="button" class="chat-audio-btn chat-btn-stop" data-msg-id="${msgId}" title="Stop">
+                    <span class="chat-btn-icon">⏹️</span>
+                    <span class="chat-btn-label">${dict.chatStopAudioText || 'Stop'}</span>
+                </button>
+                <div class="chat-audio-wave">
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                    <span class="wave-bar"></span>
+                </div>
+            </div>
+        `;
+    }
+
+    function stopCurrentChatAudio() {
+        if (currentChatAudio) {
+            currentChatAudio.pause();
+            currentChatAudio.currentTime = 0;
+            currentChatAudio = null;
+        }
+        if (chatHistoryBox) {
+            const allPlayers = chatHistoryBox.querySelectorAll('.chat-audio-player');
+            const dict = i18n[currentLang];
+            allPlayers.forEach(p => {
+                p.classList.remove('is-playing');
+                const icon = p.querySelector('.chat-btn-play .chat-btn-icon');
+                if (icon) icon.textContent = '▶️';
+                const label = p.querySelector('.chat-btn-play .chat-btn-label');
+                if (label && dict) label.textContent = dict.chatPlayAudioText || 'Écouter';
+            });
+        }
+    }
+
+    function attachAudioControls(container) {
+        if (!container) return;
+
+        const playBtns = container.querySelectorAll('.chat-btn-play');
+        playBtns.forEach(btn => {
+            if (btn.dataset.bound) return;
+            btn.dataset.bound = 'true';
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const player = btn.closest('.chat-audio-player');
+                if (!player) return;
+                const audioUrl = player.getAttribute('data-audio-url');
+                if (!audioUrl) return;
+
+                const iconSpan = btn.querySelector('.chat-btn-icon');
+                const labelSpan = btn.querySelector('.chat-btn-label');
+                const dict = i18n[currentLang];
+
+                // Si cet audio est déjà en cours de lecture, on le met en pause
+                if (currentChatAudio && currentChatAudio.datasetAudioUrl === audioUrl && !currentChatAudio.paused) {
+                    currentChatAudio.pause();
+                    if (iconSpan) iconSpan.textContent = '▶️';
+                    if (labelSpan && dict) labelSpan.textContent = dict.chatPlayAudioText || 'Écouter';
+                    player.classList.remove('is-playing');
+                    return;
+                }
+
+                // Arrêter tout audio en cours
+                stopCurrentChatAudio();
+
+                // Lancement de la nouvelle lecture
+                currentChatAudio = new Audio(audioUrl);
+                currentChatAudio.datasetAudioUrl = audioUrl;
+
+                if (iconSpan) iconSpan.textContent = '⏸️';
+                if (labelSpan) labelSpan.textContent = dict.chatPauseAudioText || 'Pause';
+                player.classList.add('is-playing');
+
+                currentChatAudio.play().catch(err => {
+                    console.warn("Audio play prevented:", err);
+                    if (iconSpan) iconSpan.textContent = '▶️';
+                    if (labelSpan && dict) labelSpan.textContent = dict.chatPlayAudioText || 'Écouter';
+                    player.classList.remove('is-playing');
+                });
+
+                currentChatAudio.onended = () => {
+                    if (iconSpan) iconSpan.textContent = '▶️';
+                    if (labelSpan && dict) labelSpan.textContent = dict.chatPlayAudioText || 'Écouter';
+                    player.classList.remove('is-playing');
+                    currentChatAudio = null;
+                };
+            });
+        });
+
+        const stopBtns = container.querySelectorAll('.chat-btn-stop');
+        stopBtns.forEach(btn => {
+            if (btn.dataset.bound) return;
+            btn.dataset.bound = 'true';
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Exécution stricte : audio.pause(); audio.currentTime = 0;
+                stopCurrentChatAudio();
+            });
+        });
+    }
+
+    function createBubbleElement(msg, dict) {
+        const myName = currentUser ? (currentUser.name || currentUser.username).toLowerCase() : '';
+        const isMe = myName && msg.sender.toLowerCase().includes(myName);
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'}`;
+        bubble.id = `chat-msg-${msg.id}`;
+
+        const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const audioControlsHtml = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
+
+        bubble.innerHTML = `
+            <div class="chat-sender-name">
+                <span>👤 ${escapeChatHtml(msg.sender)}</span>
+                <span class="chat-time-tag">🕒 ${timeStr}</span>
+            </div>
+            <div class="chat-text-original">${escapeChatHtml(msg.originalText)}</div>
+            <div class="chat-text-translated">✨ ${escapeChatHtml(msg.translatedText)}</div>
+            <div class="chat-audio-wrapper" id="audio-wrap-${msg.id}">
+                ${audioControlsHtml}
+            </div>
+        `;
+
+        attachAudioControls(bubble);
+        return bubble;
+    }
+
+    // Étape 2 (Front-End) : Requête asynchrone pour générer le TTS sans bloquer l'UI
+    async function fetchChatAudioTts(messageId) {
+        const dict = i18n[currentLang];
+        try {
+            const res = await fetch('/api/chat/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messageId })
+            });
+            const data = await res.json();
+            if (data.success && data.audioUrl) {
+                const audioWrapper = document.getElementById(`audio-wrap-${messageId}`);
+                if (audioWrapper) {
+                    audioWrapper.innerHTML = renderAudioPlayerHtml(messageId, data.audioUrl, dict);
+                    attachAudioControls(audioWrapper);
+                }
+            } else {
+                const loadingEl = document.getElementById(`audio-loading-${messageId}`);
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
+            }
+        } catch (err) {
+            console.warn(`TTS fetch error for ${messageId}:`, err);
+            const loadingEl = document.getElementById(`audio-loading-${messageId}`);
+            if (loadingEl) loadingEl.style.display = 'none';
+        }
+    }
+
     async function loadChatMessages() {
         if (!chatHistoryBox) return;
         const dict = i18n[currentLang];
@@ -1588,6 +1775,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${dict.chatDisabledNotice}
                         </div>
                     `;
+                    renderedChatMessageIds.clear();
                     return;
                 }
             }
@@ -1598,68 +1786,65 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${dict.chatEmptyNotice}
                     </div>
                 `;
+                renderedChatMessageIds.clear();
                 return;
             }
 
-            chatHistoryBox.innerHTML = '';
-            if (isChatDisabled && isAdmin) {
-                const noticeBanner = document.createElement('div');
-                noticeBanner.style.cssText = 'text-align: center; color: #f87171; padding: 8px; font-size: 0.85rem; font-weight: 600; background: rgba(239, 68, 68, 0.15); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(239, 68, 68, 0.3);';
-                noticeBanner.textContent = currentLang === 'ar' ? '⚠️ المحادثة معطلة حالياً للمستخدمين (وضع المسؤول)' : '⚠️ Le chat est désactivé pour les utilisateurs (Mode Admin)';
-                chatHistoryBox.appendChild(noticeBanner);
+            // Si le chat vient d'être réinitialisé ou si la liste a été vidée
+            const incomingIds = new Set(messages.map(m => m.id));
+            if (renderedChatMessageIds.size > 0 && messages.length < renderedChatMessageIds.size) {
+                chatHistoryBox.innerHTML = '';
+                renderedChatMessageIds.clear();
             }
 
-            const myName = currentUser ? (currentUser.name || currentUser.username).toLowerCase() : '';
-
-            messages.forEach(msg => {
-                const isMe = myName && msg.sender.toLowerCase().includes(myName);
-                const bubble = document.createElement('div');
-                bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'}`;
-
-                const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                let audioBtnHTML = '';
-                if (msg.audioUrl) {
-                    audioBtnHTML = `
-                        <div class="chat-audio-controls">
-                            <button class="chat-play-btn" data-audio="${msg.audioUrl}">
-                                🔊 ${dict.chatPlayAudioText}
-                            </button>
-                        </div>
-                    `;
+            // Premier affichage complet
+            if (renderedChatMessageIds.size === 0) {
+                chatHistoryBox.innerHTML = '';
+                if (isChatDisabled && isAdmin) {
+                    const noticeBanner = document.createElement('div');
+                    noticeBanner.style.cssText = 'text-align: center; color: #f87171; padding: 8px; font-size: 0.85rem; font-weight: 600; background: rgba(239, 68, 68, 0.15); border-radius: 8px; margin-bottom: 8px; border: 1px solid rgba(239, 68, 68, 0.3);';
+                    noticeBanner.textContent = currentLang === 'ar' ? '⚠️ المحادثة معطلة حالياً للمستخدمين (وضع المسؤول)' : '⚠️ Le chat est désactivé pour les utilisateurs (Mode Admin)';
+                    chatHistoryBox.appendChild(noticeBanner);
                 }
 
-                bubble.innerHTML = `
-                    <div class="chat-sender-name">
-                        <span>👤 ${msg.sender}</span>
-                        <span class="chat-time-tag">🕒 ${timeStr}</span>
-                    </div>
-                    <div class="chat-text-original">${msg.originalText}</div>
-                    <div class="chat-text-translated">✨ ${msg.translatedText}</div>
-                    ${audioBtnHTML}
-                `;
+                messages.forEach(msg => {
+                    const bubble = createBubbleElement(msg, dict);
+                    chatHistoryBox.appendChild(bubble);
+                    renderedChatMessageIds.add(msg.id);
 
-                chatHistoryBox.appendChild(bubble);
-            });
-
-            // Attach Play Audio Listeners
-            const playBtns = chatHistoryBox.querySelectorAll('.chat-play-btn');
-            playBtns.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const audioUrl = btn.getAttribute('data-audio');
-                    if (audioUrl) {
-                        if (currentChatAudio) {
-                            currentChatAudio.pause();
-                        }
-                        currentChatAudio = new Audio(audioUrl);
-                        currentChatAudio.play().catch(() => {});
+                    // Si pas encore d'audioUrl, lancer la récupération asynchrone
+                    if (!msg.audioUrl) {
+                        fetchChatAudioTts(msg.id);
                     }
                 });
-            });
+                chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+            } else {
+                // Synchronisation incrémentale : n'ajouter que les nouveaux messages sans couper l'audio actif
+                let hasNew = false;
+                messages.forEach(msg => {
+                    if (!renderedChatMessageIds.has(msg.id)) {
+                        const bubble = createBubbleElement(msg, dict);
+                        chatHistoryBox.appendChild(bubble);
+                        renderedChatMessageIds.add(msg.id);
+                        hasNew = true;
 
-            // Scroll to bottom
-            chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+                        if (!msg.audioUrl) {
+                            fetchChatAudioTts(msg.id);
+                        }
+                    } else if (msg.audioUrl) {
+                        // Si l'audio vient de devenir disponible
+                        const audioWrap = document.getElementById(`audio-wrap-${msg.id}`);
+                        if (audioWrap && audioWrap.querySelector('.chat-audio-loading')) {
+                            audioWrap.innerHTML = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
+                            attachAudioControls(audioWrap);
+                        }
+                    }
+                });
+
+                if (hasNew) {
+                    chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+                }
+            }
         } catch (err) {
             console.error("Failed to load chat messages:", err);
         }
@@ -1677,6 +1862,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // ÉTAPE 1 : Appel d'envoi & traduction textuelle immédiate (< 1-2 sec)
             const res = await fetch('/api/chat/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1688,14 +1874,29 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await res.json();
-            if (data.success) {
+            if (data.success && data.message) {
+                const newMsg = data.message;
                 chatInputText.value = '';
-                await loadChatMessages();
+
+                // Afficher immédiatement la bulle dans #chatHistoryBox sans attendre le TTS
+                if (chatHistoryBox) {
+                    if (renderedChatMessageIds.size === 0) {
+                        chatHistoryBox.innerHTML = '';
+                    }
+                    const bubble = createBubbleElement(newMsg, dict);
+                    chatHistoryBox.appendChild(bubble);
+                    renderedChatMessageIds.add(newMsg.id);
+                    chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+                }
+
+                // ÉTAPE 2 : Déclenchement asynchrone du TTS en arrière-plan
+                fetchChatAudioTts(newMsg.id);
             } else {
                 alert(dict.alertChatError + (data.error || ""));
             }
         } catch (err) {
             console.error("Chat send error:", err);
+            alert(dict.alertChatError + (err.message || ""));
         } finally {
             if (chatSendBtn) {
                 chatSendBtn.disabled = false;
@@ -1821,6 +2022,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (data.success) {
                     alert(dict.alertChatResetSuccess);
+                    stopCurrentChatAudio();
+                    renderedChatMessageIds.clear();
+                    if (chatHistoryBox) chatHistoryBox.innerHTML = '';
                     await loadChatMessages();
                 }
             } catch (err) {

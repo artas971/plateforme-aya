@@ -994,30 +994,162 @@ textarea:focus {
     background: rgba(0, 188, 212, 0.08);
 }
 
-.chat-audio-controls {
-    display: flex;
+/* Mini-Lecteur Audio Éphémère (Lionel & Thomas) */
+.chat-audio-player {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    margin-top: 6px;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 5px 12px 5px 8px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    box-shadow: 0 2px 8px rgba(11, 83, 148, 0.12);
+    border: 1px solid rgba(0, 188, 212, 0.3);
+    transition: all 0.2s ease;
+    max-width: 100%;
 }
 
-.chat-play-btn {
-    background: #ffffff;
-    color: #047857;
+.chat-bubble.sent .chat-audio-player {
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chat-bubble.received .chat-audio-player {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.chat-audio-btn {
     border: none;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 700;
+    outline: none;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    transition: transform 0.15s ease;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: all 0.15s ease;
+    user-select: none;
 }
 
-.chat-play-btn:hover {
+.chat-btn-play {
+    background: linear-gradient(135deg, #00bcd4, #0b5394);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 188, 212, 0.35);
+}
+
+.chat-btn-play:hover {
     transform: scale(1.04);
+    box-shadow: 0 3px 8px rgba(0, 188, 212, 0.5);
+}
+
+.chat-bubble.sent .chat-btn-play {
+    background: #ffffff;
+    color: #0b5394;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.chat-bubble.sent .chat-btn-play:hover {
+    background: #f0fdf4;
+    color: #047857;
+}
+
+.chat-btn-stop {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.chat-btn-stop:hover {
+    background: #fecaca;
+    color: #b91c1c;
+    transform: scale(1.04);
+}
+
+.chat-bubble.sent .chat-btn-stop {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffcdd2;
+    border: 1px solid rgba(255, 205, 210, 0.3);
+}
+
+.chat-bubble.sent .chat-btn-stop:hover {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ffffff;
+}
+
+.chat-audio-wave {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 16px;
+    padding: 0 4px;
+}
+
+.wave-bar {
+    width: 3px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 3px;
+    transition: height 0.2s ease, background-color 0.2s ease;
+}
+
+.chat-bubble.sent .wave-bar {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.chat-audio-player.is-playing .wave-bar {
+    background: #00bcd4;
+    animation: wavePulse 1s ease-in-out infinite alternate;
+}
+
+.chat-bubble.sent .chat-audio-player.is-playing .wave-bar {
+    background: #ffffff;
+}
+
+.chat-audio-player.is-playing .wave-bar:nth-child(1) { animation-delay: 0.1s; }
+.chat-audio-player.is-playing .wave-bar:nth-child(2) { animation-delay: 0.3s; }
+.chat-audio-player.is-playing .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.chat-audio-player.is-playing .wave-bar:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes wavePulse {
+    0% { height: 4px; }
+    50% { height: 16px; }
+    100% { height: 7px; }
+}
+
+/* Indicateur de chargement asynchrone du TTS */
+.chat-audio-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 16px;
+    background: rgba(0, 188, 212, 0.08);
+    color: #0284c7;
+    border: 1px dashed rgba(0, 188, 212, 0.4);
+}
+
+.chat-bubble.sent .chat-audio-loading {
+    background: rgba(255, 255, 255, 0.15);
+    color: #e0f2fe;
+    border: 1px dashed rgba(255, 255, 255, 0.4);
+}
+
+.chat-loading-spinner {
+    display: inline-block;
+    animation: spinSlow 2s linear infinite;
+}
+
+@keyframes spinSlow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .chat-time-tag {
