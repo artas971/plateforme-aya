@@ -8,14 +8,20 @@
     <link rel="stylesheet" href="/aya-rtl.css">
     <style>
         :root {
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --card-hover: #273549;
-            --accent-color: #38BDF8;
-            --accent-hover: #0EA5E9;
-            --text-color: #F8FAFC;
-            --text-muted: #94A3B8;
-            --border-color: #334155;
+            --color-primary: #0b5394;
+            --color-turquoise: #00bcd4;
+            --color-dark-gray: #434343;
+            --color-secondary-gray: #999999;
+            --color-white: #ffffff;
+
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --card-hover: #f8fafc;
+            --accent-color: #00bcd4;
+            --accent-hover: #0097a7;
+            --text-color: #434343;
+            --text-muted: #999999;
+            --border-color: rgba(153, 153, 153, 0.35);
             --success-color: #10B981;
             --error-color: #EF4444;
         }
@@ -24,7 +30,6 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
         body {
@@ -38,9 +43,9 @@
 
         .app-header {
             width: 100%;
-            background: #0B1120;
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
+            background: var(--color-primary);
+            border-bottom: 2px solid rgba(0, 188, 212, 0.4);
+            padding: 14px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -48,6 +53,8 @@
             top: 0;
             z-index: 1000;
             box-sizing: border-box;
+            color: var(--color-white);
+            box-shadow: 0 4px 20px rgba(11, 83, 148, 0.22);
         }
 
         main {
@@ -82,7 +89,7 @@
             display: flex;
             flex-direction: column;
             gap: 1.75rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
         }
 
         /* Zone Drag & Drop */
@@ -91,7 +98,7 @@
             border-radius: 10px;
             padding: 2.5rem 1.5rem;
             text-align: center;
-            background: #0F172A;
+            background: #fbfcfd;
             cursor: pointer;
             transition: all 0.25s ease;
             display: flex;
@@ -103,7 +110,7 @@
 
         .drop-zone:hover, .drop-zone.dragover {
             border-color: var(--accent-color);
-            background: #132238;
+            background: rgba(0, 188, 212, 0.05);
             transform: translateY(-2px);
         }
 
@@ -131,7 +138,7 @@
             display: none;
             align-items: center;
             justify-content: space-between;
-            background: #132238;
+            background: rgba(0, 188, 212, 0.08);
             border: 1px solid var(--accent-color);
             padding: 0.75rem 1rem;
             border-radius: 8px;
@@ -157,6 +164,7 @@
         .file-size {
             font-size: 0.8rem;
             color: var(--accent-color);
+            font-weight: 600;
         }
 
         .btn-remove-file {
@@ -181,7 +189,7 @@
         }
 
         .source-card {
-            background: #0F172A;
+            background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 10px;
             padding: 0.9rem 1rem;
@@ -195,13 +203,13 @@
 
         .source-card:hover {
             background: var(--card-hover);
-            border-color: #475569;
+            border-color: var(--accent-color);
         }
 
         .source-card.active {
             border-color: var(--accent-color);
-            background: #132238;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 15px rgba(0, 188, 212, 0.25);
         }
 
         .source-icon {
@@ -241,7 +249,7 @@
         }
 
         .lang-card {
-            background: #0F172A;
+            background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 10px;
             padding: 1rem 1.25rem;
@@ -255,13 +263,13 @@
 
         .lang-card:hover {
             background: var(--card-hover);
-            border-color: #475569;
+            border-color: var(--accent-color);
         }
 
         .lang-card.active {
             border-color: var(--accent-color);
-            background: #132238;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 15px rgba(0, 188, 212, 0.25);
         }
 
         .lang-flag {
@@ -293,7 +301,7 @@
         }
 
         .color-card {
-            background: #0F172A;
+            background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem 0.5rem;
@@ -306,24 +314,25 @@
             user-select: none;
             font-size: 0.85rem;
             font-weight: 600;
+            color: var(--text-color);
         }
 
         .color-card:hover {
-            border-color: #475569;
+            border-color: var(--accent-color);
             background: var(--card-hover);
         }
 
         .color-card.active {
             border-color: var(--accent-color);
-            background: #132238;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.25);
         }
 
         .color-circle {
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.15);
             flex-shrink: 0;
         }
 
@@ -335,7 +344,7 @@
         }
 
         .pos-card {
-            background: #0F172A;
+            background: var(--card-bg);
             border: 2px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem 0.5rem;
@@ -351,14 +360,14 @@
         }
 
         .pos-card:hover {
-            border-color: #475569;
+            border-color: var(--accent-color);
             background: var(--card-hover);
         }
 
         .pos-card.active {
             border-color: var(--accent-color);
-            background: #132238;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.25);
         }
 
         .pos-title {
@@ -374,8 +383,8 @@
 
         /* Bouton Principal */
         .btn-submit {
-            background: linear-gradient(135deg, #0EA5E9, #0284C7);
-            color: white;
+            background: var(--color-turquoise);
+            color: #ffffff;
             border: none;
             padding: 1rem;
             border-radius: 8px;
@@ -387,12 +396,13 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.35);
         }
 
         .btn-submit:hover:not(:disabled) {
+            background: #0097a7;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.45);
         }
 
         .btn-submit:disabled {
@@ -407,7 +417,7 @@
             flex-direction: column;
             gap: 0.9rem;
             padding: 1.25rem;
-            background: #0B1120;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
         }
@@ -437,19 +447,19 @@
         .progress-bar-track {
             width: 100%;
             height: 10px;
-            background: #1E293B;
+            background: #e2e8f0;
             border-radius: 999px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(153, 153, 153, 0.2);
         }
 
         .progress-bar-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #38BDF8, #0EA5E9, #10B981);
+            background: linear-gradient(90deg, #00bcd4, #0b5394);
             border-radius: 999px;
             transition: width 0.35s ease;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.5);
         }
 
         .progress-log {
@@ -468,9 +478,9 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
-            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
-            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(0, 188, 212, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 188, 212, 0); }
         }
 
         /* Zone de Résultat */
@@ -478,7 +488,7 @@
             display: none;
             flex-direction: column;
             gap: 1.25rem;
-            background: #0B1120;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
             padding: 1.5rem;
@@ -511,7 +521,7 @@
         }
 
         .summary-badge {
-            background: #1E293B;
+            background: #f1f5f9;
             border: 1px solid var(--border-color);
             padding: 0.35rem 0.75rem;
             border-radius: 6px;
@@ -520,8 +530,8 @@
         }
 
         pre {
-            background: #020617;
-            border: 1px solid var(--border-color);
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 6px;
             padding: 1rem;
             color: #A5F3FC;
@@ -534,14 +544,14 @@
         /* CONSEIL DES 7 AGENTS IA */
         .council-container {
             width: 100%;
-            background: linear-gradient(180deg, #0d1527 0%, #070d19 100%);
-            border: 1px solid #1e293b;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
             box-sizing: border-box;
         }
 
@@ -552,7 +562,7 @@
             flex-wrap: wrap;
             gap: 1rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(153, 153, 153, 0.2);
         }
 
         .council-title {
@@ -561,7 +571,7 @@
             gap: 0.75rem;
             font-size: 1.15rem;
             font-weight: 700;
-            color: #F8FAFC;
+            color: var(--color-dark-gray);
         }
 
         .council-score-pill {
@@ -577,22 +587,22 @@
         .score-pill-good {
             background: rgba(16, 185, 129, 0.15);
             border: 1px solid #10B981;
-            color: #34D399;
+            color: #059669;
         }
 
         .score-pill-warning {
             background: rgba(245, 158, 11, 0.15);
             border: 1px solid #F59E0B;
-            color: #FBBF24;
+            color: #d97706;
         }
 
         .council-verdict-box {
-            background: rgba(30, 41, 59, 0.5);
+            background: #f8fafc;
             border-left: 4px solid var(--accent-color);
             border-radius: 6px;
             padding: 0.85rem 1rem;
             font-size: 0.88rem;
-            color: #CBD5E1;
+            color: var(--color-dark-gray);
             line-height: 1.5;
         }
 
@@ -604,8 +614,8 @@
         }
 
         .agent-card {
-            background: #0f172a;
-            border: 1px solid #1e293b;
+            background: #ffffff;
+            border: 1px solid rgba(153, 153, 153, 0.25);
             border-radius: 10px;
             padding: 1rem;
             display: flex;
@@ -616,7 +626,7 @@
 
         .agent-card:hover {
             transform: translateY(-2px);
-            border-color: #334155;
+            border-color: var(--accent-color);
         }
 
         .agent-card-header {
@@ -640,8 +650,8 @@
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
-            background: #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #f1f5f9;
+            border: 1px solid rgba(153, 153, 153, 0.25);
         }
 
         .agent-name-role {
@@ -652,7 +662,7 @@
         .agent-name {
             font-size: 0.92rem;
             font-weight: 700;
-            color: #F1F5F9;
+            color: var(--color-dark-gray);
         }
 
         .agent-role {
@@ -669,17 +679,17 @@
 
         .agent-diagnosis {
             font-size: 0.82rem;
-            color: #CBD5E1;
+            color: var(--color-dark-gray);
             line-height: 1.45;
-            background: rgba(15, 23, 42, 0.6);
+            background: #f8fafc;
             border-radius: 6px;
             padding: 0.6rem 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(153, 153, 153, 0.2);
         }
 
         .agent-reco {
             font-size: 0.75rem;
-            color: #94A3B8;
+            color: var(--color-secondary-gray);
             font-style: italic;
             display: flex;
             align-items: flex-start;
@@ -688,8 +698,8 @@
 
         /* SECTION DE CONSULTATION INTERACTIVE */
         .council-consult-section {
-            background: #0B1120;
-            border: 1px solid #1E293B;
+            background: #f8fafc;
+            border: 1px solid rgba(153, 153, 153, 0.25);
             border-radius: 10px;
             padding: 1.25rem;
             display: flex;
@@ -701,7 +711,7 @@
         .consult-title {
             font-size: 0.95rem;
             font-weight: 700;
-            color: #E2E8F0;
+            color: var(--color-dark-gray);
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -714,9 +724,9 @@
         }
 
         .consult-select {
-            background: #1E293B;
-            color: #F8FAFC;
-            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--color-dark-gray);
+            border: 1px solid var(--color-secondary-gray);
             border-radius: 8px;
             padding: 0.65rem 0.85rem;
             font-size: 0.85rem;
@@ -727,9 +737,9 @@
         .consult-input {
             flex: 1;
             min-width: 260px;
-            background: #1E293B;
-            color: #F8FAFC;
-            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--color-dark-gray);
+            border: 1px solid var(--color-secondary-gray);
             border-radius: 8px;
             padding: 0.65rem 1rem;
             font-size: 0.88rem;
@@ -742,7 +752,7 @@
 
         .consult-btn {
             background: var(--accent-color);
-            color: #0F172A;
+            color: #ffffff;
             border: none;
             border-radius: 8px;
             padding: 0.65rem 1.25rem;
@@ -756,17 +766,17 @@
         }
 
         .consult-btn:hover {
-            opacity: 0.9;
+            background: #0097a7;
             transform: scale(1.02);
         }
 
         .consult-reply-box {
             display: none;
-            background: #131d33;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: #ffffff;
+            border: 1px solid var(--accent-color);
             border-radius: 8px;
             padding: 1rem 1.2rem;
-            color: #E2E8F0;
+            color: var(--color-dark-gray);
             font-size: 0.88rem;
             line-height: 1.55;
             white-space: pre-wrap;
@@ -796,15 +806,15 @@
                 <button class="lang-toggle-btn" id="langArBtn">🇵🇸 العربية</button>
             </div>
             <!-- Lien 1 : Accueil / Vocal -->
-            <a href="/" class="btn-nav-link" id="navHomeLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+            <a href="/" class="btn-nav-link" id="navHomeLink">
                 <span>💬</span> <span id="navHomeText">Accueil / Vocal</span>
             </a>
             <!-- Lien 2 : Traduction & Sous-titres -->
-            <a href="/traduction" class="btn-nav-link active" id="navTraductionLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid #0284C7;">
+            <a href="/traduction" class="btn-nav-link active" id="navTraductionLink">
                 <span>✨</span> <span id="navTraductionText">Traduction & Sous-titres</span>
             </a>
             <!-- Lien 3 : Studio TikTok V3 -->
-            <a href="/studio" class="btn-nav-link" id="navStudioLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+            <a href="/studio" class="btn-nav-link" id="navStudioLink">
                 <span>🎬</span> <span id="navStudioText">Studio TikTok V3</span>
             </a>
             <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">Serveur Actif</span></span>

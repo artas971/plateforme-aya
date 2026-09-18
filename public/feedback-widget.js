@@ -13,15 +13,15 @@
             bottom: 24px;
             right: 24px;
             z-index: 99999;
-            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            background: var(--color-turquoise, #00bcd4);
             color: #FFFFFF;
-            border: 1px solid rgba(56, 189, 248, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 30px;
             padding: 0.7rem 1.25rem;
             font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
+            box-shadow: 0 8px 24px rgba(0, 188, 212, 0.35);
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -31,8 +31,9 @@
 
         .aya-feedback-btn:hover {
             transform: translateY(-3px) scale(1.03);
-            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.6);
-            border-color: #38BDF8;
+            box-shadow: 0 12px 30px rgba(0, 188, 212, 0.5);
+            background: #0097a7;
+            border-color: #FFFFFF;
         }
 
         .aya-feedback-overlay {
@@ -41,7 +42,7 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(2, 6, 23, 0.82);
+            background: rgba(11, 83, 148, 0.5);
             backdrop-filter: blur(6px);
             z-index: 100000;
             display: none;
@@ -53,17 +54,17 @@
         }
 
         .aya-feedback-modal {
-            background: #0F172A;
-            border: 1px solid #1E293B;
+            background: var(--color-white, #FFFFFF);
+            border: 1px solid var(--color-secondary-gray, #999999);
             border-radius: 16px;
             width: 100%;
             max-width: 520px;
             padding: 1.75rem;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+            box-shadow: 0 20px 50px rgba(11, 83, 148, 0.25);
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            color: #F8FAFC;
+            color: var(--color-dark-gray, #434343);
             box-sizing: border-box;
             font-family: inherit;
             position: relative;
@@ -78,7 +79,7 @@
         .aya-feedback-title {
             font-size: 1.15rem;
             font-weight: 800;
-            color: #F8FAFC;
+            color: var(--color-primary, #0b5394);
             display: flex;
             align-items: center;
             gap: 0.6rem;
@@ -87,7 +88,7 @@
         .aya-feedback-close {
             background: none;
             border: none;
-            color: #94A3B8;
+            color: var(--color-secondary-gray, #999999);
             font-size: 1.5rem;
             cursor: pointer;
             transition: color 0.2s;
@@ -95,13 +96,13 @@
         }
 
         .aya-feedback-close:hover {
-            color: #F8FAFC;
+            color: var(--color-dark-gray, #434343);
         }
 
         .aya-feedback-agent-badge {
-            background: rgba(6, 182, 212, 0.12);
-            border: 1px solid rgba(6, 182, 212, 0.4);
-            color: #22D3EE;
+            background: rgba(0, 188, 212, 0.1);
+            border: 1px solid rgba(0, 188, 212, 0.35);
+            color: var(--color-primary, #0b5394);
             border-radius: 8px;
             padding: 0.5rem 0.75rem;
             font-size: 0.8rem;
@@ -120,13 +121,13 @@
         .aya-form-label {
             font-size: 0.82rem;
             font-weight: 600;
-            color: #94A3B8;
+            color: var(--color-dark-gray, #434343);
         }
 
         .aya-feedback-input {
-            background: #1E293B;
-            border: 1px solid #334155;
-            color: #F8FAFC;
+            background: #FFFFFF;
+            border: 1px solid var(--color-secondary-gray, #999999);
+            color: var(--color-dark-gray, #434343);
             border-radius: 8px;
             padding: 0.65rem 0.85rem;
             font-size: 0.88rem;
@@ -137,13 +138,13 @@
         }
 
         .aya-feedback-input:focus {
-            border-color: #38BDF8;
+            border-color: var(--color-turquoise, #00bcd4);
         }
 
         .aya-feedback-textarea {
-            background: #1E293B;
-            border: 1px solid #334155;
-            color: #F8FAFC;
+            background: #FFFFFF;
+            border: 1px solid var(--color-secondary-gray, #999999);
+            color: var(--color-dark-gray, #434343);
             border-radius: 8px;
             padding: 0.75rem 0.85rem;
             font-size: 0.88rem;
@@ -157,11 +158,11 @@
         }
 
         .aya-feedback-textarea:focus {
-            border-color: #38BDF8;
+            border-color: var(--color-turquoise, #00bcd4);
         }
 
         .aya-feedback-submit {
-            background: #0284C7;
+            background: var(--color-turquoise, #00bcd4);
             color: #FFFFFF;
             border: none;
             border-radius: 8px;
@@ -177,7 +178,7 @@
         }
 
         .aya-feedback-submit:hover:not(:disabled) {
-            background: #0369A1;
+            background: #0097a7;
         }
 
         .aya-feedback-submit:disabled {
@@ -187,11 +188,11 @@
 
         .aya-feedback-success-box {
             display: none;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid #10B981;
+            background: rgba(0, 188, 212, 0.08);
+            border: 1px solid var(--color-turquoise, #00bcd4);
             border-radius: 8px;
             padding: 1rem;
-            color: #E2E8F0;
+            color: var(--color-dark-gray, #434343);
             font-size: 0.88rem;
             flex-direction: column;
             gap: 0.5rem;

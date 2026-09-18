@@ -1,16 +1,65 @@
 /**
  * Feuille de styles RTL (Right-to-Left) & Typographie Bilingue - Plateforme Aya
  * Direction Artistique : Lionel (Conseil des Agents)
+ * Charte Graphique Officielle :
+ * - Bleu Primaire : #0b5394
+ * - Turquoise : #00bcd4
+ * - Gris Foncé : #434343
+ * - Gris Secondaire : #999999
+ * - Blanc : #ffffff
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
-/* Règles RTL fondamentales */
+:root {
+    --color-primary: #0b5394;
+    --color-turquoise: #00bcd4;
+    --color-dark-gray: #434343;
+    --color-secondary-gray: #999999;
+    --color-white: #ffffff;
+
+    --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-latin: 'Amiri', 'Plus Jakarta Sans', Georgia, serif;
+    --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* 1. RÈGLE ARABE (html[dir="rtl"]) : Cairo forcée comme police principale */
+html[dir="rtl"],
+body[dir="rtl"],
+html[dir="rtl"] * {
+    font-family: var(--font-arabic) !important;
+}
+
 html[dir="rtl"],
 body[dir="rtl"] {
     direction: rtl;
     text-align: right;
-    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* 2. RÈGLE FRANÇAIS (html[dir="ltr"]) : Amiri pour le texte avec fallback sans-serif UI */
+html[dir="ltr"],
+body[dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+    font-family: var(--font-latin);
+}
+
+html[dir="ltr"] button,
+html[dir="ltr"] .btn,
+html[dir="ltr"] .btn-nav-link,
+html[dir="ltr"] .lang-toggle-btn,
+html[dir="ltr"] .badge-tag,
+html[dir="ltr"] .live-indicator,
+html[dir="ltr"] input,
+html[dir="ltr"] select,
+html[dir="ltr"] .custom-select,
+html[dir="ltr"] .user-badge,
+html[dir="ltr"] .timestamp,
+html[dir="ltr"] .progress-percent,
+html[dir="ltr"] .file-size,
+html[dir="ltr"] pre,
+html[dir="ltr"] code {
+    font-family: var(--font-ui) !important;
 }
 
 /* Inversion de la Barre de Navigation */
@@ -104,7 +153,7 @@ html[dir="rtl"] .council-header {
 
 html[dir="rtl"] .council-verdict-box {
     border-left: none !important;
-    border-right: 4px solid var(--accent-color) !important;
+    border-right: 4px solid var(--color-turquoise) !important;
 }
 
 html[dir="rtl"] .agent-card {

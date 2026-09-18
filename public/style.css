@@ -1,22 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 :root {
-    --bg-main: #0f141c;
-    --bg-card: #171e29;
-    --bg-input: #202938;
-    --border-color: #2e394b;
-    --text-primary: #ffffff;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    
-    --accent-emerald: #10b981;
-    --accent-blue: #38bdf8;
+    /* 1. Charte Graphique Officielle Plateforme Aya (Lionel - DA) */
+    --color-primary: #0b5394;        /* Bleu Primaire (Navbar, en-têtes majeurs) */
+    --color-turquoise: #00bcd4;      /* Turquoise (Boutons action principale, hover, feedback) */
+    --color-dark-gray: #434343;      /* Gris Foncé (Texte principal et titres) */
+    --color-secondary-gray: #999999; /* Gris Secondaire (Textes secondaires, placeholders, bordures) */
+    --color-white: #ffffff;          /* Blanc (Fonds de cartes, modales, textes sur fond sombre) */
+
+    /* Variables sémantiques et rétrocompatibilité */
+    --primary-color: var(--color-primary);
+    --accent-color: var(--color-turquoise);
+    --accent-hover: #0097a7;
+    --accent-blue: var(--color-turquoise);
+    --accent-emerald: var(--color-turquoise);
     --accent-gold: #f59e0b;
     --accent-purple: #8b5cf6;
-    
+
+    --bg-main: #f4f6f9;
+    --bg-color: #f4f6f9;
+    --bg-card: var(--color-white);
+    --card-bg: var(--color-white);
+    --bg-input: var(--color-white);
+    --border-color: rgba(153, 153, 153, 0.35);
+
+    --text-primary: var(--color-dark-gray);
+    --text-secondary: var(--color-secondary-gray);
+    --text-muted: var(--color-secondary-gray);
+    --text-color: var(--color-dark-gray);
+
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-arabic: 'Cairo', 'Traditional Arabic', sans-serif;
+
+    /* Typographie bilingue */
+    --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-latin: 'Amiri', 'Plus Jakarta Sans', Georgia, serif;
+    --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -25,13 +46,43 @@
     padding: 0;
 }
 
-body {
+/* 2. Règle de police adaptative (Lionel) */
+html, body, html[dir="ltr"], body[dir="ltr"] {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: var(--font-sans);
-    line-height: 1.5;
+    font-family: var(--font-latin);
+    line-height: 1.6;
     min-height: 100vh;
+}
+
+body {
     padding: 24px;
+}
+
+/* Éléments d'interface technique : fallback sans-serif soigné en LTR */
+html[dir="ltr"] button,
+html[dir="ltr"] .btn,
+html[dir="ltr"] .btn-nav-link,
+html[dir="ltr"] .lang-toggle-btn,
+html[dir="ltr"] .badge-tag,
+html[dir="ltr"] .live-indicator,
+html[dir="ltr"] input,
+html[dir="ltr"] select,
+html[dir="ltr"] .custom-select,
+html[dir="ltr"] .user-badge,
+html[dir="ltr"] .timestamp,
+html[dir="ltr"] .progress-percent,
+html[dir="ltr"] .file-size,
+html[dir="ltr"] pre,
+html[dir="ltr"] code {
+    font-family: var(--font-ui) !important;
+}
+
+/* Mode Arabe : Cairo forcé sur tous les éléments */
+html[dir="rtl"],
+body[dir="rtl"],
+html[dir="rtl"] * {
+    font-family: var(--font-arabic) !important;
 }
 
 .app-container {
@@ -42,15 +93,18 @@ body {
     gap: 24px;
 }
 
-/* Header */
+/* Header Navbar Officiel (Bleu Primaire #0b5394) */
 .app-header {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background: var(--color-primary);
+    border: none;
+    border-bottom: 2px solid rgba(0, 188, 212, 0.4);
     border-radius: var(--radius-lg);
-    padding: 20px 28px;
+    padding: 16px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: var(--color-white);
+    box-shadow: 0 4px 20px rgba(11, 83, 148, 0.22);
 }
 
 .brand {
@@ -64,14 +118,14 @@ body {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, var(--color-turquoise), #0097a7);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-arabic);
     font-weight: 700;
-    font-size: 1.1rem;
-    color: white;
+    font-size: 1.15rem;
+    color: var(--color-white);
+    box-shadow: 0 2px 10px rgba(0, 188, 212, 0.35);
 }
 
 .status-dot {
@@ -80,21 +134,24 @@ body {
     right: 2px;
     width: 12px;
     height: 12px;
-    background-color: #22c55e;
-    border: 2px solid var(--bg-card);
+    background-color: var(--color-turquoise);
+    border: 2px solid var(--color-primary);
     border-radius: 50%;
 }
 
-.app-header h1 {
+.app-header h1,
+#navbarBrandTitle {
     font-size: 1.35rem;
     font-weight: 700;
+    color: var(--color-white);
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.subtitle {
-    color: var(--text-secondary);
+.subtitle,
+#navbarBrandSub {
+    color: rgba(255, 255, 255, 0.85);
     font-size: 0.88rem;
 }
 
@@ -102,43 +159,101 @@ body {
     font-size: 0.75rem;
     padding: 4px 10px;
     border-radius: 20px;
-    background: rgba(30, 58, 138, 0.6);
-    color: #93c5fd;
-    border: 1px solid #3b82f6;
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--color-white);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     font-weight: 600;
 }
 
 .badge-tag.green {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(0, 188, 212, 0.22);
+    color: var(--color-white);
+    border-color: var(--color-turquoise);
 }
 
 .live-indicator {
     font-size: 0.8rem;
-    color: var(--text-secondary);
+    color: var(--color-white);
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--bg-input);
+    background: rgba(255, 255, 255, 0.12);
     padding: 6px 14px;
     border-radius: 20px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .pulse {
     width: 8px;
     height: 8px;
-    background-color: #22c55e;
+    background-color: var(--color-turquoise);
     border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7);
     animation: pulse-anim 2s infinite;
 }
 
 @keyframes pulse-anim {
-    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-    70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(0, 188, 212, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0); }
+}
+
+/* Navbar Navigation Links (Projet Aya) */
+.btn-nav-link {
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--color-white);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-nav-link:hover {
+    background: rgba(0, 188, 212, 0.25);
+    border-color: var(--color-turquoise);
+    color: var(--color-white);
+    transform: translateY(-1px);
+}
+
+.btn-nav-link.active {
+    background: var(--color-turquoise);
+    color: var(--color-white);
+    border-color: var(--color-turquoise);
+    box-shadow: 0 2px 10px rgba(0, 188, 212, 0.4);
+}
+
+/* Adaptation Header Navbar Spécifique */
+.app-header .user-badge {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: var(--color-white);
+}
+
+.app-header .lang-switcher {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.app-header .lang-toggle-btn {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.app-header .lang-toggle-btn.active {
+    background: var(--color-turquoise);
+    color: var(--color-white);
+    box-shadow: 0 2px 8px rgba(0, 188, 212, 0.4);
+}
+
+.app-header .lang-toggle-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--color-white);
 }
 
 /* Grid Layout */
@@ -166,11 +281,11 @@ body {
 
 .card-header {
     padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(153, 153, 153, 0.2);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.02);
+    background: #ffffff;
 }
 
 .card-title {
@@ -180,13 +295,14 @@ body {
 }
 
 .card-title h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-dark-gray);
 }
 
 .timestamp {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--color-secondary-gray);
 }
 
 .card-body {
@@ -194,6 +310,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    background: #ffffff;
 }
 
 /* Media Players */
@@ -236,25 +353,25 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #93c5fd;
+    color: var(--color-primary);
 }
 
 .arabic-box {
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: rgba(0, 188, 212, 0.05);
+    border: 1px solid rgba(0, 188, 212, 0.3);
 }
 
 .arabic-box .box-label {
-    color: #34d399;
+    color: var(--color-primary);
 }
 
 .french-box {
-    background: rgba(59, 130, 246, 0.08);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(11, 83, 148, 0.05);
+    border: 1px solid rgba(11, 83, 148, 0.3);
 }
 
 .french-box .box-label {
-    color: #93c5fd;
+    color: var(--color-primary);
 }
 
 .arabic-text {
@@ -263,7 +380,7 @@ body {
     line-height: 1.8;
     direction: rtl;
     text-align: right;
-    color: #ffffff;
+    color: var(--color-dark-gray);
 }
 
 .arabic-text.large {
@@ -272,14 +389,14 @@ body {
 
 .phonetic-text {
     font-size: 0.85rem;
-    color: var(--accent-gold);
+    color: var(--color-turquoise);
     font-style: italic;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .french-text {
     font-size: 1.05rem;
-    color: #ffffff;
+    color: var(--color-dark-gray);
     font-weight: 500;
     line-height: 1.6;
 }
@@ -300,15 +417,15 @@ body {
 
 /* Vocab Section */
 .vocab-section {
-    background: var(--bg-input);
+    background: #f8fafc;
     padding: 14px 18px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(153, 153, 153, 0.3);
 }
 
 .vocab-section h4 {
     font-size: 0.88rem;
-    color: #93c5fd;
+    color: var(--color-primary);
     font-weight: 700;
     margin-bottom: 10px;
 }
@@ -320,25 +437,25 @@ body {
 }
 
 .chip {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid #3b82f6;
+    background: rgba(11, 83, 148, 0.06);
+    border: 1px solid rgba(11, 83, 148, 0.25);
     padding: 5px 12px;
     border-radius: 6px;
     font-size: 0.85rem;
-    color: #ffffff;
-    font-weight: 500;
+    color: var(--color-dark-gray);
+    font-weight: 600;
 }
 
 .chip .ar {
     font-family: var(--font-arabic);
-    color: #34d399;
+    color: var(--color-turquoise);
     font-weight: 700;
 }
 
 /* Form & Inputs */
 .instruction-text {
     font-size: 0.92rem;
-    color: var(--text-secondary);
+    color: var(--color-secondary-gray);
     line-height: 1.5;
 }
 
@@ -356,18 +473,17 @@ body {
 .input-group label {
     font-size: 0.9rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--color-dark-gray);
     letter-spacing: 0.01em;
 }
 
 textarea {
     width: 100%;
-    background: #1e293b;
-    border: 1px solid #475569;
+    background: var(--color-white);
+    border: 1px solid var(--color-secondary-gray);
     border-radius: var(--radius-md);
     padding: 14px 16px;
-    color: #ffffff;
-    font-family: var(--font-sans);
+    color: var(--color-dark-gray);
     font-size: 0.98rem;
     resize: vertical;
     outline: none;
@@ -375,17 +491,16 @@ textarea {
 }
 
 textarea:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    border-color: var(--color-turquoise);
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
 }
 
 .custom-select {
-    background: #0f172a;
-    border: 1px solid #475569;
+    background: var(--color-white);
+    border: 1px solid var(--color-secondary-gray);
     border-radius: var(--radius-md);
     padding: 12px 14px;
-    color: #ffffff;
-    font-family: var(--font-sans);
+    color: var(--color-dark-gray);
     font-size: 0.95rem;
     font-weight: 600;
     outline: none;
@@ -394,24 +509,24 @@ textarea:focus {
 }
 
 .custom-select option {
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: var(--color-white);
+    color: var(--color-dark-gray);
     padding: 10px;
 }
 
 .custom-select.bold-select {
-    border-color: #38bdf8;
-    background: #0f172a;
-    color: #ffffff;
+    border-color: var(--color-turquoise);
+    background: var(--color-white);
+    color: var(--color-dark-gray);
     font-weight: 700;
 }
 
 .custom-select:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    border-color: var(--color-turquoise);
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
 }
 
-/* Buttons */
+/* Buttons (Turquoise #00bcd4 pour action principale) */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -420,7 +535,7 @@ textarea:focus {
     padding: 10px 18px;
     border-radius: var(--radius-md);
     font-size: 0.88rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
@@ -432,44 +547,45 @@ textarea:focus {
     font-size: 0.8rem;
 }
 
-.btn-primary {
-    background: var(--accent-blue);
-    color: white;
+.btn-primary,
+.btn-accent,
+.btn-submit {
+    background: var(--color-turquoise);
+    color: var(--color-white);
+    box-shadow: 0 4px 12px rgba(0, 188, 212, 0.25);
 }
 
-.btn-primary:hover {
-    background: #2563eb;
-}
-
-.btn-accent {
-    background: linear-gradient(135deg, var(--accent-emerald), #059669);
-    color: white;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-}
-
-.btn-accent:hover {
+.btn-primary:hover,
+.btn-accent:hover,
+.btn-submit:hover:not(:disabled) {
+    background: #0097a7;
+    color: var(--color-white);
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    box-shadow: 0 6px 16px rgba(0, 188, 212, 0.35);
 }
 
 .btn-secondary {
-    background: #334155;
-    color: white;
+    background: #f0f4f8;
+    color: var(--color-dark-gray);
+    border: 1px solid var(--color-secondary-gray);
 }
 
 .btn-secondary:hover {
-    background: #475569;
+    background: #e2e8f0;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .btn-outline {
     background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    border: 1px solid var(--color-secondary-gray);
+    color: var(--color-dark-gray);
 }
 
 .btn-outline:hover {
-    background: var(--bg-input);
-    color: var(--text-primary);
+    background: #f0f4f8;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 .full-width {
@@ -801,8 +917,8 @@ textarea:focus {
 }
 
 .chat-history-box {
-    background: #0b1120 !important;
-    border-color: #334155 !important;
+    background: #f8fafc !important;
+    border: 1px solid rgba(153, 153, 153, 0.35) !important;
 }
 
 .chat-bubble {
@@ -813,28 +929,28 @@ textarea:focus {
     border-radius: 12px;
     max-width: 85%;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(11, 83, 148, 0.08);
 }
 
 .chat-bubble.sent {
     align-self: flex-end;
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    color: #ffffff;
+    background: var(--color-primary);
+    color: var(--color-white);
     border-bottom-right-radius: 2px;
 }
 
 .chat-bubble.received {
     align-self: flex-start;
-    background: #1e293b;
-    color: #ffffff;
-    border: 1px solid #334155;
+    background: var(--color-white);
+    color: var(--color-dark-gray);
+    border: 1px solid rgba(153, 153, 153, 0.35);
     border-bottom-left-radius: 2px;
 }
 
 .chat-sender-name {
     font-size: 0.82rem;
     font-weight: 700;
-    color: #93c5fd;
+    color: var(--color-primary);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -842,25 +958,40 @@ textarea:focus {
 }
 
 .chat-bubble.sent .chat-sender-name {
-    color: #a7f3d0;
+    color: #e0f2fe;
 }
 
 .chat-text-original {
     font-size: 0.98rem;
     font-weight: 500;
-    color: #ffffff;
     word-break: break-word;
+}
+
+.chat-bubble.sent .chat-text-original {
+    color: #ffffff;
+}
+
+.chat-bubble.received .chat-text-original {
+    color: var(--color-dark-gray);
 }
 
 .chat-text-translated {
     font-size: 0.92rem;
-    color: #f1f5f9;
-    background: rgba(0, 0, 0, 0.28);
     padding: 8px 12px;
     border-radius: 6px;
     margin-top: 4px;
-    border-inline-start: 3px solid #38bdf8;
+    border-inline-start: 3px solid var(--color-turquoise);
     word-break: break-word;
+}
+
+.chat-bubble.sent .chat-text-translated {
+    color: #ffffff;
+    background: rgba(0, 188, 212, 0.25);
+}
+
+.chat-bubble.received .chat-text-translated {
+    color: var(--color-dark-gray);
+    background: rgba(0, 188, 212, 0.08);
 }
 
 .chat-audio-controls {

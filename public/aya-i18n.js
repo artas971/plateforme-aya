@@ -364,15 +364,15 @@
                     <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn">🇵🇸 العربية</button>
                 </div>
                 <!-- Lien 1 : Accueil / Vocal -->
-                <a href="/" class="btn-nav-link ${isHome ? 'active' : ''}" id="navHomeLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isHome ? 'background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                <a href="/" class="btn-nav-link ${isHome ? 'active' : ''}" id="navHomeLink">
                     <span>💬</span> <span id="navHomeText">${dict.navHomeText}</span>
                 </a>
                 <!-- Lien 2 : Traduction & Sous-titres -->
-                <a href="/traduction" class="btn-nav-link ${isTraduction ? 'active' : ''}" id="navTraductionLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isTraduction ? 'background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid #0284C7;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                <a href="/traduction" class="btn-nav-link ${isTraduction ? 'active' : ''}" id="navTraductionLink">
                     <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
                 </a>
                 <!-- Lien 3 : Studio TikTok V3 -->
-                <a href="/studio" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink" style="text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isStudio ? 'background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid #D97706;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                <a href="/studio" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink">
                     <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
                 </a>
                 <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">${dict.navbarLiveText}</span></span>
