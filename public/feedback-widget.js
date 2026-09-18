@@ -209,7 +209,7 @@
     widgetContainer.innerHTML = `
         <button type="button" class="aya-feedback-btn" id="ayaOpenFeedbackBtn" title="Signaler un bug ou suggérer une idée">
             <span>💬</span>
-            <span>Feedback Testeur</span>
+            <span id="ayaFeedbackBtnText">Feedback Testeur</span>
         </button>
 
         <div class="aya-feedback-overlay" id="ayaFeedbackOverlay">
@@ -217,30 +217,32 @@
                 <div class="aya-feedback-header">
                     <div class="aya-feedback-title">
                         <span>🚀</span>
-                        <span>Signaler un Bug ou une Idée</span>
+                        <span id="ayaModalTitleText">Signaler un Bug ou une Idée</span>
                     </div>
                     <button type="button" class="aya-feedback-close" id="ayaCloseFeedbackBtn">&times;</button>
                 </div>
 
-                <div class="aya-feedback-agent-badge">
+                <div class="aya-feedback-agent-badge" id="ayaFeedbackAgentBadge">
                     <span>🛡️</span>
                     <span><b>Agent Thomas</b> analysera et qualifiera automatiquement votre retour pour créer une Issue sur GitHub.</span>
                 </div>
 
                 <form id="ayaFeedbackForm" style="display: flex; flex-direction: column; gap: 1rem;">
                     <div class="aya-form-group">
-                        <label class="aya-form-label" for="ayaTesterName">Votre nom ou prénom (optionnel) :</label>
+                        <label class="aya-form-label" id="ayaLabelName" for="ayaTesterName">Votre nom ou prénom (optionnel) :</label>
                         <input type="text" id="ayaTesterName" class="aya-feedback-input" placeholder="Ex: Alex, Marie..." />
                     </div>
 
                     <div class="aya-form-group">
-                        <label class="aya-form-label" for="ayaRawMessage">Message brut (Dites-nous tout avec vos propres mots) :</label>
+                        <label class="aya-form-label" id="ayaLabelMsg" for="ayaRawMessage">Message brut (Dites-nous tout avec vos propres mots) :</label>
                         <textarea id="ayaRawMessage" class="aya-feedback-textarea" required placeholder="Ex: Sur ma vidéo de 20s, le mot bulldozer a été sauté au début. Ou : Serait-il possible d'avoir un bouton pour copier les sous-titres ?"></textarea>
                     </div>
 
                     <button type="submit" class="aya-feedback-submit" id="ayaSubmitFeedbackBtn">
-                        <span>📤</span>
-                        <span>Envoyer le feedback</span>
+                        <span id="ayaSubmitFeedbackBtnText" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>📤</span>
+                            <span>Envoyer le feedback</span>
+                        </span>
                     </button>
                 </form>
 
@@ -351,7 +353,63 @@
             alert(`Erreur réseau : ${err.message}`);
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<span>📤</span> Envoyer le feedback';
+            const curLang = localStorage.getItem('aya_lang') || 'fr';
+            submitBtn.innerHTML = (curLang === 'ar')
+                ? '<span id="ayaSubmitFeedbackBtnText" style="display:flex;align-items:center;gap:0.5rem;"><span>📤</span><span>إرسال التقرير الآن</span></span>'
+                : '<span id="ayaSubmitFeedbackBtnText" style="display:flex;align-items:center;gap:0.5rem;"><span>📤</span><span>Envoyer le feedback</span></span>';
         }
+    });
+
+    // 4. Internationalisation bilingue (Nadine) pour le widget
+    const fbI18n = {
+        fr: {
+            btnText: 'Feedback Testeur',
+            modalTitle: 'Signaler un Bug ou une Idée',
+            agentBadge: '<span>🛡️</span> <span><b>Agent Thomas</b> analysera et qualifiera automatiquement votre retour pour créer une Issue sur GitHub.</span>',
+            labelName: 'Votre nom ou prénom (optionnel) :',
+            placeholderName: 'Ex: Alex, Marie...',
+            labelMsg: 'Message brut (Dites-nous tout avec vos propres mots) :',
+            placeholderMsg: 'Ex: Sur ma vidéo de 20s, le mot bulldozer a été sauté au début...',
+            btnSubmit: '<span>📤</span> <span>Envoyer le feedback</span>'
+        },
+        ar: {
+            btnText: 'ملاحظات الفاحصين',
+            modalTitle: 'الإبلاغ عن خطأ أو اقتراح تحسين',
+            agentBadge: '<span>🛡️</span> <span>سيقوم <b>الوكيل توماس</b> بتحليل وتصنيف تقريرك تلقائياً لإنشاء تذكرة في غيت هاب.</span>',
+            labelName: 'اسمك أو لقبك (اختياري):',
+            placeholderName: 'مثال: أنس، آية، سوسو...',
+            labelMsg: 'نص الملاحظة (اكتب ملاحظتك بحرية تامة وبكلماتك الخاصة):',
+            placeholderMsg: 'مثال: في الفيديو عند الثانية 12 ظهر خطأ في توقيت النص...',
+            btnSubmit: '<span>📤</span> <span>إرسال التقرير الآن</span>'
+        }
+    };
+
+    function applyFeedbackLanguage(lang) {
+        const d = fbI18n[lang] || fbI18n.fr;
+        const btnSpan = document.getElementById('ayaFeedbackBtnText');
+        if (btnSpan) btnSpan.textContent = d.btnText;
+        const titleSpan = document.getElementById('ayaModalTitleText');
+        if (titleSpan) titleSpan.textContent = d.modalTitle;
+        const badge = document.getElementById('ayaFeedbackAgentBadge');
+        if (badge) badge.innerHTML = d.agentBadge;
+        const lName = document.getElementById('ayaLabelName');
+        if (lName) lName.textContent = d.labelName;
+        const pName = document.getElementById('ayaTesterName');
+        if (pName) pName.placeholder = d.placeholderName;
+        const lMsg = document.getElementById('ayaLabelMsg');
+        if (lMsg) lMsg.textContent = d.labelMsg;
+        const pMsg = document.getElementById('ayaRawMessage');
+        if (pMsg) pMsg.placeholder = d.placeholderMsg;
+        const bSub = document.getElementById('ayaSubmitFeedbackBtnText');
+        if (bSub) bSub.innerHTML = d.btnSubmit;
+    }
+
+    // Initialisation
+    const initLang = localStorage.getItem('aya_lang') || 'fr';
+    applyFeedbackLanguage(initLang);
+
+    // Écoute de l'événement de bascule linguistique
+    window.addEventListener('aya:languageChanged', (e) => {
+        applyFeedbackLanguage(e.detail?.lang || 'fr');
     });
 })();

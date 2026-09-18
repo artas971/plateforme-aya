@@ -178,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'Traduisez vos audios et générez vos réponses en un clic',
             userConnectedPrefix: '👤 Connecté :',
             logoutBtnTitle: 'Se déconnecter',
+            navStudioText: 'Studio TikTok V3',
             liveIndicatorText: '<span class="pulse"></span> Serveur Actif (localhost:3000)',
             titleReceived: "Fichiers Audio reçus d'Aya",
             msgTime: "Dossier audio_a_traiter",
@@ -319,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'ترجمة التسجيلات الصوتية وإنشاء الردود الصوتية بنقرة واحدة',
             userConnectedPrefix: '👤 تسجيل الدخول باسم:',
             logoutBtnTitle: 'تسجيل الخروج',
+            navStudioText: 'استوديو تيك توك V3',
             liveIndicatorText: '<span class="pulse"></span> الخادم نشط ومتصل',
             titleReceived: 'الملفات والتسجيلات الصوتية الواردة',
             msgTime: 'مجلد التسجيلات الواردة',
@@ -502,6 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Header Translations
         setInnerHTML('headerTitle', dict.headerTitle);
         setInnerHTML('headerSub', dict.headerSub);
+        setInnerHTML('navStudioText', dict.navStudioText);
         setInnerHTML('liveIndicatorText', dict.liveIndicatorText);
         if (logoutBtn) logoutBtn.setAttribute('title', dict.logoutBtnTitle);
 
@@ -613,6 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedItem) displaySelectedAudio(selectedItem);
         }
         loadChatMessages();
+        window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
     }
 
     // Language Toggle Listeners

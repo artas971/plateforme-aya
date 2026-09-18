@@ -1,0 +1,404 @@
+/**
+ * Module Internationalisation Globale (i18n) & Navbar Partagée - Plateforme Aya
+ * - Thomas (Architecte) : Mécanique i18n, persistance localStorage, navbar partagée
+ * - Nadine (Linguiste)  : Dictionnaire de traduction arabe palestinien soigné & naturel
+ * - Lionel (Graphiste)  : Bascule dynamique dir="rtl" / dir="ltr"
+ */
+
+(function () {
+    // 1. Dictionnaire Nadine Bilingue Complet (Français / Arabe Palestinien)
+    const translations = {
+        fr: {
+            dir: 'ltr',
+            // Navbar Globale
+            navbarBrandTitle: 'وكيل التَّرْجَمَة آيَة <span class="badge-tag green">Arabe Palestinien ↔ Français</span>',
+            navbarBrandSub: 'Studio de doublage, transcription et synchronisation instantanée',
+            userConnectedPrefix: '👤 Connecté :',
+            userAnonymous: 'Invité / Testeur',
+            logoutBtnTitle: 'Se déconnecter',
+            navHomeText: 'Accueil / Vocal',
+            navStudioText: 'Studio TikTok V3',
+            navbarLiveText: 'Serveur Actif',
+
+            // Page Traduction & Studio
+            pageDocTitle: 'Aya Studio V3 - Sous-titrage Automatique Haute Précision',
+            pageIntroTitle: 'Sous-titrage Automatique Haute Précision',
+            pageIntroSub: 'Glissez votre fichier audio ou vidéo, choisissez la langue cible et générez votre média sous-titré.',
+
+            // Zone Dépose Média
+            dropZoneText: 'Glissez & Déposez votre fichier média ici',
+            dropZoneSub: 'ou cliquez pour parcourir vos dossiers (Audio ou Vidéo jusqu\'à 500 Mo)',
+            btnRemoveFileTitle: 'Retirer ce fichier',
+
+            // Sélecteur Langue Source
+            labelSourceLang: '1. Langue parlée d\'origine (Source)',
+            sourceAutoTitle: 'Détection Automatique',
+            sourceAutoSub: 'Détecte automatiquement la voix parlée',
+            sourceArTitle: 'Arabe palestinien',
+            sourceArSub: 'Dialecte ammiya / Gaza',
+            sourceFrTitle: 'Français',
+            sourceFrSub: 'Discours original en français',
+
+            // Sélecteur Langue Cible
+            labelTargetLang: '2. Langue cible des sous-titres',
+            targetFrTitle: 'VOSTFR - Français',
+            targetFrSub: 'Sous-titres traduits ou retranscrits en français',
+            targetArTitle: 'VOAR - Arabe',
+            targetArSub: 'Sous-titres transcrits en arabe authentique',
+
+            // Style & Couleur
+            labelSubColor: '3. Style & Couleur des sous-titres',
+            colorYellowTitle: '🟡 Jaune Éclatant',
+            colorYellowSub: 'Style officiel TikTok / Reels',
+            colorWhiteTitle: '⚪ Blanc Moderne',
+            colorWhiteSub: 'Classique & Épuré',
+            colorGreenTitle: '🟢 Vert Émeraude',
+            colorGreenSub: 'Contraste dynamique',
+            colorCyanTitle: '🔵 Cyan Électrique',
+            colorCyanSub: 'Style moderne néon',
+
+            // Position Verticale
+            labelSubPosition: '4. Position des sous-titres',
+            posBottomTitle: '⬇️ Bas (950)',
+            posBottomSub: 'Format standard TikTok/Reels',
+            posMidTitle: '↕️ Milieu (500)',
+            posMidSub: 'Centre de l\'écran',
+            posTopTitle: '⬆️ Haut (150)',
+            posTopSub: 'Sous l\'en-tête',
+
+            // Bouton Action & Options
+            btnSubmitDefault: '<span>⚡</span> Lancer le traitement & le sous-titrage',
+            btnSubmitLoading: '<span>⏳</span> Traitement du média en cours...',
+            chkForceReprocess: '🔄 Forcer le retraitement (Ignorer le cache)',
+
+            // Progression
+            statusInit: 'Initialisation du pipeline...',
+            logConnected: 'Connexion au serveur établie...',
+
+            // Résultats & Téléchargements
+            resultStatusReady: '<span>✅</span> Vidéo sous-titrée disponible',
+            btnDownloadMp4Video: '⬇️ Télécharger la Vidéo MP4 (Format original)',
+            btnDownloadMp4Audio: '⬇️ Télécharger la Vidéo MP4 (Format 9:16)',
+            btnDownloadAss: '📄 Télécharger le fichier .ASS',
+
+            // Conseil des Agents
+            councilTitle: 'Conseil des 7 Agents IA - Audit & Stratégie',
+            councilScoreLabel: 'Note Globale :',
+            councilConsultTitle: 'Consulter le Conseil ou un Agent Spécialisé',
+            consultOptionAll: '🏛️ Tout le Conseil (Avis collégial)',
+            consultPlaceholder: 'Posez une question sur le tempo, le lexique, le cadrage ou l\'impact...',
+            consultBtnText: '<span>🚀</span> Demander l\'avis',
+            consultThinking: 'Réflexion de l\'agent en cours...',
+
+            // Widget Feedback Testeur
+            fbBtnText: 'Feedback Testeur',
+            fbModalTitle: 'Signaler un Bug ou une Idée',
+            fbAgentBadge: '<span>🛡️</span> <span><b>Agent Thomas</b> analysera et qualifiera automatiquement votre retour pour créer une Issue sur GitHub.</span>',
+            fbLabelName: 'Votre nom ou prénom (optionnel) :',
+            fbPlaceholderName: 'Ex: Alex, Marie...',
+            fbLabelMsg: 'Message brut (Dites-nous tout avec vos propres mots) :',
+            fbPlaceholderMsg: 'Ex: Sur ma vidéo de 20s, le mot bulldozer a été sauté au début...',
+            fbBtnSubmit: '<span>📤</span> <span>Envoyer le feedback</span>',
+            fbBtnSubmitting: '<span>⏳</span> Triage IA & création GitHub...',
+            fbSuccessTitle: 'Retour transmis et analysé !',
+            fbLinkGitHub: '<span>🐙</span> Voir l\'Issue sur GitHub &rarr;'
+        },
+        ar: {
+            dir: 'rtl',
+            // Navbar Globale
+            navbarBrandTitle: 'وكيل التَّرْجَمَة آيَة <span class="badge-tag green">عربي فلسطيني ↔ فرنسي</span>',
+            navbarBrandSub: 'استوديو الدبلجة والترجمة الفورية للفيديوهات والتسجيلات',
+            userConnectedPrefix: '👤 متصل باسم:',
+            userAnonymous: 'زائر / فاحص',
+            logoutBtnTitle: 'تسجيل الخروج',
+            navHomeText: 'الرئيسية / صوتي',
+            navStudioText: 'استوديو تيك توك V3',
+            navbarLiveText: 'الخادم نشط ومتصل',
+
+            // Page Traduction & Studio
+            pageDocTitle: 'استوديو آية V3 - دبلجة وترجمة الفيديوهات بدقة متناهية',
+            pageIntroTitle: 'إنشاء وتوليد الترجمة التلقائية فائقة الدقة',
+            pageIntroSub: 'اسحب وأفلت الملف الصوتي أو المرئي، اختر لغة الترجمة واستلم الفيديو مدمجاً باحترافية.',
+
+            // Zone Dépose Média
+            dropZoneText: 'اسحب وأفلت ملف الوسائط هنا للبدء',
+            dropZoneSub: 'أو انقر لاختيار ملف من جهازك (صوت أو فيديو حتى 500 ميغابايت)',
+            btnRemoveFileTitle: 'إزالة هذا الملف',
+
+            // Sélecteur Langue Source
+            labelSourceLang: '١. لغة التسجيل الأصلية (المصدر)',
+            sourceAutoTitle: 'التعرف التلقائي',
+            sourceAutoSub: 'كشف لغة الصوت تلقائياً بدون تدخل',
+            sourceArTitle: 'العربية الفلسطينية',
+            sourceArSub: 'اللهجة الغزاوية العامية الأصيلة',
+            sourceFrTitle: 'الفرنسية',
+            sourceFrSub: 'الكلام الأصلي باللغة الفرنسية',
+
+            // Sélecteur Langue Cible
+            labelTargetLang: '٢. اللغة المطلوبة للترجمة (الهدف)',
+            targetFrTitle: 'الفرنسية (VOSTFR)',
+            targetFrSub: 'شريط ترجمة بالفرنسية الفصيحة والمعاصرة',
+            targetArTitle: 'العربية (VOAR)',
+            targetArSub: 'شريط ترجمة بالعربية الفلسطينية الأصيلة',
+
+            // Style & Couleur
+            labelSubColor: '٣. مظهر ولون شريط الترجمة',
+            colorYellowTitle: '🟡 أصفر ساطع',
+            colorYellowSub: 'المظهر الرسمي لتيك توك وريلز',
+            colorWhiteTitle: '⚪ أبيض عصري',
+            colorWhiteSub: 'كلاسيكي ونقي',
+            colorGreenTitle: '🟢 أخضر زمردي',
+            colorGreenSub: 'تباين جذاب ومريح للعين',
+            colorCyanTitle: '🔵 سماوي كهربائي',
+            colorCyanSub: 'نمط نيون حديث',
+
+            // Position Verticale
+            labelSubPosition: '٤. موضع النص على الشاشة',
+            posBottomTitle: '⬇️ أسفل (950)',
+            posBottomSub: 'الموضع القياسي لتيك توك وريلز',
+            posMidTitle: '↕️ وسط (500)',
+            posMidSub: 'مركز الشاشة الرئيسي',
+            posTopTitle: '⬆️ أعلى (150)',
+            posTopSub: 'أسفل الشريط العلوي',
+
+            // Bouton Action & Options
+            btnSubmitDefault: '<span>⚡</span> بدء المعالجة والتوليد الفوري',
+            btnSubmitLoading: '<span>⏳</span> جاري معالجة الفيديو والترجمة...',
+            chkForceReprocess: '🔄 إعادة المعالجة الإجبارية (تجاوز الذاكرة المؤقتة)',
+
+            // Progression
+            statusInit: 'جاري تشغيل خط الإنتاج...',
+            logConnected: 'تم الاتصال بالخادم بنجاح...',
+
+            // Résultats & Téléchargements
+            resultStatusReady: '<span>✅</span> الفيديو المترجم جاهز للتحميل والمعاينة',
+            btnDownloadMp4Video: '⬇️ تحميل الفيديو النهائي (MP4)',
+            btnDownloadMp4Audio: '⬇️ تحميل الفيديو النهائي بصيغة 9:16',
+            btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
+
+            // Conseil des Agents
+            councilTitle: 'مجلس الوكلاء السبعة - تدقيق الجودة والاستراتيجية',
+            councilScoreLabel: 'التقييم الشامل :',
+            councilConsultTitle: 'استشر مجلس الوكلاء أو خبيراً بعينه',
+            consultOptionAll: '🏛️ مجلس الوكلاء كاملاً (رأي جماعي)',
+            consultPlaceholder: 'اطرح سؤالك حول الإيقاع، المصطلحات، التأطير أو التأثير...',
+            consultBtnText: '<span>🚀</span> طلب الرأي والمشورة',
+            consultThinking: 'الوكيل يفكر في الرد بدقة...',
+
+            // Widget Feedback Testeur
+            fbBtnText: 'ملاحظات الفاحصين',
+            fbModalTitle: 'الإبلاغ عن خطأ أو اقتراح تحسين',
+            fbAgentBadge: '<span>🛡️</span> <span>سيقوم <b>الوكيل توماس</b> بتحليل وتصنيف تقريرك تلقائياً لإنشاء تذكرة في غيت هاب.</span>',
+            fbLabelName: 'اسمك أو لقبك (اختياري):',
+            fbPlaceholderName: 'مثال: أنس، آية، سوسو...',
+            fbLabelMsg: 'نص الملاحظة (اكتب ملاحظتك بحرية تامة وبكلماتك الخاصة):',
+            fbPlaceholderMsg: 'مثال: في الفيديو عند الثانية 12 ظهر خطأ في توقيت النص...',
+            fbBtnSubmit: '<span>📤</span> <span>إرسال التقرير الآن</span>',
+            fbBtnSubmitting: '<span>⏳</span> جاري التصنيف الذكي وإنشاء التذكرة...',
+            fbSuccessTitle: 'تم استلام التقرير وتصنيفه بنجاح!',
+            fbLinkGitHub: '<span>🐙</span> معاينة التذكرة على غيت هاب &rarr;'
+        }
+    };
+
+    // 2. Gestion de l'état linguistique persistant
+    let currentLang = localStorage.getItem('aya_lang') || 'fr';
+
+    function setLanguage(lang) {
+        if (!translations[lang]) lang = 'fr';
+        currentLang = lang;
+        localStorage.setItem('aya_lang', lang);
+
+        const dict = translations[lang];
+
+        // Modification des attributs HTML globaux (RTL / LTR)
+        document.documentElement.setAttribute('lang', lang);
+        document.documentElement.setAttribute('dir', dict.dir);
+        if (document.body) {
+            document.body.setAttribute('dir', dict.dir);
+        }
+
+        // Bascule des boutons du switcher
+        const btnFr = document.getElementById('langFrBtn');
+        const btnAr = document.getElementById('langArBtn');
+        if (btnFr && btnAr) {
+            if (lang === 'ar') {
+                btnAr.classList.add('active');
+                btnFr.classList.remove('active');
+            } else {
+                btnFr.classList.add('active');
+                btnAr.classList.remove('active');
+            }
+        }
+
+        // Mise à jour des textes de la Navbar
+        updateElementText('navbarBrandTitle', dict.navbarBrandTitle, true);
+        updateElementText('navbarBrandSub', dict.navbarBrandSub);
+        updateElementText('navHomeText', dict.navHomeText);
+        updateElementText('navStudioText', dict.navStudioText);
+        updateElementText('navbarLiveText', dict.navbarLiveText);
+
+        const userObj = getUserSession();
+        const userNameSpan = document.getElementById('navbarUserName');
+        if (userNameSpan) {
+            const name = userObj ? (userObj.name || userObj.username) : dict.userAnonymous;
+            userNameSpan.textContent = `${dict.userConnectedPrefix} ${name}`;
+        }
+
+        // Mise à jour des textes de la page /traduction
+        if (window.location.pathname.includes('traduction')) {
+            document.title = dict.pageDocTitle;
+            updateElementText('pageIntroTitle', dict.pageIntroTitle);
+            updateElementText('pageIntroSub', dict.pageIntroSub);
+            updateElementText('dropZoneText', dict.dropZoneText);
+            updateElementText('dropZoneSub', dict.dropZoneSub);
+            updateElementText('labelSourceLang', dict.labelSourceLang);
+            updateElementText('sourceAutoTitle', dict.sourceAutoTitle);
+            updateElementText('sourceAutoSub', dict.sourceAutoSub);
+            updateElementText('sourceArTitle', dict.sourceArTitle);
+            updateElementText('sourceArSub', dict.sourceArSub);
+            updateElementText('sourceFrTitle', dict.sourceFrTitle);
+            updateElementText('sourceFrSub', dict.sourceFrSub);
+            updateElementText('labelTargetLang', dict.labelTargetLang);
+            updateElementText('targetFrTitle', dict.targetFrTitle);
+            updateElementText('targetFrSub', dict.targetFrSub);
+            updateElementText('targetArTitle', dict.targetArTitle);
+            updateElementText('targetArSub', dict.targetArSub);
+            updateElementText('labelSubColor', dict.labelSubColor);
+            updateElementText('colorYellowTitle', dict.colorYellowTitle);
+            updateElementText('colorYellowSub', dict.colorYellowSub);
+            updateElementText('colorWhiteTitle', dict.colorWhiteTitle);
+            updateElementText('colorWhiteSub', dict.colorWhiteSub);
+            updateElementText('colorGreenTitle', dict.colorGreenTitle);
+            updateElementText('colorGreenSub', dict.colorGreenSub);
+            updateElementText('colorCyanTitle', dict.colorCyanTitle);
+            updateElementText('colorCyanSub', dict.colorCyanSub);
+            updateElementText('labelSubPosition', dict.labelSubPosition);
+            updateElementText('posBottomTitle', dict.posBottomTitle);
+            updateElementText('posBottomSub', dict.posBottomSub);
+            updateElementText('posMidTitle', dict.posMidTitle);
+            updateElementText('posMidSub', dict.posMidSub);
+            updateElementText('posTopTitle', dict.posTopTitle);
+            updateElementText('posTopSub', dict.posTopSub);
+            updateElementText('chkForceReprocessText', dict.chkForceReprocess);
+
+            const btnSubmit = document.getElementById('btnSubmit');
+            if (btnSubmit && !btnSubmit.disabled) {
+                btnSubmit.innerHTML = dict.btnSubmitDefault;
+            }
+        }
+
+        // Mise à jour du widget de feedback
+        updateElementText('ayaFeedbackBtnText', dict.fbBtnText);
+        updateElementText('ayaModalTitleText', dict.fbModalTitle);
+        updateElementText('ayaFeedbackAgentBadge', dict.fbAgentBadge, true);
+        updateElementText('ayaLabelName', dict.fbLabelName);
+        updateElementPlaceholder('ayaTesterName', dict.fbPlaceholderName);
+        updateElementText('ayaLabelMsg', dict.fbLabelMsg);
+        updateElementPlaceholder('ayaRawMessage', dict.fbPlaceholderMsg);
+        updateElementText('ayaSubmitFeedbackBtnText', dict.fbBtnSubmit, true);
+
+        // Déclenchement d'un événement global pour les autres scripts
+        window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
+    }
+
+    function updateElementText(id, text, isHtml = false) {
+        const el = document.getElementById(id);
+        if (el && text) {
+            if (isHtml) el.innerHTML = text;
+            else el.textContent = text;
+        }
+    }
+
+    function updateElementPlaceholder(id, text) {
+        const el = document.getElementById(id);
+        if (el && text) el.setAttribute('placeholder', text);
+    }
+
+    function getUserSession() {
+        try {
+            return JSON.parse(localStorage.getItem('aya_user') || 'null');
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // 3. Construction de la Navbar Partagée Homogène
+    function initSharedNavbar() {
+        const existingHeader = document.querySelector('header');
+        if (!existingHeader) return;
+
+        // Structure HTML standardisée
+        existingHeader.className = 'app-header';
+        existingHeader.id = 'ayaGlobalNavbar';
+
+        const isStudio = window.location.pathname.includes('traduction') || window.location.pathname.includes('studio');
+
+        existingHeader.innerHTML = `
+            <div class="brand">
+                <div class="avatar-badge">
+                    <span class="avatar-initials">آية</span>
+                    <span class="status-dot"></span>
+                </div>
+                <div>
+                    <h1 id="navbarBrandTitle">وكيل التَّرْجَمَة آيَة <span class="badge-tag green">عربي فلسطيني ↔ فرنسي</span></h1>
+                    <p class="subtitle" id="navbarBrandSub">استوديو الدبلجة والترجمة الفورية للفيديوهات والتسجيلات</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <!-- Statut Utilisateur & Déconnexion -->
+                <div class="user-badge" id="navbarUserBadge">
+                    <span id="navbarUserName">👤 متصل</span>
+                    <button class="btn-logout" id="navbarLogoutBtn" title="تسجيل الخروج">🚪</button>
+                </div>
+                <!-- Sélecteur de Langue Dynamique -->
+                <div class="lang-switcher">
+                    <button class="lang-toggle-btn ${currentLang === 'fr' ? 'active' : ''}" id="langFrBtn">🇫🇷 FR</button>
+                    <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn">🇵🇸 العربية</button>
+                </div>
+                <!-- Lien Accueil / Vocal -->
+                <a href="/" class="btn-nav-link ${!isStudio ? 'active' : ''}" id="navHomeLink" style="text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${!isStudio ? 'background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid #10B981;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                    <span>💬</span> <span id="navHomeText">الرئيسية / صوتي</span>
+                </a>
+                <!-- Lien Studio TikTok V3 -->
+                <a href="/traduction" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink" style="text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; ${isStudio ? 'background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid #0284C7;' : 'background: #1E293B; color: #F8FAFC; border: 1px solid #334155;'}">
+                    <span>🎬</span> <span id="navStudioText">استوديو تيك توك V3</span>
+                </a>
+                <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">الخادم نشط ومتصل</span></span>
+            </div>
+        `;
+
+        // Événements du switcher
+        const btnFr = document.getElementById('langFrBtn');
+        const btnAr = document.getElementById('langArBtn');
+        if (btnFr) btnFr.addEventListener('click', () => setLanguage('fr'));
+        if (btnAr) btnAr.addEventListener('click', () => setLanguage('ar'));
+
+        // Événement de déconnexion
+        const logoutBtn = document.getElementById('navbarLogoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('aya_user');
+                alert(currentLang === 'ar' ? 'تم تسجيل الخروج بنجاح.' : 'Vous avez été déconnecté avec succès.');
+                window.location.reload();
+            });
+        }
+
+        // Application de la langue enregistrée
+        setLanguage(currentLang);
+    }
+
+    // Exposition globale
+    window.AyaI18n = {
+        currentLang,
+        translations,
+        setLanguage,
+        initSharedNavbar
+    };
+
+    // Initialisation automatique au chargement du DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSharedNavbar);
+    } else {
+        initSharedNavbar();
+    }
+})();

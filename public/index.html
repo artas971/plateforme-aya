@@ -16,6 +16,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
 </head>
 <body>
     <!-- Password Login Modal for Multi-User Remote Access -->
@@ -118,8 +119,8 @@
                     <button class="lang-toggle-btn" id="langFrBtn">🇫🇷 FR</button>
                     <button class="lang-toggle-btn active" id="langArBtn">🇵🇸 العربية</button>
                 </div>
-                <a href="/studio.html" target="_blank" class="btn btn-accent" style="text-decoration: none; font-weight: bold; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
-                    🎬 Studio TikTok V3
+                <a href="/traduction" class="btn btn-accent" id="navStudioBtn" style="text-decoration: none; font-weight: bold; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;">
+                    🎬 <span id="navStudioText">Studio TikTok V3</span>
                 </a>
                 <span class="live-indicator" id="liveIndicatorText"><span class="pulse"></span> الخادم نشط ومتصل</span>
             </div>
@@ -499,5 +500,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="/feedback-widget.js"></script>
 </body>
 </html>

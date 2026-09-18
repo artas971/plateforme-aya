@@ -1,0 +1,143 @@
+/**
+ * Feuille de styles RTL (Right-to-Left) & Typographie Bilingue - Plateforme Aya
+ * Direction Artistique : Lionel (Conseil des Agents)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* Règles RTL fondamentales */
+html[dir="rtl"],
+body[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Inversion de la Barre de Navigation */
+html[dir="rtl"] .app-header {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .brand {
+    flex-direction: row;
+    gap: 14px;
+}
+
+html[dir="rtl"] .header-actions {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .nav-links a {
+    margin-left: 0;
+    margin-right: 1.5rem;
+}
+
+html[dir="rtl"] .user-badge {
+    flex-direction: row;
+    direction: rtl;
+}
+
+/* Bouton Flottant de Feedback Testeur : Positionnement à gauche en RTL */
+html[dir="rtl"] .aya-feedback-btn {
+    right: auto !important;
+    left: 24px !important;
+}
+
+html[dir="rtl"] .aya-feedback-modal {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .aya-feedback-close {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+html[dir="rtl"] .aya-feedback-agent-badge {
+    flex-direction: row;
+}
+
+/* Inversion des Cartes de Sélection (Studio & Traduction) */
+html[dir="rtl"] .source-grid,
+html[dir="rtl"] .lang-grid,
+html[dir="rtl"] .color-grid,
+html[dir="rtl"] .pos-grid {
+    direction: rtl;
+}
+
+html[dir="rtl"] .source-card,
+html[dir="rtl"] .lang-card,
+html[dir="rtl"] .color-card,
+html[dir="rtl"] .pos-card {
+    text-align: right;
+}
+
+html[dir="rtl"] .source-details,
+html[dir="rtl"] .lang-details {
+    text-align: right;
+}
+
+/* Formulaires et Boutons */
+html[dir="rtl"] .file-info {
+    flex-direction: row;
+    text-align: right;
+}
+
+html[dir="rtl"] .badges-summary {
+    direction: rtl;
+}
+
+html[dir="rtl"] .summary-badge {
+    direction: rtl;
+}
+
+/* Conseil des 7 Agents IA */
+html[dir="rtl"] .council-container {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .council-header {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .council-verdict-box {
+    border-left: none !important;
+    border-right: 4px solid var(--accent-color) !important;
+}
+
+html[dir="rtl"] .agent-card {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .agent-card-header {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .agent-identity {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .agent-reco {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .consult-form {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .consult-reply-box {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Progression et Log */
+html[dir="rtl"] .progress-header {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .progress-log {
+    text-align: right;
+    direction: rtl;
+}

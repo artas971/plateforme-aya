@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aya - Traduction & Sous-titrage Vidéo</title>
+    <title>Aya Studio V3 - Sous-titrage Automatique Haute Précision</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
     <style>
         :root {
             --bg-color: #0F172A;
@@ -34,34 +36,18 @@
             align-items: center;
         }
 
-        header {
+        .app-header {
             width: 100%;
-            background: #020617;
-            padding: 1rem 2rem;
+            background: #0B1120;
             border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        header h1 {
-            font-size: 1.3rem;
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            margin-left: 1.5rem;
-            transition: color 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: var(--accent-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
         }
 
         main {
@@ -789,26 +775,48 @@
 </head>
 <body>
 
-    <header>
-        <h1><span>🎬</span> Plateforme Aya - Traduction & Sous-titrage</h1>
-        <nav class="nav-links">
-            <a href="/studio">Studio V3</a>
-            <a href="/">Accueil</a>
-        </nav>
+    <header class="app-header" id="ayaGlobalNavbar">
+        <div class="brand">
+            <div class="avatar-badge">
+                <span class="avatar-initials">آية</span>
+                <span class="status-dot"></span>
+            </div>
+            <div>
+                <h1 id="navbarBrandTitle">وكيل التَّرْجَمَة آيَة <span class="badge-tag green">Arabe Palestinien ↔ Français</span></h1>
+                <p class="subtitle" id="navbarBrandSub">Studio de doublage, transcription et synchronisation instantanée</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="user-badge" id="navbarUserBadge">
+                <span id="navbarUserName">👤 Connecté</span>
+                <button class="btn-logout" id="navbarLogoutBtn" title="Se déconnecter">🚪</button>
+            </div>
+            <div class="lang-switcher">
+                <button class="lang-toggle-btn active" id="langFrBtn">🇫🇷 FR</button>
+                <button class="lang-toggle-btn" id="langArBtn">🇵🇸 العربية</button>
+            </div>
+            <a href="/" class="btn-nav-link" id="navHomeLink" style="text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; background: #1E293B; color: #F8FAFC; border: 1px solid #334155;">
+                <span>💬</span> <span id="navHomeText">Accueil / Vocal</span>
+            </a>
+            <a href="/traduction" class="btn-nav-link active" id="navStudioLink" style="text-decoration: none; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 5px; background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid #0284C7;">
+                <span>🎬</span> <span id="navStudioText">Studio TikTok V3</span>
+            </a>
+            <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">Serveur Actif</span></span>
+        </div>
     </header>
 
     <main>
         <div class="page-intro">
-            <h2>Sous-titrage Automatique Haute Précision</h2>
-            <p>Glissez votre fichier audio ou vidéo, choisissez la langue cible et générez votre média sous-titré.</p>
+            <h2 id="pageIntroTitle">Sous-titrage Automatique Haute Précision</h2>
+            <p id="pageIntroSub">Glissez votre fichier audio ou vidéo, choisissez la langue cible et générez votre média sous-titré.</p>
         </div>
 
         <section class="card">
             <!-- 1. Zone Drag & Drop -->
             <div class="drop-zone" id="dropZone">
                 <span class="drop-zone-icon">📁</span>
-                <div class="drop-zone-text">Glissez & Déposez votre fichier média ici</div>
-                <div class="drop-zone-sub">ou cliquez pour parcourir vos dossiers (Audio ou Vidéo jusqu'à 500 Mo)</div>
+                <div class="drop-zone-text" id="dropZoneText">Glissez & Déposez votre fichier média ici</div>
+                <div class="drop-zone-sub" id="dropZoneSub">ou cliquez pour parcourir vos dossiers (Audio ou Vidéo jusqu'à 500 Mo)</div>
                 <input type="file" id="fileInput" class="file-input" accept="audio/*,video/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.mp4,.mov,.mkv,.avi,.webm">
             </div>
 
@@ -826,27 +834,27 @@
 
             <!-- 2. Sélecteur de Langue Source (Origine) -->
             <div>
-                <div class="section-label" style="margin-bottom: 0.75rem;">1. Langue parlée d'origine (Source)</div>
+                <div class="section-label" id="labelSourceLang" style="margin-bottom: 0.75rem;">1. Langue parlée d'origine (Source)</div>
                 <div class="source-grid">
                     <div class="source-card active" data-source="auto">
                         <span class="source-icon">🤖</span>
                         <div class="source-details">
-                            <div class="source-title">Auto-détection</div>
-                            <div class="source-sub">Détection automatique intelligente</div>
+                            <div class="source-title" id="sourceAutoTitle">Auto-détection</div>
+                            <div class="source-sub" id="sourceAutoSub">Détection automatique intelligente</div>
                         </div>
                     </div>
                     <div class="source-card" data-source="ar">
                         <span class="source-icon">🇵🇸</span>
                         <div class="source-details">
-                            <div class="source-title">Arabe palestinien</div>
-                            <div class="source-sub">Dialecte ammiya / Gaza</div>
+                            <div class="source-title" id="sourceArTitle">Arabe palestinien</div>
+                            <div class="source-sub" id="sourceArSub">Dialecte ammiya / Gaza</div>
                         </div>
                     </div>
                     <div class="source-card" data-source="fr">
                         <span class="source-icon">🇫🇷</span>
                         <div class="source-details">
-                            <div class="source-title">Français</div>
-                            <div class="source-sub">Discours original en français</div>
+                            <div class="source-title" id="sourceFrTitle">Français</div>
+                            <div class="source-sub" id="sourceFrSub">Discours original en français</div>
                         </div>
                     </div>
                 </div>
@@ -854,20 +862,20 @@
 
             <!-- 3. Sélecteur de Langue Cible -->
             <div>
-                <div class="section-label" style="margin-bottom: 0.75rem;">2. Langue cible des sous-titres</div>
+                <div class="section-label" id="labelTargetLang" style="margin-bottom: 0.75rem;">2. Langue cible des sous-titres</div>
                 <div class="lang-grid">
                     <div class="lang-card active" data-lang="fr" id="langFr">
                         <span class="lang-flag">🇫🇷</span>
                         <div class="lang-details">
-                            <div class="lang-title">VOSTFR - Français</div>
-                            <div class="lang-sub">Sous-titres traduits ou retranscrits en français</div>
+                            <div class="lang-title" id="targetFrTitle">VOSTFR - Français</div>
+                            <div class="lang-sub" id="targetFrSub">Sous-titres traduits ou retranscrits en français</div>
                         </div>
                     </div>
                     <div class="lang-card" data-lang="ar" id="langAr">
                         <span class="lang-flag">🇵🇸</span>
                         <div class="lang-details">
-                            <div class="lang-title">VOAR - Arabe</div>
-                            <div class="lang-sub">Sous-titres transcrits en arabe authentique</div>
+                            <div class="lang-title" id="targetArTitle">VOAR - Arabe</div>
+                            <div class="lang-sub" id="targetArSub">Sous-titres transcrits en arabe authentique</div>
                         </div>
                     </div>
                 </div>
@@ -875,42 +883,42 @@
 
             <!-- 4. Sélecteur de Couleur des Sous-titres -->
             <div>
-                <div class="section-label" style="margin-bottom: 0.75rem;">3. Couleur des sous-titres</div>
+                <div class="section-label" id="labelSubColor" style="margin-bottom: 0.75rem;">3. Couleur des sous-titres</div>
                 <div class="color-grid">
                     <div class="color-card active" data-color="#FFFF00">
                         <div class="color-circle" style="background: #FFFF00;"></div>
-                        <span>Jaune</span>
+                        <span id="colorYellowTitle">Jaune</span>
                     </div>
                     <div class="color-card" data-color="#FFFFFF">
                         <div class="color-circle" style="background: #FFFFFF;"></div>
-                        <span>Blanc</span>
+                        <span id="colorWhiteTitle">Blanc</span>
                     </div>
                     <div class="color-card" data-color="#00E676">
                         <div class="color-circle" style="background: #00E676;"></div>
-                        <span>Vert</span>
+                        <span id="colorGreenTitle">Vert</span>
                     </div>
-                    <div class="color-card" data-color="#CE1126">
-                        <div class="color-circle" style="background: #CE1126;"></div>
-                        <span>Rouge</span>
+                    <div class="color-card" data-color="#38BDF8">
+                        <div class="color-circle" style="background: #38BDF8;"></div>
+                        <span id="colorCyanTitle">Cyan</span>
                     </div>
                 </div>
             </div>
 
             <!-- 5. Sélecteur de Position Verticale -->
             <div>
-                <div class="section-label" style="margin-bottom: 0.75rem;">4. Position des sous-titres</div>
+                <div class="section-label" id="labelSubPosition" style="margin-bottom: 0.75rem;">4. Position des sous-titres</div>
                 <div class="pos-grid">
                     <div class="pos-card active" data-pos="950">
-                        <div class="pos-title">⬇️ Bas (950)</div>
-                        <div class="pos-sub">Format standard TikTok/Reels</div>
+                        <div class="pos-title" id="posBottomTitle">⬇️ Bas (950)</div>
+                        <div class="pos-sub" id="posBottomSub">Format standard TikTok/Reels</div>
                     </div>
                     <div class="pos-card" data-pos="500">
-                        <div class="pos-title">↕️ Milieu (500)</div>
-                        <div class="pos-sub">Centre de l'écran</div>
+                        <div class="pos-title" id="posMidTitle">↕️ Milieu (500)</div>
+                        <div class="pos-sub" id="posMidSub">Centre de l'écran</div>
                     </div>
                     <div class="pos-card" data-pos="150">
-                        <div class="pos-title">⬆️ Haut (150)</div>
-                        <div class="pos-sub">Sous l'en-tête</div>
+                        <div class="pos-title" id="posTopTitle">⬆️ Haut (150)</div>
+                        <div class="pos-sub" id="posTopSub">Sous l'en-tête</div>
                     </div>
                 </div>
             </div>
@@ -922,7 +930,7 @@
             <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: -0.5rem; user-select: none;">
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.88rem; color: var(--text-muted);">
                     <input type="checkbox" id="forceReprocess" style="width: 16px; height: 16px; accent-color: var(--accent-color); cursor: pointer;">
-                    <span>🔄 Forcer le retraitement (Ignorer le cache)</span>
+                    <span id="chkForceReprocessText">🔄 Forcer le retraitement (Ignorer le cache)</span>
                 </label>
             </div>
 
@@ -1431,6 +1439,7 @@
             }
         }
     </script>
+    <script src="/aya-i18n.js"></script>
     <script src="/feedback-widget.js"></script>
 </body>
 </html>
