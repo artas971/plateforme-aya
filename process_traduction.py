@@ -31,6 +31,13 @@ load_dotenv(BASE_DIR / ".env")
 
 OUTPUT_DIR = BASE_DIR / "fichiers_reponse_a_envoyer"
 DEFAULT_BG = BASE_DIR / "modern_dark_bg.jpg"
+BACKGROUNDS_DIR = BASE_DIR / "public" / "assets" / "backgrounds"
+BACKGROUND_MAP = {
+    "bg_palestine": BACKGROUNDS_DIR / "bg_palestine.jpg",
+    "bg_dark": BACKGROUNDS_DIR / "bg_dark.jpg",
+    "bg_turquoise": BACKGROUNDS_DIR / "bg_turquoise.jpg",
+    "bg_temoignage": BACKGROUNDS_DIR / "bg_temoignage.jpg"
+}
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -618,8 +625,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     print(f"[ASS SUCCÈS] Fichier généré : {output_ass_path.name}")
 
 
-def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, is_video: bool, duration: float):
-    """Incruste les sous-titres via FFmpeg sans toucher aux proportions d'origine."""
+def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, is_video: bool, duration: float, bg_theme: str = 'bg_palestine'):
+    """Incruste les sous-titres via FFmpeg sans toucher aux proportions d'origine (ou fond 9:16 sélectionné pour l'audio)."""
     # Copie temporaire sûre pour éviter les conflits d'échappement FFmpeg sur les apostrophes ou caractères spéciaux
     temp_burn_ass = ass_path.parent / f"_temp_burn_{os.getpid()}.ass"
     shutil.copy2(ass_path, temp_burn_ass)
@@ -638,8 +645,16 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
                 str(output_mp4_path.resolve())
             ]
         else:
-            print("[FFMPEG] Génération vidéo avec image de fond standard modern_dark_bg.jpg...")
-            bg_image = str(DEFAULT_BG.resolve())
+            bg_target = BACKGROUND_MAP.get(bg_theme)
+            if not bg_target or not bg_target.exists():
+                bg_target = BACKGROUND_MAP.get("bg_palestine")
+            if not bg_target or not bg_target.exists():
+                bg_target = BASE_DIR / "temoignage_gaza_bg.jpg"
+            if not bg_target.exists():
+                bg_target = DEFAULT_BG
+
+            print(f"[FFMPEG] Génération vidéo 9:16 pour note vocale avec fond : {bg_target.name} (thème: {bg_theme})...")
+            bg_image = str(bg_target.resolve())
             cmd = [
                 'ffmpeg', '-y',
                 '-threads', '0',
@@ -649,6 +664,7 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
                 '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
                 '-c:a', 'aac', '-b:a', '192k',
                 '-pix_fmt', 'yuv420p',
+                '-t', str(duration),
                 '-shortest',
                 str(output_mp4_path.resolve())
             ]
@@ -963,6 +979,7 @@ def main():
     source_lang = sys.argv[5] if len(sys.argv) > 5 else 'auto'
     force_reprocess = (sys.argv[6].lower() in ('true', '1', 'yes')) if len(sys.argv) > 6 else False
     generate_tiktok_pack = (sys.argv[7].lower() in ('true', '1', 'yes')) if len(sys.argv) > 7 else False
+    bg_theme = sys.argv[8] if len(sys.argv) > 8 else 'bg_palestine'
 
     if not os.path.exists(media_input):
         print(json.dumps({"success": False, "error": f"Fichier introuvable : {media_input}"}))
@@ -998,7 +1015,7 @@ def main():
 
         # 5. Incrustation vidéo FFmpeg
         print("[PROGRESS] 92% - Encodage et incrustation vidéo FFmpeg en cours...", flush=True)
-        render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration)
+        render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme)
 
         # 5bis. Pack Assets Post-Vidéo Optionnel (Lionel & Steve)
         cover_filename = None
@@ -1033,6 +1050,7 @@ def main():
             "ass_filename": ass_filename,
             "ass_url": f"/download/{ass_filename}",
             "generate_tiktok_pack": generate_tiktok_pack,
+            "bg_theme": bg_theme if not is_video else None,
             "cover_filename": cover_filename,
             "cover_url": f"/download/{cover_filename}" if cover_filename else None,
             "desc_filename": desc_filename,

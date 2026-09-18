@@ -67,6 +67,18 @@
             posTopTitle: '⬆️ Haut (150)',
             posTopSub: 'Sous l\'en-tête',
 
+            // Choix du Visuel pour Audios
+            labelBgTheme: '5. Choix du visuel (Pour les notes vocales & audios)',
+            audioNoticeBadge: '✨ Vidéo 9:16 automatique pour audios',
+            bgPalestineTitle: '🇵🇸 Palestine Résilience',
+            bgPalestineSub: 'Noir, Blanc, Vert, Rouge abstrait',
+            bgDarkTitle: '🌑 Noir Profond',
+            bgDarkSub: 'Minimaliste & contraste OLED',
+            bgTurquoiseTitle: '🌊 Turquoise Espoir',
+            bgTurquoiseSub: 'Couleur officielle Aya #00bcd4',
+            bgTemoignageTitle: '🎙️ Témoignage Sobre',
+            bgTemoignageSub: 'Cadre solennel pour récits',
+
             // Bouton Action & Options
             btnSubmitDefault: '<span>⚡</span> Lancer le traitement & le sous-titrage',
             btnSubmitLoading: '<span>⏳</span> Traitement du média en cours...',
@@ -166,6 +178,18 @@
             posMidSub: 'مركز الشاشة الرئيسي',
             posTopTitle: '⬆️ أعلى (150)',
             posTopSub: 'أسفل الشريط العلوي',
+
+            // Choix du Visuel pour Audios
+            labelBgTheme: '٥. اختيار المظهر والخلفية (للتسجيلات الصوتية)',
+            audioNoticeBadge: '✨ فيديو 9:16 تلقائي للتسجيلات الصوتية',
+            bgPalestineTitle: '🇵🇸 صمود فلسطين',
+            bgPalestineSub: 'ألوان العلم الفلسطيني بنمط تجريدي',
+            bgDarkTitle: '🌑 أسود ملكي داكن',
+            bgDarkSub: 'مظهر أنيق وتباين عالي للشاشات',
+            bgTurquoiseTitle: '🌊 فيروزي الأمل',
+            bgTurquoiseSub: 'لون هوية آية الرسمي #00bcd4',
+            bgTemoignageTitle: '🎙️ شهادة وقورة',
+            bgTemoignageSub: 'إطار مهيب خاص بالشهادات الإنسانية',
 
             // Bouton Action & Options
             btnSubmitDefault: '<span>⚡</span> بدء المعالجة والتوليد الفوري',
@@ -290,6 +314,17 @@
             updateElementText('posMidSub', dict.posMidSub);
             updateElementText('posTopTitle', dict.posTopTitle);
             updateElementText('posTopSub', dict.posTopSub);
+            updateElementText('labelBgTheme', dict.labelBgTheme);
+            updateElementText('audioNoticeBadge', dict.audioNoticeBadge);
+            updateElementText('bgPalestineTitle', dict.bgPalestineTitle);
+            updateElementText('bgPalestineSub', dict.bgPalestineSub);
+            updateElementText('bgDarkTitle', dict.bgDarkTitle);
+            updateElementText('bgDarkSub', dict.bgDarkSub);
+            updateElementText('bgTurquoiseTitle', dict.bgTurquoiseTitle);
+            updateElementText('bgTurquoiseSub', dict.bgTurquoiseSub);
+            updateElementText('bgTemoignageTitle', dict.bgTemoignageTitle);
+            updateElementText('bgTemoignageSub', dict.bgTemoignageSub);
+
             updateElementText('chkForceReprocessText', dict.chkForceReprocess);
             updateElementText('chkTiktokPackText', dict.chkTiktokPackText);
             updateElementText('chkTiktokPackSub', dict.chkTiktokPackSub);

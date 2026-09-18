@@ -376,6 +376,71 @@
             color: var(--text-color);
         }
 
+        /* Sélecteur de Fond 9:16 pour Audios */
+        .bg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .bg-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.65rem 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .bg-card:hover {
+            border-color: var(--accent-color);
+            background: var(--card-hover);
+        }
+
+        .bg-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 14px rgba(0, 188, 212, 0.25);
+        }
+
+        .bg-thumb {
+            width: 44px;
+            height: 72px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid rgba(153, 153, 153, 0.35);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+        }
+
+        .bg-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            overflow: hidden;
+        }
+
+        .bg-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bg-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         /* Option TikTok Pack (Optionnel) */
         .tiktok-pack-box {
             background: rgba(0, 188, 212, 0.05);
@@ -1026,6 +1091,44 @@
                 </div>
             </div>
 
+            <!-- 5. Choix du Visuel pour Notes Vocales -->
+            <div id="bgThemeSection">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <div class="section-label" id="labelBgTheme">5. Choix du visuel (Pour les notes vocales)</div>
+                    <span style="font-size: 0.78rem; color: var(--accent-color); font-weight: 600;" id="audioNoticeBadge">✨ Vidéo 9:16 automatique pour audios</span>
+                </div>
+                <div class="bg-grid">
+                    <div class="bg-card active" data-bg="bg_palestine">
+                        <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
+                        <div class="bg-details">
+                            <div class="bg-title" id="bgPalestineTitle">🇵🇸 Palestine Résilience</div>
+                            <div class="bg-sub" id="bgPalestineSub">Noir, Blanc, Vert, Rouge abstrait</div>
+                        </div>
+                    </div>
+                    <div class="bg-card" data-bg="bg_dark">
+                        <img src="/assets/backgrounds/bg_dark.jpg" alt="Noir Profond" class="bg-thumb">
+                        <div class="bg-details">
+                            <div class="bg-title" id="bgDarkTitle">🌑 Noir Profond</div>
+                            <div class="bg-sub" id="bgDarkSub">Minimaliste & contraste OLED</div>
+                        </div>
+                    </div>
+                    <div class="bg-card" data-bg="bg_turquoise">
+                        <img src="/assets/backgrounds/bg_turquoise.jpg" alt="Turquoise Espoir" class="bg-thumb">
+                        <div class="bg-details">
+                            <div class="bg-title" id="bgTurquoiseTitle">🌊 Turquoise Espoir</div>
+                            <div class="bg-sub" id="bgTurquoiseSub">Couleur officielle Aya #00bcd4</div>
+                        </div>
+                    </div>
+                    <div class="bg-card" data-bg="bg_temoignage">
+                        <img src="/assets/backgrounds/bg_temoignage.jpg" alt="Témoignage" class="bg-thumb">
+                        <div class="bg-details">
+                            <div class="bg-title" id="bgTemoignageTitle">🎙️ Témoignage Sobre</div>
+                            <div class="bg-sub" id="bgTemoignageSub">Cadre solennel pour récits</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 5bis. Pack Assets TikTok Optionnel (Couverture 9:16 & Copywriting) -->
             <label class="tiktok-pack-box" for="chkGenerateTiktokPack">
                 <div class="tiktok-pack-left">
@@ -1117,6 +1220,7 @@
         enableCardGroup('.lang-card');
         enableCardGroup('.color-card');
         enableCardGroup('.pos-card');
+        enableCardGroup('.bg-card');
 
         // 1. Gestion du Drag & Drop
         dropZone.addEventListener('click', () => fileInput.click());
@@ -1150,6 +1254,24 @@
             const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
             fileSize.textContent = `${sizeInMb} Mo`;
 
+            const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name);
+            const badgeEl = document.getElementById('audioNoticeBadge');
+            const bgSec = document.getElementById('bgThemeSection');
+            if (badgeEl && bgSec) {
+                if (isAudio) {
+                    badgeEl.style.display = 'inline-block';
+                    bgSec.style.border = '2px solid var(--accent-color)';
+                    bgSec.style.padding = '0.75rem';
+                    bgSec.style.borderRadius = '10px';
+                    bgSec.style.background = 'rgba(0, 188, 212, 0.04)';
+                } else {
+                    badgeEl.style.display = 'none';
+                    bgSec.style.border = 'none';
+                    bgSec.style.padding = '0';
+                    bgSec.style.background = 'transparent';
+                }
+            }
+
             dropZone.style.display = 'none';
             fileBadge.style.display = 'flex';
             btnSubmit.disabled = false;
@@ -1163,6 +1285,14 @@
             fileBadge.style.display = 'none';
             btnSubmit.disabled = true;
             resultBox.style.display = 'none';
+            const badgeEl = document.getElementById('audioNoticeBadge');
+            const bgSec = document.getElementById('bgThemeSection');
+            if (badgeEl && bgSec) {
+                badgeEl.style.display = 'inline-block';
+                bgSec.style.border = 'none';
+                bgSec.style.padding = '0';
+                bgSec.style.background = 'transparent';
+            }
         });
 
         // Mise à jour de la jauge de progression
@@ -1208,6 +1338,9 @@
             formData.append('force_reprocess', forceReprocess);
             const generateTiktokPack = document.getElementById('chkGenerateTiktokPack')?.checked ? 'true' : 'false';
             formData.append('generate_tiktok_pack', generateTiktokPack);
+            const activeBgCard = document.querySelector('.bg-card.active');
+            const bgTheme = activeBgCard ? (activeBgCard.dataset.bg || 'bg_palestine') : 'bg_palestine';
+            formData.append('bg_theme', bgTheme);
 
             try {
                 const response = await fetch('/api/traduction/process', {
@@ -1305,6 +1438,17 @@
                         ? `<span class="summary-badge" style="border-color: rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.15); color: #FBBF24;">⚠️ Moteur : <b>${modelUsed} [Fallback]</b></span>`
                         : `<span class="summary-badge" style="border-color: rgba(56, 189, 248, 0.5); background: rgba(56, 189, 248, 0.12); color: #38BDF8;">⚡ Moteur : <b>${modelUsed} [Premium]</b></span>`;
 
+                    const bgNames = {
+                        'bg_palestine': '🇵🇸 Palestine Résilience',
+                        'bg_dark': '🌑 Noir Profond',
+                        'bg_turquoise': '🌊 Turquoise Espoir',
+                        'bg_temoignage': '🎙️ Témoignage Sobre'
+                    };
+                    const bgLabel = bgNames[finalData.bg_theme] || finalData.bg_theme;
+                    const bgBadgeHtml = (finalData.media_type === 'audio' && bgLabel)
+                        ? `<span class="summary-badge">🎨 Fond 9:16 : <b>${bgLabel}</b></span>`
+                        : '';
+
                     let previewHtml = `
                         <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; width: 100%;">
                             ${fallbackBannerHtml}
@@ -1315,6 +1459,7 @@
                                 <span class="summary-badge">🎯 Cible : <b>${tgtLabel}</b></span>
                                 <span class="summary-badge">🎨 Couleur : <b style="color:${finalData.sub_color}">${colorLabel}</b></span>
                                 <span class="summary-badge">📐 Position : <b>${posLabel}</b></span>
+                                ${bgBadgeHtml}
                                 <span class="summary-badge">⏱️ Durée : <b>${finalData.duration}s</b></span>
                                 <span class="summary-badge">💬 Segments : <b>${finalData.segments_count}</b></span>
                                 <span class="summary-badge">🔇 Silences : <b>${finalData.silences_count}</b></span>

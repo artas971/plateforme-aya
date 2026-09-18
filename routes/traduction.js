@@ -78,6 +78,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         const subPosition = req.body.sub_position || '950';
         const forceReprocess = req.body.force_reprocess === 'true' || req.body.force_reprocess === true;
         const generateTiktokPack = req.body.generate_tiktok_pack === 'true' || req.body.generate_tiktok_pack === true;
+        const bgTheme = req.body.bg_theme || 'bg_palestine';
         const mediaPath = req.file.path;
         const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
 
@@ -90,6 +91,7 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
         console.log(`  - Langue cible      : ${targetLang === 'ar' ? 'Arabe (VOAR)' : 'Français (VOSTFR)'}`);
         console.log(`  - Couleur sous-titre: ${subColor}`);
         console.log(`  - Position (MarginV): ${subPosition}`);
+        console.log(`  - Thème fond (Audio): ${bgTheme}`);
         console.log(`  - Bypass Cache      : ${forceReprocess ? 'OUI (Forcé)' : 'NON (Cache actif)'}`);
         console.log(`  - Pack TikTok       : ${generateTiktokPack ? 'OUI (Couverture & Copywriting)' : 'NON'}`);
         console.log('====================================================');
@@ -111,7 +113,8 @@ router.post('/api/traduction/process', upload.single('media'), (req, res) => {
             subPosition,
             sourceLang,
             String(forceReprocess),
-            String(generateTiktokPack)
+            String(generateTiktokPack),
+            String(bgTheme)
         ], { cwd: ROOT_DIR });
 
         let stdoutData = '';
