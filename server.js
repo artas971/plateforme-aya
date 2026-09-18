@@ -89,10 +89,15 @@ app.use('/api/agents', agentsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use(traductionRouter);
 
-// Démarrage du Serveur
-app.listen(PORT, () => {
+// Démarrage du Serveur & Connexion Base de Données
+const { connectDB } = require('./config/database');
+
+app.listen(PORT, async () => {
     console.log(`Server running on http://localhost:3000 (Architecture modulaire : Chat, Studio, Audio, Drive & Traduction actifs)`);
     
+    // Initialisation Base de Données MongoDB (Phase 2 - Issue #12)
+    await connectDB();
+
     // Démarrage du Worker autonome Google Drive (Ticket 5)
     const { startDriveWorker } = require('./services/driveWorker');
     startDriveWorker();
