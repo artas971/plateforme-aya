@@ -1,5 +1,29 @@
 [
   {
+    "authorName": "Nour de Gaza",
+    "mediaType": "text",
+    "originalContent": "Récit d'une infirmière volontaire dans le sud de la bande de Gaza.",
+    "translatedContent": "",
+    "sourceLang": "ar",
+    "targetLang": "fr",
+    "mediaUrl": null,
+    "mediaThumbnail": null,
+    "tags": [
+      "Sante",
+      "Gaza",
+      "Solidarite"
+    ],
+    "moderationStatus": "approved",
+    "likesCount": 0,
+    "viewsCount": 0,
+    "sharesCount": 0,
+    "isPinned": false,
+    "createdAt": "2026-09-19T00:20:21.321Z",
+    "_id": "post_1789777221321_3e0v7f4j8",
+    "moderationNotes": "Validé par modérateur Steve",
+    "moderatedAt": "2026-09-19T00:20:21.331Z"
+  },
+  {
     "authorName": "Steve - Témoin Gaza",
     "mediaType": "text",
     "originalContent": "Récit authentique : distribution d'eau potable et témoignages des familles dans le camp de réfugiés.",

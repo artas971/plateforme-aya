@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYA Back-Office | Modération des Témoignages</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-primary: #0b5394;
+            --admin-dark: #0f172a;
+            --admin-surface: #ffffff;
+            --admin-bg: #f1f5f9;
+            --admin-border: #e2e8f0;
+            --color-approve: #10b981;
+            --color-approve-hover: #059669;
+            --color-reject: #ef4444;
+            --color-reject-hover: #dc2626;
+            --color-pending: #f59e0b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Topbar d'Administration */
+        .admin-topbar {
+            background: var(--admin-dark);
+            color: #ffffff;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+        }
+
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge-role {
+            background: rgba(0, 188, 212, 0.2);
+            color: #00bcd4;
+            border: 1px solid rgba(0, 188, 212, 0.4);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-topbar {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-topbar:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Conteneur Principal */
+        .admin-container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Dashboard Header & Statistiques */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--admin-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-strip {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            min-width: 150px;
+        }
+
+        .stat-icon {
+            font-size: 1.6rem;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-number {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--admin-dark);
+            line-height: 1.1;
+        }
+
+        .stat-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .stat-card.pending {
+            border-left: 4px solid var(--color-pending);
+        }
+
+        .stat-card.approved {
+            border-left: 4px solid var(--color-approve);
+        }
+
+        .stat-card.rejected {
+            border-left: 4px solid var(--color-reject);
+        }
+
+        /* File d'Attente de Modération */
+        .queue-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Carte de Modération individuelle */
+        .moderation-card {
+            background: #ffffff;
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 900px) {
+            .moderation-card {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .moderation-card.handled {
+            opacity: 0;
+            transform: translateX(40px) scale(0.96);
+            height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            border: none;
+        }
+
+        /* Colonne Média */
+        .card-media-col {
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 240px;
+            position: relative;
+        }
+
+        .card-media-col video {
+            width: 100%;
+            max-height: 380px;
+            display: block;
+        }
+
+        .card-media-col audio {
+            width: 90%;
+        }
+
+        .media-placeholder {
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Colonne Contenu & Décision */
+        .card-content-col {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .card-meta-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid var(--admin-border);
+            padding-bottom: 12px;
+        }
+
+        .author-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--admin-primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .author-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--admin-dark);
+        }
+
+        .post-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .badge-pending {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-text-body {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid var(--admin-border);
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag-pill {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Barre d'Actions de Modération */
+        .card-actions-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+            border-top: 1px solid var(--admin-border);
+            padding-top: 16px;
+        }
+
+        .btn-decision {
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-decision.approve {
+            background: var(--color-approve);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-decision.approve:hover {
+            background: var(--color-approve-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-decision.reject {
+            background: var(--color-reject);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-decision.reject:hover {
+            background: var(--color-reject-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-decision:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* État file vide */
+        .empty-queue {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 18px;
+            padding: 60px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .empty-queue-icon {
+            font-size: 3.5rem;
+        }
+
+        .empty-queue h3 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--admin-primary);
+        }
+
+        .empty-queue p {
+            color: var(--text-muted);
+            max-width: 440px;
+            font-size: 0.95rem;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--color-approve);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--color-reject);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar Admin -->
+    <header class="admin-topbar">
+        <div class="admin-brand">
+            <span style="font-size: 1.4rem;">🛡️</span>
+            <div>
+                <strong style="font-size: 1.1rem; letter-spacing: -0.3px;">AYA MODÉRATION</strong>
+                <span class="admin-badge-role">Back-Office</span>
+            </div>
+        </div>
+        <nav class="admin-nav-actions">
+            <a href="/communaute" class="btn-topbar" target="_blank">
+                <span>🌍</span> Voir le Mur Public
+            </a>
+            <a href="/traduction" class="btn-topbar">
+                <span>✨</span> Traduction
+            </a>
+            <a href="/studio" class="btn-topbar">
+                <span>🎬</span> Studio
+            </a>
+        </nav>
+    </header>
+
+    <main class="admin-container">
+        <!-- Header & Compteurs -->
+        <section class="dashboard-header">
+            <div>
+                <h1><span>📋</span> File d'Attente de Modération</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">
+                    Validez les témoignages pour diffusion publique ou rejetez les contenus non conformes.
+                </p>
+            </div>
+            <div class="stats-strip">
+                <div class="stat-card pending">
+                    <span class="stat-icon">⏳</span>
+                    <div class="stat-info">
+                        <span class="stat-number" id="countPending">0</span>
+                        <span class="stat-label">En Attente</span>
+                    </div>
+                </div>
+                <div class="stat-card approved">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-info">
+                        <span class="stat-number" id="countApproved">0</span>
+                        <span class="stat-label">Approuvés</span>
+                    </div>
+                </div>
+                <div class="stat-card rejected">
+                    <span class="stat-icon">❌</span>
+                    <div class="stat-info">
+                        <span class="stat-number" id="countRejected">0</span>
+                        <span class="stat-label">Rejetés</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Liste des Posts en Attente -->
+        <section class="queue-container" id="queueContainer">
+            <!-- Rendu dynamique JS -->
+        </section>
+
+        <!-- État File Vide -->
+        <div class="empty-queue" id="emptyQueue" style="display: none;">
+            <div class="empty-queue-icon">🎉</div>
+            <h3>File de modération vide</h3>
+            <p>Tous les témoignages ont été traités. Les nouveaux posts soumis apparaîtront automatiquement ici dès leur réception.</p>
+        </div>
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        (function() {
+            const queueContainer = document.getElementById('queueContainer');
+            const emptyQueue = document.getElementById('emptyQueue');
+            const countPending = document.getElementById('countPending');
+            const countApproved = document.getElementById('countApproved');
+            const countRejected = document.getElementById('countRejected');
+            const toastContainer = document.getElementById('toastContainer');
+
+            let pendingPosts = [];
+
+            // 1. Chargement des Statistiques
+            async function loadStats() {
+                try {
+                    const res = await fetch('/api/admin/stats');
+                    const data = await res.json();
+                    if (data.success && data.stats) {
+                        countPending.textContent = data.stats.pending || 0;
+                        countApproved.textContent = data.stats.approved || 0;
+                        countRejected.textContent = data.stats.rejected || 0;
+                    }
+                } catch(e) {
+                    console.warn('Stats indisponibles:', e);
+                }
+            }
+
+            // 2. Chargement de la File d'Attente (GET /api/admin/posts/pending)
+            async function loadPendingPosts() {
+                try {
+                    queueContainer.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            ⏳ Chargement des publications en attente...
+                        </div>
+                    `;
+
+                    const res = await fetch('/api/admin/posts/pending');
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || "Impossible de charger les posts.");
+                    }
+
+                    pendingPosts = data.posts || [];
+                    countPending.textContent = pendingPosts.length;
+                    renderQueue(pendingPosts);
+
+                } catch (err) {
+                    console.error('Erreur chargement file modération :', err);
+                    queueContainer.innerHTML = `
+                        <div style="background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 18px; border-radius: 12px; text-align: center;">
+                            ❌ Erreur : ${escapeHtml(err.message)}
+                        </div>
+                    `;
+                }
+            }
+
+            // 3. Rendu HTML de la file d'attente
+            function renderQueue(posts) {
+                queueContainer.innerHTML = '';
+
+                if (!posts || posts.length === 0) {
+                    emptyQueue.style.display = 'flex';
+                    return;
+                }
+
+                emptyQueue.style.display = 'none';
+
+                posts.forEach(post => {
+                    const card = document.createElement('article');
+                    card.className = 'moderation-card';
+                    card.id = `post-${post._id}`;
+
+                    const authorName = post.authorName || "Anonyme";
+                    const initials = authorName.slice(0, 2).toUpperCase();
+                    const formattedDate = new Date(post.createdAt || Date.now()).toLocaleString('fr-FR', {
+                        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+
+                    // Rendu Média
+                    let mediaHtml = '';
+                    if (post.mediaUrl) {
+                        if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
+                            mediaHtml = `<video src="${escapeHtml(post.mediaUrl)}" controls playsinline preload="metadata"></video>`;
+                        } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
+                            mediaHtml = `<audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>`;
+                        }
+                    } else {
+                        mediaHtml = `
+                            <div class="media-placeholder">
+                                <span style="font-size: 2.2rem;">📝</span>
+                                <span>Témoignage Texte Pur (Sans média)</span>
+                            </div>
+                        `;
+                    }
+
+                    // Rendu Tags
+                    let tagsHtml = '';
+                    if (Array.isArray(post.tags) && post.tags.length > 0) {
+                        tagsHtml = `
+                            <div class="card-tags">
+                                ${post.tags.map(t => `<span class="tag-pill">#${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="card-media-col">
+                            ${mediaHtml}
+                        </div>
+                        <div class="card-content-col">
+                            <div>
+                                <div class="card-meta-bar">
+                                    <div class="author-box">
+                                        <div class="author-avatar">${initials}</div>
+                                        <div>
+                                            <div class="author-name">${escapeHtml(authorName)}</div>
+                                            <div class="post-date">Soumis le ${formattedDate}</div>
+                                        </div>
+                                    </div>
+                                    <span class="badge-pending">⏳ En Attente</span>
+                                </div>
+                                <div style="margin-top: 14px;">
+                                    <div class="card-text-body">${escapeHtml(post.originalContent)}</div>
+                                    <div style="margin-top: 10px;">${tagsHtml}</div>
+                                </div>
+                            </div>
+                            <div class="card-actions-bar">
+                                <button class="btn-decision reject" data-id="${post._id}" data-action="rejected">
+                                    <span>❌</span> Rejeter
+                                </button>
+                                <button class="btn-decision approve" data-id="${post._id}" data-action="approved">
+                                    <span>✅</span> Approuver & Publier
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Événements boutons
+                    const btnApprove = card.querySelector('.btn-decision.approve');
+                    const btnReject = card.querySelector('.btn-decision.reject');
+
+                    btnApprove.addEventListener('click', () => handleModeration(post._id, 'approved', card));
+                    btnReject.addEventListener('click', () => handleModeration(post._id, 'rejected', card));
+
+                    queueContainer.appendChild(card);
+                });
+            }
+
+            // 4. Traitement Modération (PUT /api/admin/posts/:id/status)
+            async function handleModeration(postId, decision, cardElement) {
+                const buttons = cardElement.querySelectorAll('.btn-decision');
+                buttons.forEach(b => b.disabled = true);
+
+                try {
+                    const res = await fetch(`/api/admin/posts/${postId}/status`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: decision })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || "Échec de l'action de modération.");
+                    }
+
+                    // Disparition animée de la carte
+                    cardElement.classList.add('handled');
+                    setTimeout(() => {
+                        cardElement.remove();
+                        pendingPosts = pendingPosts.filter(p => p._id !== postId);
+                        countPending.textContent = pendingPosts.length;
+                        if (pendingPosts.length === 0) {
+                            emptyQueue.style.display = 'flex';
+                        }
+                    }, 300);
+
+                    // Mise à jour des compteurs
+                    loadStats();
+
+                    // Notification Toast
+                    if (decision === 'approved') {
+                        showToast('success', "✅ Témoignage approuvé ! Il est désormais visible sur le Mur Communautaire.");
+                    } else {
+                        showToast('error', "❌ Témoignage rejeté et archivé hors du mur public.");
+                    }
+
+                } catch (err) {
+                    console.error('Erreur modération post :', err);
+                    showToast('error', `Erreur : ${err.message}`);
+                    buttons.forEach(b => b.disabled = false);
+                }
+            }
+
+            function showToast(type, text) {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = text;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(8px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Initialisation
+            loadStats();
+            loadPendingPosts();
+        })();
+    </script>
+</body>
+</html>

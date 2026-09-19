@@ -74,6 +74,10 @@ app.get('/communaute', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'communaute.html'));
 });
 
+app.get('/moderation', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'moderation.html'));
+});
+
 // Verrouillage de sécurité global : toutes les routes applicatives et API suivantes nécessitent d'être connecté
 app.use(requireAuth);
 
@@ -86,6 +90,7 @@ const traductionRouter = require('./routes/traduction');
 const agentsRouter = require('./routes/agents');
 const feedbackRouter = require('./routes/feedback');
 const postsRouter = require('./routes/posts');
+const adminRouter = require('./routes/admin');
 
 app.use('/api/chat', chatRouter);
 app.use(studioRouter);
@@ -94,6 +99,7 @@ app.use('/api/drive', driveRouter);
 app.use('/api/agents', agentsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/posts', postsRouter);
+app.use('/api/admin', adminRouter);
 app.use(traductionRouter);
 
 // Démarrage du Serveur & Connexion Base de Données
