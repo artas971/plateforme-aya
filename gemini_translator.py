@@ -23,6 +23,83 @@ if os.path.exists(env_file):
 
 LAST_MODEL_USED = "gemini-2.5-flash"
 
+def _parse_timestamp_val(val, default=0.0):
+    if isinstance(val, (int, float)):
+        return float(val)
+    if not isinstance(val, str):
+        return default
+    s = val.strip().replace(',', '.')
+    if ':' in s:
+        parts = s.split(':')
+        try:
+            if len(parts) == 2:
+                return float(parts[0]) * 60.0 + float(parts[1])
+            elif len(parts) == 3:
+                return float(parts[0]) * 3600.0 + float(parts[1]) * 60.0 + float(parts[2])
+        except Exception:
+            pass
+    try:
+        return float(s)
+    except Exception:
+        return default
+
+
+def normalize_and_rescale_segments(raw_segments: list, window_dur: float = None) -> list:
+    """
+    Détecte et corrige automatiquement les anomalies d'échelle temporelle produites par les LLM :
+    1. Parsing robuste des timestamps (chaînes 'MM:SS.xx', floats, etc.).
+    2. Détection de l'erreur d'échelle '0.SS' (ex: 0.024 au lieu de 2.4s, 0.315 au lieu de 31.5s).
+       Lorsque window_dur >= 8.0s et que tous les segments sont anormalement écrasés (< 2.5s),
+       l'échelle est automatiquement recalibrée vers les secondes réelles.
+    3. Clamping anti-débordement strict [0.0, window_dur].
+    """
+    if not raw_segments:
+        return []
+
+    parsed = []
+    for s in raw_segments:
+        txt = (s.get("text") or "").strip()
+        if not txt:
+            continue
+        st = _parse_timestamp_val(s.get("start", 0.0))
+        et = _parse_timestamp_val(s.get("end", st + 2.0))
+        if et <= st:
+            et = st + 1.5
+        parsed.append({"start": st, "end": et, "text": txt})
+
+    if not parsed:
+        return []
+
+    if window_dur is None or window_dur <= 0:
+        return parsed
+
+    max_end = max(s["end"] for s in parsed)
+    min_start = min(s["start"] for s in parsed)
+    span = max_end - min_start
+
+    # Anomalie détectée : La fenêtre audio dure au moins 8s, il y a au moins 2 répliques,
+    # mais tous les timestamps sont comprimés dans moins de 2.5s ou moins de window_dur * 0.25
+    if window_dur >= 8.0 and len(parsed) >= 2 and max_end <= max(2.5, window_dur * 0.25):
+        scale_100 = max_end * 100.0
+        scale_60 = max_end * 60.0
+
+        chosen_factor = None
+        if 0.4 * window_dur <= scale_100 <= window_dur * 1.3:
+            chosen_factor = 100.0
+        elif 0.4 * window_dur <= scale_60 <= window_dur * 1.3:
+            chosen_factor = 60.0
+        elif max_end <= 1.05 and span > 0:
+            chosen_factor = (window_dur * 0.95) / max_end
+
+        if chosen_factor:
+            print(f"[RECALIBRAGE ÉCHELLE IA] ⚠️ Correction d'échelle détectée (facteur x{chosen_factor:.1f}) : max_end {max_end:.3f}s ➔ {max_end * chosen_factor:.2f}s pour fenêtre de {window_dur:.1f}s.", flush=True)
+            for s in parsed:
+                s["start"] = round(s["start"] * chosen_factor, 2)
+                s["end"] = round(s["end"] * chosen_factor, 2)
+
+    return parsed
+
+
 def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto', force_reprocess=False, user_context=''):
     global LAST_MODEL_USED
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
@@ -99,7 +176,9 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "RÈGLES D'OR STRICTES :\n"
             "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : CHAQUE SEGMENT DOIT DURER ENTRE 1.5 ET 4.0 SECONDES (MAXIMUM STRICT 5.0 SECONDES). "
             "Il est FORMELLEMENT INTERDIT de générer un segment de plus de 5 secondes. Si une phrase est longue, TU DOIS OBLIGATOIREMENT LA SCINDER TOI-MÊME en plusieurs sous-segments courts synchronisés avec les mots prononcés.\n"
-            "2. TIMESTAMPS RELATIFS : Les temps 'start' et 'end' doivent être exprimés en secondes (nombres flottants) relatifs au DÉBUT de cet extrait audio (0.0s = début du fichier fourni). 'end' doit toujours être supérieur à 'start'.\n"
+            "2. TIMESTAMPS EN SECONDES RÉELLES (RÈGLE D'ÉCHELLE ABSOLUE) : Les temps 'start' et 'end' doivent être exprimés en SECONDES RÉELLES ENTIÈRES OU DÉCIMALES relatives au début de cet extrait audio (ex: 3.2, 14.8, 28.5). "
+            "IL EST STRICTEMENT INTERDIT d'écrire des fractions de minutes ou des valeurs divisées comme 0.05, 0.15, 0.25 ou 0.30 pour désigner 5s, 15s, 25s ou 30s ! "
+            "(5 secondes s'écrit 5.0 et JAMAIS 0.05 ; 15 secondes s'écrit 15.0 et JAMAIS 0.15 ; 28 secondes s'écrit 28.0 et JAMAIS 0.28). 'end' doit toujours être supérieur à 'start'.\n"
             "3. LANGUE CIBLE STRICTE : Tu dois IMPÉRATIVEMENT tout traduire dans la langue cible (ex: Français). Il est FORMELLEMENT INTERDIT d'utiliser l'alphabet arabe dans ta réponse finale. Tout doit être traduit.\n"
             "4. NUMÉROS DE TÉLÉPHONE : Si une personne dicte un numéro avec des pauses, regroupe intelligemment les chiffres dans un même segment logique pour préserver la lisibilité à l'écran.\n"
             "5. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
@@ -111,8 +190,8 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "Adapte le texte pour qu'il sonne de manière naturelle, poignante et héroïque en français (ex: utilise 'La voix s'est élevée' ou 'Le chant résonne' plutôt que 'Le crieur a annoncé'). "
             "Préserve toujours la dignité, la force et la charge émotionnelle des paroles.\n"
             f"{lexicon_directive}"
-            "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (français).\n"
-            "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 5.0, \"text\": \"la situation est très difficile.\"}]"
+            "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes réelles float, ex: 14.5), 'end' (secondes réelles float, ex: 18.2), et 'text' (français).\n"
+            "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 7.0, \"text\": \"la situation est très difficile.\"}]"
         )
     else: # VOAR (Français ou autre vers Arabe Palestinien de Gaza)
         prompt = (
@@ -140,11 +219,12 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "- 'On est avec vous / On est ensemble' ➔ 'إحنا معكم / إحنا معكم على طول'\n\n"
             "4. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 1.5 à 4.0 secondes). "
             "TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en plusieurs sous-segments courts synchronisés.\n"
-            "5. TIMESTAMPS RELATIFS : Les temps 'start' et 'end' doivent être exprimés en secondes (nombres flottants) relatifs au DÉBUT de cet extrait audio (0.0s = début du fichier fourni), avec 'end' > 'start'.\n"
+            "5. TIMESTAMPS EN SECONDES RÉELLES (RÈGLE D'ÉCHELLE ABSOLUE) : Les temps 'start' et 'end' doivent être exprimés en SECONDES RÉELLES ENTIÈRES OU DÉCIMALES relatives au DÉBUT de cet extrait audio (ex: 2.8, 12.4, 27.0). "
+            "INTERDICTION FORMELLE d'écrire des valeurs comme 0.12 ou 0.27 pour désigner 12s ou 27s ! 'end' > 'start'.\n"
             "6. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
             "7. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse la scène (qui parle, ce qui se passe, le contexte et le message principal) pour garantir l'adéquation parfaite des sous-titres avec la réalité vécue.\n\n"
-            "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (arabe palestinien de Gaza).\n"
-            "Exemple : [{\"start\": 0.0, \"end\": 2.8, \"text\": \"أخوي ستيف، العنف مش بس بالسلاح...\"}, {\"start\": 2.8, \"end\": 4.5, \"text\": \"في وجع تاني الناس مش شايفتو.\"}]"
+            "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes réelles float, ex: 12.5), 'end' (secondes réelles float, ex: 16.0), et 'text' (arabe palestinien de Gaza).\n"
+            "Exemple : [{\"start\": 0.0, \"end\": 2.8, \"text\": \"أخوي ستيف، العنف مش بس بالسلاح...\"}, {\"start\": 2.8, \"end\": 6.5, \"text\": \"في وجع تاني الناس مش شايفتو.\"}]"
         )
 
     # Gestion du cache local
@@ -177,7 +257,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                         if isinstance(cached_segments, list) and len(cached_segments) > 0:
                             print(f"[Pôle 3 Gemini] ⚡ Cache réutilisé instantanément ({len(cached_segments)} segments déjà transcrits).")
                             LAST_MODEL_USED = "gemini-2.5-flash (Cache)"
-                            return cached_segments
+                            return normalize_and_rescale_segments(cached_segments, total_duration)
                 except Exception:
                     pass
 
@@ -195,7 +275,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                                 if isinstance(cached_segments, list) and len(cached_segments) > 0:
                                     print(f"[Pôle 3 Gemini] ⚡ Cache global réutilisé ({fname} -> {len(cached_segments)} segments).")
                                     LAST_MODEL_USED = "gemini-2.5-flash (Cache)"
-                                    return cached_segments
+                                    return normalize_and_rescale_segments(cached_segments, total_duration)
                         except Exception:
                             pass
     else:
@@ -264,6 +344,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                 out_raw = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
                 segments = json.loads(out_raw)
                 if isinstance(segments, list) and len(segments) > 0:
+                    segments = normalize_and_rescale_segments(segments, total_duration)
                     print(f"[Pôle 3 Gemini] ✅ Succès avec modèle {model_name} : {len(segments)} segments reçus !")
                     LAST_MODEL_USED = model_name
                     # Sauvegarde dans le cache

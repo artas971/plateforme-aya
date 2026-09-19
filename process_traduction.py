@@ -345,6 +345,54 @@ def sanitize_translation(text: str) -> str:
     return cleaned
 
 
+def uncluster_stacked_segments(segments: list, total_duration: float) -> list:
+    """
+    Filet de sécurité ultime : Détecte et déplie tout groupe de sous-titres 'empilés'
+    (timestamps quasi-identiques créant un embouteillage illisible et un trou ultérieur).
+    Redistribue les segments empilés proportionnellement au nombre de caractères.
+    """
+    if not segments or len(segments) < 2:
+        return segments
+
+    # Tri initial préalable
+    segments.sort(key=lambda x: x["start"])
+
+    i = 0
+    while i < len(segments):
+        # Chercher le début d'un empilement : segments consécutifs avec un écart de début <= 0.15s
+        j = i
+        while j + 1 < len(segments) and (segments[j + 1]["start"] - segments[j]["start"] <= 0.15):
+            j += 1
+
+        # Empilement anormal détecté de 2 ou plusieurs segments
+        if j > i:
+            cluster = segments[i:j + 1]
+            cluster_start = cluster[0]["start"]
+            # Borne de fin : début du segment suivant ou durée totale
+            next_bound = segments[j + 1]["start"] if j + 1 < len(segments) else total_duration
+            available_dur = max(0.0, next_bound - cluster_start)
+
+            # Si l'espace disponible après l'empilement est significatif (> 2.0s pour 2+ segments)
+            if available_dur >= len(cluster) * 1.2:
+                target_span = min(available_dur - 0.2, len(cluster) * 3.5)
+                total_chars = sum(max(1, len(s.get("text", ""))) for s in cluster)
+                cur_t = cluster_start
+                for s in cluster:
+                    char_weight = max(1, len(s.get("text", ""))) / total_chars
+                    s_dur = max(1.2, min(4.5, round(target_span * char_weight, 2)))
+                    s["start"] = round(cur_t, 2)
+                    s["end"] = round(cur_t + s_dur, 2)
+                    cur_t += s_dur
+
+                print(f"[POST-TRAITEMENT DÉPLIAGE] 📐 {len(cluster)} sous-titres empilés à {cluster_start:.2f}s ont été redéployés sur {target_span:.2f}s.", flush=True)
+
+            i = j + 1
+        else:
+            i += 1
+
+    return segments
+
+
 def find_smart_cut_point(w_start: float, total_duration: float, silences: list, min_chunk: float = 20.0, max_chunk: float = 35.0, default_chunk: float = 30.0) -> float:
     """
     Découpage adaptatif (Smart Chunking) :
@@ -380,19 +428,22 @@ def find_smart_cut_point(w_start: float, total_duration: float, silences: list, 
 def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_dur: float, source_lang: str = 'auto', force_reprocess: bool = False, user_context: str = "") -> list:
     """
     Appelle l'IA pour transcrire/traduire une fenêtre délimitée sur les silences.
-    Applique un CLAMPING STRICT (min/max) pour empêcher toute dérive temporelle ou débordement.
+    Applique un CLAMPING STRICT (min/max) et un RECALIBRAGE D'ÉCHELLE AUTO (Anti-0.SS).
     Transmet le user_context pour le Context Grounding de l'Agent Jade.
     """
-    from gemini_translator import gemini_audio_transcribe_and_translate
+    from gemini_translator import gemini_audio_transcribe_and_translate, normalize_and_rescale_segments, _parse_timestamp_val
     raw_segments = gemini_audio_transcribe_and_translate(chunk_path, mode=mode, total_duration=window_dur, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
     
     if not raw_segments or len(raw_segments) == 0:
         return []
 
+    # Recalibrage d'échelle préventif (Anti-Compression 0.SS / décimales minutes)
+    normalized_segments = normalize_and_rescale_segments(raw_segments, window_dur)
+
     window_segments = []
-    for seg in raw_segments:
-        raw_start = float(seg.get("start", 0.0))
-        raw_end = float(seg.get("end", raw_start + 2.0))
+    for seg in normalized_segments:
+        raw_start = _parse_timestamp_val(seg.get("start", 0.0))
+        raw_end = _parse_timestamp_val(seg.get("end", raw_start + 2.0))
         txt = seg.get("text", "").strip()
         if not txt:
             continue
@@ -554,6 +605,9 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
 
     if not all_segments:
         raise RuntimeError("Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.")
+
+    # Filet de sécurité anti-empilement : déploiement de tout cluster de répliques anormalement comprimées
+    all_segments = uncluster_stacked_segments(all_segments, total_duration)
 
     # Tri chronologique absolu
     all_segments.sort(key=lambda x: x["start"])
