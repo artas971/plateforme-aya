@@ -2326,13 +2326,13 @@ ${safeText}
                                     </a>
                                 ` : ''}
                                 ${finalData.cover_url ? `
-                                    <a href="${finalData.cover_url}" download target="_blank" class="aya-btn-download aya-btn-accent">
+                                    <a href="${finalData.cover_url}" download="${finalData.cover_filename || 'couverture_9_16.jpg'}" class="aya-btn-download aya-btn-accent">
                                         <span>🖼️</span>
                                         <span>Couverture 9:16</span>
                                     </a>
                                 ` : ''}
                                 ${finalData.desc_url ? `
-                                    <a href="${finalData.desc_url}" download target="_blank" class="aya-btn-download aya-btn-neutral">
+                                    <a href="${finalData.desc_url}" download="${finalData.desc_filename || 'description_tiktok.txt'}" class="aya-btn-download aya-btn-neutral">
                                         <span>📝</span>
                                         <span>Copywriting TikTok</span>
                                     </a>
