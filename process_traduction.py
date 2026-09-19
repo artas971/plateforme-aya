@@ -271,12 +271,28 @@ def split_long_segment(segment: dict, max_duration: float = 4.5) -> list:
     if not found_punct:
         best_split = max(1, mid_idx)
 
-    # Division de la durée en deux parts égales
-    split_time = round(start + (dur / 2.0), 2)
-    split_time = max(start + 0.3, min(split_time, end - 0.3))
-
     part1_text = " ".join(words[:best_split]).strip()
     part2_text = " ".join(words[best_split:]).strip()
+
+    # RÈGLE DU POIDS DES CARACTÈRES (Split Proportionnel) :
+    # La durée allouée à chaque bloc est proportionnelle au nombre de caractères de ce bloc.
+    len1 = len(part1_text)
+    len2 = len(part2_text)
+    total_chars = len1 + len2
+
+    if total_chars > 0:
+        ratio1 = len1 / total_chars
+        split_time = round(start + (dur * ratio1), 2)
+    else:
+        split_time = round(start + (dur / 2.0), 2)
+
+    # Sécurité temporelle : garantir au moins 0.4s par bloc pour la lisibilité
+    min_split = start + 0.4
+    max_split = end - 0.4
+    if min_split < max_split:
+        split_time = max(min_split, min(split_time, max_split))
+    else:
+        split_time = round(start + (dur / 2.0), 2)
 
     seg1 = {"start": round(start, 2), "end": split_time, "text": part1_text}
     seg2 = {"start": split_time, "end": round(end, 2), "text": part2_text}
@@ -536,19 +552,21 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     # Tri chronologique absolu
     all_segments.sort(key=lambda x: x["start"])
 
-    # RÈGLE ZÉRO GAP AVEC DÉTECTION DES SILENCES RÉELS & ANTI-CHEVAUCHEMENT
-    print("[POST-TRAITEMENT] Application de la règle Zéro Gap conditionnée aux silences...", flush=True)
+    # RÈGLE ZÉRO GAP LIMITÉ (RESPIRATION) AVEC DÉTECTION DES SILENCES RÉELS & ANTI-CHEVAUCHEMENT
+    print("[POST-TRAITEMENT] Application de la règle Zéro Gap limitée (respiration > 1.2s)...", flush=True)
     for i in range(len(all_segments) - 1):
         cur_end = all_segments[i]["end"]
         nxt_start = all_segments[i + 1]["start"]
         gap = nxt_start - cur_end
 
         if gap > 0:
-            # Vérifier si un silence réel (> 0.3s) existe dans ce trou
-            is_silent = has_silence_between(cur_end, nxt_start, silences)
-            if not is_silent:
-                # Pas de silence : La personne parle ou enchaîne -> ZÉRO GAP !
-                all_segments[i]["end"] = nxt_start
+            # RÈGLE DU ZÉRO-GAP LIMITÉ (RESPIRATION) :
+            # Si gap <= 1.2s et pas de vrai silence détecté, on raccorde (étire).
+            # MAIS si gap > 1.2s, on n'étire SURTOUT PAS le sous-titre précédent : on laisse l'écran vide pour que l'image respire.
+            if gap <= 1.2:
+                is_silent = has_silence_between(cur_end, nxt_start, silences)
+                if not is_silent:
+                    all_segments[i]["end"] = nxt_start
         elif gap < 0:
             # Chevauchement anormal : réajuster la fin du segment précédent
             all_segments[i]["end"] = max(all_segments[i]["start"] + 0.3, nxt_start)
@@ -558,11 +576,11 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         seg["start"] = max(0.0, min(seg["start"], total_duration))
         seg["end"] = max(seg["start"] + 0.2, min(seg["end"], total_duration))
 
-    # Alignement du dernier segment sur la durée totale si la parole va jusqu'au bout
+    # RÈGLE DU PLAFONNEMENT DE FIN (ANTI-ÉTALEMENT SUR BRUIT DE FOND) :
+    # Supprime la logique forçant all_segments[-1]["end"] = total_duration.
+    # Le sous-titre final disparaît naturellement (last_end + 0.8s max), même s'il reste 10s de vidéo.
     last_end = all_segments[-1]["end"]
-    if not has_silence_between(last_end, total_duration, silences):
-        all_segments[-1]["end"] = total_duration
-    all_segments[-1]["end"] = max(all_segments[-1]["start"] + 0.2, min(all_segments[-1]["end"], total_duration))
+    all_segments[-1]["end"] = max(all_segments[-1]["start"] + 0.2, min(total_duration, last_end + 0.8))
 
     # Vérification d'intégrité finale : aucune fin avant début
     for seg in all_segments:
