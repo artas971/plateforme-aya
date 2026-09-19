@@ -894,16 +894,7 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
     draw.line([(width - padding - c_len, height - padding), (width - padding, height - padding)], fill=(0, 122, 61), width=6)
     draw.line([(width - padding, height - padding - c_len), (width - padding, height - padding)], fill=(0, 122, 61), width=6)
 
-    # 3. En-tête : Badge Officiel AYA STUDIO
-    try:
-        font_badge = ImageFont.truetype(FONT_SEGOE, 28)
-    except Exception:
-        font_badge = ImageFont.load_default()
-
-    draw.text((width // 2, 220), "AYA STUDIO • PALESTINIAN ECHO", font=font_badge, fill=(255, 255, 255), anchor='mm')
-    draw.line([(width // 2 - 160, 250), (width // 2 + 160, 250)], fill=(206, 17, 38), width=3)
-
-    # 4. Numéro d'épisode centré en police Impact
+    # 3. Numéro d'épisode centré en police Impact (Design épuré sans branding promotionnel)
     try:
         font_ep_num = ImageFont.truetype(FONT_IMPACT, 120)
         font_ep_label = ImageFont.truetype(FONT_IMPACT, 42)
@@ -924,7 +915,7 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
     draw.text((width // 2, box_y1 + 35), ep_label_text, font=font_ep_label, fill=(206, 17, 38), anchor='mm')
     draw.text((width // 2, box_y1 + 95), ep_num_text, font=font_ep_num, fill=(255, 255, 255), anchor='mm')
 
-    # 5. Titre Centré en Police Impact (Haute Visibilité & Ombre Portée)
+    # 4. Titre Centré en Police Impact (Haute Visibilité & Ombre Portée)
     clean_title = title_text.replace('\\N', ' ').replace('\n', ' ')
     clean_title = re.sub(r'\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$', '', clean_title, flags=re.IGNORECASE)
     clean_title = clean_title.upper().strip()
@@ -953,7 +944,7 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
         # Texte pur blanc
         draw.text((width // 2, y), line, font=font_title, fill=(255, 255, 255), anchor='mm')
 
-    # 6. Séparateur bicolore (Rouge / Blanc / Vert)
+    # 5. Séparateur bicolore (Rouge / Blanc / Vert)
     sep_y = start_y + total_text_h + 40
     draw.line([(width // 2 - 180, sep_y), (width // 2, sep_y)], fill=(206, 17, 38), width=5)
     draw.line([(width // 2, sep_y), (width // 2 + 180, sep_y)], fill=(0, 122, 61), width=5)
@@ -963,24 +954,6 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
         (width // 2, sep_y + 8),
         (width // 2 - 8, sep_y)
     ], fill=(255, 255, 255))
-
-    # 7. Pied d'affiche & Badge VOSTFR / VOAR
-    tag = "VOAR" if target_lang.lower() == 'ar' else "VOSTFR"
-    try:
-        font_foot = ImageFont.truetype(FONT_SEGOE, 30)
-        font_tag = ImageFont.truetype(FONT_IMPACT, 34)
-    except Exception:
-        font_foot = ImageFont.load_default()
-        font_tag = ImageFont.load_default()
-
-    draw.text((width // 2, 1700), "DOCUMENT & TÉMOIGNAGE EXCLUSIF", font=font_foot, fill=(156, 163, 175), anchor='mm')
-    tag_box_w, tag_box_h = 160, 48
-    draw.rounded_rectangle(
-        [(width // 2 - tag_box_w // 2, 1740), (width // 2 + tag_box_w // 2, 1740 + tag_box_h)],
-        radius=8,
-        fill=(206, 17, 38) if tag == 'VOSTFR' else (0, 122, 61)
-    )
-    draw.text((width // 2, 1740 + tag_box_h // 2), tag, font=font_tag, fill=(255, 255, 255), anchor='mm')
 
     output_cover_path.parent.mkdir(parents=True, exist_ok=True)
     img.save(str(output_cover_path), quality=95)
@@ -1050,7 +1023,7 @@ Une réalité brute partagée sans filtre pour que personne ne puisse détourner
 
 👉 Partagez massivement cette vidéo et abonnez-vous pour faire entendre ces voix indispensables.
 
-#Gaza #Palestine #Témoignage #UrgenceGaza #AyaStudio #TikTok #PourToi #{tag}"""
+#Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"""
 
     output_desc_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_desc_path, 'w', encoding='utf-8') as f:
@@ -1110,13 +1083,13 @@ En te basant EXCLUSIVEMENT sur la transcription ci-jointe, analyse ce témoignag
        3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
        4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
        5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
-     * À la toute fin du texte, tu DOIS obligatoirement inclure un bloc de 15 à 30 hashtags ultra-ciblés (ex: #Gaza #Palestine #Solidarité #Témoignage #Résilience #Justice #AyaStudio #TikTokNews #PourToi #FYP).
+     * À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, pas un de plus. (ex: #Gaza #Témoignage #Solidarité #Actualité #PourToi).
 
 RÈGLE ABSOLUE DE SORTIE :
 Renvoie UNIQUEMENT l'objet JSON valide pur, sans aucun préambule, sans texte avant ou après, et sans balises Markdown (pas de ```json, pas de ```).
 {{
   "semantic_title": "Titre percutant (max 40 car)",
-  "context_summary": "Texte très long de 5 longs paragraphes détaillés (min 400 mots) suivi du bloc de 15 à 30 hashtags..."
+  "context_summary": "Texte très long de 5 longs paragraphes détaillés (min 400 mots) suivi exactement de 5 hashtags..."
 }}
 
 TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
@@ -1236,11 +1209,11 @@ La transmission de ces messages à travers le monde est un devoir de mémoire et
 👉 REJOIGNEZ LA VOIX DE LA SOLIDARITÉ
 Ne laissez pas cette voix disparaître dans les méandres de l'algorithme. Commentez pour soutenir la démarche, partagez massivement autour de vous et enregistrez cette publication pour garantir sa visibilité à grande échelle. Ensemble, brisons le mur du silence.
 
-🏷️ #Gaza #Palestine #Témoignage #Vérité #Humanité #Résilience #UrgenceGaza #PalestineLibre #StopWar #GazaUnderAttack #TémoinsDuRéel #Actualité #Histoire #Solidarité #Justice #AyaPlatform #TikTokNews #PourToi #FYP #Viral #Explore #Documentation #DroitsHumains #Paix #VoixDeGaza #Résistance #Courage #ReportageTerrain"""
+🏷️ #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"""
 
-    # Garantie anti-paresse : vérification finale des hashtags
+    # Garantie anti-paresse : vérification finale des hashtags (strictement 5)
     if '#' not in context_summary:
-        context_summary += "\n\n#Gaza #Palestine #Témoignage #Vérité #Humanité #Résilience #UrgenceGaza #PalestineLibre #Solidarité #Justice #AyaStudio #TikTokNews #PourToi #FYP"
+        context_summary += "\n\n🏷️ #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"
 
     return semantic_title.strip(), context_summary.strip()
 
