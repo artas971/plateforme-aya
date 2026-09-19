@@ -862,6 +862,42 @@ def _wrap_cover_text(text: str, max_chars_per_line: int = 18) -> list:
     return lines if lines else [text]
 
 
+def is_raw_or_technical_filename(title: str) -> bool:
+    """
+    Détecte si un titre est un nom de fichier brut, un timestamp, une date ou un libellé technique.
+    Exemples rejetés :
+    - 'video 2026-09-19 14-48-23.mp4'
+    - '1789774090257_...'
+    - 'tg_1789820148396'
+    - 'audio_2026-09-17_00-57-44.ogg'
+    - 'WhatsApp Audio 2026-08-27 at 12.55.32'
+    - 'video.mp4', 'recording_1', etc.
+    """
+    if not title or not title.strip():
+        return True
+    t = title.strip().lower()
+
+    # Présence d'extensions multimédias
+    if re.search(r'\.(?:mp4|mov|avi|mkv|webm|mp3|wav|ogg|m4a|aac|opus|flac)$', t):
+        return True
+
+    # Mots-clés techniques de capture / système
+    if re.search(r'\b(?:video|audio|enregistrement|recording|media|upload|file|fichier|screen|whatsapp|telegram|tg)\b', t):
+        return True
+
+    # Présence de motifs de dates (ex: 2026-09-19, 2026_09_19, 19-09-2026, 14-48-23)
+    if re.search(r'\b\d{4}[-_/]\d{1,2}[-_/]\d{1,2}\b', t) or re.search(r'\b\d{1,2}[-_/]\d{1,2}[-_/]\d{4}\b', t):
+        return True
+    if re.search(r'\b\d{2}[-_:]\d{2}[-_:]\d{2}\b', t):
+        return True
+
+    # Chiffres / timestamps bruts >= 6 chiffres consécutifs
+    if re.search(r'\d{6,}', t):
+        return True
+
+    return False
+
+
 def generate_lionel_cover(title_text: str, output_cover_path: Path, target_lang: str = 'fr') -> str:
     """
     Génère la Couverture 9:16 officielle par l'Agent Lionel :
@@ -1024,12 +1060,13 @@ def generate_semantic_title_and_context(segments: list, media_path: str = None, 
     "L'IA ne doit plus renvoyer uniquement la description longue, mais un objet JSON structuré contenant deux éléments :
     semantic_title et context_summary."
     """
+    clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
     if not segments:
-        return "Témoignage de Palestine", "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+        return clean_fallback, "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
 
     raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip()
     if not raw_testimony_text:
-        return "Témoignage de Palestine", "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+        return clean_fallback, "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
 
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     lang_instruction = "en français soigné, percutant et humain" if target_lang.lower() != 'ar' else "en arabe soigné, percutant et humain"
@@ -1152,13 +1189,14 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
         except Exception as e:
             print(f"[IA NADINE WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
 
-    # Fallback si titre sémantique non extrait
-    if not semantic_title:
+    # Fallback si titre sémantique non extrait ou invalide/technique
+    if not semantic_title or is_raw_or_technical_filename(semantic_title):
         first_words = [w for w in raw_testimony_text.split() if len(w) > 2][:5]
-        if first_words:
-            semantic_title = " ".join(first_words).capitalize()
+        candidate = " ".join(first_words).capitalize() if first_words else ""
+        if candidate and not is_raw_or_technical_filename(candidate) and len(candidate) > 3:
+            semantic_title = candidate
         else:
-            semantic_title = "Témoignage de Palestine" if target_lang != 'ar' else "شهادة حية من فلسطين"
+            semantic_title = clean_fallback
 
     # Tronquage propre à 40 caractères maximum
     if len(semantic_title) > 40:
@@ -1271,14 +1309,21 @@ def main():
         print("[PROGRESS] 65% - 🧠 Analyse sémantique IA : Génération du Titre Sémantique et de la Smart Description TikTok...", flush=True)
         semantic_title, context_summary = generate_semantic_title_and_context(segments, media_path=media_input, target_lang=target_lang)
 
-        # Si un titre utilisateur non-technique et authentique a été explicitement fourni, on peut le conserver, sinon le titre sémantique IA prévaut
-        if custom_title and not is_technical_title and len(custom_title) > 3:
-            semantic_title = custom_title[:40]
+        # PRIORITÉ ABSOLUE AU TITRE SÉMANTIQUE IA SUR LES ARGUMENTS CLI / NOMS DE FICHIERS BRUTS
+        clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
 
-        print(f"[TITRE SÉMANTIQUE IA] ✨ '{semantic_title}' ({len(semantic_title)} car.)", flush=True)
+        # Le résultat de l'IA (semantic_title) prévaut impérativement sur l'argument CLI / nom de fichier brut.
+        # Si pour une raison quelconque l'IA n'a pas produit de titre valide ou si elle a produit un nom technique :
+        if not semantic_title or is_raw_or_technical_filename(semantic_title):
+            if custom_title and not is_raw_or_technical_filename(custom_title) and len(custom_title) > 3:
+                semantic_title = custom_title[:40]
+            else:
+                semantic_title = clean_fallback
+
+        print(f"[TITRE SÉMANTIQUE IA] ✨ '{semantic_title}' ({len(semantic_title)} car.) [Priorité Absolue IA]", flush=True)
         print(f"[SMART DESCRIPTION SEO] 📝 {len(context_summary)} caractères générés par Nadine.", flush=True)
 
-        # Assainissement pour nomenclature des fichiers (.mp4, .ass, .jpg, .txt, .md)
+        # Assainissement pour nomenclature des fichiers (.mp4, .ass, .jpg, .txt, .md) basé STRICTEMENT sur le titre sémantique IA
         clean_title_stem = sanitize_filename_stem(semantic_title, max_length=50)
         print(f"[NOMENCLATURE] 🏷️ Stem assaini : '{clean_title_stem}'", flush=True)
 
