@@ -63,16 +63,21 @@ app.use('/media', express.static(__dirname));
 app.use('/audio_a_traiter', express.static(AUDIO_A_TRAITER_DIR));
 app.use('/fichiers_reponse_a_envoyer', express.static(REPONSED_DIR));
 app.use('/download', express.static(REPONSED_DIR));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Route racine protégée
+// Routes de pages protégées
 app.get('/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/communaute', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'communaute.html'));
 });
 
 // Verrouillage de sécurité global : toutes les routes applicatives et API suivantes nécessitent d'être connecté
 app.use(requireAuth);
 
-// Montage des 7 Routeurs Modulaires Protégés
+// Montage des Routeurs Modulaires Protégés
 const chatRouter = require('./routes/chat');
 const studioRouter = require('./routes/studio');
 const audioRouter = require('./routes/audio');
@@ -80,6 +85,7 @@ const driveRouter = require('./routes/drive');
 const traductionRouter = require('./routes/traduction');
 const agentsRouter = require('./routes/agents');
 const feedbackRouter = require('./routes/feedback');
+const postsRouter = require('./routes/posts');
 
 app.use('/api/chat', chatRouter);
 app.use(studioRouter);
@@ -87,6 +93,7 @@ app.use(audioRouter);
 app.use('/api/drive', driveRouter);
 app.use('/api/agents', agentsRouter);
 app.use('/api/feedback', feedbackRouter);
+app.use('/api/posts', postsRouter);
 app.use(traductionRouter);
 
 // Démarrage du Serveur & Connexion Base de Données

@@ -1,0 +1,46 @@
+[
+  {
+    "authorName": "Steve - Témoin Gaza",
+    "mediaType": "text",
+    "originalContent": "Récit authentique : distribution d'eau potable et témoignages des familles dans le camp de réfugiés.",
+    "translatedContent": "",
+    "sourceLang": "ar",
+    "targetLang": "fr",
+    "mediaUrl": null,
+    "mediaThumbnail": null,
+    "tags": [
+      "Gaza",
+      "Eau",
+      "Solidarité"
+    ],
+    "moderationStatus": "pending",
+    "likesCount": 1,
+    "viewsCount": 0,
+    "sharesCount": 0,
+    "isPinned": false,
+    "createdAt": "2026-09-19T00:15:49.473Z",
+    "_id": "post_1789776949473_2v013bp3p"
+  },
+  {
+    "authorName": "Steve - Témoin Gaza",
+    "mediaType": "text",
+    "originalContent": "Récit authentique : distribution d'eau potable et témoignages des familles dans le camp de réfugiés.",
+    "translatedContent": "",
+    "sourceLang": "ar",
+    "targetLang": "fr",
+    "mediaUrl": null,
+    "mediaThumbnail": null,
+    "tags": [
+      "Gaza",
+      "Eau",
+      "Solidarité"
+    ],
+    "moderationStatus": "approved",
+    "likesCount": 5,
+    "viewsCount": 0,
+    "sharesCount": 0,
+    "isPinned": false,
+    "createdAt": "2026-09-19T00:15:43.169Z",
+    "_id": "post_1789776943169_i3xbulazy"
+  }
+]

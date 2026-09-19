@@ -2314,11 +2314,27 @@ ${safeText}
                                         <span>Copywriting TikTok</span>
                                     </a>
                                 ` : ''}
+                                <a href="/communaute" id="btnShareCommunity" class="aya-btn-download aya-btn-accent" style="background: linear-gradient(135deg, #0b5394, #00bcd4); color: white; border: none; text-decoration: none;">
+                                    <span>🌍</span>
+                                    <span>Partager sur la Communauté</span>
+                                </a>
                             </div>
                         </div>
                     `;
 
                     videoPreviewContainer.innerHTML = previewHtml;
+
+                    const btnShareComm = document.getElementById('btnShareCommunity');
+                    if (btnShareComm) {
+                        btnShareComm.addEventListener('click', () => {
+                            try {
+                                sessionStorage.setItem('aya_share_to_community', JSON.stringify({
+                                    description: finalData.context_summary || '',
+                                    title: finalData.clean_title || ''
+                                }));
+                            } catch(e) {}
+                        });
+                    }
 
                     // Bouton de copie du résumé contextuel avec retour visuel Turquoise
                     const btnCopyCtx = document.getElementById('btnCopyContext');

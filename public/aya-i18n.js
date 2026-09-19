@@ -19,7 +19,35 @@
             navHomeText: 'Accueil / Vocal',
             navTraductionText: 'Traduction & Sous-titres',
             navStudioText: 'Studio TikTok V3',
+            navCommunauteText: 'Communauté',
             navbarLiveText: 'Serveur Actif',
+
+            // Page Mur Communautaire (Phase 2 - Issue #10)
+            communauteDocTitle: 'Aya - Mur Communautaire des Témoignages',
+            communauteHeroTitle: 'Mur Communautaire des Témoignages',
+            communauteHeroSub: 'Espace d\'expression, de diffusion et de mémoire collective. Découvrez et partagez des témoignages sous-titrés authentiques.',
+            publishCardTitle: '📢 Partager un témoignage',
+            publishCardSub: 'Publiez une vidéo ou un audio traduit avec sa Smart Description. Tout contenu est vérifié par l\'équipe avant mise en ligne.',
+            labelPublishAuthor: 'Votre nom ou pseudonyme :',
+            placeholderPublishAuthor: 'Ex: Alex, Sarah, Un témoin de Gaza...',
+            labelPublishMedia: 'Fichier média (Vidéo ou Audio) :',
+            publishMediaHint: 'Glissez une vidéo MP4 ou un audio (ou utilisez un média déjà généré dans le Studio)',
+            labelPublishText: 'Smart Description & Témoignage (Texte complet) :',
+            placeholderPublishText: 'Collez ici la Smart Description générée ou décrivez la scène, le contexte et les paroles...',
+            labelPublishTags: 'Mots-clés / Hashtags (séparés par des virgules ou espaces) :',
+            placeholderPublishTags: 'Ex: Gaza, Temoignage, Espoir, Justice',
+            btnPublishSubmit: '<span>🚀</span> Publier le témoignage',
+            btnPublishSubmitting: '<span>⏳</span> Envoi et validation en cours...',
+            publishSuccessTitle: '✅ Témoignage soumis avec succès !',
+            publishSuccessMsg: 'Votre publication a été transmise avec succès. Elle est actuellement en cours d\'examen par l\'équipe de modération (statut : En attente) avant sa mise en ligne sur le mur public.',
+            feedSectionTitle: '✨ Témoignages Publiés',
+            feedEmptyTitle: 'Aucun témoignage publié pour le moment',
+            feedEmptySub: 'Soyez le premier à partager une vidéo sous-titrée sur le Mur Communautaire !',
+            postPendingBadge: '⏳ En attente de modération',
+            postApprovedBadge: '✅ Vérifié & Approuvé',
+            btnLikePost: '❤️ J\'aime',
+            btnSharePost: '🔗 Partager',
+            btnCopyPost: '📋 Copier le texte',
 
             // Page Traduction & Studio
             pageDocTitle: 'Aya Studio V3 - Sous-titrage Automatique Haute Précision',
@@ -217,7 +245,35 @@
             navHomeText: 'الرئيسية / صوتي',
             navTraductionText: 'الترجمة والدبلجة',
             navStudioText: 'استوديو تيك توك V3',
+            navCommunauteText: 'المجتمع',
             navbarLiveText: 'الخادم نشط ومتصل',
+
+            // Page Mur Communautaire (Phase 2 - Issue #10)
+            communauteDocTitle: 'منصة آية - جدار المجتمع والشهادات الحية',
+            communauteHeroTitle: 'جدار المجتمع والشهادات الإنسانية',
+            communauteHeroSub: 'مساحة للتعبير والتوثيق والذاكرة الحية. استكشف وشارك الشهادات المرئية والمسموعة المترجمة بأمانة.',
+            publishCardTitle: '📢 مشاركة شهادة جديدة',
+            publishCardSub: 'انشر مقطع فيديو أو صوت مترجم مصحوباً بالوصف الذكي. تخضع جميع المنشورات لمراجعة دقيقة من الفريق قبل الظهور للعامة.',
+            labelPublishAuthor: 'اسمك أو اسم مستعار:',
+            placeholderPublishAuthor: 'مثال: أحمد، مريم، شاهد من غزة...',
+            labelPublishMedia: 'ملف الوسائط (فيديو أو صوت):',
+            publishMediaHint: 'اسحب فيديو MP4 أو ملفاً صوتياً (أو شارك عملاً تم توليده مسبقاً في الاستوديو)',
+            labelPublishText: 'الوصف الذكي ونص الشهادة كاملاً:',
+            placeholderPublishText: 'الصق هنا الوصف الذكي المُولّد أو صف المشهد وسياق الكلام بدقة...',
+            labelPublishTags: 'الوسوم والكلمات المفتاحية (مفصولة بفواصل أو مسافات):',
+            placeholderPublishTags: 'مثال: غزة، شهادة، أمل، عدالة',
+            btnPublishSubmit: '<span>🚀</span> إرسال ونشر الشهادة',
+            btnPublishSubmitting: '<span>⏳</span> جاري الإرسال والتسجيل...',
+            publishSuccessTitle: '✅ تم إرسال الشهادة بنجاح!',
+            publishSuccessMsg: 'تم استلام منشورك بنجاح. وهو الآن قيد المراجعة والتدقيق من قبل فريق الإشراف (الحالة: قيد الانتظار) قبل ظهوره على الجدار العام.',
+            feedSectionTitle: '✨ أحدث الشهادات المنشورة',
+            feedEmptyTitle: 'لا توجد شهادات منشورة حالياً',
+            feedEmptySub: 'كن أول من يشارك فيديو مترجماً على جدار المجتمع!',
+            postPendingBadge: '⏳ قيد المراجعة',
+            postApprovedBadge: '✅ موثق ومعتمد',
+            btnLikePost: '❤️ إعجاب',
+            btnSharePost: '🔗 مشاركة',
+            btnCopyPost: '📋 نسخ النص',
 
             // Page Traduction & Studio
             pageDocTitle: 'استوديو آية V3 - دبلجة وترجمة الفيديوهات بدقة متناهية',
@@ -442,6 +498,7 @@
         updateElementText('navHomeText', dict.navHomeText);
         updateElementText('navTraductionText', dict.navTraductionText);
         updateElementText('navStudioText', dict.navStudioText);
+        updateElementText('navCommunauteText', dict.navCommunauteText);
         updateElementText('navbarLiveText', dict.navbarLiveText);
 
         const userObj = getUserSession();
@@ -449,6 +506,31 @@
         if (userNameSpan) {
             const name = userObj ? (userObj.name || userObj.username) : dict.userAnonymous;
             userNameSpan.textContent = `${dict.userConnectedPrefix} ${name}`;
+        }
+
+        // Mise à jour des textes de la page /communaute
+        if (window.location.pathname.includes('communaute')) {
+            document.title = dict.communauteDocTitle;
+            updateElementText('communauteHeroTitle', dict.communauteHeroTitle);
+            updateElementText('communauteHeroSub', dict.communauteHeroSub);
+            updateElementText('publishCardTitle', dict.publishCardTitle);
+            updateElementText('publishCardSub', dict.publishCardSub);
+            updateElementText('labelPublishAuthor', dict.labelPublishAuthor);
+            updateElementPlaceholder('authorNameInput', dict.placeholderPublishAuthor);
+            updateElementText('labelPublishMedia', dict.labelPublishMedia);
+            updateElementText('publishMediaHint', dict.publishMediaHint);
+            updateElementText('labelPublishText', dict.labelPublishText);
+            updateElementPlaceholder('postContentInput', dict.placeholderPublishText);
+            updateElementText('labelPublishTags', dict.labelPublishTags);
+            updateElementPlaceholder('tagsInput', dict.placeholderPublishTags);
+            updateElementText('feedSectionTitle', dict.feedSectionTitle);
+            updateElementText('feedEmptyTitle', dict.feedEmptyTitle);
+            updateElementText('feedEmptySub', dict.feedEmptySub);
+
+            const btnPublish = document.getElementById('btnPublishPost');
+            if (btnPublish && !btnPublish.disabled) {
+                btnPublish.innerHTML = dict.btnPublishSubmit;
+            }
         }
 
         // Mise à jour des textes de la page /traduction
@@ -574,7 +656,8 @@
         const path = window.location.pathname;
         const isTraduction = path.includes('traduction');
         const isStudio = path.includes('studio');
-        const isHome = !isTraduction && !isStudio;
+        const isCommunaute = path.includes('communaute');
+        const isHome = !isTraduction && !isStudio && !isCommunaute;
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -611,6 +694,10 @@
                 <!-- Lien 3 : Studio TikTok V3 -->
                 <a href="/studio" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink">
                     <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
+                </a>
+                <!-- Lien 4 : Mur Communautaire -->
+                <a href="/communaute" class="btn-nav-link ${isCommunaute ? 'active' : ''}" id="navCommunauteLink">
+                    <span>🌍</span> <span id="navCommunauteText">${dict.navCommunauteText}</span>
                 </a>
                 <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">${dict.navbarLiveText}</span></span>
             </div>

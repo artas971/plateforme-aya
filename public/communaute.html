@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Aya - Mur Communautaire des Témoignages</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #0b5394;
+            --color-primary-dark: #083b6f;
+            --color-turquoise: #00bcd4;
+            --color-turquoise-dark: #0097a7;
+            --color-accent-green: #10b981;
+            --color-dark-gray: #334155;
+            --color-secondary-gray: #64748b;
+            --color-light-bg: #f8fafc;
+            --color-white: #ffffff;
+            --border-color: rgba(148, 163, 184, 0.25);
+            --card-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            --card-hover-shadow: 0 20px 30px -10px rgba(11, 83, 148, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: var(--color-dark-gray);
+            font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Globale */
+        .app-header {
+            width: 100%;
+            background: var(--color-primary);
+            border-bottom: 2px solid rgba(0, 188, 212, 0.4);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+            color: var(--color-white);
+            box-shadow: 0 4px 20px rgba(11, 83, 148, 0.22);
+        }
+
+        .communaute-container {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+        }
+
+        /* Hero Header */
+        .communaute-hero {
+            background: linear-gradient(135deg, #0b5394 0%, #0d69b8 50%, #00bcd4 100%);
+            border-radius: 20px;
+            padding: 40px 32px;
+            color: #ffffff;
+            box-shadow: 0 12px 30px rgba(11, 83, 148, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+        }
+
+        .communaute-hero-content {
+            max-width: 680px;
+        }
+
+        .communaute-hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .communaute-hero p {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            opacity: 0.92;
+        }
+
+        .communaute-hero-badge {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+
+        .communaute-hero-badge .badge-number {
+            font-size: 2rem;
+            color: #ffeb3b;
+        }
+
+        /* Formulaire de Publication */
+        .publish-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            padding: 28px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.25s ease;
+        }
+
+        .publish-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+            padding-bottom: 16px;
+        }
+
+        .publish-header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(0, 188, 212, 0.12);
+            color: var(--color-turquoise-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .publish-header-titles h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .publish-header-titles p {
+            font-size: 0.9rem;
+            color: var(--color-secondary-gray);
+            margin-top: 2px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #cbd5e1;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background-color: #f8fafc;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--color-turquoise);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.15);
+            background-color: #ffffff;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        /* Zone de dépose média */
+        .media-dropzone {
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 22px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .media-dropzone:hover, .media-dropzone.dragover {
+            border-color: var(--color-turquoise);
+            background: rgba(0, 188, 212, 0.05);
+        }
+
+        .media-dropzone-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .media-dropzone-text {
+            font-weight: 600;
+            color: var(--color-primary);
+            font-size: 0.95rem;
+        }
+
+        .media-dropzone-sub {
+            font-size: 0.8rem;
+            color: var(--color-secondary-gray);
+            margin-top: 4px;
+        }
+
+        .media-preview-container {
+            margin-top: 14px;
+            display: none;
+            background: #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+            max-height: 280px;
+            position: relative;
+        }
+
+        .media-preview-container video, .media-preview-container audio {
+            width: 100%;
+            max-height: 280px;
+            display: block;
+        }
+
+        .btn-remove-media {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(239, 68, 68, 0.85);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            z-index: 10;
+        }
+
+        .btn-remove-media:hover {
+            background: #dc2626;
+        }
+
+        .publish-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .btn-publish {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-turquoise) 100%);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(11, 83, 148, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .btn-publish:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(11, 83, 148, 0.35);
+        }
+
+        .btn-publish:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Carte Feedback Succès / Info Zéro-JSON */
+        .feedback-banner {
+            border-radius: 14px;
+            padding: 18px 22px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-top: 18px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-banner.success {
+            background: #ecfdf5;
+            border: 1.5px solid #a7f3d0;
+            color: #065f46;
+        }
+
+        .feedback-banner.error {
+            background: #fef2f2;
+            border: 1.5px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .feedback-banner-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .feedback-banner-text h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .feedback-banner-text p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Section Fil d'Actualité */
+        .feed-section {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .feed-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-pill:hover, .filter-pill.active {
+            background: var(--color-primary);
+            color: #ffffff;
+            border-color: var(--color-primary);
+        }
+
+        /* Grille des posts */
+        .feed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+        }
+
+        @media (max-width: 480px) {
+            .feed-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Carte de Témoignage */
+        .post-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+
+        .post-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .post-card-header {
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        }
+
+        .post-author-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .post-author-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0b5394, #00bcd4);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .post-author-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .post-meta-time {
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+
+        .post-status-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .post-media-container {
+            width: 100%;
+            background: #000000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .post-media-container video {
+            width: 100%;
+            max-height: 440px;
+            display: block;
+            background: #000000;
+        }
+
+        .post-media-container audio {
+            width: 100%;
+            padding: 18px;
+        }
+
+        .post-card-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .post-text {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .post-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(11, 83, 148, 0.08);
+            color: var(--color-primary);
+        }
+
+        .post-card-footer {
+            padding: 12px 18px;
+            border-top: 1px solid rgba(148, 163, 184, 0.12);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .post-action-btn {
+            background: transparent;
+            border: none;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: all 0.15s;
+        }
+
+        .post-action-btn:hover {
+            background: rgba(11, 83, 148, 0.08);
+            color: var(--color-primary);
+        }
+
+        .post-action-btn.liked {
+            color: #e11d48;
+        }
+
+        /* État vide */
+        .empty-feed {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 2px dashed #cbd5e1;
+            padding: 60px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .empty-feed-icon {
+            font-size: 3.5rem;
+            line-height: 1;
+        }
+
+        .empty-feed h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .empty-feed p {
+            font-size: 0.95rem;
+            color: #64748b;
+            max-width: 480px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar Partagée Globale (Injectée et hydratée par aya-i18n.js) -->
+    <header class="app-header" id="ayaGlobalNavbar"></header>
+
+    <div class="communaute-container">
+        <!-- Bannière d'Accueil / Hero -->
+        <section class="communaute-hero">
+            <div class="communaute-hero-content">
+                <h1 id="communauteHeroTitle">Mur Communautaire des Témoignages</h1>
+                <p id="communauteHeroSub">
+                    Espace d'expression, de diffusion et de mémoire collective. Découvrez et partagez des témoignages sous-titrés authentiques pour faire entendre chaque voix.
+                </p>
+            </div>
+            <div class="communaute-hero-badge">
+                <span class="badge-number" id="heroPostsCount">0</span>
+                <span>Témoignages Archivés</span>
+            </div>
+        </section>
+
+        <!-- Formulaire de Publication -->
+        <section class="publish-card">
+            <div class="publish-header">
+                <div class="publish-header-icon">📢</div>
+                <div class="publish-header-titles">
+                    <h2 id="publishCardTitle">Partager un témoignage</h2>
+                    <p id="publishCardSub">Publiez une vidéo ou un audio traduit avec sa Smart Description. Tout contenu est vérifié avant mise en ligne.</p>
+                </div>
+            </div>
+
+            <form id="publishForm">
+                <div class="form-grid">
+                    <!-- Champ Auteur -->
+                    <div class="form-group">
+                        <label class="form-label" for="authorNameInput" id="labelPublishAuthor">
+                            👤 Votre nom ou pseudonyme :
+                        </label>
+                        <input type="text" id="authorNameInput" class="form-input" placeholder="Ex: Alex, Sarah, Un témoin de Gaza..." maxlength="80">
+                    </div>
+
+                    <!-- Champ Tags / Mots-clés -->
+                    <div class="form-group">
+                        <label class="form-label" for="tagsInput" id="labelPublishTags">
+                            🏷️ Mots-clés / Hashtags :
+                        </label>
+                        <input type="text" id="tagsInput" class="form-input" placeholder="Ex: Gaza, Temoignage, Espoir, Justice">
+                    </div>
+
+                    <!-- Zone Dépose Média -->
+                    <div class="form-group full-width">
+                        <label class="form-label" id="labelPublishMedia">
+                            🎬 Fichier média (Vidéo MP4 ou Audio) :
+                        </label>
+                        <div class="media-dropzone" id="mediaDropzone">
+                            <input type="file" id="mediaFileInput" accept="video/*,audio/*" style="display: none;">
+                            <div class="media-dropzone-icon">📁</div>
+                            <div class="media-dropzone-text" id="publishMediaHint">Glissez-déposez une vidéo MP4 ou cliquez pour parcourir vos fichiers</div>
+                            <div class="media-dropzone-sub">Formats acceptés : MP4, MOV, WEBM, MP3, WAV (jusqu'à 500 Mo)</div>
+                        </div>
+
+                        <!-- Prévisualisation Média -->
+                        <div class="media-preview-container" id="mediaPreviewContainer">
+                            <button type="button" class="btn-remove-media" id="btnRemoveMedia" title="Retirer ce fichier">&times;</button>
+                            <video id="videoPreview" controls playsinline style="display: none;"></video>
+                            <audio id="audioPreview" controls style="display: none;"></audio>
+                        </div>
+                    </div>
+
+                    <!-- Texte / Smart Description -->
+                    <div class="form-group full-width">
+                        <label class="form-label" for="postContentInput" id="labelPublishText">
+                            📝 Smart Description & Témoignage (Texte complet) :
+                        </label>
+                        <textarea id="postContentInput" class="form-textarea" placeholder="Collez ici la Smart Description générée ou décrivez la scène, le contexte et les paroles avec précision..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="publish-actions">
+                    <button type="submit" class="btn-publish" id="btnPublishPost">
+                        <span>🚀</span> Publier le témoignage
+                    </button>
+                </div>
+            </form>
+
+            <!-- Feedback de soumission -->
+            <div id="publishFeedback" style="display: none;"></div>
+        </section>
+
+        <!-- Fil d'Actualité Public -->
+        <section class="feed-section">
+            <div class="feed-header">
+                <h2 id="feedSectionTitle">✨ Témoignages Publiés</h2>
+                <div class="feed-filters" id="feedFilters">
+                    <button class="filter-pill active" data-tag="all">Tous les témoignages</button>
+                </div>
+            </div>
+
+            <!-- Grille des Cartes -->
+            <div class="feed-grid" id="feedGrid">
+                <!-- Rendu dynamique JS -->
+            </div>
+
+            <!-- État vide (Fallback) -->
+            <div class="empty-feed" id="emptyFeed" style="display: none;">
+                <div class="empty-feed-icon">🕊️</div>
+                <h3 id="feedEmptyTitle">Aucun témoignage publié pour le moment</h3>
+                <p id="feedEmptySub">Soyez le premier à partager une vidéo sous-titrée sur le Mur Communautaire !</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/aya-i18n.js"></script>
+    <script src="/feedback-widget.js"></script>
+    <script>
+        (function() {
+            let selectedFile = null;
+            let currentPosts = [];
+            let activeTagFilter = 'all';
+
+            const dropzone = document.getElementById('mediaDropzone');
+            const fileInput = document.getElementById('mediaFileInput');
+            const previewContainer = document.getElementById('mediaPreviewContainer');
+            const videoPreview = document.getElementById('videoPreview');
+            const audioPreview = document.getElementById('audioPreview');
+            const btnRemoveMedia = document.getElementById('btnRemoveMedia');
+            const publishForm = document.getElementById('publishForm');
+            const btnPublishPost = document.getElementById('btnPublishPost');
+            const publishFeedback = document.getElementById('publishFeedback');
+            const feedGrid = document.getElementById('feedGrid');
+            const emptyFeed = document.getElementById('emptyFeed');
+            const heroPostsCount = document.getElementById('heroPostsCount');
+            const feedFilters = document.getElementById('feedFilters');
+
+            // 1. Initialisation Préremplissage depuis sessionStorage si redirection depuis Studio/Traduction
+            try {
+                const autoShareData = JSON.parse(sessionStorage.getItem('aya_share_to_community') || 'null');
+                if (autoShareData) {
+                    if (autoShareData.description) {
+                        document.getElementById('postContentInput').value = autoShareData.description;
+                    }
+                    if (autoShareData.title) {
+                        document.getElementById('tagsInput').value = autoShareData.title;
+                    }
+                    sessionStorage.removeItem('aya_share_to_community');
+                }
+            } catch(e) {}
+
+            // 2. Gestion Drag & Drop et Sélection de Fichier
+            dropzone.addEventListener('click', () => fileInput.click());
+
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            });
+
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('dragover');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+
+            btnRemoveMedia.addEventListener('click', () => {
+                selectedFile = null;
+                fileInput.value = '';
+                previewContainer.style.display = 'none';
+                videoPreview.src = '';
+                audioPreview.src = '';
+                videoPreview.style.display = 'none';
+                audioPreview.style.display = 'none';
+                dropzone.style.display = 'block';
+            });
+
+            function handleFileSelect(file) {
+                selectedFile = file;
+                const fileUrl = URL.createObjectURL(file);
+                const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm|mkv)$/i.test(file.name);
+
+                dropzone.style.display = 'none';
+                previewContainer.style.display = 'block';
+
+                if (isVideo) {
+                    videoPreview.src = fileUrl;
+                    videoPreview.style.display = 'block';
+                    audioPreview.style.display = 'none';
+                } else {
+                    audioPreview.src = fileUrl;
+                    audioPreview.style.display = 'block';
+                    videoPreview.style.display = 'none';
+                }
+            }
+
+            // 3. Soumission du Témoignage (POST /api/posts)
+            publishForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const content = document.getElementById('postContentInput').value.trim();
+                const author = document.getElementById('authorNameInput').value.trim();
+                const tags = document.getElementById('tagsInput').value.trim();
+
+                if (!content && !selectedFile) {
+                    showFeedback('error', "Veuillez renseigner un texte explicatif ou sélectionner un fichier média.");
+                    return;
+                }
+
+                btnPublishPost.disabled = true;
+                btnPublishPost.innerHTML = `<span>⏳</span> Envoi en cours...`;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('originalContent', content);
+                    if (author) formData.append('authorName', author);
+                    if (tags) formData.append('tags', tags);
+                    if (selectedFile) formData.append('media', selectedFile);
+
+                    const res = await fetch('/api/posts', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || "Échec de l'enregistrement du post.");
+                    }
+
+                    // Succès Zéro-JSON
+                    const isAr = (window.AyaI18n && window.AyaI18n.currentLang === 'ar');
+                    const title = isAr ? "✅ تم إرسال الشهادة بنجاح!" : "✅ Témoignage soumis avec succès !";
+                    const msg = isAr 
+                        ? "تم استلام منشورك بنجاح. وهو الآن قيد المراجعة والتدقيق من قبل فريق الإشراف (الحالة: قيد الانتظار) قبل ظهوره على الجدار العام."
+                        : "Votre publication a été transmise avec succès. Elle est actuellement en cours d'examen par l'équipe de modération (statut : En attente) avant sa mise en ligne sur le mur public.";
+
+                    showFeedback('success', msg, title);
+
+                    // Réinitialisation du formulaire
+                    publishForm.reset();
+                    btnRemoveMedia.click();
+
+                } catch (err) {
+                    console.error('Erreur soumission post :', err);
+                    showFeedback('error', err.message || "Une erreur est survenue lors de l'envoi de votre témoignage.");
+                } finally {
+                    btnPublishPost.disabled = false;
+                    const isAr = (window.AyaI18n && window.AyaI18n.currentLang === 'ar');
+                    btnPublishPost.innerHTML = isAr ? `<span>🚀</span> إرسال ونشر الشهادة` : `<span>🚀</span> Publier le témoignage`;
+                }
+            });
+
+            function showFeedback(type, message, title = null) {
+                const defaultTitle = type === 'success' ? "Succès" : "Attention";
+                publishFeedback.className = `feedback-banner ${type}`;
+                publishFeedback.innerHTML = `
+                    <div class="feedback-banner-icon">${type === 'success' ? '✅' : '⚠️'}</div>
+                    <div class="feedback-banner-text">
+                        <h4>${title || defaultTitle}</h4>
+                        <p>${escapeHtml(message)}</p>
+                    </div>
+                `;
+                publishFeedback.style.display = 'flex';
+                publishFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            // 4. Chargement des Témoignages Approuvés (GET /api/posts)
+            async function loadPosts() {
+                try {
+                    const res = await fetch('/api/posts');
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || "Impossible de charger les posts.");
+                    }
+
+                    currentPosts = data.posts || [];
+                    heroPostsCount.textContent = currentPosts.length;
+
+                    extractAndRenderTags(currentPosts);
+                    renderPosts(currentPosts);
+
+                } catch (err) {
+                    console.error('Erreur chargement posts :', err);
+                    emptyFeed.style.display = 'flex';
+                }
+            }
+
+            function extractAndRenderTags(posts) {
+                const allTags = new Set();
+                posts.forEach(p => {
+                    if (Array.isArray(p.tags)) {
+                        p.tags.forEach(t => allTags.add(t));
+                    }
+                });
+
+                feedFilters.innerHTML = `
+                    <button class="filter-pill ${activeTagFilter === 'all' ? 'active' : ''}" data-tag="all">Tous les témoignages</button>
+                `;
+
+                allTags.forEach(tag => {
+                    const btn = document.createElement('button');
+                    btn.className = `filter-pill ${activeTagFilter === tag ? 'active' : ''}`;
+                    btn.dataset.tag = tag;
+                    btn.textContent = `#${tag}`;
+                    feedFilters.appendChild(btn);
+                });
+
+                feedFilters.querySelectorAll('.filter-pill').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        feedFilters.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        activeTagFilter = btn.dataset.tag;
+                        filterAndRender();
+                    });
+                });
+            }
+
+            function filterAndRender() {
+                let filtered = currentPosts;
+                if (activeTagFilter !== 'all') {
+                    filtered = currentPosts.filter(p => p.tags && p.tags.includes(activeTagFilter));
+                }
+                renderPosts(filtered);
+            }
+
+            function renderPosts(posts) {
+                feedGrid.innerHTML = '';
+
+                if (!posts || posts.length === 0) {
+                    emptyFeed.style.display = 'flex';
+                    return;
+                }
+
+                emptyFeed.style.display = 'none';
+
+                posts.forEach(post => {
+                    const card = document.createElement('article');
+                    card.className = 'post-card';
+
+                    const authorName = post.authorName || "Anonyme";
+                    const initials = authorName.slice(0, 2).toUpperCase();
+                    const formattedDate = formatDateRelative(post.createdAt);
+
+                    // Média
+                    let mediaHtml = '';
+                    if (post.mediaUrl) {
+                        if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
+                            mediaHtml = `
+                                <div class="post-media-container">
+                                    <video src="${escapeHtml(post.mediaUrl)}" controls playsinline preload="metadata"></video>
+                                </div>
+                            `;
+                        } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
+                            mediaHtml = `
+                                <div class="post-media-container">
+                                    <audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    // Tags
+                    let tagsHtml = '';
+                    if (Array.isArray(post.tags) && post.tags.length > 0) {
+                        tagsHtml = `
+                            <div class="post-tags">
+                                ${post.tags.map(t => `<span class="tag-badge">#${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="post-card-header">
+                            <div class="post-author-info">
+                                <div class="post-author-avatar">${initials}</div>
+                                <div>
+                                    <div class="post-author-name">${escapeHtml(authorName)}</div>
+                                    <div class="post-meta-time">${formattedDate}</div>
+                                </div>
+                            </div>
+                            <span class="post-status-badge">✅ Vérifié</span>
+                        </div>
+                        ${mediaHtml}
+                        <div class="post-card-body">
+                            <p class="post-text">${escapeHtml(post.originalContent)}</p>
+                            ${tagsHtml}
+                        </div>
+                        <div class="post-card-footer">
+                            <button class="post-action-btn like-btn" data-id="${post._id}">
+                                <span>❤️</span> <span class="like-count">${post.likesCount || 0}</span>
+                            </button>
+                            <button class="post-action-btn copy-btn" data-content="${escapeHtml(post.originalContent)}">
+                                <span>📋</span> Copier le texte
+                            </button>
+                            <button class="post-action-btn share-btn" data-url="${window.location.origin}/communaute">
+                                <span>🔗</span> Partager
+                            </button>
+                        </div>
+                    `;
+
+                    // Événement Like
+                    const likeBtn = card.querySelector('.like-btn');
+                    likeBtn.addEventListener('click', async () => {
+                        try {
+                            const res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
+                            const data = await res.json();
+                            if (data.success) {
+                                card.querySelector('.like-count').textContent = data.likesCount;
+                                likeBtn.classList.add('liked');
+                            }
+                        } catch(e) {}
+                    });
+
+                    // Événement Copier texte
+                    const copyBtn = card.querySelector('.copy-btn');
+                    copyBtn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(post.originalContent).then(() => {
+                            const oldText = copyBtn.innerHTML;
+                            copyBtn.innerHTML = `<span>✅</span> Copié !`;
+                            setTimeout(() => copyBtn.innerHTML = oldText, 2000);
+                        });
+                    });
+
+                    // Événement Partager
+                    const shareBtn = card.querySelector('.share-btn');
+                    shareBtn.addEventListener('click', () => {
+                        if (navigator.share) {
+                            navigator.share({
+                                title: `Témoignage de ${authorName} sur Aya`,
+                                text: post.originalContent.slice(0, 100) + '...',
+                                url: window.location.href
+                            }).catch(() => {});
+                        } else {
+                            navigator.clipboard.writeText(window.location.href).then(() => {
+                                const oldText = shareBtn.innerHTML;
+                                shareBtn.innerHTML = `<span>✅</span> Lien copié !`;
+                                setTimeout(() => shareBtn.innerHTML = oldText, 2000);
+                            });
+                        }
+                    });
+
+                    feedGrid.appendChild(card);
+                });
+            }
+
+            function formatDateRelative(dateStr) {
+                if (!dateStr) return "Récemment";
+                const date = new Date(dateStr);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMin = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMin / 60);
+                const diffDays = Math.floor(diffHours / 24);
+
+                if (diffMin < 2) return "À l'instant";
+                if (diffMin < 60) return `Il y a ${diffMin} min`;
+                if (diffHours < 24) return `Il y a ${diffHours} h`;
+                if (diffDays < 7) return `Il y a ${diffDays} j`;
+                return date.toLocaleDateString();
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Chargement initial
+            loadPosts();
+
+        })();
+    </script>
+</body>
+</html>

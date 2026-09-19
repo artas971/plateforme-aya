@@ -1,0 +1,287 @@
+/**
+ * Module Mur Communautaire (Community Wall) - Plateforme Aya
+ * Agent Thomas (Architecte Back-End) & Agent Lionel (Expérience UI)
+ * 
+ * Routes :
+ * - GET  /api/posts         : Récupère les témoignages approuvés (tri chronologique décroissant)
+ * - POST /api/posts         : Soumet un nouveau témoignage (statut initial impératif : 'pending')
+ * - POST /api/posts/:id/like: Incrémente les likes d'un témoignage
+ */
+
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const { Post, isDbConnected } = require('../models');
+
+// Configuration des répertoires de stockage
+const ROOT_DIR = path.resolve(__dirname, '..');
+const UPLOADS_POSTS_DIR = path.join(ROOT_DIR, 'uploads', 'posts');
+const DATA_DIR = path.join(ROOT_DIR, 'data');
+const FALLBACK_POSTS_FILE = path.join(DATA_DIR, 'posts.json');
+
+fs.mkdirSync(UPLOADS_POSTS_DIR, { recursive: true });
+fs.mkdirSync(DATA_DIR, { recursive: true });
+
+// Initialisation du fichier de repli si nécessaire
+if (!fs.existsSync(FALLBACK_POSTS_FILE)) {
+    fs.writeFileSync(FALLBACK_POSTS_FILE, JSON.stringify([], null, 2), 'utf-8');
+}
+
+/**
+ * Nettoyage strict des noms de fichiers (anti-mojibake)
+ */
+function sanitizeFileName(originalName) {
+    const ext = path.extname(originalName).toLowerCase();
+    const base = path.basename(originalName, ext)
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Supprime accents
+        .replace(/[^a-zA-Z0-9_-]/g, '_') // Caractères sûrs uniquement
+        .slice(0, 40);
+    return `${base}_${Date.now()}${ext}`;
+}
+
+// Configuration Multer pour les médias de posts
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, UPLOADS_POSTS_DIR);
+    },
+    filename: (req, file, cb) => {
+        cb(null, sanitizeFileName(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 500 * 1024 * 1024 }, // 500 Mo max
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /mp4|mov|webm|mkv|avi|mp3|wav|m4a|ogg|aac/;
+        const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+        const mime = file.mimetype;
+        if (allowedTypes.test(ext) || mime.startsWith('video/') || mime.startsWith('audio/')) {
+            cb(null, true);
+        } else {
+            cb(new Error("Format de fichier non supporté. Formats acceptés : MP4, MOV, WEBM, MP3, WAV, M4A."));
+        }
+    }
+});
+
+// Helpers pour le stockage autonome JSON (fallback anti-crash)
+function readFallbackPosts() {
+    try {
+        const data = fs.readFileSync(FALLBACK_POSTS_FILE, 'utf-8');
+        return JSON.parse(data || '[]');
+    } catch (err) {
+        console.error('Erreur lecture posts.json fallback:', err);
+        return [];
+    }
+}
+
+function writeFallbackPosts(posts) {
+    try {
+        fs.writeFileSync(FALLBACK_POSTS_FILE, JSON.stringify(posts, null, 2), 'utf-8');
+    } catch (err) {
+        console.error('Erreur écriture posts.json fallback:', err);
+    }
+}
+
+/**
+ * GET /api/posts
+ * Récupère tous les témoignages approuvés, triés du plus récent au plus ancien.
+ */
+router.get('/', async (req, res) => {
+    try {
+        const { tag, lang } = req.query;
+
+        if (isDbConnected()) {
+            const query = { moderationStatus: 'approved' };
+            if (tag) query.tags = tag;
+            if (lang) query.targetLang = lang;
+
+            const posts = await Post.find(query)
+                .sort({ isPinned: -1, createdAt: -1 })
+                .limit(50)
+                .lean();
+
+            return res.json({
+                success: true,
+                count: posts.length,
+                posts
+            });
+        }
+
+        // Mode Fallback (JSON autonome)
+        let posts = readFallbackPosts();
+        posts = posts.filter(p => p.moderationStatus === 'approved');
+
+        if (tag) posts = posts.filter(p => p.tags && p.tags.includes(tag));
+        if (lang) posts = posts.filter(p => p.targetLang === lang);
+
+        posts.sort((a, b) => {
+            if (a.isPinned && !b.isPinned) return -1;
+            if (!a.isPinned && b.isPinned) return 1;
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+
+        return res.json({
+            success: true,
+            count: posts.length,
+            posts
+        });
+    } catch (err) {
+        console.error('❌ Erreur GET /api/posts :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Impossible de récupérer les témoignages.",
+            details: err.message
+        });
+    }
+});
+
+/**
+ * POST /api/posts
+ * Soumet un témoignage.
+ * Le statut DOIT TOUJOURS être 'pending' (modération préalable).
+ */
+router.post('/', upload.single('media'), async (req, res) => {
+    try {
+        const body = req.body || {};
+        const content = (body.originalContent || body.text || body.content || body.smartDescription || '').trim();
+
+        if (!content && !req.file && !body.mediaUrl) {
+            return res.status(400).json({
+                success: false,
+                error: "Le témoignage doit comporter au moins un texte explicatif ou un média (vidéo/audio)."
+            });
+        }
+
+        // Détection du chemin média
+        let mediaUrl = body.mediaUrl || null;
+        let mediaType = 'text';
+
+        if (req.file) {
+            mediaUrl = `/uploads/posts/${req.file.filename}`;
+            const ext = path.extname(req.file.filename).toLowerCase();
+            if (['.mp4', '.mov', '.webm', '.mkv'].includes(ext) || req.file.mimetype.startsWith('video/')) {
+                mediaType = 'video';
+            } else if (['.mp3', '.wav', '.m4a', '.ogg', '.aac'].includes(ext) || req.file.mimetype.startsWith('audio/')) {
+                mediaType = 'audio';
+            }
+        } else if (mediaUrl) {
+            const cleanUrl = mediaUrl.split('?')[0].toLowerCase();
+            if (cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm')) {
+                mediaType = 'video';
+            } else if (cleanUrl.endsWith('.mp3') || cleanUrl.endsWith('.wav') || cleanUrl.endsWith('.m4a')) {
+                mediaType = 'audio';
+            }
+        }
+
+        // Traitement des tags
+        let tags = [];
+        if (Array.isArray(body.tags)) {
+            tags = body.tags;
+        } else if (typeof body.tags === 'string' && body.tags.trim()) {
+            tags = body.tags
+                .split(/[\s,#]+/)
+                .map(t => t.trim().replace(/^#/, ''))
+                .filter(Boolean);
+        }
+
+        // Auteur
+        const authorName = (
+            body.authorName || 
+            (req.session && req.session.user && req.session.user.name) || 
+            (req.session && req.session.user && req.session.user.username) || 
+            "Anonyme"
+        ).trim();
+
+        // Création de l'objet témoignage (statut STRICTEMENT 'pending')
+        const postData = {
+            authorName,
+            mediaType,
+            originalContent: content || "Témoignage vidéo partagé depuis la plateforme Aya.",
+            translatedContent: body.translatedContent || "",
+            sourceLang: body.sourceLang || "ar",
+            targetLang: body.targetLang || "fr",
+            mediaUrl,
+            mediaThumbnail: body.mediaThumbnail || null,
+            tags,
+            moderationStatus: 'pending', // Verrou de sécurité exigé
+            likesCount: 0,
+            viewsCount: 0,
+            sharesCount: 0,
+            isPinned: false,
+            createdAt: new Date().toISOString()
+        };
+
+        if (isDbConnected()) {
+            const created = await Post.create(postData);
+            console.log(`📝 [COMMUNAUTÉ] Nouveau post soumis (ID: ${created._id}) - Statut : PENDING`);
+            return res.status(201).json({
+                success: true,
+                message: "Votre publication est en cours d'examen par l'équipe de modération.",
+                post: created
+            });
+        }
+
+        // Mode Fallback JSON
+        const fallbackList = readFallbackPosts();
+        postData._id = `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        fallbackList.unshift(postData);
+        writeFallbackPosts(fallbackList);
+
+        console.log(`📝 [COMMUNAUTÉ FALLBACK] Nouveau post enregistré en JSON (${postData._id}) - Statut : PENDING`);
+        return res.status(201).json({
+            success: true,
+            message: "Votre publication est en cours d'examen par l'équipe de modération.",
+            post: postData
+        });
+
+    } catch (err) {
+        console.error('❌ Erreur POST /api/posts :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Impossible d'enregistrer le témoignage.",
+            details: err.message
+        });
+    }
+});
+
+/**
+ * POST /api/posts/:id/like
+ * Incrémente le compteur de likes d'un témoignage.
+ */
+router.post('/:id/like', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isDbConnected()) {
+            const updated = await Post.findByIdAndUpdate(
+                id,
+                { $inc: { likesCount: 1 } },
+                { new: true }
+            );
+            if (!updated) {
+                return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+            }
+            return res.json({ success: true, likesCount: updated.likesCount });
+        }
+
+        // Fallback
+        const fallbackList = readFallbackPosts();
+        const post = fallbackList.find(p => p._id === id);
+        if (!post) {
+            return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+        }
+        post.likesCount = (post.likesCount || 0) + 1;
+        writeFallbackPosts(fallbackList);
+
+        return res.json({ success: true, likesCount: post.likesCount });
+    } catch (err) {
+        console.error('❌ Erreur like post :', err);
+        return res.status(500).json({ success: false, error: "Impossible de liker le témoignage." });
+    }
+});
+
+module.exports = router;
