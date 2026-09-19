@@ -16,6 +16,8 @@ import re
 import time
 import unicodedata
 import urllib.request
+import argparse
+import base64
 from pathlib import Path
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
@@ -799,15 +801,18 @@ def sanitize_filename_stem(raw_text: str, max_length: int = 50) -> str:
     return text if text else "media"
 
 
-def generate_clean_output_filenames(media_input: str, source_lang: str, target_lang: str, output_dir: Path = OUTPUT_DIR) -> tuple:
+def generate_clean_output_filenames(media_input: str, source_lang: str, target_lang: str, output_dir: Path = OUTPUT_DIR, title_override: str = None) -> tuple:
     """
     Génère une nomenclature propre, lisible et standardisée sans Mojibake :
     - Vidéo : {clean_base} ({TAG}).mp4
     - Sous-titre : {clean_base} ({TAG}).ass
     Exemple : "Amine la mere d Ihsane (VOSTFR).mp4"
     """
-    raw_stem = Path(media_input).stem
-    clean_base = sanitize_filename_stem(raw_stem, max_length=50)
+    if title_override:
+        clean_base = sanitize_filename_stem(title_override, max_length=50)
+    else:
+        raw_stem = Path(media_input).stem
+        clean_base = sanitize_filename_stem(raw_stem, max_length=50)
 
     # Suffixe de traduction explicite
     suffix_map = {

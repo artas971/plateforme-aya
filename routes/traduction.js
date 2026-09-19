@@ -189,11 +189,15 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         console.log(`  - Couleur sous-titre: ${subColor}`);
         console.log(`  - Position (MarginV): ${subPosition}`);
         console.log(`  - Thème fond (Audio): ${bgTheme}`);
-        console.log(`  - Bypass Cache      : ${forceReprocess ? 'OUI (Forcé)' : 'NON (Cache actif)'}`);
-        console.log(`  - Pack TikTok       : ${generateTiktokPack ? 'OUI (Couverture & Copywriting)' : 'NON'}`);
+        // Titre original ou extrait du média (Upload, Telegram ou paramètre explicite)
+        const rawTitle = (b.custom_title || b.title || originalName || path.basename(mediaPath, path.extname(mediaPath))).trim();
+        // Pont Base64 anti-mojibake Windows pour transmission CLI
+        const titleB64 = Buffer.from(rawTitle, 'utf-8').toString('base64');
+
+        console.log(`  - Titre (Pont B64)  : ${rawTitle} [${titleB64.slice(0, 16)}...]`);
         console.log('====================================================');
 
-        const pyProcess = spawn('py', [
+        const pyArgs = [
             scriptPath,
             mediaPath,
             targetLang,
@@ -203,8 +207,12 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             String(forceReprocess),
             String(generateTiktokPack),
             String(bgTheme),
-            String(expressMode)
-        ], {
+            String(expressMode),
+            '--title_b64',
+            titleB64
+        ];
+
+        const pyProcess = spawn('py', pyArgs, {
             cwd: ROOT_DIR,
             env: {
                 ...process.env,
