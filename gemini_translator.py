@@ -74,6 +74,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "- 'شهيد' (Shaheed) = Martyr.\n"
             "- 'قصف' (Qasf) = Bombardement, frappe.\n"
             "- 'مأوى / مركز إيواء' = Centre d'hébergement / École.\n"
+            "- 'المنادي' (Al-Munadi) = Ne traduis JAMAIS littéralement par 'Le crieur'. Traduis par 'La voix s'est élevée' ou 'Le chant résonne'.\n"
             "Contexte : L'audio parle de survie sous les bombardements. Refuse toute traduction absurde (matelas, charbon, jet) et privilégie un vocabulaire de guerre dramatique et réaliste.\n\n"
         )
     elif source_lang == 'fr':
@@ -96,6 +97,10 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "6. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
             "7. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
             "8. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse attentivement la scène : qui parle, ce qui se passe, le contexte émotionnel et le message principal pour guider la justesse du sous-titrage.\n"
+            "9. CONTEXTE CULTUREL, SLOGANS & POÉSIE (DIRECTIVE ÉDITORIALE NADINE) : "
+            "Si le texte contient des slogans de manifestation, de la poésie, ou des expressions idiomatiques (ex: 'Al-Munadi' / 'المنادي'), NE FAIS PAS de traduction littérale. "
+            "Adapte le texte pour qu'il sonne de manière naturelle, poignante et héroïque en français (ex: utilise 'La voix s'est élevée' ou 'Le chant résonne' plutôt que 'Le crieur a annoncé'). "
+            "Préserve toujours la dignité, la force et la charge émotionnelle des paroles.\n"
             f"{lexicon_directive}"
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes, float), 'end' (secondes, float), et 'text' (français).\n"
             "Exemple : [{\"start\": 0.0, \"end\": 3.2, \"text\": \"Mon frère Steve, honnêtement...\"}, {\"start\": 3.2, \"end\": 5.0, \"text\": \"la situation est très difficile.\"}]"

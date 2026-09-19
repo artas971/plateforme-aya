@@ -320,6 +320,10 @@ def sanitize_translation(text: str) -> str:
     cleaned = re.sub(r'\bRessuscit[ée]e?s?\b', 'Survécu', cleaned)
     cleaned = re.sub(r'\bressuscit[ée]e?s?\b', 'survécu', cleaned)
 
+    # 5. Remplacement des traductions littérales de slogans (ex: 'Le crieur a annoncé' -> 'La voix s'est élevée')
+    cleaned = re.sub(r'\b[Ll]e crieur a annonc[ée]\b', "La voix s'est élevée", cleaned)
+    cleaned = re.sub(r'\b[Ll]e crieur\b', "La voix", cleaned)
+
     # Nettoyage des espaces résiduels
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
     return cleaned
@@ -1055,7 +1059,7 @@ Une réalité brute partagée sans filtre pour que personne ne puisse détourner
 def generate_semantic_title(segments: list, target_lang: str = 'fr') -> str:
     """
     Génération ÉCLAIR du Titre Sémantique (Nadine - Étape Synchrone).
-    Prompt ultra-court, texte brut (pas de JSON), timeout rapide (10s), max 40 caractères.
+    Prompt cognitif anti-paresse, texte brut (pas de JSON), timeout rapide (10s), cible 15 à 35 caractères.
     """
     clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
     if not segments:
@@ -1072,23 +1076,28 @@ def generate_semantic_title(segments: list, target_lang: str = 'fr') -> str:
     if gemini_key:
         try:
             prompt = f"""Tu es Nadine, directrice éditoriale pour la Plateforme Aya.
-Rédige un titre ultra-court, percutant et humain ({lang_instruction}) résumant fidèlement la scène du témoignage suivant.
+Analyse attentivement le témoignage suivant pour en dégager l'essence.
+Rédige un titre ultra-court, percutant et humain ({lang_instruction}) pour la couverture de la vidéo.
 
-CONSIGNES STRICTES :
-- Longueur MAXIMUM : 40 CARACTÈRES.
+CONSIGNES STRICTES ANTI-PARESSE & COGNITIVES :
+- Longueur STRICTE : ENTRE 15 ET 35 CARACTÈRES. Évite absolument les phrases à rallonge.
+- INTERDICTION ABSOLUE de simplement copier ou résumer la première phrase (ex: invocations ou formules de politesse). Tu dois extraire le SUJET CENTRAL ou l'ACTION de la vidéo.
+- EXEMPLES DE LA DIRECTION :
+  * Mauvais titre : 'Loué soit Dieu' ou 'Au nom de Dieu'.
+  * Bon titre : 'Face à l'Interrogatoire' ou 'Pas un pouce de notre terre'.
 - Renvoie UNIQUEMENT le texte brut du titre. AUCUN guillemet, AUCUN JSON, AUCUN préambule, AUCUN point final.
-- Interdiction absolue d'inclure des timestamps ou des noms de fichiers.
+- Interdiction absolue d'inclure des timestamps ou des noms de fichiers techniques.
 
 TÉMOIGNAGE :
 \"\"\"
-{raw_testimony_text[:1800]}
+{raw_testimony_text[:2000]}
 \"\"\"
 TITRE :"""
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.5,
+                    "temperature": 0.4,
                     "maxOutputTokens": 60
                 }
             }
@@ -1099,23 +1108,27 @@ TITRE :"""
                 if raw_text:
                     cleaned = raw_text.strip().replace('\n', ' ').strip('"\':«» ')
                     cleaned = re.sub(r'^(?:titre\s*:\s*|\*\*|\*|#+)', '', cleaned, flags=re.IGNORECASE).strip('"\':«»* ')
+                    # Écarter les titres qui copient les formules pieuses d'ouverture
                     if cleaned and not is_raw_or_technical_filename(cleaned):
-                        semantic_title = cleaned
+                        if not re.search(r'^(?:lou[ée]\s+soit\s+dieu|au\s+nom\s+de\s+dieu|alhamdulillah|bismillah)\b', cleaned, re.IGNORECASE):
+                            semantic_title = cleaned
         except Exception as e:
             print(f"[IA NADINE TITRE WARNING] Erreur ou timeout (10s) : {e}", file=sys.stderr)
 
     # Fallback si absent ou invalide/technique
     if not semantic_title or is_raw_or_technical_filename(semantic_title):
-        first_words = [w for w in raw_testimony_text.split() if len(w) > 2][:5]
-        candidate = " ".join(first_words).capitalize() if first_words else ""
+        # Écarter rigoureusement les invocations et formules d'ouverture du fallback
+        cleaned_text = re.sub(r'^(?:lou[ée]\s+soit\s+(?:[àa]\s+)?dieu|au\s+nom\s+de\s+dieu|gloire\s+[àa]\s+dieu|alhamdulillah|bismillah|inshallah|inchallah)[,.:;\s]*', '', raw_testimony_text, flags=re.IGNORECASE)
+        filtered_words = [w for w in cleaned_text.split() if len(w) > 2 and w.lower() not in ('loué', 'soit', 'dieu', 'alhamdulillah', 'allah', 'bismillah', 'gloire', 'seigneur')][:5]
+        candidate = " ".join(filtered_words).capitalize() if filtered_words else ""
         if candidate and not is_raw_or_technical_filename(candidate) and len(candidate) > 3:
             semantic_title = candidate
         else:
             semantic_title = clean_fallback
 
-    # Tronquage propre à 40 caractères maximum
-    if len(semantic_title) > 40:
-        truncated = semantic_title[:38]
+    # Tronquage propre entre 15 et 35 caractères maximum
+    if len(semantic_title) > 35:
+        truncated = semantic_title[:33]
         if ' ' in truncated:
             semantic_title = truncated.rsplit(' ', 1)[0]
         else:
