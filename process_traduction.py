@@ -18,6 +18,7 @@ import unicodedata
 import urllib.request
 import argparse
 import base64
+import threading
 from pathlib import Path
 from dotenv import load_dotenv
 from PIL import Image, ImageDraw, ImageFont
@@ -1051,145 +1052,59 @@ Une réalité brute partagée sans filtre pour que personne ne puisse détourner
     return str(output_desc_path)
 
 
-def generate_semantic_title_and_context(segments: list, media_path: str = None, target_lang: str = 'fr') -> tuple:
+def generate_semantic_title(segments: list, target_lang: str = 'fr') -> str:
     """
-    Génère conjointement :
-    1. semantic_title : Un titre ultra-court, accrocheur et percutant (Max 40 caractères), résumant la vidéo.
-    2. context_summary : La description SEO TikTok détaillée (~3500 caractères).
-    Consigne stricte (Nadine - Ticket Séquençage du Titre Sémantique) :
-    "L'IA ne doit plus renvoyer uniquement la description longue, mais un objet JSON structuré contenant deux éléments :
-    semantic_title et context_summary."
+    Génération ÉCLAIR du Titre Sémantique (Nadine - Étape Synchrone).
+    Prompt ultra-court, texte brut (pas de JSON), timeout rapide (10s), max 40 caractères.
     """
     clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
     if not segments:
-        return clean_fallback, "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+        return clean_fallback
 
     raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip()
     if not raw_testimony_text:
-        return clean_fallback, "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+        return clean_fallback
 
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    lang_instruction = "en français soigné, percutant et humain" if target_lang.lower() != 'ar' else "en arabe soigné, percutant et humain"
+    lang_instruction = "en français" if target_lang.lower() != 'ar' else "en arabe"
 
     semantic_title = ""
-    context_summary = ""
-
     if gemini_key:
         try:
-            prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en narration et SEO TikTok pour la Plateforme Aya.
+            prompt = f"""Tu es Nadine, directrice éditoriale pour la Plateforme Aya.
+Rédige un titre ultra-court, percutant et humain ({lang_instruction}) résumant fidèlement la scène du témoignage suivant.
 
-MISSION STRICTE & OBLIGATOIRE :
-En te basant EXCLUSIVEMENT sur la transcription ci-jointe, analyse ce témoignage et renvoie un JSON STRICT composé exactement de deux clés : "semantic_title" et "context_summary".
+CONSIGNES STRICTES :
+- Longueur MAXIMUM : 40 CARACTÈRES.
+- Renvoie UNIQUEMENT le texte brut du titre. AUCUN guillemet, AUCUN JSON, AUCUN préambule, AUCUN point final.
+- Interdiction absolue d'inclure des timestamps ou des noms de fichiers.
 
-1. "semantic_title" : Un titre ultra-court, accrocheur et percutant ({lang_instruction}), résumant fidèlement la scène ou le message central du média.
-   - Longueur STRICTE : MAXIMUM 40 CARACTÈRES.
-   - Exemples de titres attendus :
-     * "L'Appel d'une Mère à Gaza"
-     * "Dignité Face aux Ruines"
-     * "Pénurie d'Eau à Rafah"
-     * "Le Courage d'Enseigner"
-   - RÈGLES FORMELLES :
-     * Interdiction absolue d'inclure des noms de fichiers techniques, des timestamps ou des chiffres bruts (pas de "tg_...", pas de chiffres bruts).
-     * Aucune formule générique superflue ("Vidéo de...", "Témoignage sur...", "Extrait...").
-     * Direct, captivant, humain et percutant.
-
-2. "context_summary" : Le texte de publication SEO TikTok ({lang_instruction}).
-   - CONSIGNES STRICTES ANTI-PARESSE :
-     * Le 'context_summary' DOIT être un texte très long (minimum 400 mots / ~3500 caractères).
-     * Tu dois OBLIGATOIREMENT structurer ta réponse en 5 longs paragraphes narratifs détaillés et aérés :
-       1. 🔥 LE HOOK VIRAL : Une accroche viscérale de 2 à 3 lignes qui capte l'attention et stoppe net le scroll.
-       2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE : Raconte la scène avec précision (qui parle, lieu, épreuves du quotidien, déroulement chronologique fidèle aux propos rapportés).
-       3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
-       4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
-       5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
-     * À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, pas un de plus. (ex: #Gaza #Témoignage #Solidarité #Actualité #PourToi).
-
-RÈGLE ABSOLUE DE SORTIE :
-Renvoie UNIQUEMENT l'objet JSON valide pur, sans aucun préambule, sans texte avant ou après, et sans balises Markdown (pas de ```json, pas de ```).
-{{
-  "semantic_title": "Titre percutant (max 40 car)",
-  "context_summary": "Texte très long de 5 longs paragraphes détaillés (min 400 mots) suivi exactement de 5 hashtags..."
-}}
-
-TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
+TÉMOIGNAGE :
 \"\"\"
-{raw_testimony_text[:5500]}
+{raw_testimony_text[:1800]}
 \"\"\"
-"""
+TITRE :"""
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.7,
-                    "maxOutputTokens": 3000,
-                    "responseMimeType": "application/json"
+                    "temperature": 0.5,
+                    "maxOutputTokens": 60
                 }
             }
             req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=40) as resp:
+            with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode('utf-8'))
                 raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-
-                if raw_text and len(raw_text.strip()) > 30:
-                    clean_raw = raw_text.strip()
-                    clean_raw = re.sub(r'^```(?:json)?\s*', '', clean_raw)
-                    clean_raw = re.sub(r'\s*```$', '', clean_raw)
-
-                    parsed = None
-                    try:
-                        parsed = json.loads(clean_raw)
-                    except Exception:
-                        json_match = re.search(r'(\{[\s\S]*\})', clean_raw)
-                        if json_match:
-                            try:
-                                parsed = json.loads(json_match.group(1))
-                            except Exception:
-                                pass
-
-                    if isinstance(parsed, dict):
-                        semantic_title = str(parsed.get("semantic_title", "")).strip()
-                        context_summary = str(parsed.get("context_summary", "")).strip()
-
-                    # Élimination stricte de toute fuite de syntaxe JSON dans context_summary
-                    if '"semantic_title":' in context_summary or context_summary.startswith('{'):
-                        try:
-                            sub_json = json.loads(context_summary)
-                            if isinstance(sub_json, dict):
-                                context_summary = str(sub_json.get("context_summary", context_summary)).strip()
-                                if not semantic_title:
-                                    semantic_title = str(sub_json.get("semantic_title", "")).strip()
-                        except Exception:
-                            context_summary = re.sub(r'^\s*\{\s*"semantic_title"\s*:\s*"[^"]*",\s*"context_summary"\s*:\s*"?', '', context_summary)
-                            context_summary = re.sub(r'"?\s*\}\s*$', '', context_summary)
-
-                    # Nettoyage des guillemets d'englobement et échappements résiduels
-                    context_summary = context_summary.strip('"\n\r\t ')
-                    if '\\n' in context_summary and '\n' not in context_summary:
-                        context_summary = context_summary.replace('\\n', '\n')
-                    if '\\"' in context_summary:
-                        context_summary = context_summary.replace('\\"', '"')
-
-                    semantic_title = semantic_title.strip('"\n\r\t ')
-                    if '\\"' in semantic_title:
-                        semantic_title = semantic_title.replace('\\"', '"')
-
-                    if not semantic_title:
-                        m_title = re.search(r'"semantic_title"\s*:\s*"([^"]+)"', raw_text)
-                        if m_title:
-                            semantic_title = m_title.group(1).strip()
-
-                    if not context_summary:
-                        m_desc = re.search(r'"context_summary"\s*:\s*"([\s\S]+?)"\s*\}?\s*$', raw_text)
-                        if m_desc:
-                            context_summary = m_desc.group(1).strip()
-
-                    if semantic_title and context_summary:
-                        print(f"[IA NADINE] ✅ Titre Sémantique ('{semantic_title}') & Smart Description ({len(context_summary)} car.) générés via JSON Mode !", flush=True)
-
+                if raw_text:
+                    cleaned = raw_text.strip().replace('\n', ' ').strip('"\':«» ')
+                    cleaned = re.sub(r'^(?:titre\s*:\s*|\*\*|\*|#+)', '', cleaned, flags=re.IGNORECASE).strip('"\':«»* ')
+                    if cleaned and not is_raw_or_technical_filename(cleaned):
+                        semantic_title = cleaned
         except Exception as e:
-            print(f"[IA NADINE WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
+            print(f"[IA NADINE TITRE WARNING] Erreur ou timeout (10s) : {e}", file=sys.stderr)
 
-    # Fallback si titre sémantique non extrait ou invalide/technique
+    # Fallback si absent ou invalide/technique
     if not semantic_title or is_raw_or_technical_filename(semantic_title):
         first_words = [w for w in raw_testimony_text.split() if len(w) > 2][:5]
         candidate = " ".join(first_words).capitalize() if first_words else ""
@@ -1206,9 +1121,69 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
         else:
             semantic_title = truncated
 
-    # Fallback pour la description si absente ou trop courte
+    return semantic_title.strip()
+
+
+def generate_tiktok_description(segments: list, semantic_title: str = "", target_lang: str = 'fr') -> str:
+    """
+    Génération Asynchrone de la Smart Description SEO TikTok (Nadine - En tâche de fond pendant FFmpeg).
+    Rédige un texte narratif détaillé (~3500 caractères, 5 paragraphes structurés) + 5 hashtags.
+    """
+    raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip() if segments else ""
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    lang_instruction = "en français soigné, percutant et humain" if target_lang.lower() != 'ar' else "en arabe soigné, percutant et humain"
+
+    context_summary = ""
+    if gemini_key and raw_testimony_text:
+        try:
+            title_context = f"Titre sémantique retenu pour la vidéo : \"{semantic_title}\"\n" if semantic_title else ""
+            prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en narration et SEO TikTok pour la Plateforme Aya.
+
+MISSION STRICTE & OBLIGATOIRE :
+Rédige la Smart Description SEO TikTok ({lang_instruction}) pour ce témoignage vidéo.
+{title_context}
+CONSIGNES STRICTES ANTI-PARESSE :
+- Le texte DOIT être très long et immersif (minimum 400 mots / ~3500 caractères).
+- Tu dois OBLIGATOIREMENT structurer ta réponse en 5 longs paragraphes narratifs détaillés et aérés :
+  1. 🔥 LE HOOK VIRAL : Une accroche viscérale de 2 à 3 lignes qui capte l'attention et stoppe net le scroll.
+  2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE : Raconte la scène avec précision (qui parle, lieu, épreuves du quotidien, déroulement chronologique fidèle aux propos rapportés).
+  3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
+  4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
+  5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
+- À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, pas un de plus. (ex: #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi).
+
+RÈGLE FORMELLE DE SORTIE :
+Renvoie UNIQUEMENT le texte de la publication rédigée. Pas de JSON, pas de balises markdown ```, pas de préambule.
+
+TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
+\"\"\"
+{raw_testimony_text[:5500]}
+\"\"\"
+"""
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 3000
+                }
+            }
+            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
+            with urllib.request.urlopen(req, timeout=35) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+                raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                if raw_text and len(raw_text.strip()) > 100:
+                    clean = raw_text.strip()
+                    clean = re.sub(r'^```(?:markdown)?\s*', '', clean)
+                    clean = re.sub(r'\s*```$', '', clean)
+                    context_summary = clean.strip()
+                    print(f"[IA NADINE ASYNC] ✅ Smart Description générée ({len(context_summary)} car.)", flush=True)
+        except Exception as e:
+            print(f"[IA NADINE ASYNC WARNING] Erreur appel description : {e}, utilisation du modèle heuristique.", file=sys.stderr)
+
+    # Fallback si absent ou trop court
     if not context_summary or len(context_summary) < 200:
-        quotes = [s.get("text", "").strip() for s in segments if len(s.get("text", "").strip()) > 15][:4]
+        quotes = [s.get("text", "").strip() for s in segments if len(s.get("text", "").strip()) > 15][:4] if segments else []
         quotes_formatted = "\n".join([f"« {q} »" for q in quotes]) if quotes else f"« {raw_testimony_text[:120]}... »"
 
         context_summary = f"""🔥 TÉMOIGNAGE EXCLUSIF DU TERRAIN : UNE RÉALITÉ BRUTE SANS FILTRE
@@ -1231,17 +1206,22 @@ Ne laissez pas cette voix disparaître dans les méandres de l'algorithme. Comme
 
 🏷️ #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"""
 
-    # Garantie anti-paresse : vérification finale des hashtags (strictement 5)
     if '#' not in context_summary:
         context_summary += "\n\n🏷️ #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"
 
-    return semantic_title.strip(), context_summary.strip()
+    return context_summary.strip()
+
+
+def generate_semantic_title_and_context(segments: list, media_path: str = None, target_lang: str = 'fr') -> tuple:
+    """Rétrocompatibilité : appelle successivement generate_semantic_title et generate_tiktok_description."""
+    title = generate_semantic_title(segments, target_lang=target_lang)
+    desc = generate_tiktok_description(segments, semantic_title=title, target_lang=target_lang)
+    return title, desc
 
 
 def generate_context_summary(segments: list, media_path: str = None, target_lang: str = 'fr') -> str:
     """Rétrocompatibilité : renvoie la description contextuelle."""
-    _, desc = generate_semantic_title_and_context(segments, media_path=media_path, target_lang=target_lang)
-    return desc
+    return generate_tiktok_description(segments, semantic_title="", target_lang=target_lang)
 
 
 def main():
@@ -1305,15 +1285,13 @@ def main():
         if custom_title:
             is_technical_title = bool(re.search(r'^(?:tg|media|audio|video|upload|file|recording)?[-_\s]*\d{7,}', custom_title, re.IGNORECASE))
 
-        # 4. SÉQUENÇAGE CRITIQUE (Nadine) : Génération Immédiate du Titre Sémantique et de la Smart Description
-        print("[PROGRESS] 65% - 🧠 Analyse sémantique IA : Génération du Titre Sémantique et de la Smart Description TikTok...", flush=True)
-        semantic_title, context_summary = generate_semantic_title_and_context(segments, media_path=media_input, target_lang=target_lang)
+        # 4. SÉQUENÇAGE CRITIQUE : Génération ÉCLAIR du Titre Sémantique (Nadine - Synchrone, timeout 10s)
+        print("[PROGRESS] 60% - ⚡ Nadine génère le Titre Sémantique Éclair (Max 40 car, synchrone)...", flush=True)
+        semantic_title = generate_semantic_title(segments, target_lang=target_lang)
 
         # PRIORITÉ ABSOLUE AU TITRE SÉMANTIQUE IA SUR LES ARGUMENTS CLI / NOMS DE FICHIERS BRUTS
         clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
 
-        # Le résultat de l'IA (semantic_title) prévaut impérativement sur l'argument CLI / nom de fichier brut.
-        # Si pour une raison quelconque l'IA n'a pas produit de titre valide ou si elle a produit un nom technique :
         if not semantic_title or is_raw_or_technical_filename(semantic_title):
             if custom_title and not is_raw_or_technical_filename(custom_title) and len(custom_title) > 3:
                 semantic_title = custom_title[:40]
@@ -1321,11 +1299,47 @@ def main():
                 semantic_title = clean_fallback
 
         print(f"[TITRE SÉMANTIQUE IA] ✨ '{semantic_title}' ({len(semantic_title)} car.) [Priorité Absolue IA]", flush=True)
-        print(f"[SMART DESCRIPTION SEO] 📝 {len(context_summary)} caractères générés par Nadine.", flush=True)
 
         # Assainissement pour nomenclature des fichiers (.mp4, .ass, .jpg, .txt, .md) basé STRICTEMENT sur le titre sémantique IA
         clean_title_stem = sanitize_filename_stem(semantic_title, max_length=50)
         print(f"[NOMENCLATURE] 🏷️ Stem assaini : '{clean_title_stem}'", flush=True)
+
+        # Production Immédiate de la Couverture 9:16 (Lionel) dès l'obtention du titre sémantique
+        cover_filename = None
+        cover_path = None
+        desc_filename = None
+        desc_path = None
+
+        if generate_tiktok_pack:
+            cover_filename = f"{clean_title_stem} (Couverture 9-16).jpg"
+            cover_path = OUTPUT_DIR / cover_filename
+            print("[PROGRESS] 65% - 🎨 Lionel produit immédiatement la Couverture 9:16 avec le Titre Sémantique...", flush=True)
+            try:
+                generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
+                print(f"[COUVERTURE PRÊTE] 🖼️ {cover_filename}", flush=True)
+            except Exception as cv_err:
+                print(f"[LIONEL COUVERTURE WARNING] Erreur : {cv_err}", file=sys.stderr)
+
+            desc_filename = f"{clean_title_stem} (Description TikTok).txt"
+            desc_path = OUTPUT_DIR / desc_filename
+
+        # Lancement Asynchrone de la Smart Description TikTok en tâche de fond (Thread parallèle pendant FFmpeg)
+        async_desc_result = {"text": ""}
+
+        def _async_desc_worker():
+            try:
+                print("[ASYNC THREAD] 📝 Nadine rédige la Smart Description TikTok en arrière-plan...", flush=True)
+                d_text = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang)
+                async_desc_result["text"] = d_text
+                if desc_path:
+                    with open(desc_path, 'w', encoding='utf-8') as df:
+                        df.write(d_text.strip() + '\n')
+                    print(f"[ASYNC THREAD SUCCÈS] 📝 Description écrite dans {desc_path.name}", flush=True)
+            except Exception as e_desc:
+                print(f"[ASYNC THREAD WARNING] Erreur description : {e_desc}", file=sys.stderr)
+
+        desc_thread = threading.Thread(target=_async_desc_worker, daemon=True)
+        desc_thread.start()
 
         # ⚡ COURT-CIRCUIT MODE EXPRESS (MODULE 2 : TEXTE MARKDOWN EN < 5S)
         if express_mode:
@@ -1372,6 +1386,8 @@ def main():
 
             print(f"[PROGRESS] 100% - Traduction Express prête en Markdown ({len(segments)} segments) !", flush=True)
 
+            context_summary = async_desc_result.get("text") or "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+
             response = {
                 "success": True,
                 "express_mode": True,
@@ -1396,8 +1412,8 @@ def main():
             print("---JSON_OUTPUT_END---", flush=True)
             return
 
-        # 5. Noms des fichiers de sortie normalisés basés sur le Titre Sémantique
-        print("[PROGRESS] 78% - Post-traitement temporel et application de la règle Zéro Gap...", flush=True)
+        # 5. Noms des fichiers de sortie normalisés (Max) basés sur le Titre Sémantique
+        print("[PROGRESS] 70% - Renommage et application de la règle Zéro Gap (Max)...", flush=True)
         mp4_filename, ass_filename = generate_clean_output_filenames(
             media_input, source_lang, target_lang, title_override=clean_title_stem
         )
@@ -1406,31 +1422,28 @@ def main():
         mp4_path = OUTPUT_DIR / mp4_filename
 
         # 6. Génération du fichier .ASS
-        print("[PROGRESS] 85% - Génération et stylisation des sous-titres .ASS...", flush=True)
+        print("[PROGRESS] 75% - Génération et stylisation des sous-titres .ASS...", flush=True)
         build_ass_file(segments, ass_path, is_video, width, height, duration, sub_color_hex, sub_margin_v)
 
-        # 7. Incrustation vidéo FFmpeg
-        print("[PROGRESS] 92% - Encodage et incrustation vidéo FFmpeg en cours...", flush=True)
+        # 7. Incrustation vidéo FFmpeg (S'exécute en parallèle de la rédaction de Nadine en arrière-plan)
+        print("[PROGRESS] 80% - Encodage et incrustation vidéo FFmpeg en cours (en parallèle du thread IA)...", flush=True)
         render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme, has_audio=has_audio)
 
-        # 8. Couverture 9:16 Lionel & Pack Assets (S'exécute APRÈS la réponse de Gemini avec semantic_title)
-        cover_filename = None
-        desc_filename = None
-        if generate_tiktok_pack:
-            print("[PROGRESS] 98% - 🎨 Lionel produit la Couverture 9:16 avec le titre sémantique...", flush=True)
-            cover_filename = f"{clean_title_stem} (Couverture 9-16).jpg"
-            desc_filename = f"{clean_title_stem} (Description TikTok).txt"
+        # 8. Synchronisation de la Smart Description Asynchrone
+        if desc_thread.is_alive():
+            print("[PROGRESS] 97% - Synchronisation de la Smart Description TikTok...", flush=True)
+            desc_thread.join(timeout=25)
 
-            cover_path = OUTPUT_DIR / cover_filename
-            desc_path = OUTPUT_DIR / desc_filename
+        context_summary = async_desc_result.get("text", "")
+        if not context_summary:
+            context_summary = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang)
 
-            # L'Agent Lionel incruste le vrai titre sémantique centré en police Impact
-            generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
+        if desc_path and not desc_path.exists():
             with open(desc_path, 'w', encoding='utf-8') as df:
                 df.write(context_summary.strip() + '\n')
             print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
 
-        print("[PROGRESS] 100% - Vidéo sous-titrée finalisée avec succès !", flush=True)
+        print("[PROGRESS] 100% - Vidéo sous-titrée et pack finalisés avec succès !", flush=True)
 
         # 9. Réponse finale JSON
         response = {
