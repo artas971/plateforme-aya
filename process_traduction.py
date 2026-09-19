@@ -1087,35 +1087,36 @@ def generate_semantic_title_and_context(segments: list, media_path: str = None, 
             prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en narration et SEO TikTok pour la Plateforme Aya.
 
 MISSION STRICTE & OBLIGATOIRE :
-En te basant EXCLUSIVEMENT sur la transcription ci-jointe, analyse ce témoignage et génère DEUX éléments au format JSON STRICT :
+En te basant EXCLUSIVEMENT sur la transcription ci-jointe, analyse ce témoignage et renvoie un JSON STRICT composé exactement de deux clés : "semantic_title" et "context_summary".
 
 1. "semantic_title" : Un titre ultra-court, accrocheur et percutant ({lang_instruction}), résumant fidèlement la scène ou le message central du média.
    - Longueur STRICTE : MAXIMUM 40 CARACTÈRES.
    - Exemples de titres attendus :
-     * "L'Appel d'une Mère à Gaza" (26 car.)
-     * "Dignité Face aux Ruines" (24 car.)
-     * "Pénurie d'Eau à Rafah" (21 car.)
-     * "Le Courage d'Enseigner" (22 car.)
+     * "L'Appel d'une Mère à Gaza"
+     * "Dignité Face aux Ruines"
+     * "Pénurie d'Eau à Rafah"
+     * "Le Courage d'Enseigner"
    - RÈGLES FORMELLES :
      * Interdiction absolue d'inclure des noms de fichiers techniques, des timestamps ou des chiffres bruts (pas de "tg_...", pas de chiffres bruts).
      * Aucune formule générique superflue ("Vidéo de...", "Témoignage sur...", "Extrait...").
      * Direct, captivant, humain et percutant.
 
-2. "context_summary" : Une description très détaillée et percutante conçue spécifiquement pour l'algorithme SEO de TikTok ({lang_instruction}).
-   - Longueur cible : Entre 3000 et 3500 caractères (utilise tout l'espace disponible).
-   - Structure obligatoire (format lisible avec retours à la ligne et émojis) :
-     🔥 LE HOOK VIRAL (2 à 3 lignes captivantes qui stoppent le scroll)
-     📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE (qui parle, lieu, environnement, épreuves du quotidien, faits chronologiques rapportés)
-     💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA (2 à 4 citations poignantes entre guillemets)
-     🧠 ANALYSE HUMAINE, PSYCHOLOGIQUE & PORTÉE UNIVERSELLE (2 à 3 paragraphes développés)
-     👉 APPEL À L'ACTION ENGAGÉ (sensibilisation, commentaire, partage pour briser le silence)
-     🏷️ BLOC MASSIF DE HASHTAGS SEO TIKTOK (25 à 35 hashtags stratégiques ciblés)
+2. "context_summary" : Le texte de publication SEO TikTok ({lang_instruction}).
+   - CONSIGNES STRICTES ANTI-PARESSE :
+     * Le 'context_summary' DOIT être un texte très long (minimum 400 mots / ~3500 caractères).
+     * Tu dois OBLIGATOIREMENT structurer ta réponse en 5 longs paragraphes narratifs détaillés et aérés :
+       1. 🔥 LE HOOK VIRAL : Une accroche viscérale de 2 à 3 lignes qui capte l'attention et stoppe net le scroll.
+       2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE : Raconte la scène avec précision (qui parle, lieu, épreuves du quotidien, déroulement chronologique fidèle aux propos rapportés).
+       3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
+       4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
+       5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
+     * À la toute fin du texte, tu DOIS obligatoirement inclure un bloc de 15 à 30 hashtags ultra-ciblés (ex: #Gaza #Palestine #Solidarité #Témoignage #Résilience #Justice #AyaStudio #TikTokNews #PourToi #FYP).
 
-FORMAT DE RÉPONSE OBLIGATOIRE :
-Réponds UNIQUEMENT avec un objet JSON strict valide, sans balises de code Markdown (pas de ```json, pas de ```), structuré ainsi :
+RÈGLE ABSOLUE DE SORTIE :
+Renvoie UNIQUEMENT l'objet JSON valide pur, sans aucun préambule, sans texte avant ou après, et sans balises Markdown (pas de ```json, pas de ```).
 {{
-  "semantic_title": "Titre percutant ici (max 40 car)",
-  "context_summary": "Description complète approchant 3500 car..."
+  "semantic_title": "Titre percutant (max 40 car)",
+  "context_summary": "Texte très long de 5 longs paragraphes détaillés (min 400 mots) suivi du bloc de 15 à 30 hashtags..."
 }}
 
 TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
@@ -1127,8 +1128,9 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.6,
-                    "maxOutputTokens": 3000
+                    "temperature": 0.7,
+                    "maxOutputTokens": 3000,
+                    "responseMimeType": "application/json"
                 }
             }
             req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
@@ -1136,30 +1138,48 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
                 data = json.loads(resp.read().decode('utf-8'))
                 raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
 
-                if raw_text and len(raw_text.strip()) > 50:
+                if raw_text and len(raw_text.strip()) > 30:
                     clean_raw = raw_text.strip()
-                    if clean_raw.startswith("```json"):
-                        clean_raw = clean_raw[7:]
-                    elif clean_raw.startswith("```"):
-                        clean_raw = clean_raw[3:]
-                    if clean_raw.endswith("```"):
-                        clean_raw = clean_raw[:-3]
-                    clean_raw = clean_raw.strip()
+                    clean_raw = re.sub(r'^```(?:json)?\s*', '', clean_raw)
+                    clean_raw = re.sub(r'\s*```$', '', clean_raw)
 
+                    parsed = None
                     try:
                         parsed = json.loads(clean_raw)
-                        if isinstance(parsed, dict):
-                            semantic_title = str(parsed.get("semantic_title", "")).strip()
-                            context_summary = str(parsed.get("context_summary", "")).strip()
                     except Exception:
                         json_match = re.search(r'(\{[\s\S]*\})', clean_raw)
                         if json_match:
                             try:
                                 parsed = json.loads(json_match.group(1))
-                                semantic_title = str(parsed.get("semantic_title", "")).strip()
-                                context_summary = str(parsed.get("context_summary", "")).strip()
                             except Exception:
                                 pass
+
+                    if isinstance(parsed, dict):
+                        semantic_title = str(parsed.get("semantic_title", "")).strip()
+                        context_summary = str(parsed.get("context_summary", "")).strip()
+
+                    # Élimination stricte de toute fuite de syntaxe JSON dans context_summary
+                    if '"semantic_title":' in context_summary or context_summary.startswith('{'):
+                        try:
+                            sub_json = json.loads(context_summary)
+                            if isinstance(sub_json, dict):
+                                context_summary = str(sub_json.get("context_summary", context_summary)).strip()
+                                if not semantic_title:
+                                    semantic_title = str(sub_json.get("semantic_title", "")).strip()
+                        except Exception:
+                            context_summary = re.sub(r'^\s*\{\s*"semantic_title"\s*:\s*"[^"]*",\s*"context_summary"\s*:\s*"?', '', context_summary)
+                            context_summary = re.sub(r'"?\s*\}\s*$', '', context_summary)
+
+                    # Nettoyage des guillemets d'englobement et échappements résiduels
+                    context_summary = context_summary.strip('"\n\r\t ')
+                    if '\\n' in context_summary and '\n' not in context_summary:
+                        context_summary = context_summary.replace('\\n', '\n')
+                    if '\\"' in context_summary:
+                        context_summary = context_summary.replace('\\"', '"')
+
+                    semantic_title = semantic_title.strip('"\n\r\t ')
+                    if '\\"' in semantic_title:
+                        semantic_title = semantic_title.replace('\\"', '"')
 
                     if not semantic_title:
                         m_title = re.search(r'"semantic_title"\s*:\s*"([^"]+)"', raw_text)
@@ -1170,11 +1190,9 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
                         m_desc = re.search(r'"context_summary"\s*:\s*"([\s\S]+?)"\s*\}?\s*$', raw_text)
                         if m_desc:
                             context_summary = m_desc.group(1).strip()
-                        elif len(raw_text) > 300:
-                            context_summary = raw_text
 
                     if semantic_title and context_summary:
-                        print(f"[IA NADINE] ✅ Titre Sémantique ('{semantic_title}') & Smart Description ({len(context_summary)} car.) générés !", flush=True)
+                        print(f"[IA NADINE] ✅ Titre Sémantique ('{semantic_title}') & Smart Description ({len(context_summary)} car.) générés via JSON Mode !", flush=True)
 
         except Exception as e:
             print(f"[IA NADINE WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
@@ -1195,7 +1213,7 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
         else:
             semantic_title = truncated
 
-    # Fallback pour la description si absente
+    # Fallback pour la description si absente ou trop courte
     if not context_summary or len(context_summary) < 200:
         quotes = [s.get("text", "").strip() for s in segments if len(s.get("text", "").strip()) > 15][:4]
         quotes_formatted = "\n".join([f"« {q} »" for q in quotes]) if quotes else f"« {raw_testimony_text[:120]}... »"
@@ -1219,6 +1237,10 @@ La transmission de ces messages à travers le monde est un devoir de mémoire et
 Ne laissez pas cette voix disparaître dans les méandres de l'algorithme. Commentez pour soutenir la démarche, partagez massivement autour de vous et enregistrez cette publication pour garantir sa visibilité à grande échelle. Ensemble, brisons le mur du silence.
 
 🏷️ #Gaza #Palestine #Témoignage #Vérité #Humanité #Résilience #UrgenceGaza #PalestineLibre #StopWar #GazaUnderAttack #TémoinsDuRéel #Actualité #Histoire #Solidarité #Justice #AyaPlatform #TikTokNews #PourToi #FYP #Viral #Explore #Documentation #DroitsHumains #Paix #VoixDeGaza #Résistance #Courage #ReportageTerrain"""
+
+    # Garantie anti-paresse : vérification finale des hashtags
+    if '#' not in context_summary:
+        context_summary += "\n\n#Gaza #Palestine #Témoignage #Vérité #Humanité #Résilience #UrgenceGaza #PalestineLibre #Solidarité #Justice #AyaStudio #TikTokNews #PourToi #FYP"
 
     return semantic_title.strip(), context_summary.strip()
 
