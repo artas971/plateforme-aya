@@ -20,7 +20,22 @@
             navTraductionText: 'Traduction & Sous-titres',
             navStudioText: 'Studio TikTok V3',
             navCommunauteText: 'Communauté',
+            navModerationText: 'Modération',
             navbarLiveText: 'Serveur Actif',
+
+            // Page Modération Back-Office (Phase 2.5)
+            moderationDocTitle: 'AYA Back-Office | Modération des Témoignages',
+            moderationHeaderTitle: 'File d\'Attente de Modération',
+            moderationHeaderSub: 'Validez les témoignages pour diffusion publique ou archivez les contenus non conformes.',
+            moderationPendingStat: 'En Attente',
+            moderationApprovedStat: 'Approuvés',
+            moderationRejectedStat: 'Rejetés',
+            moderationEmptyTitle: 'File de modération vide',
+            moderationEmptySub: 'Tous les témoignages ont été traités. Les nouveaux posts soumis apparaîtront automatiquement ici.',
+            btnApprovePost: '✅ Approuver & Publier',
+            btnRejectPost: '❌ Rejeter',
+            toastApproveSuccess: '✅ Témoignage approuvé ! Il est désormais visible sur le Mur Communautaire.',
+            toastRejectSuccess: '❌ Témoignage rejeté et archivé hors du mur public.',
 
             // Page Mur Communautaire (Phase 2 - Issue #10)
             communauteDocTitle: 'Aya - Mur Communautaire des Témoignages',
@@ -246,7 +261,22 @@
             navTraductionText: 'الترجمة والدبلجة',
             navStudioText: 'استوديو تيك توك V3',
             navCommunauteText: 'المجتمع',
+            navModerationText: 'الإشراف',
             navbarLiveText: 'الخادم نشط ومتصل',
+
+            // Page Modération Back-Office (Phase 2.5)
+            moderationDocTitle: 'منصة آية - لوحة الإشراف والمراجعة',
+            moderationHeaderTitle: 'قائمة انتظار التدقيق والمراجعة',
+            moderationHeaderSub: 'اعتمد الشهادات للنشر العام على الجدار أو احفظ المنشورات غير المطابقة.',
+            moderationPendingStat: 'قيد الانتظار',
+            moderationApprovedStat: 'تمت الموافقة',
+            moderationRejectedStat: 'مرفوضة',
+            moderationEmptyTitle: 'قائمة الانتظار فارغة',
+            moderationEmptySub: 'تمت مراجعة جميع الشهادات بنجاح. ستظهر المنشورات الجديدة هنا فور إرسالها.',
+            btnApprovePost: '✅ اعتماد ونشر',
+            btnRejectPost: '❌ رفض المنشور',
+            toastApproveSuccess: '✅ تم اعتماد الشهادة! وهي الآن معروضة على جدار المجتمع العام.',
+            toastRejectSuccess: '❌ تم رفض الشهادة وحفظها بعيداً عن الجدار العام.',
 
             // Page Mur Communautaire (Phase 2 - Issue #10)
             communauteDocTitle: 'منصة آية - جدار المجتمع والشهادات الحية',
@@ -499,6 +529,7 @@
         updateElementText('navTraductionText', dict.navTraductionText);
         updateElementText('navStudioText', dict.navStudioText);
         updateElementText('navCommunauteText', dict.navCommunauteText);
+        updateElementText('navModerationText', dict.navModerationText);
         updateElementText('navbarLiveText', dict.navbarLiveText);
 
         const userObj = getUserSession();
@@ -506,6 +537,18 @@
         if (userNameSpan) {
             const name = userObj ? (userObj.name || userObj.username) : dict.userAnonymous;
             userNameSpan.textContent = `${dict.userConnectedPrefix} ${name}`;
+        }
+
+        // Mise à jour des textes de la page /moderation
+        if (window.location.pathname.includes('moderation')) {
+            document.title = dict.moderationDocTitle;
+            updateElementText('moderationHeaderTitle', dict.moderationHeaderTitle);
+            updateElementText('moderationHeaderSub', dict.moderationHeaderSub);
+            updateElementText('labelStatPending', dict.moderationPendingStat);
+            updateElementText('labelStatApproved', dict.moderationApprovedStat);
+            updateElementText('labelStatRejected', dict.moderationRejectedStat);
+            updateElementText('emptyQueueTitle', dict.moderationEmptyTitle);
+            updateElementText('emptyQueueSub', dict.moderationEmptySub);
         }
 
         // Mise à jour des textes de la page /communaute
@@ -657,7 +700,8 @@
         const isTraduction = path.includes('traduction');
         const isStudio = path.includes('studio');
         const isCommunaute = path.includes('communaute');
-        const isHome = !isTraduction && !isStudio && !isCommunaute;
+        const isModeration = path.includes('moderation');
+        const isHome = !isTraduction && !isStudio && !isCommunaute && !isModeration;
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -698,6 +742,10 @@
                 <!-- Lien 4 : Mur Communautaire -->
                 <a href="/communaute" class="btn-nav-link ${isCommunaute ? 'active' : ''}" id="navCommunauteLink">
                     <span>🌍</span> <span id="navCommunauteText">${dict.navCommunauteText}</span>
+                </a>
+                <!-- Lien 5 : Modération (Discret) -->
+                <a href="/moderation" class="btn-nav-link ${isModeration ? 'active' : ''}" id="navModerationLink" title="${dict.navModerationText}" style="opacity: 0.88;">
+                    <span>🛡️</span> <span id="navModerationText">${dict.navModerationText}</span>
                 </a>
                 <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">${dict.navbarLiveText}</span></span>
             </div>
