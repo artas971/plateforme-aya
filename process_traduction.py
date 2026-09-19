@@ -377,13 +377,14 @@ def find_smart_cut_point(w_start: float, total_duration: float, silences: list, 
     return round(min(total_duration, w_start + default_chunk), 2)
 
 
-def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_dur: float, source_lang: str = 'auto', force_reprocess: bool = False) -> list:
+def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_dur: float, source_lang: str = 'auto', force_reprocess: bool = False, user_context: str = "") -> list:
     """
     Appelle l'IA pour transcrire/traduire une fenêtre délimitée sur les silences.
     Applique un CLAMPING STRICT (min/max) pour empêcher toute dérive temporelle ou débordement.
+    Transmet le user_context pour le Context Grounding de l'Agent Jade.
     """
     from gemini_translator import gemini_audio_transcribe_and_translate
-    raw_segments = gemini_audio_transcribe_and_translate(chunk_path, mode=mode, total_duration=window_dur, source_lang=source_lang, force_reprocess=force_reprocess)
+    raw_segments = gemini_audio_transcribe_and_translate(chunk_path, mode=mode, total_duration=window_dur, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
     
     if not raw_segments or len(raw_segments) == 0:
         return []
@@ -420,12 +421,13 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
 transcribe_window_30s = transcribe_window
 
 
-def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: float, silences: list, source_lang: str = 'auto', force_reprocess: bool = False) -> tuple:
+def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: float, silences: list, source_lang: str = 'auto', force_reprocess: bool = False, user_context: str = "") -> tuple:
     """
     Protocole Scan 5s Anti-Résumé & Smart Chunking sur Silences :
     Découpe dynamique sur les silences réels (20s à 35s),
     clamping strict anti-dérive et raccord Zéro Gap conditionné aux silences.
     Option Bypass Cache (force_reprocess) pour réanalyse complète et assainissement du cache.
+    Intègre le Context Grounding (user_context) pour l'Agent Jade.
     """
     mode = 'VOAR' if target_lang.lower() == 'ar' else 'VOSTFR'
     print(f"[PROGRESS] 40% - Analyse IA de l'audio ({total_duration:.1f}s) en mode {mode} (source: {source_lang})...", flush=True)
@@ -435,6 +437,10 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     raw_stem = re.sub(r"^\d+_", "", base_name)
     found_cache = False
     all_segments = []
+
+    # Si un contexte utilisateur est injecté spécifiquement, on force la réanalyse pour appliquer ce contexte
+    if user_context and user_context.strip():
+        force_reprocess = True
 
     if force_reprocess:
         print(f"[PROGRESS] 40% - 🔄 Bypass Cache activé : réanalyse complète forcée pour '{base_name}'...", flush=True)
@@ -481,7 +487,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         # Si le fichier est court (<= 35s), analyse directe
         if total_duration <= 35.0:
             from gemini_translator import gemini_audio_transcribe_and_translate
-            raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang, force_reprocess=force_reprocess)
+            raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
             if not raw_segs:
                 openai_key = os.environ.get("OPENAI_API_KEY")
                 if openai_key:
@@ -534,7 +540,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                 subprocess.run(cmd_cut, capture_output=True, check=True)
 
                 try:
-                    w_segs = transcribe_window(str(chunk_file.resolve()), mode, w_start, w_dur, source_lang=source_lang, force_reprocess=force_reprocess)
+                    w_segs = transcribe_window(str(chunk_file.resolve()), mode, w_start, w_dur, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
                     all_segments.extend(w_segs)
                 finally:
                     if chunk_file.exists():
@@ -1074,10 +1080,10 @@ Une réalité brute partagée sans filtre pour que personne ne puisse détourner
     return str(output_desc_path)
 
 
-def generate_semantic_title(segments: list, target_lang: str = 'fr') -> str:
+def generate_semantic_title(segments: list, target_lang: str = 'fr', user_context: str = "") -> str:
     """
     Génération ÉCLAIR du Titre Sémantique (Nadine - Étape Synchrone).
-    Prompt cognitif anti-paresse, texte brut (pas de JSON), timeout rapide (10s), cible 15 à 35 caractères.
+    Prompt cognitif anti-paresse avec Context Grounding, texte brut (pas de JSON), timeout rapide (10s), cible 15 à 35 caractères.
     """
     clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
     if not segments:
@@ -1090,13 +1096,17 @@ def generate_semantic_title(segments: list, target_lang: str = 'fr') -> str:
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     lang_instruction = "en français" if target_lang.lower() != 'ar' else "en arabe"
 
+    context_directive = ""
+    if user_context and user_context.strip():
+        context_directive = f"\nIntègre les informations factuelles suivantes pour enrichir ton analyse :\n[CONTEXTE UTILISATEUR : {user_context.strip()}]\n"
+
     semantic_title = ""
     if gemini_key:
         try:
             prompt = f"""Tu es Nadine, directrice éditoriale pour la Plateforme Aya.
 Analyse attentivement le témoignage suivant pour en dégager l'essence.
 Rédige un titre ultra-court, percutant et humain ({lang_instruction}) pour la couverture de la vidéo.
-
+{context_directive}
 CONSIGNES STRICTES ANTI-PARESSE & COGNITIVES :
 - Longueur STRICTE : ENTRE 15 ET 35 CARACTÈRES. Évite absolument les phrases à rallonge.
 - INTERDICTION ABSOLUE de simplement copier ou résumer la première phrase (ex: invocations ou formules de politesse). Tu dois extraire le SUJET CENTRAL ou l'ACTION de la vidéo.
@@ -1155,14 +1165,19 @@ TITRE :"""
     return semantic_title.strip()
 
 
-def generate_tiktok_description(segments: list, semantic_title: str = "", target_lang: str = 'fr') -> str:
+def generate_tiktok_description(segments: list, semantic_title: str = "", target_lang: str = 'fr', user_context: str = "") -> str:
     """
     Génération Asynchrone de la Smart Description SEO TikTok (Nadine - En tâche de fond pendant FFmpeg).
     Rédige un texte narratif détaillé (~3500 caractères, 5 paragraphes structurés) + 5 hashtags.
+    Intègre le Context Grounding (user_context).
     """
     raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip() if segments else ""
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     lang_instruction = "en français soigné, percutant et humain" if target_lang.lower() != 'ar' else "en arabe soigné, percutant et humain"
+
+    context_directive = ""
+    if user_context and user_context.strip():
+        context_directive = f"\nIntègre les informations factuelles suivantes pour enrichir ton analyse :\n[CONTEXTE UTILISATEUR : {user_context.strip()}]\n"
 
     context_summary = ""
     if gemini_key and raw_testimony_text:
@@ -1172,7 +1187,7 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
 
 MISSION STRICTE & OBLIGATOIRE :
 Rédige la Smart Description SEO TikTok ({lang_instruction}) pour ce témoignage vidéo.
-{title_context}
+{title_context}{context_directive}
 CONSIGNES STRICTES ANTI-PARESSE :
 - Le texte DOIT être très long et immersif (minimum 400 mots / ~3500 caractères).
 - Tu dois OBLIGATOIREMENT structurer ta réponse en 5 longs paragraphes narratifs détaillés et aérés :
@@ -1243,16 +1258,16 @@ Ne laissez pas cette voix disparaître dans les méandres de l'algorithme. Comme
     return context_summary.strip()
 
 
-def generate_semantic_title_and_context(segments: list, media_path: str = None, target_lang: str = 'fr') -> tuple:
+def generate_semantic_title_and_context(segments: list, media_path: str = None, target_lang: str = 'fr', user_context: str = "") -> tuple:
     """Rétrocompatibilité : appelle successivement generate_semantic_title et generate_tiktok_description."""
-    title = generate_semantic_title(segments, target_lang=target_lang)
-    desc = generate_tiktok_description(segments, semantic_title=title, target_lang=target_lang)
+    title = generate_semantic_title(segments, target_lang=target_lang, user_context=user_context)
+    desc = generate_tiktok_description(segments, semantic_title=title, target_lang=target_lang, user_context=user_context)
     return title, desc
 
 
-def generate_context_summary(segments: list, media_path: str = None, target_lang: str = 'fr') -> str:
+def generate_context_summary(segments: list, media_path: str = None, target_lang: str = 'fr', user_context: str = "") -> str:
     """Rétrocompatibilité : renvoie la description contextuelle."""
-    return generate_tiktok_description(segments, semantic_title="", target_lang=target_lang)
+    return generate_tiktok_description(segments, semantic_title="", target_lang=target_lang, user_context=user_context)
 
 
 def main():
@@ -1299,8 +1314,28 @@ def main():
         silences = detect_audio_silences(media_input, noise_threshold="-30dB", min_duration=0.30)
         print(f"[PROGRESS] 25% - Structure média validée ({duration:.1f}s, {'vidéo' if is_video else 'audio'}, {len(silences)} silences détectés).", flush=True)
 
+        # Extraction du contexte utilisateur optionnel (CLI --context ou --context_b64)
+        user_context = ""
+        if '--context_b64' in sys.argv:
+            try:
+                c_idx = sys.argv.index('--context_b64')
+                if c_idx + 1 < len(sys.argv):
+                    user_context = base64.b64decode(sys.argv[c_idx + 1]).decode('utf-8').strip()
+            except Exception:
+                pass
+        elif '--context' in sys.argv:
+            try:
+                c_idx = sys.argv.index('--context')
+                if c_idx + 1 < len(sys.argv):
+                    user_context = sys.argv[c_idx + 1].strip()
+            except Exception:
+                pass
+
+        if user_context:
+            print(f"[CONTEXT GROUNDING] 🧭 Contexte utilisateur injecté ({len(user_context)} car.) : {user_context[:80]}...", flush=True)
+
         # 2. Transcription & Traduction par Protocole Scan 5s
-        segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess)
+        segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
 
         # 3. Extraction du titre personnalisé éventuel (CLI / Base64)
         custom_title = None
@@ -1318,7 +1353,7 @@ def main():
 
         # 4. SÉQUENÇAGE CRITIQUE : Génération ÉCLAIR du Titre Sémantique (Nadine - Synchrone, timeout 10s)
         print("[PROGRESS] 60% - ⚡ Nadine génère le Titre Sémantique Éclair (Max 40 car, synchrone)...", flush=True)
-        semantic_title = generate_semantic_title(segments, target_lang=target_lang)
+        semantic_title = generate_semantic_title(segments, target_lang=target_lang, user_context=user_context)
 
         # PRIORITÉ ABSOLUE AU TITRE SÉMANTIQUE IA SUR LES ARGUMENTS CLI / NOMS DE FICHIERS BRUTS
         clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
@@ -1360,7 +1395,7 @@ def main():
         def _async_desc_worker():
             try:
                 print("[ASYNC THREAD] 📝 Nadine rédige la Smart Description TikTok en arrière-plan...", flush=True)
-                d_text = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang)
+                d_text = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang, user_context=user_context)
                 async_desc_result["text"] = d_text
                 if desc_path:
                     with open(desc_path, 'w', encoding='utf-8') as df:
@@ -1467,7 +1502,7 @@ def main():
 
         context_summary = async_desc_result.get("text", "")
         if not context_summary:
-            context_summary = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang)
+            context_summary = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang, user_context=user_context)
 
         if desc_path and not desc_path.exists():
             with open(desc_path, 'w', encoding='utf-8') as df:

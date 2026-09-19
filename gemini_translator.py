@@ -23,7 +23,7 @@ if os.path.exists(env_file):
 
 LAST_MODEL_USED = "gemini-2.5-flash"
 
-def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto', force_reprocess=False):
+def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto', force_reprocess=False, user_context=''):
     global LAST_MODEL_USED
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not gemini_key:
@@ -80,10 +80,19 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
     elif source_lang == 'fr':
         source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en français.\n"
 
+    # Directive Contexte Utilisateur (Context Grounding pour l'Agent Jade)
+    user_context_directive = ""
+    if user_context and user_context.strip():
+        user_context_directive = (
+            "DIRECTIVE CONTEXTE UTILISATEUR (CONTEXT GROUNDING) :\n"
+            f"Si un contexte est fourni, utilise-le pour déduire les noms propres, les lieux ou la situation : [CONTEXTE UTILISATEUR : {user_context.strip()}].\n\n"
+        )
+
     if mode == 'VOSTFR':
         prompt = (
             "Tu es un traducteur et sous-titreur expert d'élite (spécialisé dans l'arabe palestinien de Gaza et le français).\n"
             f"{source_context}"
+            f"{user_context_directive}"
             "Écoute attentivement l'intégralité du fichier audio ci-joint.\n"
             "Ta mission : Restituer fidèlement 100% du discours en français authentique, percutant et soigné pour des sous-titres vidéo TikTok/Reels. "
             "(Si le discours est en arabe palestinien, traduis-le fidèlement en français. Si le discours est déjà en français, retranscris-le fidèlement mot à mot en français).\n\n"
@@ -109,6 +118,7 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
         prompt = (
             "Tu es un traducteur et transcripteur expert d'élite, linguiste assermenté du dialecte arabe palestinien de Gaza (Ammiya de Gaza - العامية الغزاوية) et du français.\n"
             f"{source_context}"
+            f"{user_context_directive}"
             "Écoute attentivement l'enregistrement audio ci-joint.\n"
             "Ta mission : Restituer fidèlement 100% du discours en ARABE PALESTINIEN AUTHENTIQUE DE GAZA pour des sous-titres vidéo et transcriptions (VOAR).\n"
             "(Si le discours est en français ou autre langue, traduis-le fidèlement en arabe dialectal de Gaza. Si le discours est déjà en arabe palestinien, retranscris-le fidèlement mot à mot).\n\n"

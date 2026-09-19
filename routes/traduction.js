@@ -229,7 +229,13 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         // Pont Base64 anti-mojibake Windows pour transmission CLI
         const titleB64 = Buffer.from(rawTitle, 'utf-8').toString('base64');
 
+        // Contexte utilisateur optionnel (Context Grounding pour Jade & Nadine)
+        const userContext = (b.user_context || b.context || '').trim();
+
         console.log(`  - Titre (Pont B64)  : ${rawTitle} [${titleB64.slice(0, 16)}...]`);
+        if (userContext) {
+            console.log(`  - Contexte (Ground) : ${userContext.slice(0, 60)}...`);
+        }
         console.log('====================================================');
 
         const pyArgs = [
@@ -246,6 +252,11 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             '--title_b64',
             titleB64
         ];
+
+        if (userContext) {
+            pyArgs.push('--context_b64', Buffer.from(userContext, 'utf-8').toString('base64'));
+            pyArgs.push('--context', userContext);
+        }
 
         const pyProcess = spawn('py', pyArgs, {
             cwd: ROOT_DIR,

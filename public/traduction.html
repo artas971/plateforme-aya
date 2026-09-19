@@ -1645,6 +1645,15 @@
                 </label>
             </div>
 
+            <!-- 5ter. Contexte Optionnel Utilisateur (Context Grounding pour Jade & Nadine) -->
+            <div class="user-context-section" style="margin-bottom: 1.25rem;">
+                <label for="userContextInput" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.88rem; color: var(--text-color, #fff);">
+                    <span>🧠 Contexte & Indices pour les Agents IA <span style="font-weight: 400; font-size: 0.78rem; color: var(--text-muted, #888);">(Optionnel)</span></span>
+                    <span style="font-size: 0.75rem; color: #10b981;">Noms propres, lieux, situation</span>
+                </label>
+                <textarea id="userContextInput" name="user_context" rows="2" placeholder="Ex: Lieu : Deir al-Balah. Témoin : Abu Mohammed. Situation : Frappe sur des tentes de réfugiés..." style="width: 100%; border-radius: 8px; padding: 0.65rem 0.85rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-family: inherit; font-size: 0.88rem; resize: vertical; box-sizing: border-box; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-color, #10b981)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.15)';"></textarea>
+            </div>
+
             <!-- 6. Bouton d'action & Option Bypass Cache -->
             <button type="button" class="btn-submit" id="btnSubmit" disabled>
                 <span>⚡</span> Lancer le traitement & le sous-titrage
@@ -2066,6 +2075,11 @@
             const activeModeCard = document.querySelector('.mode-card.active');
             const expressMode = (activeModeCard && activeModeCard.dataset.mode === 'express') ? 'true' : 'false';
             formData.append('express_mode', expressMode);
+
+            const userContextVal = document.getElementById('userContextInput')?.value?.trim() || '';
+            if (userContextVal) {
+                formData.append('user_context', userContextVal);
+            }
 
             try {
                 const response = await fetch('/api/traduction/process', {
