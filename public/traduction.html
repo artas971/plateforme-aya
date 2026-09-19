@@ -1646,12 +1646,21 @@
             </div>
 
             <!-- 5ter. Contexte Optionnel Utilisateur (Context Grounding pour Jade & Nadine) -->
-            <div class="user-context-section" style="margin-bottom: 1.25rem;">
-                <label for="userContextInput" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.88rem; color: var(--text-color, #fff);">
-                    <span>🧠 Contexte & Indices pour les Agents IA <span style="font-weight: 400; font-size: 0.78rem; color: var(--text-muted, #888);">(Optionnel)</span></span>
-                    <span style="font-size: 0.75rem; color: #10b981;">Noms propres, lieux, situation</span>
-                </label>
-                <textarea id="userContextInput" name="user_context" rows="2" placeholder="Ex: Lieu : Deir al-Balah. Témoin : Abu Mohammed. Situation : Frappe sur des tentes de réfugiés..." style="width: 100%; border-radius: 8px; padding: 0.65rem 0.85rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-family: inherit; font-size: 0.88rem; resize: vertical; box-sizing: border-box; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-color, #10b981)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.15)';"></textarea>
+            <div class="user-context-section" id="userContextSection" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 1.1rem; margin-bottom: 0.5rem; transition: border-color 0.2s;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <label for="userContextInput" style="font-weight: 700; font-size: 0.95rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer;">
+                        <span style="font-size: 1.2rem;">🧠</span>
+                        <span id="userContextLabelTitle">Contexte & Indices pour l'IA</span>
+                        <span style="font-weight: 500; font-size: 0.78rem; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 12px;">Optionnel</span>
+                    </label>
+                    <span style="font-size: 0.78rem; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">
+                        🎯 Context Grounding
+                    </span>
+                </div>
+                <p style="font-size: 0.82rem; color: #64748b; margin: 0 0 0.65rem 0; line-height: 1.45;">
+                    Indiquez ici les noms propres de témoins/intervenants, les lieux (quartier, camp, hôpital) ou la situation pour guider <strong>Jade</strong> (Traduction) et <strong>Nadine</strong> (Titre & Description).
+                </p>
+                <textarea id="userContextInput" name="user_context" rows="2" placeholder="Ex : Lieu : Hôpital Nasser, Khan Younès. Témoin : Dr. Abu Ammar. Contexte : Évacuation d'urgence sous les tirs d'artillerie..." style="width: 100%; border-radius: 8px; padding: 0.75rem 0.9rem; background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a; font-family: inherit; font-size: 0.88rem; line-height: 1.45; resize: vertical; box-sizing: border-box; outline: none; transition: all 0.2s ease;" onfocus="this.style.borderColor='#00bcd4'; this.style.boxShadow='0 0 0 3px rgba(0,188,212,0.15)'; document.getElementById('userContextSection').style.borderColor='#00bcd4';" onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none'; document.getElementById('userContextSection').style.borderColor='#e2e8f0';"></textarea>
             </div>
 
             <!-- 6. Bouton d'action & Option Bypass Cache -->
