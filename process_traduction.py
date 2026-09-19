@@ -862,13 +862,13 @@ def _wrap_cover_text(text: str, max_chars_per_line: int = 18) -> list:
     return lines if lines else [text]
 
 
-def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num: int = 1, target_lang: str = 'fr') -> str:
+def generate_lionel_cover(title_text: str, output_cover_path: Path, target_lang: str = 'fr') -> str:
     """
     Génère la Couverture 9:16 officielle par l'Agent Lionel :
     - Format 1080x1920 (9:16 vertical)
-    - Design abstrait géométrique (Zéro humain)
+    - Design abstrait géométrique (Zéro branding promotionnel, zéro encart épisode)
     - Palette stricte : Noir (#070B12), Blanc (#FFFFFF), Vert (#007A3D), Rouge (#CE1126)
-    - Titre et n° d'épisode centrés en police Impact
+    - Titre Sémantique principal et séparateur tricolore parfaitement centrés au milieu du rectangle néon
     """
     width, height = 1080, 1920
     img = Image.new('RGB', (width, height), color=(7, 11, 18))
@@ -894,28 +894,7 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
     draw.line([(width - padding - c_len, height - padding), (width - padding, height - padding)], fill=(0, 122, 61), width=6)
     draw.line([(width - padding, height - padding - c_len), (width - padding, height - padding)], fill=(0, 122, 61), width=6)
 
-    # 3. Numéro d'épisode centré en police Impact (Design épuré sans branding promotionnel)
-    try:
-        font_ep_num = ImageFont.truetype(FONT_IMPACT, 120)
-        font_ep_label = ImageFont.truetype(FONT_IMPACT, 42)
-    except Exception:
-        font_ep_num = ImageFont.load_default()
-        font_ep_label = ImageFont.load_default()
-
-    ep_label_text = "ÉPISODE" if target_lang != 'ar' else "الحلقة"
-    ep_num_text = f"#{episode_num}"
-
-    box_w, box_h = 320, 150
-    box_x1 = (width - box_w) // 2
-    box_y1 = 580
-    box_x2 = box_x1 + box_w
-    box_y2 = box_y1 + box_h
-
-    draw.rectangle([(box_x1, box_y1), (box_x2, box_y2)], fill=(15, 23, 42), outline=(0, 122, 61), width=3)
-    draw.text((width // 2, box_y1 + 35), ep_label_text, font=font_ep_label, fill=(206, 17, 38), anchor='mm')
-    draw.text((width // 2, box_y1 + 95), ep_num_text, font=font_ep_num, fill=(255, 255, 255), anchor='mm')
-
-    # 4. Titre Centré en Police Impact (Haute Visibilité & Ombre Portée)
+    # 3. Titre Sémantique Centré en Police Impact (Haute Visibilité & Ombre Portée)
     clean_title = title_text.replace('\\N', ' ').replace('\n', ' ')
     clean_title = re.sub(r'\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$', '', clean_title, flags=re.IGNORECASE)
     clean_title = clean_title.upper().strip()
@@ -932,8 +911,11 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
         font_title = ImageFont.load_default()
 
     line_spacing = int(font_size * 1.25)
-    total_text_h = len(title_lines) * line_spacing
-    start_y = 1040 - (total_text_h // 2)
+    sep_offset = int(font_size * 0.75) + 30
+    total_block_span = ((len(title_lines) - 1) * line_spacing) + sep_offset
+
+    # Position de départ calculée pour centrer idéalement l'ensemble au milieu du cadre (y = 960)
+    start_y = (height // 2) - (total_block_span // 2)
 
     for i, line in enumerate(title_lines):
         y = start_y + (i * line_spacing)
@@ -944,8 +926,8 @@ def generate_lionel_cover(title_text: str, output_cover_path: Path, episode_num:
         # Texte pur blanc
         draw.text((width // 2, y), line, font=font_title, fill=(255, 255, 255), anchor='mm')
 
-    # 5. Séparateur bicolore (Rouge / Blanc / Vert)
-    sep_y = start_y + total_text_h + 40
+    # 4. Séparateur bicolore (Rouge / Blanc / Vert) centré sous le titre
+    sep_y = start_y + total_block_span
     draw.line([(width // 2 - 180, sep_y), (width // 2, sep_y)], fill=(206, 17, 38), width=5)
     draw.line([(width // 2, sep_y), (width // 2 + 180, sep_y)], fill=(0, 122, 61), width=5)
     draw.polygon([
@@ -1398,7 +1380,7 @@ def main():
             desc_path = OUTPUT_DIR / desc_filename
 
             # L'Agent Lionel incruste le vrai titre sémantique centré en police Impact
-            generate_lionel_cover(semantic_title, cover_path, episode_num=1, target_lang=target_lang)
+            generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
             with open(desc_path, 'w', encoding='utf-8') as df:
                 df.write(context_summary.strip() + '\n')
             print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
