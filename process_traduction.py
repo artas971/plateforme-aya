@@ -1422,7 +1422,7 @@ def main():
         code = "PROCESSING_ERROR"
         if "MEDIA_TOO_BIG" in raw_msg:
             code = "MEDIA_TOO_BIG"
-            err_msg = "Cette vidéo Telegram est trop lourde pour un import automatique. Enregistrez-la depuis Telegram et glissez-la directement ici (jusqu'à 500 Mo)."
+            err_msg = "Le fichier Telegram est trop lourd (>20Mo) ou protégé. Veuillez le télécharger manuellement et l'uploader via la zone de dépôt."
         elif any(k in raw_msg.lower() for k in ["429", "resource_exhausted", "resourceexhausted", "quota", "surchargés", "overloaded", "exhausted"]):
             code = "AI_QUOTA_EXCEEDED"
             err_msg = "Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes."
@@ -1442,6 +1442,30 @@ def main():
         print(json.dumps(err_res, ensure_ascii=False, indent=2), flush=True)
         print("---JSON_OUTPUT_END---", flush=True)
         sys.exit(1)
+
+    finally:
+        # Nettoyage du Cache / Garbage Collection (Max) : Purge systématique des artefacts temporaires
+        try:
+            temp_dir = BASE_DIR / "temp_chunks"
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+
+            # Purge des résidus audio .wav ou _temp.wav dans le répertoire de travail
+            target_dirs = [BASE_DIR / "audio_a_traiter"]
+            if 'media_input' in locals() and media_input:
+                target_dirs.append(Path(media_input).parent)
+
+            for d in target_dirs:
+                if d.exists() and d.is_dir():
+                    for f in d.glob("*.wav"):
+                        if f.name.endswith("_temp.wav") or f.name.startswith("temp_"):
+                            try:
+                                f.unlink()
+                                print(f"[GARBAGE COLLECTION] 🗑️ Résidu audio supprimé : {f.name}", flush=True)
+                            except Exception:
+                                pass
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

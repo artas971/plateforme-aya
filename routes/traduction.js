@@ -86,6 +86,44 @@ const upload = multer({
     }
 });
 
+/**
+ * Nettoyage du Cache / Garbage Collection (Max) :
+ * Supprime définitivement le fichier média source (brut uploadé ou téléchargé via Telegram)
+ * et les extractions audio temporaires (.wav) du dossier de travail.
+ * Garantit un environnement stérile et empêche tout recyclage d'ancien média.
+ */
+function cleanupTemporaryMedia(mediaPath) {
+    if (!mediaPath) return;
+
+    try {
+        if (fs.existsSync(mediaPath)) {
+            fs.unlinkSync(mediaPath);
+            console.log(`[GARBAGE COLLECTION] 🗑️ Média source supprimé définitivement : ${path.basename(mediaPath)}`);
+        }
+    } catch (unlinkErr) {
+        console.warn(`[GARBAGE COLLECTION WARNING] Impossible de supprimer le média source (${mediaPath}) :`, unlinkErr.message);
+    }
+
+    // Nettoyage des extractions audio temporaires (.wav) résiduelles dans le dossier de travail
+    try {
+        const mediaDir = path.dirname(mediaPath);
+        if (fs.existsSync(mediaDir)) {
+            const files = fs.readdirSync(mediaDir);
+            for (const file of files) {
+                const lower = file.toLowerCase();
+                if (lower.endsWith('.wav') || lower.endsWith('_temp.wav') || lower.startsWith('temp_')) {
+                    try {
+                        fs.unlinkSync(path.join(mediaDir, file));
+                        console.log(`[GARBAGE COLLECTION] 🗑️ Fichier audio temporaire purgé : ${file}`);
+                    } catch (e) {}
+                }
+            }
+        }
+    } catch (dirErr) {
+        console.warn(`[GARBAGE COLLECTION WARNING] Erreur inspection répertoire temporaire :`, dirErr.message);
+    }
+}
+
 // 1. GET /traduction : Afficher l'interface web de traduction
 router.get('/traduction', (req, res) => {
     const pagePath = path.join(ROOT_DIR, 'public', 'traduction.html');
@@ -159,20 +197,17 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                 fileSizeMb = (dlResult.size / (1024 * 1024)).toFixed(2);
                 res.write(`[PROGRESS] 40% - Fichier Telegram importé (${fileSizeMb} Mo via ${dlResult.method}). Lancement de l'analyse acoustique...\n`);
             } catch (dlErr) {
-                console.error("[Telegram Import Error]:", dlErr);
-                const isMediaTooBig = dlErr.code === 'MEDIA_TOO_BIG' || (dlErr.message && dlErr.message.includes('MEDIA_TOO_BIG'));
-                const errCode = isMediaTooBig ? "MEDIA_TOO_BIG" : "TELEGRAM_ERROR";
-                const errorMsg = isMediaTooBig 
-                    ? "Cette vidéo Telegram est trop lourde pour un import automatique. Enregistrez-la depuis Telegram et glissez-la directement ici (jusqu'à 500 Mo)."
-                    : "Impossible de récupérer ce média depuis Telegram. Vérifiez le lien ou téléchargez-le manuellement.";
+                console.error("[Telegram Import Error]:", dlErr.message);
+                const errorMsg = "Le fichier Telegram est trop lourd (>20Mo) ou protégé. Veuillez le télécharger manuellement et l'uploader via la zone de dépôt.";
 
-                res.write(`[PROGRESS] 100% - Erreur Telegram : ${errorMsg}\n`);
+                res.write(`[PROGRESS] 100% - Erreur Téléchargement : ${errorMsg}\n`);
                 res.write(`---JSON_OUTPUT_START---\n${JSON.stringify({ 
                     success: false, 
-                    code: errCode,
+                    code: "MEDIA_TOO_BIG",
                     message: errorMsg,
                     error: errorMsg
                 })}\n---JSON_OUTPUT_END---\n`);
+                cleanupTemporaryMedia(mediaPath);
                 return res.end();
             }
         }
@@ -245,6 +280,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
         pyProcess.on('error', (err) => {
             console.error('[TRADUCTION SPAWN ERROR]', err);
+            cleanupTemporaryMedia(mediaPath);
             res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify({
                 success: false,
                 code: "PROCESS_SPAWN_ERROR",
@@ -257,44 +293,49 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         pyProcess.on('close', async (code) => {
             console.log(`[TRADUCTION PROCESS] Script Python terminé avec le code : ${code}`);
 
-            // Téléversement conditionnel Google Drive vers 03_TERMINE si configuré
             try {
-                const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
-                if (jsonMatch) {
-                    const finalData = JSON.parse(jsonMatch[1].trim());
-                    if (finalData && finalData.success) {
-                        const { uploadDeliverablesToDrive } = require('../services/driveWorker');
-                        if (typeof uploadDeliverablesToDrive === 'function') {
-                            res.write(`[PROGRESS] 100% - Synchronisation avec Google Drive (03_TERMINE)...\n`);
-                            await uploadDeliverablesToDrive({
-                                mp4Filename: finalData.mp4_filename,
-                                assFilename: finalData.ass_filename,
-                                coverFilename: finalData.cover_filename,
-                                descFilename: finalData.desc_filename
-                            });
+                // Téléversement conditionnel Google Drive vers 03_TERMINE si configuré
+                try {
+                    const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
+                    if (jsonMatch) {
+                        const finalData = JSON.parse(jsonMatch[1].trim());
+                        if (finalData && finalData.success) {
+                            const { uploadDeliverablesToDrive } = require('../services/driveWorker');
+                            if (typeof uploadDeliverablesToDrive === 'function') {
+                                res.write(`[PROGRESS] 100% - Synchronisation avec Google Drive (03_TERMINE)...\n`);
+                                await uploadDeliverablesToDrive({
+                                    mp4Filename: finalData.mp4_filename,
+                                    assFilename: finalData.ass_filename,
+                                    coverFilename: finalData.cover_filename,
+                                    descFilename: finalData.desc_filename
+                                });
+                            }
                         }
                     }
+                } catch (syncErr) {
+                    console.warn('[DRIVE SYNC WARNING] Téléversement silencieux vers Drive ignoré :', syncErr.message);
                 }
-            } catch (syncErr) {
-                console.warn('[DRIVE SYNC WARNING] Téléversement silencieux vers Drive ignoré :', syncErr.message);
-            }
 
-            // Si pour une raison quelconque le bloc JSON final n'a pas été émis par Python
-            if (!stdoutData.includes('---JSON_OUTPUT_START---')) {
-                const fallbackRes = {
-                    success: code === 0,
-                    code: code === 0 ? null : "PROCESS_FAILED",
-                    message: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres.",
-                    error: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres."
-                };
-                res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(fallbackRes)}\n---JSON_OUTPUT_END---\n`);
+                // Si pour une raison quelconque le bloc JSON final n'a pas été émis par Python
+                if (!stdoutData.includes('---JSON_OUTPUT_START---')) {
+                    const fallbackRes = {
+                        success: code === 0,
+                        code: code === 0 ? null : "PROCESS_FAILED",
+                        message: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres.",
+                        error: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres."
+                    };
+                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(fallbackRes)}\n---JSON_OUTPUT_END---\n`);
+                }
+            } finally {
+                // Nettoyage systématique du média source et des extractions audio (Garbage Collection - Max)
+                cleanupTemporaryMedia(mediaPath);
+                res.end();
             }
-
-            res.end();
         });
 
     } catch (err) {
         console.error('[TRADUCTION ERROR]', err);
+        cleanupTemporaryMedia(mediaPath);
         const errPayload = {
             success: false,
             code: "SERVER_ERROR",

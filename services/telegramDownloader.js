@@ -43,6 +43,8 @@ function ensureYtDlpUpdated() {
 
 const MIN_MEDIA_SIZE_BYTES = 150 * 1024; // 150 Ko minimum pour un vrai média vidéo/audio
 
+const TELEGRAM_TOO_BIG_MSG = "Le fichier Telegram est trop lourd (>20Mo) ou protégé. Veuillez le télécharger manuellement et l'uploader via la zone de dépôt.";
+
 /**
  * Valide que le fichier téléchargé existe et fait au moins 150 Ko.
  * En deçà, le fichier est considéré comme un faux positif (ex: page HTML d'erreur Telegram),
@@ -50,7 +52,7 @@ const MIN_MEDIA_SIZE_BYTES = 150 * 1024; // 150 Ko minimum pour un vrai média v
  */
 function validateMediaFileSize(filePath) {
     if (!filePath || !fs.existsSync(filePath)) {
-        const err = new Error("MEDIA_TOO_BIG: Fichier média introuvable après téléchargement.");
+        const err = new Error(TELEGRAM_TOO_BIG_MSG);
         err.code = "MEDIA_TOO_BIG";
         throw err;
     }
@@ -62,7 +64,7 @@ function validateMediaFileSize(filePath) {
         } catch (unlinkErr) {
             console.warn("[Telegram Downloader] Erreur suppression fichier temporaire:", unlinkErr.message);
         }
-        const bigErr = new Error("MEDIA_TOO_BIG: Fichier invalide ou bloqué par Telegram.");
+        const bigErr = new Error(TELEGRAM_TOO_BIG_MSG);
         bigErr.code = "MEDIA_TOO_BIG";
         throw bigErr;
     }
@@ -108,7 +110,7 @@ function parseTelegramUrl(rawUrl) {
 }
 
 /**
- * Téléchargement via yt-dlp optimisé pour fichiers lourds
+ * Téléchargement via yt-dlp optimisé pour fichiers lourds avec interception stricte des erreurs
  */
 function downloadWithYtDlp(url, outputDir, onProgress) {
     return new Promise((resolve, reject) => {
@@ -133,13 +135,14 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
 
         if (onProgress) onProgress(15, "Connexion et extraction du flux Telegram via yt-dlp...");
 
+        const startTime = Date.now();
         const proc = spawn('py', args, { windowsHide: true });
         let downloadedFilePath = null;
         let lastError = '';
 
         proc.stdout.on('data', (data) => {
             const line = data.toString();
-            if (/media\s+is\s+too\s+big/i.test(line)) {
+            if (/media\s+is\s+too\s+big/i.test(line) || /too\s+large/i.test(line)) {
                 lastError += " Media is too big";
             }
             const destMatch = line.match(/\[download\] Destination:\s*(.+)/i) || 
@@ -161,14 +164,23 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
         });
 
         proc.on('close', (code) => {
+            // Détection explicite de fichier trop volumineux ou bloqué
+            if (/media\s+is\s+too\s+big/i.test(lastError) || /too\s+large/i.test(lastError) || /413/i.test(lastError)) {
+                const bigErr = new Error(TELEGRAM_TOO_BIG_MSG);
+                bigErr.code = "MEDIA_TOO_BIG";
+                return reject(bigErr);
+            }
+
             if (code === 0) {
                 let finalPath = null;
                 if (downloadedFilePath && fs.existsSync(downloadedFilePath)) {
                     finalPath = downloadedFilePath;
                 } else {
+                    // Sécurité absolue : recherche UNIQUEMENT des fichiers créés pendant cette exécution exacte (anti-recyclage)
                     const files = fs.readdirSync(outputDir)
                         .filter(f => f.startsWith('tg_'))
                         .map(f => ({ name: f, time: fs.statSync(path.join(outputDir, f)).mtimeMs }))
+                        .filter(f => f.time >= startTime - 1000)
                         .sort((a, b) => b.time - a.time);
 
                     if (files.length > 0) {
@@ -176,7 +188,7 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
                     }
                 }
 
-                if (finalPath) {
+                if (finalPath && fs.existsSync(finalPath)) {
                     try {
                         validateMediaFileSize(finalPath);
                         return resolve(finalPath);
@@ -186,16 +198,18 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
                 }
             }
 
-            if (/media\s+is\s+too\s+big/i.test(lastError)) {
-                const bigErr = new Error("MEDIA_TOO_BIG: Fichier invalide ou bloqué par Telegram.");
-                bigErr.code = "MEDIA_TOO_BIG";
-                return reject(bigErr);
-            }
-
-            reject(new Error(lastError || `yt-dlp exited with code ${code}`));
+            // Si yt-dlp échoue ou n'a produit aucun fichier valide : AUCUN recyclage d'ancien média
+            const isTooBig = /media\s+is\s+too\s+big/i.test(lastError) || (code !== 0 && !downloadedFilePath);
+            const failErr = new Error(TELEGRAM_TOO_BIG_MSG);
+            failErr.code = "MEDIA_TOO_BIG";
+            reject(failErr);
         });
 
-        proc.on('error', (err) => reject(err));
+        proc.on('error', (err) => {
+            const spawnErr = new Error(TELEGRAM_TOO_BIG_MSG);
+            spawnErr.code = "MEDIA_TOO_BIG";
+            reject(spawnErr);
+        });
     });
 }
 
@@ -221,7 +235,7 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
 
     // Détection explicite de l'erreur Telegram "Media is too big"
     if (/media\s+is\s+too\s+big/i.test(html)) {
-        const bigErr = new Error("MEDIA_TOO_BIG: Fichier invalide ou bloqué par Telegram.");
+        const bigErr = new Error(TELEGRAM_TOO_BIG_MSG);
         bigErr.code = "MEDIA_TOO_BIG";
         throw bigErr;
     }
@@ -232,7 +246,9 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
     const mediaSrc = videoMatch ? videoMatch[1] : (audioMatch ? audioMatch[1] : null);
 
     if (!mediaSrc) {
-        throw new Error("Aucun média vidéo ou audio détecté dans ce message Telegram public.");
+        const notFoundErr = new Error(TELEGRAM_TOO_BIG_MSG);
+        notFoundErr.code = "MEDIA_TOO_BIG";
+        throw notFoundErr;
     }
 
     // Téléchargement du fichier
@@ -245,7 +261,9 @@ async function downloadViaEmbedScraping(parsedInfo, outputDir, onProgress) {
     });
 
     if (!mediaRes.ok) {
-        throw new Error(`Erreur lors du téléchargement du média (${mediaRes.status})`);
+        const fetchErr = new Error(TELEGRAM_TOO_BIG_MSG);
+        fetchErr.code = "MEDIA_TOO_BIG";
+        throw fetchErr;
     }
 
     const ext = videoMatch ? '.mp4' : '.mp3';
@@ -308,11 +326,10 @@ async function downloadTelegramMedia(rawUrl, outputDir = null, onProgress = null
             method: 'embed-scraping'
         };
     } catch (scrapErr) {
-        if (scrapErr.code === 'MEDIA_TOO_BIG' || (scrapErr.message && scrapErr.message.includes('MEDIA_TOO_BIG'))) {
-            throw scrapErr;
-        }
         console.error(`[Telegram Downloader] Échec du scraper: ${scrapErr.message}`);
-        throw new Error(`Impossible de récupérer le média depuis Telegram : ${scrapErr.message}`);
+        const finalErr = new Error(TELEGRAM_TOO_BIG_MSG);
+        finalErr.code = "MEDIA_TOO_BIG";
+        throw finalErr;
     }
 }
 
