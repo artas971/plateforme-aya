@@ -46,25 +46,50 @@ function resolveCredentialsPath() {
 
 /**
  * Initialise et renvoie le client Google Drive API v3 authentifié.
+ * Priorité d'authentification :
+ * 1. OAuth2 (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN) : Compte personnel admin (Pas de restriction de quota)
+ * 2. Compte de Service (credentials.json) : Mode autonome / Disque partagé Workspace
  */
 function getDriveClient() {
     if (driveClientInstance) return driveClientInstance;
 
-    const credPath = resolveCredentialsPath();
-    if (!credPath) {
-        throw new Error(
-            'Clé de compte de service Google Drive introuvable. ' +
-            'Veuillez déposer le fichier credentials.json à la racine du projet.'
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+    if (clientId && clientSecret && refreshToken) {
+        const oauth2Client = new google.auth.OAuth2(
+            clientId,
+            clientSecret,
+            process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8085/oauth2callback'
         );
+
+        oauth2Client.setCredentials({
+            refresh_token: refreshToken
+        });
+
+        console.log('[DRIVE SERVICE] 🔑 Authentification Google Drive via OAuth2 active (Compte Administrateur)');
+        driveClientInstance = google.drive({ version: 'v3', auth: oauth2Client });
+        return driveClientInstance;
     }
 
-    const auth = new google.auth.GoogleAuth({
-        keyFile: credPath,
-        scopes: ['https://www.googleapis.com/auth/drive']
-    });
+    const credPath = resolveCredentialsPath();
+    if (credPath) {
+        console.log('[DRIVE SERVICE] 🤖 Authentification Google Drive via Compte de Service');
+        const auth = new google.auth.GoogleAuth({
+            keyFile: credPath,
+            scopes: ['https://www.googleapis.com/auth/drive']
+        });
 
-    driveClientInstance = google.drive({ version: 'v3', auth });
-    return driveClientInstance;
+        driveClientInstance = google.drive({ version: 'v3', auth });
+        return driveClientInstance;
+    }
+
+    throw new Error(
+        'Authentification Google Drive non configurée. ' +
+        'Veuillez renseigner GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET et GOOGLE_REFRESH_TOKEN dans votre .env ' +
+        'ou déposer credentials.json à la racine du projet.'
+    );
 }
 
 /**
@@ -190,9 +215,10 @@ async function backupDeliverablesForClient({ clientName, dateStr, files = {} }) 
         return { success: false, reason: 'MISSING_ROOT_FOLDER_ID', webViewLink: null, t_exec_ms: tDriveMs, t_exec_s: (tDriveMs / 1000).toFixed(2) };
     }
 
+    const hasOAuth = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REFRESH_TOKEN);
     const credPath = resolveCredentialsPath();
-    if (!credPath) {
-        console.warn('[DRIVE MASTER] ℹ️ Fichier credentials.json introuvable. Sauvegarde ignorée.');
+    if (!hasOAuth && !credPath) {
+        console.warn('[DRIVE MASTER] ℹ️ Authentification Drive non configurée (OAuth2 ou credentials.json). Sauvegarde ignorée.');
         const tDriveMs = Math.round(performance.now() - tDriveStart);
         return { success: false, reason: 'MISSING_CREDENTIALS', webViewLink: null, t_exec_ms: tDriveMs, t_exec_s: (tDriveMs / 1000).toFixed(2) };
     }

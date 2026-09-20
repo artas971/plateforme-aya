@@ -74,10 +74,26 @@ function saveLedger(ledger) {
 }
 
 /**
- * Initialise le client Google Drive API via Service Account.
+ * Initialise le client Google Drive API (OAuth2 admin ou Service Account).
  */
 function getDriveClient() {
     if (driveClient) return driveClient;
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+
+    if (clientId && clientSecret && refreshToken) {
+        const oauth2Client = new google.auth.OAuth2(
+            clientId,
+            clientSecret,
+            process.env.GOOGLE_REDIRECT_URI || 'http://localhost:8085/oauth2callback'
+        );
+        oauth2Client.setCredentials({ refresh_token: refreshToken });
+        console.log('[DRIVE WORKER] 🔑 Client Google Drive initialisé via OAuth2 (Compte Personnel)');
+        driveClient = google.drive({ version: 'v3', auth: oauth2Client });
+        return driveClient;
+    }
 
     const credentialsFile = fs.existsSync(path.join(ROOT_DIR, 'credentials.json'))
         ? path.join(ROOT_DIR, 'credentials.json')
@@ -86,7 +102,7 @@ function getDriveClient() {
             : path.join(ROOT_DIR, 'google_service_account.json'));
 
     if (!fs.existsSync(credentialsFile)) {
-        throw new Error(`Fichier Service Account introuvable : "${credentialsFile}". Veuillez déposer votre clé JSON Google Cloud (credentials.json).`);
+        throw new Error(`Aucune configuration Drive trouvée (ni OAuth2 dans .env, ni "${credentialsFile}").`);
     }
 
     const auth = new google.auth.GoogleAuth({
