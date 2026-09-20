@@ -238,71 +238,33 @@ Pour atteindre un niveau de discernement inégalé sur les enregistrements de Ga
 
 ---
 
-## 📌 TICKET 3 : Migration TikTok API — Passage de Sandbox à Production (Phase 3B-PROD)
+## 📌 TICKET 3 : Migration VPS & Bascule Production TikTok (Phase 3B-PROD)
 
 ### 3.1 Fiche d'Identité du Ticket
 * **Référence** : `TICKET-PHASE-3B-PROD`
 * **Priorité** : Haute (Mise en Ligne & Déploiement Serveur VPS)
-* **Statut** : Planifié (Prêt pour Déploiement Production)
-* **Lead Technique** : ⚡ Max (Backend Node.js & Configuration Environnement) & 🛡️ Victor (Sécurité & Base de Données MongoDB)
+* **Statut** : 🧊 **En attente** (Bloqué jusqu'à la résolution de toutes les issues locales)
+* **Assignés** : ⚡ Max (Lead Backend & Configuration Environnement) & 🛡️ Victor (Sécurité & Base de Données)
 * **Parties prenantes** : 🎨 Lionel (Validation Frontend & Expérience Utilisateur), 🏛️ Tech Lead (Gestion Console TikTok Developers)
 
 ### 3.2 Objectif & Contexte
-Le module d'intégration TikTok fonctionne parfaitement en environnement de développement local (via le tunnel dynamique Ngrok et le mode Sandbox). Ce ticket consigne les actions, procédures et vérifications nécessaires pour basculer l'application "Aya Studio" en mode **Production** sur un serveur Cloud VPS avec un nom de domaine officiel certifié SSL (ex : `https://plateforme-aya.org`).
+Le pipeline local a passé tous les tests de résilience avec succès. Ce ticket devra être activé uniquement lorsque l'application sera prête à être mise en ligne sur un serveur dédié avec un nom de domaine officiel (ex : `https://plateforme-aya.org`).
 
-### 3.3 Tâches d'Exécution Détaillées
+### 3.3 Checklist d'Exécution Officielle
+- [ ] **1. Préparation VPS** : Cloner la branche `main` de production sur le serveur VPS.
+- [ ] **2. Achat & Link du Domaine** : Lier le serveur VPS au nom de domaine officiel avec certificat SSL (Let's Encrypt / Certbot).
+- [ ] **3. Configuration de l'Environnement (`.env` PROD)** :
+  * Remplacer toutes les références à Ngrok par le nom de domaine officiel du serveur.
+  * Mettre à jour `TIKTOK_CALLBACK_URL` avec la route de production (`https://[mon-domaine.com]/api/tiktok/auth/callback`).
+  * Configurer `NODE_ENV=production`, `PYTHON_ENV=production`, `AYA_EXEC_PROFILE=cloud_vps_safe`.
+- [ ] **4. Sécurité Cryptographique (Agent Victor)** :
+  * Générer de nouvelles clés de chiffrement AES-256-GCM spécifiques à la base de données de production pour isoler totalement les tokens des utilisateurs finaux (`TIKTOK_TOKEN_ENCRYPTION_KEY`).
+- [ ] **5. Bascule TikTok Developer (Portail Administrateur)** :
+  * Basculer l'application du mode "Sandbox" à "Production" sur le portail développeur TikTok.
+  * Mettre à jour les Redirect URIs avec l'adresse du domaine (`https://[mon-domaine.com]/api/tiktok/auth/callback`).
+  * Configurer les URLs des CGU et Politique de Confidentialité (`/terms`, `/privacy`).
+- [ ] **6. Démarrage & Recette** :
+  * Démarrer les services de production (via PM2 ou Docker).
+  * Confirmer que l'interface de connexion TikTok s'ouvre correctement depuis le nom de domaine public et que le flux OAuth2 se finalise avec succès.
 
-#### A. Portail TikTok for Developers (Action Administrateur & Agents)
-1. **Bascule d'Environnement dans la Console TikTok** :
-   * Accéder à l'application *Aya Studio* sur le portail [TikTok for Developers](https://developers.tiktok.com/).
-   * Passer de l'onglet **Sandbox** vers l'onglet **Production**.
-2. **Soumission & Validation de l'Application (App Review)** :
-   * Fournir les éléments d'identité de marque validés :
-     - Icône officielle 1024x1024 px ([`tiktok_app_icon_1024x1024.jpg`](file:///c:/Users/artas/Desktop/aya/tiktok_app_icon_1024x1024.jpg) / `.png`).
-     - Nom d'application : *Aya Studio*.
-     - Catégorie : Outil de création de contenu & sous-titrage documentaire.
-   * Fournir la vidéo de démonstration du flux (connexion OAuth2 ➔ édition de la légende et couverture ➔ publication sur le profil).
-   * Justifier les scopes demandés : `user.info.basic` (identification), `video.upload` (téléversement par chunks), `video.publish` (publication directe et programmée).
-3. **Mise à jour des URLs de Redirection (Redirect URI Whitelisting)** :
-   * Remplacer l'URL temporaire Ngrok par l'URL officielle de production :
-     `https://plateforme-aya.org/api/tiktok/auth/callback`
-   * Définir l'URL des conditions d'utilisation (Terms of Service) et de la politique de confidentialité (Privacy Policy) :
-     - `https://plateforme-aya.org/terms`
-     - `https://plateforme-aya.org/privacy`
-
-#### B. Configuration des Variables d'Environnement (`.env` Production sur VPS)
-1. **Bascule de l'URL de Callback** :
-   * Sur le serveur VPS, configurer obligatoirement :
-     ```env
-     TIKTOK_CALLBACK_URL=https://plateforme-aya.org/api/tiktok/auth/callback
-     ```
-2. **Maintien et Sécurisation de la Clé de Chiffrement AES-256** :
-   * Conserver la même clé maîtresse `TIKTOK_TOKEN_ENCRYPTION_KEY` sur le serveur VPS afin de garantir la capacité à déchiffrer les jetons déjà enregistrés dans la collection MongoDB `tiktok_accounts` :
-     ```env
-     TIKTOK_TOKEN_ENCRYPTION_KEY=f1d69d6fc40cd06fe716bbcbcdcc82345bc1d542c0a3ce949ecce27c86a18d30
-     ```
-3. **Paramètres Globaux de Production** :
-   ```env
-   NODE_ENV=production
-   PYTHON_ENV=production
-   AYA_EXEC_PROFILE=cloud_vps_safe
-   ```
-
-#### C. Tests de Non-Régression en Production
-1. **Validation OAuth2 en Conditions Réelles** :
-   * Réaliser une connexion avec un compte TikTok réel depuis le nom de domaine de production.
-   * Vérifier que la popup d'autorisation redirige vers `https://plateforme-aya.org/api/tiktok/auth/callback` sans avertissement de sécurité.
-2. **Contrôle d'Intégrité Base de Données (Agent Victor)** :
-   * Vérifier dans MongoDB la présence du document chiffré (`accessTokenEncrypted`, `iv`, `authTag`) pour l'utilisateur.
-   * Tester le déchiffrement à la volée via `getValidTikTokToken(userId)`.
-3. **Test de Publication End-to-End** :
-   * Exécuter un test de publication réelle en mode "Publier Maintenant" (Direct Post) : valider que la vidéo apparaît sur le profil TikTok.
-   * Exécuter un test en mode "Programmer" (Schedule à +1 heure) : vérifier la prise en compte de l'horodatage UTC.
-
-### 3.4 Critères de Succès & Definition of Done (DoD)
-- [ ] **Zéro référence résiduelle** à Ngrok ou localhost dans le code source ou la configuration du serveur VPS de production.
-- [ ] L'application *Aya Studio* est validée ou active en mode Production sur le portail TikTok for Developers.
-- [ ] L'authentification OAuth2 fonctionne sans rupture sur le domaine officiel `https://plateforme-aya.org`.
-- [ ] Le chiffrement / déchiffrement AES-256-GCM fonctionne avec la base MongoDB de production.
-- [ ] La publication directe et la programmation temporelle sont validées sur un compte TikTok réel.
 
