@@ -2620,9 +2620,6 @@
                                 <a href="${finalData.markdown_url}" download target="_blank" rel="noopener noreferrer" class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.4rem; font-size: 0.92rem; background: var(--color-turquoise); display: flex; align-items: center; gap: 0.5rem;">
                                     <span>⬇️</span> <span>${dict.btnDownloadMarkdown || 'Télécharger le Markdown (.md)'}</span>
                                 </a>
-                                <button type="button" id="btnSaveToDrive" class="btn-submit" style="padding: 0.7rem 1.4rem; font-size: 0.92rem; background: linear-gradient(135deg, #1a73e8, #4285f4); color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; border: none;">
-                                    <span id="btnDriveIcon">☁️</span> <span id="btnDriveText">${finalData.drive_backup_link ? 'Ouvrir sur Google Drive' : (dict.btnDriveBackup || 'Sauvegarder sur Google Drive')}</span>
-                                </button>
                             </div>
                         </div>
 
@@ -2692,9 +2689,6 @@ ${safeText}
                             console.error('Erreur lors de la copie :', e);
                         }
                     });
-                }
-
-                wireSaveToDrive(finalData);
                 const councilBox = document.getElementById('agentsCouncilContainer');
                 if (councilBox) councilBox.innerHTML = '';
                 return;
@@ -2773,10 +2767,6 @@ ${safeText}
                                 <span>Smart Description SEO</span>
                             </a>
                         ` : ''}
-                        <button type="button" id="btnSaveToDrive" class="aya-btn-download" style="background: linear-gradient(135deg, #1a73e8, #4285f4); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.35);">
-                            <span id="btnDriveIcon">☁️</span>
-                            <span id="btnDriveText">${finalData.drive_backup_link ? 'Ouvrir sur Google Drive' : (dict.btnDriveBackup || 'Sauvegarder sur Google Drive')}</span>
-                        </button>
                         <button type="button" id="btnOpenTikTokPublish" class="aya-btn-download" style="background: linear-gradient(135deg, #FE2C55, #111827); color: white; border: 1px solid rgba(254, 44, 85, 0.4); font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(254, 44, 85, 0.35);">
                             <span>📱</span>
                             <span>Prévisualiser & Publier TikTok</span>
@@ -2790,9 +2780,6 @@ ${safeText}
             `;
 
             videoPreviewContainer.innerHTML = previewHtml;
-
-            // Liaison Google Drive interactive
-            wireSaveToDrive(finalData);
 
             // Modale de publication TikTok
             const btnTikTokPublish = document.getElementById('btnOpenTikTokPublish');
@@ -2866,62 +2853,6 @@ ${safeText}
             }
 
             loadAndRenderAgentCouncil(finalData);
-        }
-
-        // =========================================================================
-        // CONNEXION INTERACTIVE GOOGLE DRIVE (Ticket 6)
-        // =========================================================================
-        function wireSaveToDrive(finalData) {
-            const btnDrive = document.getElementById('btnSaveToDrive');
-            if (!btnDrive) return;
-
-            if (finalData.drive_backup_link) {
-                btnDrive.addEventListener('click', () => {
-                    window.open(finalData.drive_backup_link, '_blank', 'noopener,noreferrer');
-                });
-                return;
-            }
-
-            btnDrive.addEventListener('click', async () => {
-                const iconEl = document.getElementById('btnDriveIcon');
-                const textEl = document.getElementById('btnDriveText');
-                btnDrive.disabled = true;
-                btnDrive.style.opacity = '0.8';
-                if (iconEl) iconEl.textContent = '⏳';
-                if (textEl) textEl.textContent = 'Sauvegarde sur Drive en cours...';
-
-                try {
-                    const resp = await fetch('/api/traduction/save-to-drive', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(finalData)
-                    });
-                    const data = await resp.json();
-                    if (data && data.success && data.drive_link) {
-                        finalData.drive_backup_link = data.drive_link;
-                        try {
-                            sessionStorage.setItem('aya_last_translation_result', JSON.stringify(finalData));
-                        } catch(e) {}
-                        btnDrive.disabled = false;
-                        btnDrive.style.opacity = '1';
-                        btnDrive.style.background = '#10b981';
-                        if (iconEl) iconEl.textContent = '✅';
-                        if (textEl) textEl.textContent = `Sauvegardé sur Drive (${data.uploaded_count || 0} fichiers)`;
-                        setTimeout(() => {
-                            window.open(data.drive_link, '_blank', 'noopener,noreferrer');
-                        }, 600);
-                    } else {
-                        throw new Error(data?.error || "Erreur de sauvegarde sur Google Drive");
-                    }
-                } catch(err) {
-                    btnDrive.disabled = false;
-                    btnDrive.style.opacity = '1';
-                    btnDrive.style.background = '#dc2626';
-                    if (iconEl) iconEl.textContent = '⚠️';
-                    if (textEl) textEl.textContent = 'Échec (Cliquer pour réessayer)';
-                    console.error('[DRIVE SAVE ERROR]', err);
-                }
-            });
         }
 
         // =========================================================================

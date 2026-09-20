@@ -480,33 +480,38 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                 }
 
                 if (finalData && finalData.success) {
-                    // Sauvegarde centralisée sur le Google Drive de l'Admin (Ticket V1.1)
-                    let backupResult = null;
-                    try {
-                        const { backupDeliverablesForClient } = require('../services/driveService');
-                        const clientName = req.session?.user?.name || req.session?.user?.username || b.client_name || 'Client';
-                        const dateStr = new Date().toISOString().slice(0, 10);
-
-                        res.write(`[PROGRESS] 100% - Sauvegarde centralisée Master Drive (${clientName}/${dateStr})...\n`);
-
-                        backupResult = await backupDeliverablesForClient({
-                            clientName,
-                            dateStr,
-                            files: {
-                                mp4: finalData.mp4_filename,
-                                ass: finalData.ass_filename,
-                                cover: finalData.cover_filename,
-                                desc: finalData.desc_filename
-                            }
-                        });
-
-                        if (backupResult && backupResult.webViewLink) {
-                            finalData.drive_backup_link = backupResult.webViewLink;
-                            console.log(`[TRADUCTION DRIVE] ✅ Lien de Sauvegarde attribué : ${finalData.drive_backup_link}`);
+                    // Sauvegarde automatique et silencieuse sur Google Drive en tâche de fond (Zéro-Friction)
+                    const clientName = req.session?.user?.name || req.session?.user?.username || b.client_name || 'Client';
+                    const dateStr = new Date().toISOString().slice(0, 10);
+                    const deliverablesToBackup = {
+                        clientName,
+                        dateStr,
+                        files: {
+                            mp4: finalData.mp4_filename,
+                            ass: finalData.ass_filename,
+                            cover: finalData.cover_filename,
+                            desc: finalData.desc_filename
                         }
-                    } catch (driveErr) {
-                        console.warn('[DRIVE BACKUP WARNING] Sauvegarde Drive non-bloquante :', driveErr.message);
-                    }
+                    };
+
+                    setImmediate(() => {
+                        try {
+                            const { backupDeliverablesForClient } = require('../services/driveService');
+                            backupDeliverablesForClient(deliverablesToBackup)
+                                .then(backupResult => {
+                                    if (backupResult && backupResult.success) {
+                                        console.log(`[DRIVE SILENT BACKUP] ✅ Archivage serveur réussi en arrière-plan pour ${clientName} (${backupResult.folderLink || backupResult.webViewLink || 'OK'})`);
+                                    } else {
+                                        console.log(`[DRIVE SILENT BACKUP] ℹ️ Archivage en arrière-plan : ${backupResult?.reason || 'Non configuré'}`);
+                                    }
+                                })
+                                .catch(driveErr => {
+                                    console.warn('[DRIVE SILENT BACKUP WARNING] Échec archivage en arrière-plan :', driveErr.message);
+                                });
+                        } catch (driveErr) {
+                            console.warn('[DRIVE SILENT BACKUP WARNING] driveService non disponible :', driveErr.message);
+                        }
+                    });
 
                     // Télémétrie et Rapport d'Audit Alexandre
                     const tTotalEnd = performance.now();
@@ -524,9 +529,9 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                         max_drive_backup: {
                             agent: "Max",
                             task: "max_drive_backup",
-                            t_exec_s: backupResult?.t_exec_s ? Number(backupResult.t_exec_s) : 0,
-                            status: backupResult?.success ? "OK" : "BYPASS/WARN",
-                            details: backupResult?.webViewLink ? "Upload Drive réussi" : (backupResult?.reason || "Non configuré")
+                            t_exec_s: 0,
+                            status: "ASYNC",
+                            details: "Archivage automatique silencieux déclenché en tâche de fond"
                         }
                     };
 
