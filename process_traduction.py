@@ -471,12 +471,31 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
             from faster_whisper import WhisperModel
             w_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=2)
             w_lang = "ar" if source_lang in ['ar', 'auto'] else (source_lang if source_lang != 'auto' else None)
-            w_segs, _ = w_model.transcribe(chunk_path, language=w_lang, word_timestamps=False)
+            w_segs, _ = w_model.transcribe(
+                chunk_path,
+                language=w_lang,
+                word_timestamps=False,
+                condition_on_previous_text=False,
+                vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=500),
+                temperature=(0.0, 0.2),
+                no_speech_threshold=0.6,
+                compression_ratio_threshold=2.4
+            )
             w_list = list(w_segs)
             if w_list:
-                units = [{"start": round(ws.start, 2), "end": round(ws.end, 2), "text": ws.text.strip()} for ws in w_list if ws.text.strip()]
-                from gemini_translator import gemini_batch_translate_units
-                raw_segments = gemini_batch_translate_units(units, mode=mode, user_context=user_context)
+                FORBIDDEN_GLYPHS = re.compile(r'[\u0400-\u04FF\uAC00-\uD7AF\u1100-\u11FF\u0590-\u05FF\u3040-\u30FF\u4E00-\u9FFF]')
+                units = []
+                for ws in w_list:
+                    w_txt = ws.text.strip()
+                    if not w_txt:
+                        continue
+                    if source_lang in ['ar', 'auto'] and FORBIDDEN_GLYPHS.search(w_txt):
+                        continue
+                    units.append({"start": round(ws.start, 2), "end": round(ws.end, 2), "text": w_txt})
+                if units:
+                    from gemini_translator import gemini_batch_translate_units
+                    raw_segments = gemini_batch_translate_units(units, mode=mode, user_context=user_context)
         except Exception:
             pass
 
@@ -596,7 +615,9 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                             with open(cache_dir / fname, "r", encoding="utf-8") as cf:
                                 cached_segs = json.load(cf)
                                 if isinstance(cached_segs, list) and len(cached_segs) > 0:
-                                    if verify_timeline_coverage(cached_segs, total_duration, tolerance=0.90, silences=silences):
+                                    from gemini_translator import verify_target_language_coherence
+                                    is_lang_ok, lang_reason = verify_target_language_coherence(cached_segs, target_lang)
+                                    if verify_timeline_coverage(cached_segs, total_duration, tolerance=0.90, silences=silences) and is_lang_ok:
                                         print(f"[PROTOCOLE SMART CHUNK] ⚡ Cache global valide détecté ({fname}) : {len(cached_segs)} segments déjà transcrits.", flush=True)
                                         for s in cached_segs:
                                             s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
@@ -612,7 +633,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                                         print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
                                         break
                                     else:
-                                        print(f"[CACHE AUDIT] ⚠️ Cache tronqué/incomplet détecté ({fname}) : invalidation et réanalyse complète.", flush=True)
+                                        print(f"[CACHE AUDIT] ⚠️ Cache invalide ou corrompu ({fname}, {lang_reason}) : invalidation et purge.", flush=True)
                                         try: (cache_dir / fname).unlink()
                                         except Exception: pass
                         except Exception:
@@ -629,26 +650,40 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
             try:
                 from faster_whisper import WhisperModel
                 th_arg = cpu_threads_limit if cpu_threads_limit and cpu_threads_limit > 0 else 4
-                print(f"[ACOUSTIC SYNC] 🎙️ Analyse acoustique via Faster-Whisper (cpu_threads={th_arg})...", flush=True)
+                print(f"[ACOUSTIC SYNC] 🎙️ Analyse acoustique via Faster-Whisper (cpu_threads={th_arg}, condition_on_previous_text=False, vad_filter=True)...", flush=True)
                 w_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=th_arg)
                 w_lang = "ar" if source_lang in ['ar', 'auto'] else (source_lang if source_lang != 'auto' else None)
-                w_segments, w_info = w_model.transcribe(media_path, language=w_lang, word_timestamps=False)
+                w_segments, w_info = w_model.transcribe(
+                    media_path,
+                    language=w_lang,
+                    word_timestamps=False,
+                    condition_on_previous_text=False,
+                    vad_filter=True,
+                    vad_parameters=dict(min_silence_duration_ms=500),
+                    temperature=(0.0, 0.2),
+                    no_speech_threshold=0.6,
+                    compression_ratio_threshold=2.4
+                )
                 raw_w_segs = list(w_segments)
                 record_alexandre_agent("Thomas", "thomas_whisper_transcribe", t0_w, status="OK", details=f"{len(raw_w_segs)} segments vocaux (threads: {th_arg}, lang: {w_info.language if w_info else 'ar'})")
                 if raw_w_segs and len(raw_w_segs) > 0:
                     print(f"[ACOUSTIC SYNC] ✅ {len(raw_w_segs)} segments vocaux détectés (langue: {w_info.language}).", flush=True)
+                    FORBIDDEN_GLYPHS = re.compile(r'[\u0400-\u04FF\uAC00-\uD7AF\u1100-\u11FF\u0590-\u05FF\u3040-\u30FF\u4E00-\u9FFF]')
                     merged_units = []
                     curr_u = None
                     for ws in raw_w_segs:
                         w_txt = ws.text.strip()
                         if not w_txt:
                             continue
+                        if source_lang in ['ar', 'auto'] and FORBIDDEN_GLYPHS.search(w_txt):
+                            print(f"[WHISPER PURGE] 🧹 Segment rejeté (glyphes corrompus) : '{w_txt}'", flush=True)
+                            continue
                         if curr_u is None:
                             curr_u = {"start": round(ws.start, 2), "end": round(ws.end, 2), "text": w_txt}
                         else:
                             c_dur = curr_u["end"] - curr_u["start"]
                             gap = ws.start - curr_u["end"]
-                            if c_dur < 2.5 and gap < 0.6 and (ws.end - curr_u["start"]) <= 4.2:
+                            if c_dur < 3.0 and gap < 0.6 and (ws.end - curr_u["start"]) <= 4.5:
                                 curr_u["end"] = round(ws.end, 2)
                                 curr_u["text"] += " " + w_txt
                             else:
@@ -657,21 +692,32 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                     if curr_u:
                         merged_units.append(curr_u)
 
+                    if not merged_units:
+                        print("[ACOUSTIC SYNC] ⚠️ Aucun segment valide après filtrage des glyphes.", flush=True)
+                        return None
+
                     t0_j = time.time()
-                    from gemini_translator import gemini_batch_translate_units, LAST_MODEL_USED
+                    from gemini_translator import gemini_batch_translate_units, verify_target_language_coherence, LAST_MODEL_USED
                     translated = gemini_batch_translate_units(merged_units, mode=mode, user_context=user_context)
+                    
+                    is_lang_ok, lang_reason = verify_target_language_coherence(translated, target_lang)
+                    if not is_lang_ok:
+                        print(f"[GARDE-FOU LINGUISTIQUE] 🚨 Rejet des segments traduits par Jade : {lang_reason}", file=sys.stderr)
+                        record_alexandre_agent("Jade", "jade_gemini_translation", t0_j, status="REJECTED", details=lang_reason)
+                        return None
+
                     record_alexandre_agent("Jade", "jade_gemini_translation", t0_j, status="OK", details=f"{len(translated or [])} segments traduits ({LAST_MODEL_USED})")
                     if translated and len(translated) > 0:
                         return translated
             except Exception as we:
                 record_alexandre_agent("Thomas", "thomas_whisper_transcribe", t0_w, status="FALLBACK", details=f"Échec Whisper ({we})")
-                print(f"[ACOUSTIC SYNC WARNING] Moteur acoustique Whisper indisponible ({we}).", file=sys.stderr)
+                print(f"[ACOUSTIC SYNC WARNING] Moteur acoustique Whisper indisponible ou rejeté ({we}).", file=sys.stderr)
             return None
 
         def _try_gemini_audio_direct():
             t0_g = time.time()
             try:
-                from gemini_translator import gemini_audio_transcribe_and_translate, LAST_MODEL_USED
+                from gemini_translator import gemini_audio_transcribe_and_translate, verify_target_language_coherence, LAST_MODEL_USED
                 raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
                 if not raw_segs:
                     openai_key = os.environ.get("OPENAI_API_KEY")
@@ -690,6 +736,10 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                             "text": txt
                         })
                 if out_segs:
+                    is_lang_ok, lang_reason = verify_target_language_coherence(out_segs, target_lang)
+                    if not is_lang_ok:
+                        print(f"[GARDE-FOU LINGUISTIQUE] 🚨 Rejet Gemini Audio Direct : {lang_reason}", file=sys.stderr)
+                        return None
                     record_alexandre_agent("Jade", "jade_gemini_translation", t0_g, status="OK", details=f"Transcription directe Gemini ({LAST_MODEL_USED})")
                     return out_segs
                 else:
@@ -719,9 +769,12 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                     if chirp_segs and len(chirp_segs) > 0:
                         record_alexandre_agent("Thomas", "thomas_chirp2_transcribe", t0_chirp, status="OK", details=f"{len(chirp_segs)} répliques ({chirp_model})")
                         t0_jade = time.time()
-                        from gemini_translator import gemini_batch_translate_units, LAST_MODEL_USED
+                        from gemini_translator import gemini_batch_translate_units, verify_target_language_coherence, LAST_MODEL_USED
                         translated_segs = gemini_batch_translate_units(chirp_segs, mode=mode, user_context=user_context)
-                        record_alexandre_agent("Jade", "jade_gemini_translation", t0_jade, status="OK", details=f"{len(translated_segs or [])} segments traduits ({LAST_MODEL_USED})")
+                        is_lang_ok, lang_reason = verify_target_language_coherence(translated_segs, target_lang)
+                        if not is_lang_ok:
+                            print(f"[GARDE-FOU LINGUISTIQUE] 🚨 Rejet Chirp+Jade : {lang_reason}", file=sys.stderr)
+                            translated_segs = None
                         if translated_segs and verify_timeline_coverage(translated_segs, total_duration, tolerance=0.90, silences=silences):
                             all_segments = translated_segs
                             stt_success = True
@@ -925,16 +978,21 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         ai_model_used = "gemini-2.5-flash (Cache)"
     else:
         import gemini_translator
+        from gemini_translator import verify_target_language_coherence
         ai_model_used = getattr(gemini_translator, 'LAST_MODEL_USED', 'gemini-2.5-flash')
-        # Sauvegarde du nouveau résultat assaini dans le cache
-        try:
-            cache_dir.mkdir(parents=True, exist_ok=True)
-            cache_save_file = cache_dir / f"{base_name}_{source_lang}_{mode}.json"
-            with open(cache_save_file, "w", encoding="utf-8") as cf:
-                json.dump(all_segments, cf, ensure_ascii=False, indent=2)
-            print(f"[CACHE BUSTER] 💾 Cache assaini et mis à jour : {cache_save_file.name}", flush=True)
-        except Exception as ce:
-            print(f"[CACHE WARNING] Échec sauvegarde cache: {ce}", file=sys.stderr)
+        # Sauvegarde du nouveau résultat assaini dans le cache (UNIQUEMENT si linguistiquement cohérent)
+        is_lang_ok, lang_reason = verify_target_language_coherence(all_segments, target_lang)
+        if is_lang_ok:
+            try:
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                cache_save_file = cache_dir / f"{base_name}_{source_lang}_{mode}.json"
+                with open(cache_save_file, "w", encoding="utf-8") as cf:
+                    json.dump(all_segments, cf, ensure_ascii=False, indent=2)
+                print(f"[CACHE BUSTER] 💾 Cache assaini et mis à jour : {cache_save_file.name}", flush=True)
+            except Exception as ce:
+                print(f"[CACHE WARNING] Échec sauvegarde cache: {ce}", file=sys.stderr)
+        else:
+            print(f"[CACHE AUDIT] 🚫 Cache non sauvegardé : résultat non conforme linguistiquement ({lang_reason}).", flush=True)
 
     print(f"[PROTOCOLE SMART CHUNK SUCCÈS] {len(all_segments)} sous-titres générés via [{ai_model_used}].", flush=True)
     return all_segments, ai_model_used
@@ -951,6 +1009,12 @@ def build_ass_file(
     sub_margin_v: int
 ):
     """Génère le fichier .ASS avec la couleur et la position reçues dynamiquement."""
+    target_mode = 'ar' if 'VOAR' in str(output_ass_path) else 'fr'
+    from gemini_translator import verify_target_language_coherence
+    is_lang_ok, lang_reason = verify_target_language_coherence(segments, target_mode)
+    if not is_lang_ok:
+        raise RuntimeError(f"ÉCHEC DU GARDE-FOU LINGUISTIQUE ASS ({target_mode.upper()}) : {lang_reason}")
+
     ass_primary_color = hex_to_ass_bgr(sub_color_hex)
     print(f"[ASS ENGINE] Couleur convertie: {sub_color_hex} -> {ass_primary_color} | MarginV: {sub_margin_v}")
 
@@ -1646,34 +1710,51 @@ def _generate_dynamic_heuristic_description(segments: list, semantic_title: str 
     return f"{p1}\n\n{p2}\n\n{p3}\n\n{p4}\n\n{p5}\n\n🏷️ {hashtags_str}".strip()
 
 
+def _generate_sober_context_description(user_context: str = "", semantic_title: str = "", target_lang: str = 'fr') -> str:
+    """
+    Génère une description sobre, digne et concise lorsque la transcription audio est inaudible ou rejetée.
+    Se base strictement sur le user_context et le titre sémantique, sans jamais inventer de détails ou de lieux.
+    """
+    title = semantic_title.strip() if semantic_title else "Témoignage du terrain"
+    ctx = user_context.strip() if user_context else "Enregistrement et document d'archive recueillis sur le terrain."
+
+    p1 = f"TÉMOIGNAGE : {title.upper()}\nCe document audiovisuel recueilli sur le vif porte la mémoire et la vérité d'une situation humaine éprouvante."
+    p2 = f"CONTEXTE FACTUEL :\n{ctx}\nLes propos et éléments partagés dans cet enregistrement témoignent de la dignité et de la douleur vécues au quotidien."
+    p3 = "👉 Ne laissons pas ces témoignages sombrer dans l'oubli. Partagez et conservez cette archive pour que la vérité humaine des faits demeure accessible à tous."
+    tags = "#Témoignage #Mémoire #Vérité #Solidarité #Archive"
+
+    return f"{p1}\n\n{p2}\n\n{p3}\n\n🏷️ {tags}"
+
+
 def generate_tiktok_description(segments: list, semantic_title: str = "", target_lang: str = 'fr', user_context: str = "") -> str:
     """
     Génération Asynchrone de la Smart Description SEO TikTok (Nadine - En tâche de fond pendant FFmpeg).
     Rédige un texte narratif détaillé (~3500 caractères, 5 paragraphes structurés) + 5 hashtags contextuels.
-    Cascade de 8 modèles avec retry sur erreur 429 et repli dynamique heuristique anti-hallucination.
+    Cascade de modèles vérifiés avec retry sur erreur 429 et repli dynamique heuristique anti-hallucination.
     """
     raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip() if segments else ""
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     lang_instruction = "en français soigné, percutant et humain" if target_lang.lower() != 'ar' else "en arabe soigné, percutant et humain"
 
+    # Pre-flight Check de cohérence linguistique
+    from gemini_translator import verify_target_language_coherence
+    is_lang_ok, _ = verify_target_language_coherence(segments, target_lang) if segments else (False, "")
+
+    if not raw_testimony_text or len(raw_testimony_text.strip()) < 15 or not is_lang_ok:
+        print("[IA NADINE ASYNC] 🛡️ Pre-flight Check : Transcription insuffisante, corrompue ou rejetée. Génération sobre basée exclusivement sur le contexte...", flush=True)
+        return _generate_sober_context_description(user_context, semantic_title, target_lang)
+
     context_directive = ""
     if user_context and user_context.strip():
         context_directive = f"\nIntègre les informations factuelles suivantes pour enrichir ton analyse :\n[CONTEXTE UTILISATEUR : {user_context.strip()}]\n"
 
-    PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
-    FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
-    MODELS_CASCADE = [
-        PRIMARY_MODEL,
-        FALLBACK_MODEL,
-        "gemini-2.5-flash-lite",
+    # Cascade de modèles IA Google Gemini officiellement actifs (API v1beta)
+    CASCADE = [
+        "gemini-2.5-flash",
         "gemini-flash-lite-latest",
-        "gemini-flash-latest",
-        "gemini-3.5-flash-lite",
-        "gemini-3-flash-preview",
+        "gemini-3.1-flash-lite",
         "gemini-2.5-pro"
     ]
-    seen = set()
-    CASCADE = [m for m in MODELS_CASCADE if m and not (m in seen or seen.add(m))]
 
     context_summary = ""
     if gemini_key and raw_testimony_text:
@@ -1683,14 +1764,15 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
 MISSION STRICTE & OBLIGATOIRE :
 Rédige la Smart Description SEO TikTok ({lang_instruction}) pour ce témoignage vidéo.
 {title_context}{context_directive}
-CONSIGNES STRICTES ANTI-PARESSE :
+CONSIGNES STRICTES ANTI-PARESSE ET ANTI-HALLUCINATION :
 - Le texte DOIT être très long et immersif (minimum 400 mots / ~3500 caractères).
 - Tu dois OBLIGATOIREMENT structurer ta réponse en 5 longs paragraphes narratifs détaillés et aérés :
   1. 🔥 LE HOOK VIRAL : Une accroche viscérale de 2 à 3 lignes qui capte l'attention et stoppe net le scroll.
-  2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE : Raconte la scène avec précision (qui parle, lieu, épreuves du quotidien, déroulement chronologique fidèle aux propos rapportés).
+  2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE : Raconte la scène avec précision (qui parle, épreuves du quotidien, déroulement chronologique fidèle aux propos rapportés).
   3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
   4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
   5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
+- DIRECTIVE STRICTE DE SOBRIÉTÉ & ZÉRO FABULATION GÉOGRAPHIQUE : Si aucun lieu précis (ville, camp, quartier) n'est explicitement mentionné dans la transcription finale ou le contexte utilisateur, IL EST STRICTEMENT INTERDIT d'en inventer un (comme Deir al-Balah, Rafah, Khan Younès, etc.). Ne fais aucune supposition géographique. Reste strictement fidèle aux propos et faits avérés.
 - À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, déduits EXCLUSIVEMENT du sujet réel du témoignage et du contexte (ex: #Témoignage #Vérité #Direct #Mémoire #PourToi, ou adaptés au lieu et thème réels). INTERDICTION ABSOLUE d'inventer un lieu géographique non mentionné dans le texte.
 
 RÈGLE FORMELLE DE SORTIE :
@@ -1704,7 +1786,7 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
-                "temperature": 0.7,
+                "temperature": 0.3,
                 "maxOutputTokens": 2000
             }
         }
@@ -2064,6 +2146,8 @@ def main():
         print("---JSON_OUTPUT_END---", flush=True)
 
     except Exception as e:
+        import traceback
+        traceback.print_exc(file=sys.stderr)
         raw_msg = str(e)
         code = "PROCESSING_ERROR"
         if "MEDIA_TOO_BIG" in raw_msg:

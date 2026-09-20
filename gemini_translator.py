@@ -22,6 +22,7 @@ if os.path.exists(env_file):
                 os.environ.setdefault(k.strip(), v.strip())
 
 import time
+import re
 
 LAST_MODEL_USED = "gemini-2.5-flash"
 LAST_TELEMETRY = {
@@ -323,25 +324,14 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
 
     req_data = json.dumps(payload).encode("utf-8")
 
-    # Cascade de modèles IA Google Gemini avec bascule automatique en cas de quota épuisé (429 / ResourceExhausted)
-    PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
-    FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
-
-    # Liste ordonnée de cascade avec élimination des doublons
-    raw_cascade = [
-        PRIMARY_MODEL,
-        FALLBACK_MODEL,
-        "gemini-2.5-flash-lite",
+    # Cascade de modèles IA Google Gemini officiellement actifs (API v1beta)
+    MODELS_CASCADE = [
+        "gemini-2.5-flash",
         "gemini-flash-lite-latest",
-        "gemini-flash-latest",
-        "gemini-3.5-flash-lite",
-        "gemini-3-flash-preview",
-        "gemini-2.5-pro"
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-pro-latest"
     ]
-    MODELS_CASCADE = []
-    for m in raw_cascade:
-        if m and m not in MODELS_CASCADE:
-            MODELS_CASCADE.append(m)
 
     for idx, model_name in enumerate(MODELS_CASCADE):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
@@ -372,9 +362,10 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
         except urllib.error.HTTPError as he:
             is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
             if is_quota:
-                print("⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours...", flush=True)
-                next_model = MODELS_CASCADE[idx + 1] if idx + 1 < len(MODELS_CASCADE) else "modèle suivant"
-                print(f"[PROGRESS] ⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours ({next_model})...", flush=True)
+                print(f"[Pôle 3 Gemini] ⚠️ Quota 429 atteint sur {model_name}. Pause 2s avant modèle de secours...", flush=True)
+                time.sleep(2.0)
+                next_model = MODELS_CASCADE[idx + 1] if idx + 1 < len(MODELS_CASCADE) else "aucun"
+                print(f"[PROGRESS] ⚠️ Bascule sur le modèle de secours ({next_model})...", flush=True)
             else:
                 print(f"[Pôle 3 Gemini] Erreur HTTP {he.code} sur {model_name} : {he}. Bascule vers le modèle suivant...", flush=True)
             continue
@@ -406,17 +397,13 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
     target_desc = "français percutant, fluide et soigné (VOSTFR)" if mode == 'VOSTFR' else "arabe palestinien dialectal de Gaza (Ammiya de Gaza - VOAR)"
     context_directive = f"\nContexte éditorial : {user_context.strip()}\n" if user_context and user_context.strip() else ""
 
-    PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
-    FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
+    # Cascade de modèles IA Google Gemini officiellement actifs (API v1beta)
     MODELS_CASCADE = [
-        PRIMARY_MODEL,
-        FALLBACK_MODEL,
-        "gemini-2.5-flash-lite",
+        "gemini-2.5-flash",
         "gemini-flash-lite-latest",
-        "gemini-flash-latest",
-        "gemini-3.5-flash-lite",
-        "gemini-3-flash-preview",
-        "gemini-2.5-pro"
+        "gemini-3.1-flash-lite",
+        "gemini-3.5-flash",
+        "gemini-pro-latest"
     ]
 
     BATCH_SIZE = 25
@@ -431,7 +418,7 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
             f"Tu es un traducteur et sous-titreur expert d'élite spécialisé dans le dialecte palestinien et le français (Agent Jade).\n"
             f"{context_directive}"
             f"Consigne : Traduis fidèlement chacune des phrases numérotées ci-dessous vers un {target_desc} pour des sous-titres vidéo professionnels.\n"
-            f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des tics de langage, ou des répétitions inutiles (ex: 'Quatre étages, quatre étages, quatre étages'), LISSE la traduction en français. Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique (ex: 'Quatre étages se sont effondrés'). Ton but est la clarté et la dignité du sous-titre.\n"
+            f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des pleurs/gémissements répétitifs (ex: 'أهي! أهي!'), ou des répétitions inutiles, LISSE la traduction en français (ex: 'Mon Dieu...', '[Pleurs et gémissements]'). Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique. Ton but est la clarté et la dignité du sous-titre.\n"
             f"Respecte STRICTEMENT la numérotation de 1 à {len(lines_ar)} sous la forme 'N. Traduction'.\n\n"
             f"{numbered_prompt}\n\n"
             f"Réponds UNIQUEMENT par la liste numérotée :"
@@ -462,31 +449,84 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
 
                     sub_batch_translated = []
                     for i, u in enumerate(sub_units):
-                        tr_text = translated_map.get(i, u.get("text", "")).strip()
+                        if i in translated_map and translated_map[i]:
+                            tr_text = translated_map[i]
+                        else:
+                            # Ligne manquante dans la liste numérotée -> invalidation pour tester modèle suivant
+                            sub_batch_translated = None
+                            break
                         sub_batch_translated.append({
                             "start": round(float(u["start"]), 2),
                             "end": round(float(u["end"]), 2),
                             "text": tr_text
                         })
-                    LAST_MODEL_USED = f"Whisper + {model_name}"
-                    break
-            except Exception:
+
+                    if sub_batch_translated is not None:
+                        LAST_MODEL_USED = f"Whisper + {model_name}"
+                        break
+            except urllib.error.HTTPError as he:
+                is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
+                if is_quota:
+                    print(f"[IA JADE BATCH] ⚠️ Quota 429 atteint sur {model_name}. Pause 2s avant modèle suivant...", flush=True)
+                    time.sleep(2.0)
+                else:
+                    print(f"[IA JADE BATCH] Erreur HTTP {he.code} sur {model_name} : {he}. Bascule modèle suivant...", flush=True)
+                continue
+            except Exception as e:
+                print(f"[IA JADE BATCH] Modèle {model_name} indisponible ({e}). Bascule modèle suivant...", flush=True)
                 continue
 
         if sub_batch_translated is not None:
             all_translated_segments.extend(sub_batch_translated)
         else:
-            # Repli de sécurité pour ce sous-lot en cas d'indisponibilité totale
-            for u in sub_units:
-                all_translated_segments.append({
-                    "start": round(float(u["start"]), 2),
-                    "end": round(float(u["end"]), 2),
-                    "text": u.get("text", "").strip()
-                })
+            # INTERDICTION ABSOLUE DU REPLI SILENCIEUX (Ticket Incident Alexandre)
+            # Lever une exception claire au lieu de renvoyer le texte source arabe corrompu
+            raise RuntimeError(f"Échec critique de traduction (Agent Jade) : tous les modèles IA ({', '.join(MODELS_CASCADE)}) ont échoué sur le sous-lot {b_start // BATCH_SIZE + 1}. Aucun repli non traduit autorisé.")
 
     LAST_TELEMETRY["t_exec_s"] = round(time.time() - t_jade_start, 2)
     LAST_TELEMETRY["model_used"] = LAST_MODEL_USED
     return all_translated_segments
+
+
+def verify_target_language_coherence(segments: list, target_lang: str = 'fr') -> tuple:
+    """
+    Vérifie la cohérence linguistique stricte des sous-titres générés avant écriture du .ass.
+    - Profil VOSTFR (fr) : doit être composé majoritairement de caractères latins.
+      Tout fichier contenant plus de 20% de caractères arabes est rejeté.
+    - Profil VOAR (ar) : doit être composé majoritairement de caractères arabes (>50%).
+    Retourne (is_valid: bool, reason: str).
+    """
+    if not segments:
+        return False, "Aucun segment de sous-titre à valider (liste vide)."
+
+    all_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()])
+    if not all_text:
+        return False, "Le texte cumulé des sous-titres est vide."
+
+    arabic_chars = len(re.findall(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]', all_text))
+    latin_chars = len(re.findall(r'[a-zA-Z\u00C0-\u024F]', all_text))
+    total_letters = arabic_chars + latin_chars
+
+    if total_letters == 0:
+        return False, "Le texte ne contient aucune lettre identifiable."
+
+    arabic_ratio = arabic_chars / total_letters
+    latin_ratio = latin_chars / total_letters
+
+    is_arabic_target = target_lang.lower() in ['ar', 'voar']
+
+    if not is_arabic_target:
+        # Cible VOSTFR / Français
+        if arabic_ratio > 0.20:
+            return False, f"Rejet VOSTFR : le texte contient {arabic_ratio*100:.1f}% de caractères arabes (tolérance max: 20%). Traduction corrompue ou non effectuée."
+        if latin_ratio < 0.50:
+            return False, f"Rejet VOSTFR : le texte ne contient que {latin_ratio*100:.1f}% de caractères latins (minimum requis: 50%)."
+        return True, f"Validation VOSTFR réussie ({latin_ratio*100:.1f}% latin, {arabic_ratio*100:.1f}% arabe)."
+    else:
+        # Cible VOAR / Arabe
+        if arabic_ratio < 0.50:
+            return False, f"Rejet VOAR : le texte ne contient que {arabic_ratio*100:.1f}% de caractères arabes (minimum requis: 50%)."
+        return True, f"Validation VOAR réussie ({arabic_ratio*100:.1f}% arabe)."
 
 
 if __name__ == "__main__":
