@@ -248,9 +248,12 @@ async function backupDeliverablesForClient({ clientName, dateStr, files = {} }) 
             }
         }
 
+        const uploadedCount = Object.keys(uploads).length;
         const tDriveMs = Math.round(performance.now() - tDriveStart);
         return {
-            success: true,
+            success: uploadedCount > 0,
+            uploaded_count: uploadedCount,
+            reason: uploadedCount === 0 ? 'SERVICE_ACCOUNT_QUOTA_RESTRICTION' : null,
             webViewLink: primaryWebViewLink,
             folderLink: dateFolder.webViewLink || `https://drive.google.com/drive/folders/${dateFolder.id}`,
             clientFolderId: clientFolder.id,
