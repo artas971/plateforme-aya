@@ -308,12 +308,20 @@ aya/
 * Si le résultat existe en cache, le traitement est instantané.
 * Un bouton **Bypass Cache** (`🔄 Forcer le retraitement`) permet à l'utilisateur d'invalider le cache et de forcer une nouvelle transcription et traduction complète.
 
-### 9.4 Machine à États Google Drive (Worker Autonome)
-Le service d'arrière-plan surveille les 3 dossiers Google Drive en boucle fermée :
-1. `01_A_TRAITER` : Détection du média brut déposé par les équipes sur le terrain ➔ Déplacement automatique vers `02_EN_COURS`.
-2. `02_EN_COURS` : Verrouillage exclusif, traitement par le pipeline local.
-3. `03_TERMINE` : Dépôt sécurisé des livrables finaux (`.mp4`, `.ass`, et si demandé `.jpg` et `.txt`).
-* En cas de dépassement de quota Service Account, le worker capture l'exception avec grâce, préserve les livrables locaux intacts et ne bloque jamais la réponse utilisateur.
+### 9.4 Stockage Centralisé Master Drive & Sauvegarde Automatique (Correction V1.1)
+* **Architecture Single-Tenant Admin (Sans flux OAuth2 utilisateur)** :
+  * Annulation définitive de l'OAuth2 par utilisateur. Le stockage des livrables est centralisé sur le Google Drive de l'Administrateur (Master Drive).
+  * Authentification serveur directe via un Compte de Service Google Cloud (`credentials.json` à la racine ou `GOOGLE_SERVICE_ACCOUNT_FILE`).
+* **Arborescence Dynamique & Idempotente** :
+  * Le serveur crée et organise automatiquement les dossiers : `[GOOGLE_DRIVE_FOLDER_ID] / [Client Name] / [YYYY-MM-DD] / <livrables>`.
+  * Le nom du client est résolu à partir de la session utilisateur connectée (`req.session.user.name`) ou du paramètre `client_name` (fallback : `Client`).
+* **Partage Public Universel ("Anyone with the link can view")** :
+  * Dès la création du sous-dossier ou le téléversement des livrables (vidéo MP4, sous-titres ASS, couverture, script), la permission est automatiquement définie sur `role: "reader", type: "anyone"`.
+* **Expérience Dashboard & Bouton "Lien de Sauvegarde"** :
+  * L'utilisateur Premium n'a aucun compte Google à associer.
+  * Son tableau de bord affiche instantanément un bouton officiel **"Lien de Sauvegarde"** pointant directement vers le lien public de consultation `webViewLink` sur le Drive de l'Admin.
+* **Note d'Infrastructure (Google Cloud Quotas)** :
+  * Les comptes de service Google Cloud ne disposant pas de quota sur les Drives personnels standards (`@gmail.com`), le dossier racine Admin est idéalement hébergé sur un Google Shared Drive (Google Workspace) pour autoriser les flux de téléversement binaire sans restriction de quota. Le service gère ce cas avec grâce et fournit toujours un lien valide vers le dossier client.
 
 ---
 

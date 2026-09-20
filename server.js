@@ -1,4 +1,13 @@
 require('dotenv').config();
+
+// Protection Anti-Crash Globale (Exceptions non rattrapées et rejets asynchrones)
+process.on('uncaughtException', (err) => {
+    console.error('[SERVER GLOBAL UNCAUGHT EXCEPTION]', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[SERVER GLOBAL UNHANDLED REJECTION]', reason);
+});
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -100,6 +109,7 @@ const agentsRouter = require('./routes/agents');
 const feedbackRouter = require('./routes/feedback');
 const postsRouter = require('./routes/posts');
 const adminRouter = require('./routes/admin');
+const tiktokRouter = require('./routes/tiktok');
 
 app.use('/api/chat', chatRouter);
 app.use(studioRouter);
@@ -110,12 +120,22 @@ app.use('/api/feedback', feedbackRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/admin', adminRouter);
 app.use(traductionRouter);
+app.use(tiktokRouter);
 
 // Démarrage du Serveur & Connexion Base de Données
 const { connectDB } = require('./config/database');
 
 app.listen(PORT, async () => {
+    const activeEnv = (process.env.NODE_ENV || 'development').toUpperCase();
+    const execProfile = (process.env.AYA_EXEC_PROFILE || (activeEnv === 'PRODUCTION' ? 'cloud_vps_safe' : 'local_high_perf')).toUpperCase();
     console.log(`Server running on http://localhost:3000 (Architecture modulaire : Chat, Studio, Audio, Drive & Traduction actifs)`);
+    console.log(`[AYA ENVIRONMENT] 🌐 Mode: ${activeEnv} | Profil: ${execProfile} | PythonEnv: ${(process.env.PYTHON_ENV || 'local').toUpperCase()}`);
+    
+    // Statut Configuration TikTok API (Phase 3A)
+    const tiktokKey = process.env.TIKTOK_CLIENT_KEY ? `${process.env.TIKTOK_CLIENT_KEY.slice(0, 6)}...` : 'NON DÉFINIE';
+    const tiktokCallback = process.env.TIKTOK_CALLBACK_URL || '(En attente Ngrok / Prod)';
+    const hasEncKey = !!process.env.TIKTOK_TOKEN_ENCRYPTION_KEY;
+    console.log(`[TIKTOK CONFIG] 📱 Client Key: ${tiktokKey} | Callback: ${tiktokCallback} | Chiffrement AES-256: ${hasEncKey ? 'Actif (256-bit)' : 'Manquant'}`);
     
     // Initialisation Base de Données MongoDB (Phase 2 - Issue #12)
     await connectDB();

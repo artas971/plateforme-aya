@@ -123,6 +123,116 @@ function cleanupTemporaryMedia(mediaPath) {
         console.warn(`[GARBAGE COLLECTION WARNING] Erreur inspection répertoire temporaire :`, dirErr.message);
     }
 }
+const { performance } = require('perf_hooks');
+
+/**
+ * Génère le Rapport d'Audit des Performances formaté (Agent Alexandre).
+ * Structure les métriques collectées par Max (Node.js) et le moteur Python (Thomas, Jade, Nadine, Lionel).
+ */
+function formatAlexandreAuditReport({ metrics = {}, totalDurationS = 0, mediaName = '', mediaDuration = 0, targetLang = 'fr' }) {
+    const lines = [];
+    lines.push('================================================================================');
+    lines.push("📊 RAPPORT D'AUDIT DES PERFORMANCES - PIPELINE AYA (AGENT ALEXANDRE)");
+    lines.push('================================================================================');
+    lines.push(`Média analysé       : ${mediaName || 'Inconnu'}`);
+    lines.push(`Durée du média      : ${mediaDuration > 0 ? mediaDuration.toFixed(1) + 's' : 'N/A'}`);
+    lines.push(`Langue cible        : ${targetLang === 'ar' ? 'Arabe (VOAR)' : 'Français (VOSTFR)'}`);
+    lines.push(`Temps total pipeline: ${totalDurationS.toFixed(2)}s`);
+    const activeEnv = (process.env.PYTHON_ENV || process.env.NODE_ENV || 'local').toUpperCase();
+    const execProfile = metrics['execution_profile']?.details || (process.env.AYA_EXEC_PROFILE ? process.env.AYA_EXEC_PROFILE.toUpperCase() : (activeEnv === 'PRODUCTION' ? 'CLOUD_VPS_SAFE' : 'LOCAL_HIGH_PERF'));
+    lines.push(`Profil d'exécution  : ${execProfile} [${activeEnv}]`);
+    lines.push('--------------------------------------------------------------------------------');
+    lines.push('DÉTAIL CHRONOMÉTRIQUE PAR AGENT & TÂCHE :');
+    lines.push('--------------------------------------------------------------------------------');
+
+    const taskDefinitions = [
+        { key: 'max_request_init', agent: 'Max', tool: 'Node.js', label: 'Réception & Traitement initial requête' },
+        { key: 'thomas_probe_silences', agent: 'Thomas', tool: 'FFmpeg', label: 'Analyse acoustique & Détection silences' },
+        { key: 'thomas_chirp2_transcribe', agent: 'Thomas', tool: 'Chirp 2', label: 'Transcription Google Cloud Chirp 2' },
+        { key: 'thomas_whisper_transcribe', agent: 'Thomas', tool: 'Whisper', label: 'Transcription Faster-Whisper (locale)' },
+        { key: 'jade_gemini_translation', agent: 'Jade', tool: 'Gemini', label: 'Normalisation, Traduction & Déduplication' },
+        { key: 'nadine_titre_semantique', agent: 'Nadine', tool: 'Gemini', label: 'Titre Sémantique Éclair (Synchrone)' },
+        { key: 'lionel_couverture_9_16', agent: 'Lionel', tool: 'Pillow', label: 'Génération Couverture 9:16' },
+        { key: 'lionel_ass_styling', agent: 'Lionel', tool: 'Python', label: 'Stylisation & Génération fichier .ASS' },
+        { key: 'thomas_ffmpeg_encode', agent: 'Thomas', tool: 'FFmpeg', label: 'Incrustation & Encodage Vidéo Final' },
+        { key: 'nadine_description_tiktok_async', agent: 'Nadine', tool: 'Gemini', label: 'Smart Description TikTok (Asynchrone)' },
+        { key: 'max_drive_backup', agent: 'Max', tool: 'Drive API', label: 'Sauvegarde Master Drive Centralisée' }
+    ];
+
+    const tasksRecorded = [];
+
+    for (const def of taskDefinitions) {
+        const item = metrics[def.key];
+        if (item) {
+            const t = Number(item.t_exec_s || 0);
+            const status = item.status || 'OK';
+            const details = item.details ? ` (${item.details})` : '';
+            const isAsync = def.key === 'nadine_description_tiktok_async';
+            const asyncTag = isAsync ? ' [Async]' : '';
+            const line = `• [${def.agent}] ${def.label.padEnd(42, ' ')} : ${t.toFixed(2).padStart(6, ' ')}s [${status}]${asyncTag}${details}`;
+            lines.push(line);
+            if (!isAsync) {
+                tasksRecorded.push({ ...def, t_exec_s: t, details: item.details });
+            }
+        }
+    }
+
+    lines.push('--------------------------------------------------------------------------------');
+    lines.push("ANALYSE DIAGNOSTIQUE & GOULOTS D'ÉTRANGLEMENT (AGENT ALEXANDRE) :");
+    lines.push('--------------------------------------------------------------------------------');
+
+    tasksRecorded.sort((a, b) => b.t_exec_s - a.t_exec_s);
+
+    if (tasksRecorded.length > 0 && totalDurationS > 0) {
+        const top1 = tasksRecorded[0];
+        const pct1 = Math.round((top1.t_exec_s / totalDurationS) * 100);
+        lines.push(`🚨 Goulot n°1 : [${top1.agent}] ${top1.label} -> ${top1.t_exec_s.toFixed(2)}s (${pct1}% du temps total)`);
+
+        if (tasksRecorded.length > 1) {
+            const top2 = tasksRecorded[1];
+            const pct2 = Math.round((top2.t_exec_s / totalDurationS) * 100);
+            lines.push(`⚠️  Goulot n°2 : [${top2.agent}] ${top2.label} -> ${top2.t_exec_s.toFixed(2)}s (${pct2}% du temps total)`);
+        }
+    }
+
+    lines.push('');
+    lines.push('💡 RECOMMANDATIONS TECH LEAD ALEXANDRE :');
+    
+    const whisperTime = metrics['thomas_whisper_transcribe']?.t_exec_s || 0;
+    const ffmpegTime = metrics['thomas_ffmpeg_encode']?.t_exec_s || 0;
+    const geminiTime = metrics['jade_gemini_translation']?.t_exec_s || 0;
+    const driveTime = metrics['max_drive_backup']?.t_exec_s || 0;
+
+    let recIdx = 1;
+    if (ffmpegTime > 30) {
+        lines.push(`${recIdx}. [Encodage FFmpeg] Thomas utilise libx264 software sur CPU. Activer l'accélération matérielle NVENC (h264_nvenc) ou QSV réduirait ce temps de ~70%.`);
+        recIdx++;
+    } else if (ffmpegTime > 0) {
+        lines.push(`${recIdx}. [Encodage FFmpeg] Temps d'encodage satisfaisant (${ffmpegTime.toFixed(2)}s avec preset 'veryfast').`);
+        recIdx++;
+    }
+
+    if (whisperTime > 20) {
+        lines.push(`${recIdx}. [Transcription Whisper] Whisper s'exécute sur CPU standard (int8). Le passage sur CUDA/GPU ou modèle 'tiny' sur short-form accélérerait la phase de 3x à 5x.`);
+        recIdx++;
+    } else if (whisperTime > 0) {
+        lines.push(`${recIdx}. [Transcription Whisper] Vitesse d'analyse acoustique satisfaisante (${whisperTime.toFixed(2)}s).`);
+        recIdx++;
+    }
+
+    if (geminiTime > 10) {
+        lines.push(`${recIdx}. [API Gemini Jade] Latence réseau / inférence élevée (${geminiTime.toFixed(2)}s). Vérifier le quota ou privilégier gemini-2.5-flash.`);
+        recIdx++;
+    }
+
+    if (driveTime > 10) {
+        lines.push(`${recIdx}. [Google Drive Max] Upload Drive ralenti (${driveTime.toFixed(2)}s). Possibilité de basculer l'upload en tâche d'arrière-plan post-réponse.`);
+        recIdx++;
+    }
+
+    lines.push('================================================================================');
+    return lines.join('\n');
+}
 
 // 1. GET /traduction : Afficher l'interface web de traduction
 router.get('/traduction', (req, res) => {
@@ -148,6 +258,7 @@ const { downloadTelegramMedia } = require('../services/telegramDownloader');
 
 // 2. POST /api/traduction/process : Réception du média (Upload ou Lien Telegram) et déclenchement de la traduction / sous-titrage avec Streaming Temps Réel
 router.post('/api/traduction/process', upload.single('media'), async (req, res) => {
+    const tReqStart = performance.now();
     try {
         const b = req.body || {};
         const telegramUrl = (b.telegram_url || '').trim();
@@ -258,10 +369,16 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             pyArgs.push('--context', userContext);
         }
 
+        const tPySpawn = performance.now();
+        const initDurationS = Number(((tPySpawn - tReqStart) / 1000).toFixed(2));
+
         const pyProcess = spawn('py', pyArgs, {
             cwd: ROOT_DIR,
             env: {
                 ...process.env,
+                NODE_ENV: process.env.NODE_ENV || 'development',
+                PYTHON_ENV: process.env.PYTHON_ENV || 'local',
+                AYA_EXEC_PROFILE: process.env.AYA_EXEC_PROFILE || (process.env.NODE_ENV === 'production' ? 'cloud_vps_safe' : 'local_high_perf'),
                 PYTHONIOENCODING: 'utf-8',
                 PYTHONUTF8: '1'
             }
@@ -276,11 +393,22 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
         let stdoutData = '';
         let stderrData = '';
+        let jsonIntercepted = false;
 
         pyProcess.stdout.on('data', (data) => {
             const chunk = typeof data === 'string' ? data : data.toString('utf8');
             stdoutData += chunk;
-            res.write(chunk);
+
+            if (!jsonIntercepted) {
+                const idx = chunk.indexOf('---JSON_OUTPUT_START---');
+                if (idx !== -1) {
+                    jsonIntercepted = true;
+                    const pre = chunk.slice(0, idx);
+                    if (pre.length > 0) res.write(pre);
+                } else {
+                    res.write(chunk);
+                }
+            }
         });
 
         pyProcess.stderr.on('data', (data) => {
@@ -305,30 +433,88 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             console.log(`[TRADUCTION PROCESS] Script Python terminé avec le code : ${code}`);
 
             try {
-                // Téléversement conditionnel Google Drive vers 03_TERMINE si configuré
-                try {
-                    const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
-                    if (jsonMatch) {
-                        const finalData = JSON.parse(jsonMatch[1].trim());
-                        if (finalData && finalData.success) {
-                            const { uploadDeliverablesToDrive } = require('../services/driveWorker');
-                            if (typeof uploadDeliverablesToDrive === 'function') {
-                                res.write(`[PROGRESS] 100% - Synchronisation avec Google Drive (03_TERMINE)...\n`);
-                                await uploadDeliverablesToDrive({
-                                    mp4Filename: finalData.mp4_filename,
-                                    assFilename: finalData.ass_filename,
-                                    coverFilename: finalData.cover_filename,
-                                    descFilename: finalData.desc_filename
-                                });
-                            }
-                        }
+                let finalData = null;
+                const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
+                if (jsonMatch) {
+                    try {
+                        finalData = JSON.parse(jsonMatch[1].trim());
+                    } catch (parseErr) {
+                        console.error('[TRADUCTION PARSE ERROR]', parseErr.message);
                     }
-                } catch (syncErr) {
-                    console.warn('[DRIVE SYNC WARNING] Téléversement silencieux vers Drive ignoré :', syncErr.message);
                 }
 
-                // Si pour une raison quelconque le bloc JSON final n'a pas été émis par Python
-                if (!stdoutData.includes('---JSON_OUTPUT_START---')) {
+                if (finalData && finalData.success) {
+                    // Sauvegarde centralisée sur le Google Drive de l'Admin (Ticket V1.1)
+                    let backupResult = null;
+                    try {
+                        const { backupDeliverablesForClient } = require('../services/driveService');
+                        const clientName = req.session?.user?.name || req.session?.user?.username || b.client_name || 'Client';
+                        const dateStr = new Date().toISOString().slice(0, 10);
+
+                        res.write(`[PROGRESS] 100% - Sauvegarde centralisée Master Drive (${clientName}/${dateStr})...\n`);
+
+                        backupResult = await backupDeliverablesForClient({
+                            clientName,
+                            dateStr,
+                            files: {
+                                mp4: finalData.mp4_filename,
+                                ass: finalData.ass_filename,
+                                cover: finalData.cover_filename,
+                                desc: finalData.desc_filename
+                            }
+                        });
+
+                        if (backupResult && backupResult.webViewLink) {
+                            finalData.drive_backup_link = backupResult.webViewLink;
+                            console.log(`[TRADUCTION DRIVE] ✅ Lien de Sauvegarde attribué : ${finalData.drive_backup_link}`);
+                        }
+                    } catch (driveErr) {
+                        console.warn('[DRIVE BACKUP WARNING] Sauvegarde Drive non-bloquante :', driveErr.message);
+                    }
+
+                    // Télémétrie et Rapport d'Audit Alexandre
+                    const tTotalEnd = performance.now();
+                    const totalDurationS = Number(((tTotalEnd - tReqStart) / 1000).toFixed(2));
+
+                    const alexandreMetrics = {
+                        max_request_init: {
+                            agent: "Max",
+                            task: "max_request_init",
+                            t_exec_s: initDurationS,
+                            status: "OK",
+                            details: `Taille: ${fileSizeMb} Mo`
+                        },
+                        ...(finalData.telemetry || {}),
+                        max_drive_backup: {
+                            agent: "Max",
+                            task: "max_drive_backup",
+                            t_exec_s: backupResult?.t_exec_s ? Number(backupResult.t_exec_s) : 0,
+                            status: backupResult?.success ? "OK" : "BYPASS/WARN",
+                            details: backupResult?.webViewLink ? "Upload Drive réussi" : (backupResult?.reason || "Non configuré")
+                        }
+                    };
+
+                    const auditReport = formatAlexandreAuditReport({
+                        metrics: alexandreMetrics,
+                        totalDurationS,
+                        mediaName: originalName || path.basename(mediaPath),
+                        mediaDuration: Number(finalData.duration || 0),
+                        targetLang
+                    });
+
+                    // Affichage obligatoire et structuré dans la console
+                    console.log('\n' + auditReport + '\n');
+
+                    finalData.telemetry = alexandreMetrics;
+                    finalData.alexandre_report = auditReport;
+
+                    // Envoi du JSON final enrichi vers le frontend
+                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
+                } else if (finalData) {
+                    // Échec métier émis par Python
+                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
+                } else {
+                    // Si pour une raison quelconque le bloc JSON final n'a pas été émis par Python
                     const fallbackRes = {
                         success: code === 0,
                         code: code === 0 ? null : "PROCESS_FAILED",

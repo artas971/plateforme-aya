@@ -17,8 +17,8 @@ const ACCESS_CODE = process.env.AYA_ACCESS_CODE || 'Gaza2026';
  * Middleware de sécurité : Verrouille l'accès aux utilisateurs non connectés
  */
 function requireAuth(req, res, next) {
-    // 1. Routes publiques ouvertes (authentification, ressources statiques)
-    const publicPaths = ['/login', '/logout', '/api/auth/login', '/api/auth/session', '/api/auth/testers'];
+    // 1. Routes publiques ouvertes (authentification, ressources statiques, callback OAuth2)
+    const publicPaths = ['/login', '/logout', '/api/auth/login', '/api/auth/session', '/api/auth/testers', '/api/tiktok/auth/callback'];
     if (publicPaths.includes(req.path)) {
         return next();
     }

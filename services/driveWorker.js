@@ -79,12 +79,14 @@ function saveLedger(ledger) {
 function getDriveClient() {
     if (driveClient) return driveClient;
 
-    const credentialsFile = process.env.GOOGLE_SERVICE_ACCOUNT_FILE
-        ? path.resolve(ROOT_DIR, process.env.GOOGLE_SERVICE_ACCOUNT_FILE)
-        : path.join(ROOT_DIR, 'google_service_account.json');
+    const credentialsFile = fs.existsSync(path.join(ROOT_DIR, 'credentials.json'))
+        ? path.join(ROOT_DIR, 'credentials.json')
+        : (process.env.GOOGLE_SERVICE_ACCOUNT_FILE
+            ? path.resolve(ROOT_DIR, process.env.GOOGLE_SERVICE_ACCOUNT_FILE)
+            : path.join(ROOT_DIR, 'google_service_account.json'));
 
     if (!fs.existsSync(credentialsFile)) {
-        throw new Error(`Fichier Service Account introuvable : "${credentialsFile}". Veuillez déposer votre clé JSON Google Cloud.`);
+        throw new Error(`Fichier Service Account introuvable : "${credentialsFile}". Veuillez déposer votre clé JSON Google Cloud (credentials.json).`);
     }
 
     const auth = new google.auth.GoogleAuth({
@@ -191,7 +193,8 @@ async function uploadLocalFile(drive, localFilePath, targetFolderId, mimeType = 
             parents: [targetFolderId]
         },
         media: media,
-        fields: 'id, name, webViewLink'
+        fields: 'id, name, webViewLink',
+        supportsAllDrives: true
     });
 
     return res.data;
@@ -236,8 +239,17 @@ function runPythonPipeline(mediaPath, sourceLang, targetLang, subColor, subPosit
             subPosition,
             sourceLang,
             forceReprocess,
-            String(generateTiktokPack)
-        ], { cwd: ROOT_DIR });
+        ], {
+            cwd: ROOT_DIR,
+            env: {
+                ...process.env,
+                NODE_ENV: process.env.NODE_ENV || 'development',
+                PYTHON_ENV: process.env.PYTHON_ENV || 'local',
+                AYA_EXEC_PROFILE: process.env.AYA_EXEC_PROFILE || (process.env.NODE_ENV === 'production' ? 'cloud_vps_safe' : 'local_high_perf'),
+                PYTHONIOENCODING: 'utf-8',
+                PYTHONUTF8: '1'
+            }
+        });
 
         let stdoutData = '';
         let stderrData = '';

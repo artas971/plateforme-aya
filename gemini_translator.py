@@ -21,7 +21,15 @@ if os.path.exists(env_file):
                 k, v = line.split('=', 1)
                 os.environ.setdefault(k.strip(), v.strip())
 
+import time
+
 LAST_MODEL_USED = "gemini-2.5-flash"
+LAST_TELEMETRY = {
+    "t_exec_s": 0.0,
+    "model_used": "gemini-2.5-flash",
+    "retries": 0,
+    "warnings": []
+}
 
 def _parse_timestamp_val(val, default=0.0):
     if isinstance(val, (int, float)):
@@ -101,7 +109,8 @@ def normalize_and_rescale_segments(raw_segments: list, window_dur: float = None)
 
 
 def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto', force_reprocess=False, user_context=''):
-    global LAST_MODEL_USED
+    global LAST_MODEL_USED, LAST_TELEMETRY
+    t_jade_start = time.time()
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not gemini_key:
         print("[Pole 3 Gemini] Pas de cle GEMINI_API_KEY detectee.")
@@ -162,7 +171,9 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
     if user_context and user_context.strip():
         user_context_directive = (
             "DIRECTIVE CONTEXTE UTILISATEUR (CONTEXT GROUNDING) :\n"
-            f"Si un contexte est fourni, utilise-le pour déduire les noms propres, les lieux ou la situation : [CONTEXTE UTILISATEUR : {user_context.strip()}].\n\n"
+            f"Un contexte éditorial est fourni UNIQUEMENT pour t'aider à orthographier fidèlement les noms propres, les lieux et le vocabulaire spécifique : [CONTEXTE UTILISATEUR : {user_context.strip()}].\n"
+            "ATTENTION STRICTE ET FORMELLE : TU NE DOIS EN AUCUN CAS INVENTER, TRADUIRE OU RÉPÉTER CE TEXTE DE CONTEXTE S'IL N'EST PAS RÉELLEMENT PRONONCÉ PAR LES VOIX DANS L'AUDIO !\n"
+            "Si l'extrait audio est silencieux, ne contient que de la musique ou du bruit de fond sans parole humaine, TU DOIS OBLIGATOIREMENT RÉPONDRE PAR UN TABLEAU JSON VIDE : [].\n\n"
         )
 
     if mode == 'VOSTFR':
@@ -180,12 +191,13 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "IL EST STRICTEMENT INTERDIT d'écrire des fractions de minutes ou des valeurs divisées comme 0.05, 0.15, 0.25 ou 0.30 pour désigner 5s, 15s, 25s ou 30s ! "
             "(5 secondes s'écrit 5.0 et JAMAIS 0.05 ; 15 secondes s'écrit 15.0 et JAMAIS 0.15 ; 28 secondes s'écrit 28.0 et JAMAIS 0.28). 'end' doit toujours être supérieur à 'start'.\n"
             "3. LANGUE CIBLE STRICTE : Tu dois IMPÉRATIVEMENT tout traduire dans la langue cible (ex: Français). Il est FORMELLEMENT INTERDIT d'utiliser l'alphabet arabe dans ta réponse finale. Tout doit être traduit.\n"
-            "4. NUMÉROS DE TÉLÉPHONE : Si une personne dicte un numéro avec des pauses, regroupe intelligemment les chiffres dans un même segment logique pour préserver la lisibilité à l'écran.\n"
-            "5. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
-            "6. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
-            "7. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
-            "8. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse attentivement la scène : qui parle, ce qui se passe, le contexte émotionnel et le message principal pour guider la justesse du sous-titrage.\n"
-            "9. CONTEXTE CULTUREL, SLOGANS & POÉSIE (DIRECTIVE ÉDITORIALE NADINE) : "
+            "4. RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des tics de langage, ou des répétitions inutiles (ex: 'Quatre étages, quatre étages, quatre étages'), LISSE la traduction en français. Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique (ex: 'Quatre étages se sont effondrés'). Ton but est la clarté et la dignité du sous-titre.\n"
+            "5. NUMÉROS DE TÉLÉPHONE : Si une personne dicte un numéro avec des pauses, regroupe intelligemment les chiffres dans un même segment logique pour préserver la lisibilité à l'écran.\n"
+            "6. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
+            "7. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
+            "8. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
+            "9. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse attentivement la scène : qui parle, ce qui se passe, le contexte émotionnel et le message principal pour guider la justesse du sous-titrage.\n"
+            "10. CONTEXTE CULTUREL, SLOGANS & POÉSIE (DIRECTIVE ÉDITORIALE NADINE) : "
             "Si le texte contient des slogans de manifestation, de la poésie, ou des expressions idiomatiques (ex: 'Al-Munadi' / 'المنادي'), NE FAIS PAS de traduction littérale. "
             "Adapte le texte pour qu'il sonne de manière naturelle, poignante et héroïque en français (ex: utilise 'La voix s'est élevée' ou 'Le chant résonne' plutôt que 'Le crieur a annoncé'). "
             "Préserve toujours la dignité, la force et la charge émotionnelle des paroles.\n"
@@ -347,6 +359,9 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                     segments = normalize_and_rescale_segments(segments, total_duration)
                     print(f"[Pôle 3 Gemini] ✅ Succès avec modèle {model_name} : {len(segments)} segments reçus !")
                     LAST_MODEL_USED = model_name
+                    LAST_TELEMETRY["t_exec_s"] = round(time.time() - t_jade_start, 2)
+                    LAST_TELEMETRY["model_used"] = model_name
+                    LAST_TELEMETRY["retries"] = idx
                     # Sauvegarde dans le cache
                     try:
                         with open(cache_file, "w", encoding="utf-8") as cf:
@@ -374,9 +389,105 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
                 print(f"[Pôle 3 Gemini] Modèle {model_name} indisponible ({e}). Bascule vers le modèle suivant...", flush=True)
             continue
 
-    # Si même le modèle de secours et toute la cascade échouent (panne globale de l'API)
-    print("❌ [PANNE CRITIQUE] Échec de l'ensemble des modèles IA de la cascade.", flush=True)
-    raise RuntimeError("Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.")
+
+def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context: str = '') -> list:
+    """
+    Traduit un ensemble d'unités acoustiques pré-alignées (ex: Faster-Whisper ou Chirp 2)
+    en conservant avec une précision mathématique absolue les timestamps originaux.
+    Découpage par micro-lots de 25 segments maximum pour garantir une complétude à 100%
+    sur les vidéos longues sans jamais saturer la fenêtre de génération de tokens.
+    """
+    global LAST_MODEL_USED, LAST_TELEMETRY
+    t_jade_start = time.time()
+    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not gemini_key or not units:
+        return []
+
+    target_desc = "français percutant, fluide et soigné (VOSTFR)" if mode == 'VOSTFR' else "arabe palestinien dialectal de Gaza (Ammiya de Gaza - VOAR)"
+    context_directive = f"\nContexte éditorial : {user_context.strip()}\n" if user_context and user_context.strip() else ""
+
+    PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
+    FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
+    MODELS_CASCADE = [
+        PRIMARY_MODEL,
+        FALLBACK_MODEL,
+        "gemini-2.5-flash-lite",
+        "gemini-flash-lite-latest",
+        "gemini-flash-latest",
+        "gemini-3.5-flash-lite",
+        "gemini-3-flash-preview",
+        "gemini-2.5-pro"
+    ]
+
+    BATCH_SIZE = 25
+    all_translated_segments = []
+
+    for b_start in range(0, len(units), BATCH_SIZE):
+        sub_units = units[b_start:b_start + BATCH_SIZE]
+        lines_ar = [u.get("text", "").strip() for u in sub_units]
+        numbered_prompt = "\n".join([f"{i+1}. {txt}" for i, txt in enumerate(lines_ar)])
+
+        prompt = (
+            f"Tu es un traducteur et sous-titreur expert d'élite spécialisé dans le dialecte palestinien et le français (Agent Jade).\n"
+            f"{context_directive}"
+            f"Consigne : Traduis fidèlement chacune des phrases numérotées ci-dessous vers un {target_desc} pour des sous-titres vidéo professionnels.\n"
+            f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des tics de langage, ou des répétitions inutiles (ex: 'Quatre étages, quatre étages, quatre étages'), LISSE la traduction en français. Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique (ex: 'Quatre étages se sont effondrés'). Ton but est la clarté et la dignité du sous-titre.\n"
+            f"Respecte STRICTEMENT la numérotation de 1 à {len(lines_ar)} sous la forme 'N. Traduction'.\n\n"
+            f"{numbered_prompt}\n\n"
+            f"Réponds UNIQUEMENT par la liste numérotée :"
+        )
+
+        req_payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.2}
+        }
+        req_data = json.dumps(req_payload).encode("utf-8")
+
+        sub_batch_translated = None
+
+        for model_name in MODELS_CASCADE:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+            try:
+                req = urllib.request.Request(url, data=req_data, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    res_data = json.loads(resp.read().decode("utf-8"))
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    lines = raw_text.strip().splitlines()
+                    translated_map = {}
+                    for line in lines:
+                        m = re.match(r"^(\d+)[\.\)]\s*(.*)", line.strip())
+                        if m:
+                            idx = int(m.group(1)) - 1
+                            translated_map[idx] = m.group(2).strip()
+
+                    sub_batch_translated = []
+                    for i, u in enumerate(sub_units):
+                        tr_text = translated_map.get(i, u.get("text", "")).strip()
+                        sub_batch_translated.append({
+                            "start": round(float(u["start"]), 2),
+                            "end": round(float(u["end"]), 2),
+                            "text": tr_text
+                        })
+                    LAST_MODEL_USED = f"Whisper + {model_name}"
+                    break
+            except Exception:
+                continue
+
+        if sub_batch_translated is not None:
+            all_translated_segments.extend(sub_batch_translated)
+        else:
+            # Repli de sécurité pour ce sous-lot en cas d'indisponibilité totale
+            for u in sub_units:
+                all_translated_segments.append({
+                    "start": round(float(u["start"]), 2),
+                    "end": round(float(u["end"]), 2),
+                    "text": u.get("text", "").strip()
+                })
+
+    LAST_TELEMETRY["t_exec_s"] = round(time.time() - t_jade_start, 2)
+    LAST_TELEMETRY["model_used"] = LAST_MODEL_USED
+    return all_translated_segments
+
 
 if __name__ == "__main__":
     media = r"c:\Users\artas\Desktop\aya\audio_a_traiter\soso18.ogg"

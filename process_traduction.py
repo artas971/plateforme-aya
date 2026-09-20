@@ -51,6 +51,23 @@ BACKGROUND_MAP = {
 }
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
+# Télémétrie et Rapport d'Audit Alexandre (Agent Alexandre)
+ALEXANDRE_TELEMETRY = {}
+
+def record_alexandre_agent(agent_name: str, task_key: str, t_start: float, status: str = "OK", details: str = "", extra: dict = None):
+    duration = round(time.time() - t_start, 2)
+    entry = {
+        "agent": agent_name,
+        "task": task_key,
+        "t_exec_s": duration,
+        "status": status,
+        "details": details
+    }
+    if extra:
+        entry.update(extra)
+    ALEXANDRE_TELEMETRY[task_key] = entry
+    return entry
+
 
 def hex_to_ass_bgr(hex_color: str) -> str:
     """Convertit une couleur Web Hexadécimale (#RRGGBB) en format ASS BGR (&H00BBGGRR)."""
@@ -399,9 +416,16 @@ def find_smart_cut_point(w_start: float, total_duration: float, silences: list, 
     Recherche le dernier vrai silence situé entre (w_start + 20s) et (w_start + 35s).
     Si trouvé, définit la fin de la fenêtre au milieu de ce silence pour ne jamais couper un mot.
     Sinon, bascule sur un découpage standard à default_chunk (30s).
+    Anti-Micro-Chunk : Si le restant de la vidéo est <= max_chunk + 10s (ex: 45s), on absorbe tout
+    pour éviter de créer un micro-morceau orphelin (1 à 5s) qui hallucinerait en fin de vidéo.
     """
     remaining = total_duration - w_start
     if remaining <= max_chunk:
+        return round(total_duration, 2)
+
+    # RÈGLE ANTI-ORPHELIN : Si le restant total dépasse modérément max_chunk (jusqu'à max_chunk + 12s = 47s),
+    # on absorbe la totalité pour éviter de découper un micro-résidu (1s à 6s) qui hallucinerait en fin de vidéo.
+    if remaining <= max_chunk + 12.0:
         return round(total_duration, 2)
 
     search_start = w_start + min_chunk
@@ -415,14 +439,21 @@ def find_smart_cut_point(w_start: float, total_duration: float, silences: list, 
             candidate_silences.append((s_start, s_end))
 
     if candidate_silences:
-        # Le dernier vrai silence situé dans la plage éligible
-        last_s = candidate_silences[-1]
-        cut_point = (last_s[0] + last_s[1]) / 2.0
-        cut_point = max(search_start, min(cut_point, search_end))
-        return round(cut_point, 2)
+        # Trouver en priorité un silence qui ne laisse pas un résidu orphelin (< 8.0s)
+        for last_s in reversed(candidate_silences):
+            cut_point = (last_s[0] + last_s[1]) / 2.0
+            cut_point = max(search_start, min(cut_point, search_end))
+            if (total_duration - cut_point) >= 8.0:
+                return round(cut_point, 2)
+        # Si tous les silences laissaient un résidu < 8s, absorber si raisonnable
+        if remaining <= 48.0:
+            return round(total_duration, 2)
 
     # Fallback si aucun silence détecté
-    return round(min(total_duration, w_start + default_chunk), 2)
+    fallback_cut = w_start + default_chunk
+    if total_duration - fallback_cut < 8.0:
+        return round(total_duration, 2)
+    return round(min(total_duration, fallback_cut), 2)
 
 
 def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_dur: float, source_lang: str = 'auto', force_reprocess: bool = False, user_context: str = "") -> list:
@@ -434,6 +465,21 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
     from gemini_translator import gemini_audio_transcribe_and_translate, normalize_and_rescale_segments, _parse_timestamp_val
     raw_segments = gemini_audio_transcribe_and_translate(chunk_path, mode=mode, total_duration=window_dur, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
     
+    # Fallback local Faster-Whisper sur le chunk si Gemini n'a pas répondu
+    if not raw_segments or len(raw_segments) == 0:
+        try:
+            from faster_whisper import WhisperModel
+            w_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=2)
+            w_lang = "ar" if source_lang in ['ar', 'auto'] else (source_lang if source_lang != 'auto' else None)
+            w_segs, _ = w_model.transcribe(chunk_path, language=w_lang, word_timestamps=False)
+            w_list = list(w_segs)
+            if w_list:
+                units = [{"start": round(ws.start, 2), "end": round(ws.end, 2), "text": ws.text.strip()} for ws in w_list if ws.text.strip()]
+                from gemini_translator import gemini_batch_translate_units
+                raw_segments = gemini_batch_translate_units(units, mode=mode, user_context=user_context)
+        except Exception:
+            pass
+
     if not raw_segments or len(raw_segments) == 0:
         return []
 
@@ -470,6 +516,39 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
 
 # Alias de compatibilité descendante
 transcribe_window_30s = transcribe_window
+
+
+def verify_timeline_coverage(segments: list, total_duration: float, tolerance: float = 0.90, silences: list = None) -> bool:
+    """
+    Garde-Fou Temporel Assermenté (Agent Alexandre - Ticket Troncature) :
+    Vérifie que les sous-titres couvrent l'intégralité de la chronologie du média.
+    Détecte et bloque les troncatures prématurées (ex: arrêt à 2m20 sur une vidéo de 5min12).
+    Tolérance : 90% par défaut (ou fin de parole détectée avant silence terminal).
+    """
+    if not segments:
+        return False
+    if total_duration <= 5.0:
+        return len(segments) > 0
+
+    max_end = max(float(s.get("end", 0.0)) for s in segments)
+
+    # Prise en compte du silence terminal : si la vidéo comporte une outro silencieuse ou musicale
+    effective_target = total_duration
+    if silences:
+        for s_start, s_end in silences:
+            if s_end >= total_duration - 1.5:
+                effective_target = max(5.0, s_start)
+                break
+
+    coverage_ratio = max_end / max(1.0, effective_target)
+    is_valid = (coverage_ratio >= tolerance) or (max_end >= total_duration * tolerance)
+
+    if not is_valid:
+        print(f"[TIMELINE AUDIT] ⚠️ TRONCATURE DÉTECTÉE ! Dernier segment : {max_end:.2f}s, Cible : {effective_target:.2f}s (Couverture : {coverage_ratio*100:.1f}% < {tolerance*100:.0f}%).", flush=True)
+    else:
+        print(f"[TIMELINE AUDIT] ✅ Couverture temporelle validée : {max_end:.2f}s / {total_duration:.2f}s ({min(100.0, coverage_ratio*100):.1f}%).", flush=True)
+
+    return is_valid
 
 
 def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: float, silences: list, source_lang: str = 'auto', force_reprocess: bool = False, user_context: str = "") -> tuple:
@@ -517,49 +596,193 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                             with open(cache_dir / fname, "r", encoding="utf-8") as cf:
                                 cached_segs = json.load(cf)
                                 if isinstance(cached_segs, list) and len(cached_segs) > 0:
-                                    print(f"[PROTOCOLE SMART CHUNK] ⚡ Cache global détecté ({fname}) : {len(cached_segs)} segments déjà transcrits.", flush=True)
-                                    for s in cached_segs:
-                                        s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
-                                        s_end = max(s_start + 0.2, min(float(s.get("end", s_start + 2.0)), total_duration))
-                                        txt = s.get("text", "").strip()
-                                        if txt:
-                                            all_segments.append({
-                                                "start": round(s_start, 2),
-                                                "end": round(s_end, 2),
-                                                "text": txt
-                                            })
-                                    found_cache = True
-                                    print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
-                                    break
+                                    if verify_timeline_coverage(cached_segs, total_duration, tolerance=0.90, silences=silences):
+                                        print(f"[PROTOCOLE SMART CHUNK] ⚡ Cache global valide détecté ({fname}) : {len(cached_segs)} segments déjà transcrits.", flush=True)
+                                        for s in cached_segs:
+                                            s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
+                                            s_end = max(s_start + 0.2, min(float(s.get("end", s_start + 2.0)), total_duration))
+                                            txt = s.get("text", "").strip()
+                                            if txt:
+                                                all_segments.append({
+                                                    "start": round(s_start, 2),
+                                                    "end": round(s_end, 2),
+                                                    "text": txt
+                                                })
+                                        found_cache = True
+                                        print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
+                                        break
+                                    else:
+                                        print(f"[CACHE AUDIT] ⚠️ Cache tronqué/incomplet détecté ({fname}) : invalidation et réanalyse complète.", flush=True)
+                                        try: (cache_dir / fname).unlink()
+                                        except Exception: pass
                         except Exception:
                             pass
 
     if not found_cache:
-        # Si le fichier est court (<= 35s), analyse directe
-        if total_duration <= 35.0:
-            from gemini_translator import gemini_audio_transcribe_and_translate
-            raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
-            if not raw_segs:
-                openai_key = os.environ.get("OPENAI_API_KEY")
-                if openai_key:
-                    from run_studio_v3_full_pipeline import transcribe_via_openai_api
-                    raw_segs = transcribe_via_openai_api(media_path, openai_key, mode=mode)
+        # CASCADE ACOUSTIQUE TRIPLE-PALIER & SMART CHUNKING (TICKETS 3B, 3C & AUDIT TRONCATURE)
+        stt_success = False
+        enable_chirp = os.getenv("ENABLE_CHIRP_STT", "true").lower() in ("true", "1", "yes")
+        ff_prof = get_ffmpeg_performance_profile()
 
-            for s in (raw_segs or []):
-                s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
-                s_end = max(s_start + 0.2, min(float(s.get("end", s_start + 2.0)), total_duration))
-                txt = s.get("text", "").strip()
-                if txt:
-                    all_segments.append({
-                        "start": round(s_start, 2),
-                        "end": round(s_end, 2),
-                        "text": txt
-                    })
+        def _try_whisper(cpu_threads_limit=None):
+            t0_w = time.time()
+            try:
+                from faster_whisper import WhisperModel
+                th_arg = cpu_threads_limit if cpu_threads_limit and cpu_threads_limit > 0 else 4
+                print(f"[ACOUSTIC SYNC] 🎙️ Analyse acoustique via Faster-Whisper (cpu_threads={th_arg})...", flush=True)
+                w_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=th_arg)
+                w_lang = "ar" if source_lang in ['ar', 'auto'] else (source_lang if source_lang != 'auto' else None)
+                w_segments, w_info = w_model.transcribe(media_path, language=w_lang, word_timestamps=False)
+                raw_w_segs = list(w_segments)
+                record_alexandre_agent("Thomas", "thomas_whisper_transcribe", t0_w, status="OK", details=f"{len(raw_w_segs)} segments vocaux (threads: {th_arg}, lang: {w_info.language if w_info else 'ar'})")
+                if raw_w_segs and len(raw_w_segs) > 0:
+                    print(f"[ACOUSTIC SYNC] ✅ {len(raw_w_segs)} segments vocaux détectés (langue: {w_info.language}).", flush=True)
+                    merged_units = []
+                    curr_u = None
+                    for ws in raw_w_segs:
+                        w_txt = ws.text.strip()
+                        if not w_txt:
+                            continue
+                        if curr_u is None:
+                            curr_u = {"start": round(ws.start, 2), "end": round(ws.end, 2), "text": w_txt}
+                        else:
+                            c_dur = curr_u["end"] - curr_u["start"]
+                            gap = ws.start - curr_u["end"]
+                            if c_dur < 2.5 and gap < 0.6 and (ws.end - curr_u["start"]) <= 4.2:
+                                curr_u["end"] = round(ws.end, 2)
+                                curr_u["text"] += " " + w_txt
+                            else:
+                                merged_units.append(curr_u)
+                                curr_u = {"start": round(ws.start, 2), "end": round(ws.end, 2), "text": w_txt}
+                    if curr_u:
+                        merged_units.append(curr_u)
 
-            print("[PROGRESS] 70% - Transcription directe terminée.", flush=True)
+                    t0_j = time.time()
+                    from gemini_translator import gemini_batch_translate_units, LAST_MODEL_USED
+                    translated = gemini_batch_translate_units(merged_units, mode=mode, user_context=user_context)
+                    record_alexandre_agent("Jade", "jade_gemini_translation", t0_j, status="OK", details=f"{len(translated or [])} segments traduits ({LAST_MODEL_USED})")
+                    if translated and len(translated) > 0:
+                        return translated
+            except Exception as we:
+                record_alexandre_agent("Thomas", "thomas_whisper_transcribe", t0_w, status="FALLBACK", details=f"Échec Whisper ({we})")
+                print(f"[ACOUSTIC SYNC WARNING] Moteur acoustique Whisper indisponible ({we}).", file=sys.stderr)
+            return None
 
-        else:
-            # Long fichier : Smart Chunking adaptatif basé sur les silences réels (20s à 35s)
+        def _try_gemini_audio_direct():
+            t0_g = time.time()
+            try:
+                from gemini_translator import gemini_audio_transcribe_and_translate, LAST_MODEL_USED
+                raw_segs = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
+                if not raw_segs:
+                    openai_key = os.environ.get("OPENAI_API_KEY")
+                    if openai_key:
+                        from run_studio_v3_full_pipeline import transcribe_via_openai_api
+                        raw_segs = transcribe_via_openai_api(media_path, openai_key, mode=mode)
+                out_segs = []
+                for s in (raw_segs or []):
+                    s_start = max(0.0, min(float(s.get("start", 0)), total_duration))
+                    s_end = max(s_start + 0.2, min(float(s.get("end", s_start + 2.0)), total_duration))
+                    txt = s.get("text", "").strip()
+                    if txt:
+                        out_segs.append({
+                            "start": round(s_start, 2),
+                            "end": round(s_end, 2),
+                            "text": txt
+                        })
+                if out_segs:
+                    record_alexandre_agent("Jade", "jade_gemini_translation", t0_g, status="OK", details=f"Transcription directe Gemini ({LAST_MODEL_USED})")
+                    return out_segs
+                else:
+                    record_alexandre_agent("Jade", "jade_gemini_translation", t0_g, status="FALLBACK", details="Gemini Audio Direct sans segments")
+            except Exception as ge:
+                record_alexandre_agent("Jade", "jade_gemini_translation", t0_g, status="FALLBACK", details=f"Exception Gemini Audio ({ge})")
+            return None
+
+        # RÈGLE ARCHITECTURALE ABSOLUE (Alexandre / Audit Troncature) :
+        # - Vidéo longue (> 60.0s) : Smart Chunking adaptatif obligatoire (20s-35s sur silences).
+        #   Éradique définitivement les troncatures de génération JSON pour toute vidéo jusqu'à 10+ minutes.
+        # - Vidéo courte (<= 60.0s) : Tentative Single-Shot rapide (Chirp 2 -> Whisper / Gemini Audio Direct).
+        #   Si la tentative courte échoue ou ne couvre pas 90% du chronométrage, bascule automatique sur Smart Chunking.
+        use_smart_chunking = (total_duration > 60.0)
+
+        if not use_smart_chunking:
+            print(f"[DUAL-ENV ROUTING] ⏱️ Vidéo courte ({total_duration:.1f}s <= 60s) : tentative Single-Shot directe...", flush=True)
+
+            # =========================================================================
+            # PALIER 1 : Google Cloud Chirp 2 (Agent Levantin)
+            # =========================================================================
+            if enable_chirp:
+                t0_chirp = time.time()
+                try:
+                    from chirp_client import transcribe_media_with_chirp2
+                    chirp_segs, chirp_model = transcribe_media_with_chirp2(media_path, source_lang=source_lang, user_context=user_context)
+                    if chirp_segs and len(chirp_segs) > 0:
+                        record_alexandre_agent("Thomas", "thomas_chirp2_transcribe", t0_chirp, status="OK", details=f"{len(chirp_segs)} répliques ({chirp_model})")
+                        t0_jade = time.time()
+                        from gemini_translator import gemini_batch_translate_units, LAST_MODEL_USED
+                        translated_segs = gemini_batch_translate_units(chirp_segs, mode=mode, user_context=user_context)
+                        record_alexandre_agent("Jade", "jade_gemini_translation", t0_jade, status="OK", details=f"{len(translated_segs or [])} segments traduits ({LAST_MODEL_USED})")
+                        if translated_segs and verify_timeline_coverage(translated_segs, total_duration, tolerance=0.90, silences=silences):
+                            all_segments = translated_segs
+                            stt_success = True
+                            ai_model_used = f"{chirp_model} + {LAST_MODEL_USED}"
+                            print(f"[CHIRP 2 SUCCÈS] 🎯 Transcription Levantine & Traduction réussies ({len(all_segments)} sous-titres).", flush=True)
+                    else:
+                        record_alexandre_agent("Thomas", "thomas_chirp2_transcribe", t0_chirp, status="FALLBACK", details=f"Chirp ({chirp_model}) -> Bascule Whisper")
+                except Exception as ce:
+                    record_alexandre_agent("Thomas", "thomas_chirp2_transcribe", t0_chirp, status="FALLBACK", details=f"Exception Chirp ({ce}) -> Bascule Moteur Acoustique")
+
+            # =========================================================================
+            # DUAL-ENVIRONMENT ROUTING (TICKET 3C : LOCAL HIGH-PERF VS CLOUD VPS SAFE)
+            # =========================================================================
+            if not stt_success:
+                if ff_prof["is_cloud"]:
+                    # MODE CLOUD VPS : Priorité absolue aux API Cloud (Gemini Audio Direct 0% CPU)
+                    print(f"[DUAL-ENV ROUTING] ☁️ Profil CLOUD VPS ({ff_prof['label']}) : Priorité Gemini Audio Direct (0% CPU VPS)...", flush=True)
+                    g_segs = _try_gemini_audio_direct()
+                    if g_segs and verify_timeline_coverage(g_segs, total_duration, tolerance=0.90, silences=silences):
+                        all_segments = g_segs
+                        stt_success = True
+                        from gemini_translator import LAST_MODEL_USED
+                        ai_model_used = f"gemini_audio_direct + {LAST_MODEL_USED}"
+                        print(f"[DUAL-ENV ROUTING] 🎯 Gemini Audio Direct réussi ({len(all_segments)} sous-titres, 0% CPU VPS).", flush=True)
+                    else:
+                        th_limit = int(ff_prof["threads"]) if (ff_prof["threads"].isdigit() and int(ff_prof["threads"]) > 0) else 2
+                        print(f"[DUAL-ENV ROUTING] ⚠️ Secours Whisper bridé à {th_limit} threads...", flush=True)
+                        w_segs = _try_whisper(cpu_threads_limit=th_limit)
+                        if w_segs and verify_timeline_coverage(w_segs, total_duration, tolerance=0.90, silences=silences):
+                            all_segments = w_segs
+                            stt_success = True
+                            from gemini_translator import LAST_MODEL_USED
+                            ai_model_used = f"whisper_safe_{th_limit}th + {LAST_MODEL_USED}"
+                else:
+                    # MODE LOCAL HIGH-PERF : Whisper int8 en local -> Gemini Audio Direct en secours
+                    print(f"[DUAL-ENV ROUTING] 💻 Profil LOCAL ({ff_prof['label']}) : Analyse Faster-Whisper locale...", flush=True)
+                    w_segs = _try_whisper(cpu_threads_limit=4)
+                    if w_segs and verify_timeline_coverage(w_segs, total_duration, tolerance=0.90, silences=silences):
+                        all_segments = w_segs
+                        stt_success = True
+                        from gemini_translator import LAST_MODEL_USED
+                        ai_model_used = f"whisper_local + {LAST_MODEL_USED}"
+                        print(f"[ACOUSTIC SYNC] 🎯 Traduction synchronisée réussie ({len(all_segments)} sous-titres calés à la voix).", flush=True)
+                    else:
+                        print("[DUAL-ENV ROUTING] ⚠️ Secours Gemini Audio Direct...", flush=True)
+                        g_segs = _try_gemini_audio_direct()
+                        if g_segs and verify_timeline_coverage(g_segs, total_duration, tolerance=0.90, silences=silences):
+                            all_segments = g_segs
+                            stt_success = True
+                            from gemini_translator import LAST_MODEL_USED
+                            ai_model_used = f"gemini_audio_direct + {LAST_MODEL_USED}"
+
+            if not stt_success:
+                print("[DUAL-ENV ROUTING] ⚠️ Le mode Single-Shot a échoué ou a produit un résultat tronqué. Bascule de sécurité vers Smart Chunking...", flush=True)
+                use_smart_chunking = True
+
+        # =========================================================================
+        # PROTOCOLE SMART CHUNKING ADAPTATIF SUR SILENCES RÉELS (20s à 35s)
+        # =========================================================================
+        if use_smart_chunking and not stt_success:
+            print(f"[SMART CHUNKING] 🛡️ Activation du Smart Chunking adaptatif ({total_duration:.1f}s, fenêtres 20s-35s)...", flush=True)
             temp_dir = BASE_DIR / "temp_chunks"
             temp_dir.mkdir(parents=True, exist_ok=True)
 
@@ -569,12 +792,16 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                 next_cut = find_smart_cut_point(cursor, total_duration, silences, min_chunk=20.0, max_chunk=35.0, default_chunk=30.0)
                 if next_cut <= cursor:
                     next_cut = min(total_duration, cursor + 30.0)
+                # Sécurité anti-micro-chunk terminal orphelin (< 8.0s)
+                if (total_duration - next_cut) < 8.0:
+                    next_cut = total_duration
                 windows_plan.append((cursor, next_cut))
                 cursor = next_cut
 
             total_windows = len(windows_plan)
-            print(f"[SMART CHUNKING] {total_windows} fenêtre(s) adaptative(s) planifiée(s) sur les silences réels (20s-35s).", flush=True)
+            print(f"[SMART CHUNKING] {total_windows} fenêtre(s) adaptative(s) planifiée(s) pour couvrir 100% de la durée.", flush=True)
 
+            all_chunk_segs = []
             for w_idx, (w_start, w_end) in enumerate(windows_plan):
                 w_dur = round(w_end - w_start, 2)
                 current_pct = int(40 + (w_idx / total_windows) * 30)
@@ -592,7 +819,8 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
 
                 try:
                     w_segs = transcribe_window(str(chunk_file.resolve()), mode, w_start, w_dur, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
-                    all_segments.extend(w_segs)
+                    if w_segs:
+                        all_chunk_segs.extend(w_segs)
                 finally:
                     if chunk_file.exists():
                         try: chunk_file.unlink()
@@ -601,7 +829,13 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
             if temp_dir.exists():
                 shutil.rmtree(temp_dir, ignore_errors=True)
 
-            print("[PROGRESS] 70% - Toutes les fenêtres ont été transcrites avec succès.", flush=True)
+            if all_chunk_segs:
+                all_segments = all_chunk_segs
+                stt_success = True
+                from gemini_translator import LAST_MODEL_USED
+                ai_model_used = f"smart_chunking_adaptive + {LAST_MODEL_USED}"
+                print(f"[PROGRESS] 70% - Toutes les fenêtres ont été transcrites avec succès ({len(all_segments)} sous-titres).", flush=True)
+                verify_timeline_coverage(all_segments, total_duration, tolerance=0.88, silences=silences)
 
     if not all_segments:
         raise RuntimeError("Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.")
@@ -631,16 +865,34 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
             # Chevauchement anormal : réajuster la fin du segment précédent
             all_segments[i]["end"] = max(all_segments[i]["start"] + 0.3, nxt_start)
 
+    # 1. FILTRE D'OUTRO SILENCE : Élimination des sous-titres fantômes en zone de silence de fin
+    tail_silence_start = None
+    for s_start, s_end in silences:
+        if s_end >= total_duration - 1.0:
+            tail_silence_start = s_start
+            break
+
+    if tail_silence_start is not None and all_segments:
+        # Éliminer tout segment phantom dont le début commence dans ou après le silence terminal
+        valid_segs = [s for s in all_segments if s["start"] < tail_silence_start + 0.3]
+        if valid_segs:
+            all_segments = valid_segs
+            all_segments[-1]["end"] = min(all_segments[-1]["end"], tail_silence_start)
+
     # Clamping strict final contre toute dérive au-delà de la durée totale
     for seg in all_segments:
         seg["start"] = max(0.0, min(seg["start"], total_duration))
         seg["end"] = max(seg["start"] + 0.2, min(seg["end"], total_duration))
 
-    # RÈGLE DU PLAFONNEMENT DE FIN (ANTI-ÉTALEMENT SUR BRUIT DE FOND) :
-    # Supprime la logique forçant all_segments[-1]["end"] = total_duration.
-    # Le sous-titre final disparaît naturellement (last_end + 0.8s max), même s'il reste 10s de vidéo.
-    last_end = all_segments[-1]["end"]
-    all_segments[-1]["end"] = max(all_segments[-1]["start"] + 0.2, min(total_duration, last_end + 0.8))
+    # RÈGLE DU PLAFONNEMENT DE FIN STRICT (ANTI-ÉTALEMENT SUR BRUIT DE FOND & RESPECT FIN DE PAROLE) :
+    # Si le dernier segment est court, il ne doit pas s'étaler artificiellement dans le silence ou le bruit.
+    if all_segments:
+        last_seg = all_segments[-1]
+        char_len = len(last_seg.get("text", ""))
+        max_last_dur = max(1.8, min(3.8, char_len * 0.08 + 1.2))
+        if last_seg["end"] - last_seg["start"] > max_last_dur:
+            last_seg["end"] = round(last_seg["start"] + max_last_dur, 2)
+        last_seg["end"] = min(total_duration, last_seg["end"])
 
     # Vérification d'intégrité finale : aucune fin avant début
     for seg in all_segments:
@@ -662,6 +914,12 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         if seg["text"].strip():
             sanitized_segments.append(seg)
     all_segments = sanitized_segments
+
+    # Filet de sécurité final anti-silence outro
+    if all_segments and tail_silence_start is not None:
+        all_segments = [s for s in all_segments if s["start"] < tail_silence_start + 0.3]
+        if all_segments:
+            all_segments[-1]["end"] = min(all_segments[-1]["end"], tail_silence_start)
 
     if found_cache:
         ai_model_used = "gemini-2.5-flash (Cache)"
@@ -771,12 +1029,51 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     print(f"[ASS SUCCÈS] Fichier généré : {output_ass_path.name}")
 
 
+def get_ffmpeg_performance_profile() -> dict:
+    """
+    Ticket 3C : Détermine les paramètres d'encodage optimaux selon l'environnement (Local vs Cloud VPS) :
+    - Mode Production / Cloud VPS ('cloud_vps_safe') :
+      threads = 2 (ou FFMPEG_MAX_THREADS), preset = 'ultrafast', crf = '24' (mode bridé protecteur anti-crash VPS)
+    - Mode Local High-Perf ('local_high_perf') :
+      threads = 0 (auto/illimité), preset = 'veryfast', crf = '22'
+    """
+    python_env = os.getenv("PYTHON_ENV", os.getenv("NODE_ENV", "local")).lower().strip()
+    exec_profile = os.getenv("AYA_EXEC_PROFILE", "").lower().strip()
+    is_cloud = (python_env == "production") or (exec_profile == "cloud_vps_safe")
+
+    threads = os.getenv("FFMPEG_MAX_THREADS")
+    if not threads or threads.strip() == "":
+        threads = "2" if is_cloud else "0"
+
+    preset = os.getenv("FFMPEG_PRESET")
+    if not preset or preset.strip() == "":
+        preset = "ultrafast" if is_cloud else "veryfast"
+
+    crf = os.getenv("FFMPEG_CRF")
+    if not crf or crf.strip() == "":
+        crf = "24" if is_cloud else "22"
+
+    label = "CLOUD_VPS_SAFE (2-Threads Ultrafast)" if is_cloud else "LOCAL_HIGH_PERF (Illimité Veryfast)"
+    return {
+        "is_cloud": is_cloud,
+        "threads": str(threads),
+        "preset": str(preset),
+        "crf": str(crf),
+        "label": label,
+        "env": python_env
+    }
+
+
 def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, is_video: bool, duration: float, bg_theme: str = 'bg_palestine', has_audio: bool = True):
     """
     Incruste les sous-titres via FFmpeg :
     - SI VIDÉO : Conserve la vidéo originale intacte (aucun fond, aucun recadrage, dimensions d'origine préservées).
     - SI AUDIO PUR : Applique la logique Issue #7 (Fond 9:16 avec thème choisi).
+    - DUAL-ENVIRONMENT (Ticket 3C) : Adapte automatiquement le profil d'encodage (-threads, -preset, -crf).
     """
+    ff_prof = get_ffmpeg_performance_profile()
+    print(f"[FFMPEG CONFIG] ⚙️ Profil d'encodage actif : {ff_prof['label']} (threads: {ff_prof['threads']}, preset: {ff_prof['preset']}, crf: {ff_prof['crf']})", flush=True)
+
     temp_burn_ass = ass_path.parent / f"_temp_burn_{os.getpid()}.ass"
     shutil.copy2(ass_path, temp_burn_ass)
     escaped_ass = str(temp_burn_ass.resolve()).replace("\\", "/").replace(":", "\\:")
@@ -788,9 +1085,12 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
             vf_filter = f"pad=ceil(iw/2)*2:ceil(ih/2)*2,subtitles='{escaped_ass}'"
             cmd = [
                 'ffmpeg', '-y',
+                '-threads', ff_prof['threads'],
                 '-i', media_path,
                 '-vf', vf_filter,
-                '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '22',
+                '-c:v', 'libx264',
+                '-preset', ff_prof['preset'],
+                '-crf', ff_prof['crf'],
                 '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart'
             ]
@@ -812,11 +1112,13 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
             bg_image = str(bg_target.resolve())
             cmd = [
                 'ffmpeg', '-y',
-                '-threads', '0',
+                '-threads', ff_prof['threads'],
                 '-loop', '1', '-i', bg_image,
                 '-i', media_path,
                 '-vf', f"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,subtitles='{escaped_ass}'",
-                '-c:v', 'libx264', '-preset', 'ultrafast', '-tune', 'stillimage',
+                '-c:v', 'libx264',
+                '-preset', ff_prof['preset'],
+                '-tune', 'stillimage',
                 '-c:a', 'aac', '-b:a', '192k',
                 '-pix_fmt', 'yuv420p',
                 '-t', str(duration),
@@ -1103,7 +1405,7 @@ Ne renvoie QUE le texte brut final, sans balises de code markdown (pas de ```txt
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.7, "maxOutputTokens": 500}
+                "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500}
             }
 
             req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
@@ -1155,18 +1457,22 @@ def generate_semantic_title(segments: list, target_lang: str = 'fr', user_contex
         context_directive = f"\nIntègre les informations factuelles suivantes pour enrichir ton analyse :\n[CONTEXTE UTILISATEUR : {user_context.strip()}]\n"
 
     semantic_title = ""
+    greeting_pattern = r'^(?:bonjour|salut|merci|comment\s+vas[-\s]?tu|coucou|bienvenue|bonsoir|all[oô]|salam|ahlan|marhaban|lou[ée]\s+soit\s+dieu|au\s+nom\s+de\s+dieu|alhamdulillah|bismillah)\b'
+
     if gemini_key:
-        try:
-            prompt = f"""Tu es Nadine, directrice éditoriale pour la Plateforme Aya.
+        prompt = f"""Tu es Nadine, directrice éditoriale pour la Plateforme Aya.
 Analyse attentivement le témoignage suivant pour en dégager l'essence.
 Rédige un titre ultra-court, percutant et humain ({lang_instruction}) pour la couverture de la vidéo.
 {context_directive}
 CONSIGNES STRICTES ANTI-PARESSE & COGNITIVES :
+- IGNORE TOTALEMENT LES SALUTATIONS ET FORMULES DE POLITESSE DU DÉBUT (bonjour, merci, etc.). CONCENTRE-TOI SUR LE DRAME OU L'ACTION.
 - Longueur STRICTE : ENTRE 15 ET 35 CARACTÈRES. Évite absolument les phrases à rallonge.
 - INTERDICTION ABSOLUE de simplement copier ou résumer la première phrase (ex: invocations ou formules de politesse). Tu dois extraire le SUJET CENTRAL ou l'ACTION de la vidéo.
+- Règle n°3 : INTERDICTION de renvoyer uniquement un chiffre ou un seul mot. Le titre doit décrire une situation ou une action complète (Ex: "Le seul survivant de la famille" et NON "100").
+- Règle n°4 : Ne rajoute jamais la mention "(VOSTFR)" ou "(VOAR)" dans le texte généré.
 - EXEMPLES DE LA DIRECTION :
-  * Mauvais titre : 'Loué soit Dieu' ou 'Au nom de Dieu'.
-  * Bon titre : 'Face à l'Interrogatoire' ou 'Pas un pouce de notre terre'.
+  * Mauvais titre : '100', 'Maison', 'Bonjour comment vas-tu', 'Loué soit Dieu' ou 'Au nom de Dieu'.
+  * Bon titre : 'Face à l'Interrogatoire', 'Le seul survivant de la famille' ou 'Pas un pouce de notre terre'.
 - Renvoie UNIQUEMENT le texte brut du titre. AUCUN guillemet, AUCUN JSON, AUCUN préambule, AUCUN point final.
 - Interdiction absolue d'inclure des timestamps ou des noms de fichiers techniques.
 
@@ -1175,38 +1481,62 @@ TÉMOIGNAGE :
 {raw_testimony_text[:2000]}
 \"\"\"
 TITRE :"""
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.4,
-                    "maxOutputTokens": 60
-                }
-            }
-            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-                if raw_text:
-                    cleaned = raw_text.strip().replace('\n', ' ').strip('"\':«» ')
-                    cleaned = re.sub(r'^(?:titre\s*:\s*|\*\*|\*|#+)', '', cleaned, flags=re.IGNORECASE).strip('"\':«»* ')
-                    # Écarter les titres qui copient les formules pieuses d'ouverture
-                    if cleaned and not is_raw_or_technical_filename(cleaned):
-                        if not re.search(r'^(?:lou[ée]\s+soit\s+dieu|au\s+nom\s+de\s+dieu|alhamdulillah|bismillah)\b', cleaned, re.IGNORECASE):
-                            semantic_title = cleaned
-        except Exception as e:
-            print(f"[IA NADINE TITRE WARNING] Erreur ou timeout (10s) : {e}", file=sys.stderr)
+        PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
+        FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
+        title_cascade = [
+            PRIMARY_MODEL,
+            FALLBACK_MODEL,
+            "gemini-2.5-flash-lite",
+            "gemini-flash-lite-latest",
+            "gemini-flash-latest",
+            "gemini-3.5-flash-lite"
+        ]
+        seen_m = set()
+        clean_title_cascade = [m for m in title_cascade if m and not (m in seen_m or seen_m.add(m))]
 
-    # Fallback si absent ou invalide/technique
-    if not semantic_title or is_raw_or_technical_filename(semantic_title):
-        # Écarter rigoureusement les invocations et formules d'ouverture du fallback
-        cleaned_text = re.sub(r'^(?:lou[ée]\s+soit\s+(?:[àa]\s+)?dieu|au\s+nom\s+de\s+dieu|gloire\s+[àa]\s+dieu|alhamdulillah|bismillah|inshallah|inchallah)[,.:;\s]*', '', raw_testimony_text, flags=re.IGNORECASE)
-        filtered_words = [w for w in cleaned_text.split() if len(w) > 2 and w.lower() not in ('loué', 'soit', 'dieu', 'alhamdulillah', 'allah', 'bismillah', 'gloire', 'seigneur')][:5]
-        candidate = " ".join(filtered_words).capitalize() if filtered_words else ""
-        if candidate and not is_raw_or_technical_filename(candidate) and len(candidate) > 3:
-            semantic_title = candidate
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.4,
+                "maxOutputTokens": 80
+            }
+        }
+        req_data = json.dumps(payload).encode('utf-8')
+
+        for m_name in clean_title_cascade:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{m_name}:generateContent?key={gemini_key}"
+            try:
+                req = urllib.request.Request(url, data=req_data, headers={'Content-Type': 'application/json'})
+                with urllib.request.urlopen(req, timeout=12) as resp:
+                    data = json.loads(resp.read().decode('utf-8'))
+                    raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                    if raw_text:
+                        cleaned = raw_text.strip().replace('\n', ' ').strip('"\':«» ')
+                        cleaned = re.sub(r'^(?:titre\s*:\s*|\*\*|\*|#+)', '', cleaned, flags=re.IGNORECASE).strip('"\':«»* ')
+                        cleaned = re.sub(r'\s*\((?:VOSTFR|VOAR)\)', '', cleaned, flags=re.IGNORECASE).strip()
+                        words = cleaned.split()
+                        is_isolated_digit_or_single_word = bool(
+                            len(words) <= 1 or cleaned.isdigit() or re.match(r'^\d+$', cleaned)
+                        )
+                        is_greeting = bool(re.search(greeting_pattern, cleaned, re.IGNORECASE))
+                        if cleaned and not is_raw_or_technical_filename(cleaned) and not is_isolated_digit_or_single_word and not is_greeting:
+                            semantic_title = cleaned
+                            break
+            except Exception as e:
+                continue
+
+    # Fallback si absent, invalide/technique ou salutation
+    if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE):
+        # Si un contexte utilisateur est fourni, essayer d'en déduire un titre contextuel
+        if user_context and len(user_context.strip()) > 5:
+            clean_ctx = re.sub(r'[#\*\n]', ' ', user_context).strip()
+            first_words = clean_ctx.split()[:4]
+            semantic_title = " ".join(first_words)
         else:
             semantic_title = clean_fallback
+
+    # Nettoyage final strict (Règle n°4)
+    semantic_title = re.sub(r'\s*\((?:VOSTFR|VOAR)\)', '', semantic_title, flags=re.IGNORECASE).strip()
 
     # Tronquage propre entre 15 et 35 caractères maximum
     if len(semantic_title) > 35:
@@ -1219,11 +1549,108 @@ TITRE :"""
     return semantic_title.strip()
 
 
+def _extract_dynamic_hashtags(segments: list, user_context: str = "") -> list:
+    """
+    Extrait dynamiquement EXACTEMENT 5 hashtags neutres, ciblés et précis basés sur le contenu réel.
+    ZÉRO hallucination géographique (#Gaza interdit sauf si mentionné dans le texte ou le user_context).
+    """
+    tags = []
+
+    # 1. Extraction depuis user_context si l'utilisateur a spécifié des hashtags (#Liban, #Syrie, etc.)
+    if user_context:
+        ctx_tags = re.findall(r'#(\w+)', user_context)
+        for t in ctx_tags:
+            tag = f"#{t.capitalize()}"
+            if tag not in tags:
+                tags.append(tag)
+
+    # 2. Mots-clés géographiques ou thématiques réels mentionnés dans le texte ou user_context
+    full_text = " ".join([s.get("text", "") for s in (segments or [])]) + " " + (user_context or "")
+    full_text_lower = full_text.lower()
+
+    geo_lexicon = [
+        ("gaza", "#Gaza"),
+        ("palestine", "#Palestine"),
+        ("al-quds", "#Jerusalem"),
+        ("jérusalem", "#Jerusalem"),
+        ("liban", "#Liban"),
+        ("beyrouth", "#Beyrouth"),
+        ("syrie", "#Syrie"),
+        ("damas", "#Damas"),
+        ("yémen", "#Yemen"),
+        ("soudan", "#Soudan"),
+        ("khartoum", "#Khartoum"),
+        ("irak", "#Irak"),
+        ("bagdad", "#Bagdad"),
+        ("rafah", "#Rafah"),
+        ("khan younès", "#KhanYounes"),
+        ("jenine", "#Jenine"),
+        ("jennin", "#Jenine"),
+        ("naplouse", "#Naplouse"),
+        ("cisjordanie", "#Cisjordanie"),
+        ("ramallah", "#Ramallah"),
+    ]
+    for key, tag in geo_lexicon:
+        if key in full_text_lower and tag not in tags:
+            tags.append(tag)
+            if len(tags) >= 3:
+                break
+
+    # 3. Termes universels dignes pour le journalisme et l'archivage
+    universal_pool = ["#Témoignage", "#Mémoire", "#Vérité", "#Direct", "#Archive", "#Histoire", "#PourToi"]
+    for ut in universal_pool:
+        if ut not in tags:
+            tags.append(ut)
+        if len(tags) >= 5:
+            break
+
+    return tags[:5]
+
+
+def _generate_dynamic_heuristic_description(segments: list, semantic_title: str = "", user_context: str = "", target_lang: str = 'fr') -> str:
+    """
+    Générateur Heuristique Dynamique de Secours (Agent Nadine).
+    ZÉRO template statique, ZÉRO hallucination géographique.
+    Structure 5 paragraphes narratifs détaillés basés sur les extraits réels du .ass et le user_context.
+    """
+    quotes = []
+    if segments:
+        valid_segs = [s for s in segments if len(s.get("text", "").strip()) >= 15]
+        if valid_segs:
+            n = len(valid_segs)
+            indices = [0, n // 2, n - 1] if n >= 3 else list(range(n))
+            for idx in indices:
+                q_text = valid_segs[idx].get("text", "").strip()
+                if q_text and q_text not in quotes:
+                    quotes.append(q_text)
+
+    quotes_formatted = "\n".join([f"« {q} »" for q in quotes]) if quotes else "« Paroles et faits recueillis sur le vif lors de cet enregistrement. »"
+    title_hook = semantic_title.strip() if semantic_title else "Témoignage exclusif du terrain"
+
+    p1 = f"🔥 TÉMOIGNAGE EXCLUSIF : {title_hook.upper()}\nChaque mot prononcé dans cet enregistrement résonne comme une archive vivante de notre époque. À travers cette prise de parole authentique, c'est la réalité sans fard du terrain qui s'exprime, portant la voix de ceux qui vivent et témoignent avec courage au quotidien."
+
+    if user_context and user_context.strip():
+        p2 = f"📌 CONTEXTE DU RÉCIT :\nCe document s'inscrit dans un cadre précis : {user_context.strip()}. Les faits et réflexions partagés ici éclairent la situation vécue et permettent de saisir avec justesse la portée des événements rapportés."
+    else:
+        p2 = f"📌 DÉROULEMENT DU TÉMOIGNAGE :\nL'enregistrement restitue chronologiquement les épreuves, les réflexions et les faits partagés avec sincérité. Au fil des minutes, le récit expose avec dignité la réalité humaine et les défis rencontrés sur le terrain."
+
+    p3 = f"💬 PAROLES FORTES EXTRAITES DU MÉDIA :\n{quotes_formatted}"
+
+    p4 = f"🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE :\nAu-delà du constat immédiat, cette archive vivante rappelle l'importance fondamentale de documenter chaque expérience humaine. Elle constitue un repère essentiel pour la mémoire collective, rappelant que derrière chaque témoignage se trouvent des destins réels qui méritent d'être entendus, respectés et préservés pour l'Histoire."
+
+    p5 = f"👉 TRANSMETTEZ CETTE VOIX :\nNe laissez pas ce récit se perdre dans l'indifférence. Partagez, commentez avec respect et enregistrez cette publication pour préserver et diffuser cette mémoire. Chaque relais compte pour faire entendre la vérité."
+
+    hashtags = _extract_dynamic_hashtags(segments, user_context=user_context)
+    hashtags_str = " ".join(hashtags)
+
+    return f"{p1}\n\n{p2}\n\n{p3}\n\n{p4}\n\n{p5}\n\n🏷️ {hashtags_str}".strip()
+
+
 def generate_tiktok_description(segments: list, semantic_title: str = "", target_lang: str = 'fr', user_context: str = "") -> str:
     """
     Génération Asynchrone de la Smart Description SEO TikTok (Nadine - En tâche de fond pendant FFmpeg).
-    Rédige un texte narratif détaillé (~3500 caractères, 5 paragraphes structurés) + 5 hashtags.
-    Intègre le Context Grounding (user_context).
+    Rédige un texte narratif détaillé (~3500 caractères, 5 paragraphes structurés) + 5 hashtags contextuels.
+    Cascade de 8 modèles avec retry sur erreur 429 et repli dynamique heuristique anti-hallucination.
     """
     raw_testimony_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()]).strip() if segments else ""
     gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
@@ -1233,11 +1660,25 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
     if user_context and user_context.strip():
         context_directive = f"\nIntègre les informations factuelles suivantes pour enrichir ton analyse :\n[CONTEXTE UTILISATEUR : {user_context.strip()}]\n"
 
+    PRIMARY_MODEL = os.environ.get("GEMINI_PRIMARY_MODEL", "gemini-2.5-flash")
+    FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash-lite")
+    MODELS_CASCADE = [
+        PRIMARY_MODEL,
+        FALLBACK_MODEL,
+        "gemini-2.5-flash-lite",
+        "gemini-flash-lite-latest",
+        "gemini-flash-latest",
+        "gemini-3.5-flash-lite",
+        "gemini-3-flash-preview",
+        "gemini-2.5-pro"
+    ]
+    seen = set()
+    CASCADE = [m for m in MODELS_CASCADE if m and not (m in seen or seen.add(m))]
+
     context_summary = ""
     if gemini_key and raw_testimony_text:
-        try:
-            title_context = f"Titre sémantique retenu pour la vidéo : \"{semantic_title}\"\n" if semantic_title else ""
-            prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en narration et SEO TikTok pour la Plateforme Aya.
+        title_context = f"Titre sémantique retenu pour la vidéo : \"{semantic_title}\"\n" if semantic_title else ""
+        prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en narration et SEO TikTok pour la Plateforme Aya.
 
 MISSION STRICTE & OBLIGATOIRE :
 Rédige la Smart Description SEO TikTok ({lang_instruction}) pour ce témoignage vidéo.
@@ -1250,7 +1691,7 @@ CONSIGNES STRICTES ANTI-PARESSE :
   3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
   4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
   5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
-- À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, pas un de plus. (ex: #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi).
+- À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, déduits EXCLUSIVEMENT du sujet réel du témoignage et du contexte (ex: #Témoignage #Vérité #Direct #Mémoire #PourToi, ou adaptés au lieu et thème réels). INTERDICTION ABSOLUE d'inventer un lieu géographique non mentionné dans le texte.
 
 RÈGLE FORMELLE DE SORTIE :
 Renvoie UNIQUEMENT le texte de la publication rédigée. Pas de JSON, pas de balises markdown ```, pas de préambule.
@@ -1260,54 +1701,57 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
 {raw_testimony_text[:5500]}
 \"\"\"
 """
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.7,
-                    "maxOutputTokens": 3000
-                }
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 2000
             }
-            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=35) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-                if raw_text and len(raw_text.strip()) > 100:
-                    clean = raw_text.strip()
-                    clean = re.sub(r'^```(?:markdown)?\s*', '', clean)
-                    clean = re.sub(r'\s*```$', '', clean)
-                    context_summary = clean.strip()
-                    print(f"[IA NADINE ASYNC] ✅ Smart Description générée ({len(context_summary)} car.)", flush=True)
-        except Exception as e:
-            print(f"[IA NADINE ASYNC WARNING] Erreur appel description : {e}, utilisation du modèle heuristique.", file=sys.stderr)
+        }
+        req_data = json.dumps(payload).encode('utf-8')
 
-    # Fallback si absent ou trop court
+        for model_name in CASCADE:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+            try:
+                req = urllib.request.Request(url, data=req_data, headers={'Content-Type': 'application/json'})
+                with urllib.request.urlopen(req, timeout=35) as resp:
+                    data = json.loads(resp.read().decode('utf-8'))
+                    raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                    if raw_text and len(raw_text.strip()) > 150:
+                        clean = raw_text.strip()
+                        clean = re.sub(r'^```(?:markdown)?\s*', '', clean)
+                        clean = re.sub(r'\s*```$', '', clean)
+                        context_summary = clean.strip()
+                        print(f"[IA NADINE ASYNC] ✅ Smart Description générée avec succès via {model_name} ({len(context_summary)} car.)", flush=True)
+                        break
+            except urllib.error.HTTPError as he:
+                is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
+                if is_quota:
+                    print(f"[IA NADINE ASYNC] ⚠️ Quota 429 atteint sur {model_name}. Pause 2s et bascule sur le modèle suivant...", flush=True)
+                    time.sleep(2.0)
+                else:
+                    print(f"[IA NADINE ASYNC] Erreur HTTP {he.code} sur {model_name}. Bascule modèle suivant...", flush=True)
+                continue
+            except Exception as e:
+                err_s = str(e).lower()
+                if any(q in err_s for q in ["429", "quota", "resource_exhausted"]):
+                    print(f"[IA NADINE ASYNC] ⚠️ Quota/Rate-limit sur {model_name}. Pause 2s et repli cascade...", flush=True)
+                    time.sleep(2.0)
+                else:
+                    print(f"[IA NADINE ASYNC] Modèle {model_name} indisponible ({e}). Bascule modèle suivant...", flush=True)
+                continue
+
+    # Fallback dynamique heuristique si absent ou trop court (ZÉRO template statique Gaza)
     if not context_summary or len(context_summary) < 200:
-        quotes = [s.get("text", "").strip() for s in segments if len(s.get("text", "").strip()) > 15][:4] if segments else []
-        quotes_formatted = "\n".join([f"« {q} »" for q in quotes]) if quotes else f"« {raw_testimony_text[:120]}... »"
+        print("[IA NADINE ASYNC] 🛡️ Activation du Fallback Heuristique Dynamique (extraction réelle du .ass)...", flush=True)
+        context_summary = _generate_dynamic_heuristic_description(
+            segments, semantic_title=semantic_title, user_context=user_context, target_lang=target_lang
+        )
 
-        context_summary = f"""🔥 TÉMOIGNAGE EXCLUSIF DU TERRAIN : UNE RÉALITÉ BRUTE SANS FILTRE
-
-📌 CONTEXTE DE CE TÉMOIGNAGE DIRECT
-Chaque mot prononcé dans cet enregistrement résonne comme une archive vivante de notre époque. Les personnes qui s'expriment ici partagent sans détour la réalité de leur quotidien, marquée par une résilience hors du commun et la volonté inaltérable de faire entendre la vérité. 
-
-À travers ces paroles authentiques, nous découvrons les conditions vécues sur le terrain : l'incertitude permanente, la force des liens familiaux et communautaires, ainsi que la détermination à rester debout malgré les bouleversements qui frappent chaque foyer. Ce récit ne décrit pas seulement des événements, il incarne l'esprit et la dignité inébranlable de ceux qui refusent d'être oubliés.
-
-💬 PAROLES FORTES EXTRAITES DU MÉDIA :
-{quotes_formatted}
-
-🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE
-Ce témoignage dépasse la simple chronique du présent. Il pose une question fondamentale sur notre humanité commune et sur l'importance de préserver et documenter chaque voix pour l'Histoire. La sincérité du ton et la gravité des faits relatés nous rappellent que derrière chaque statistique, il y a des visages, des espoirs, des projets interrompus et un courage immense qui mérite d'être relayé avec respect et fidélité.
-
-La transmission de ces messages à travers le monde est un devoir de mémoire et de solidarité. En refusant l'indifférence, chaque spectateur devient un maillon de la transmission de ces vérités indispensables.
-
-👉 REJOIGNEZ LA VOIX DE LA SOLIDARITÉ
-Ne laissez pas cette voix disparaître dans les méandres de l'algorithme. Commentez pour soutenir la démarche, partagez massivement autour de vous et enregistrez cette publication pour garantir sa visibilité à grande échelle. Ensemble, brisons le mur du silence.
-
-🏷️ #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"""
-
+    # Filet de sécurité hashtags dynamiques si absents
     if '#' not in context_summary:
-        context_summary += "\n\n🏷️ #Gaza #Palestine #Témoignage #UrgenceGaza #PourToi"
+        dyn_tags = _extract_dynamic_hashtags(segments, user_context=user_context)
+        context_summary += f"\n\n🏷️ {' '.join(dyn_tags)}"
 
     return context_summary.strip()
 
@@ -1352,12 +1796,18 @@ def main():
         print(json.dumps({"success": False, "error": f"Fichier introuvable : {media_input}"}))
         sys.exit(1)
 
+    t_global_py_start = time.time()
     try:
+        ff_prof = get_ffmpeg_performance_profile()
+        record_alexandre_agent("Environment", "execution_profile", time.time(), status="OK", details=ff_prof["label"])
+        print(f"[AYA ENVIRONMENT] 🌐 Mode: {ff_prof['env'].upper()} | Profil: {ff_prof['label']} (FFmpeg: threads {ff_prof['threads']}, preset {ff_prof['preset']}, crf {ff_prof['crf']})", flush=True)
+
         mode_label = "⚡ Mode Express (Texte Uniquement)" if express_mode else "🎬 Vidéo Complète"
         print(f"[PROGRESS] 5% - Initialisation du pipeline de traduction ({mode_label})...", flush=True)
 
-        # 1. Analyse média & Silences réels
+        # 1. Analyse média & Silences réels (Thomas)
         print("[PROGRESS] 12% - Analyse acoustique et cartographie des silences FFmpeg...", flush=True)
+        t0_probe = time.time()
         media_info = probe_media(media_input)
         is_video = media_info["is_video"]
         has_audio = media_info.get("has_audio", True)
@@ -1366,6 +1816,7 @@ def main():
         height = media_info["height"]
 
         silences = detect_audio_silences(media_input, noise_threshold="-30dB", min_duration=0.30)
+        record_alexandre_agent("Thomas", "thomas_probe_silences", t0_probe, details=f"Durée: {duration:.1f}s, {len(silences)} silences détectés")
         print(f"[PROGRESS] 25% - Structure média validée ({duration:.1f}s, {'vidéo' if is_video else 'audio'}, {len(silences)} silences détectés).", flush=True)
 
         # Extraction du contexte utilisateur optionnel (CLI --context ou --context_b64)
@@ -1407,17 +1858,20 @@ def main():
 
         # 4. SÉQUENÇAGE CRITIQUE : Génération ÉCLAIR du Titre Sémantique (Nadine - Synchrone, timeout 10s)
         print("[PROGRESS] 60% - ⚡ Nadine génère le Titre Sémantique Éclair (Max 40 car, synchrone)...", flush=True)
+        t0_nadine_titre = time.time()
         semantic_title = generate_semantic_title(segments, target_lang=target_lang, user_context=user_context)
 
         # PRIORITÉ ABSOLUE AU TITRE SÉMANTIQUE IA SUR LES ARGUMENTS CLI / NOMS DE FICHIERS BRUTS
         clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
 
-        if not semantic_title or is_raw_or_technical_filename(semantic_title):
-            if custom_title and not is_raw_or_technical_filename(custom_title) and len(custom_title) > 3:
+        greeting_pattern = r'^(?:bonjour|salut|merci|comment\s+vas[-\s]?tu|coucou|bienvenue|bonsoir|all[oô]|salam|ahlan|marhaban|lou[ée]\s+soit\s+dieu|au\s+nom\s+de\s+dieu|alhamdulillah|bismillah)\b'
+        if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE):
+            if custom_title and not is_raw_or_technical_filename(custom_title) and not re.search(greeting_pattern, custom_title, re.IGNORECASE) and len(custom_title) > 3:
                 semantic_title = custom_title[:40]
             else:
                 semantic_title = clean_fallback
 
+        record_alexandre_agent("Nadine", "nadine_titre_semantique", t0_nadine_titre, details=f"'{semantic_title}' ({len(semantic_title)} car.)")
         print(f"[TITRE SÉMANTIQUE IA] ✨ '{semantic_title}' ({len(semantic_title)} car.) [Priorité Absolue IA]", flush=True)
 
         # Assainissement pour nomenclature des fichiers (.mp4, .ass, .jpg, .txt, .md) basé STRICTEMENT sur le titre sémantique IA
@@ -1434,10 +1888,13 @@ def main():
             cover_filename = f"{clean_title_stem} (Couverture 9-16).jpg"
             cover_path = OUTPUT_DIR / cover_filename
             print("[PROGRESS] 65% - 🎨 Lionel produit immédiatement la Couverture 9:16 avec le Titre Sémantique...", flush=True)
+            t0_lionel = time.time()
             try:
                 generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
+                record_alexandre_agent("Lionel", "lionel_couverture_9_16", t0_lionel, details=f"Couverture: {cover_filename}")
                 print(f"[COUVERTURE PRÊTE] 🖼️ {cover_filename}", flush=True)
             except Exception as cv_err:
+                record_alexandre_agent("Lionel", "lionel_couverture_9_16", t0_lionel, status="WARNING", details=str(cv_err))
                 print(f"[LIONEL COUVERTURE WARNING] Erreur : {cv_err}", file=sys.stderr)
 
             desc_filename = f"{clean_title_stem} (Description TikTok).txt"
@@ -1449,13 +1906,16 @@ def main():
         def _async_desc_worker():
             try:
                 print("[ASYNC THREAD] 📝 Nadine rédige la Smart Description TikTok en arrière-plan...", flush=True)
+                t0_desc = time.time()
                 d_text = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang, user_context=user_context)
+                record_alexandre_agent("Nadine", "nadine_description_tiktok_async", t0_desc, details=f"{len(d_text)} car.")
                 async_desc_result["text"] = d_text
                 if desc_path:
                     with open(desc_path, 'w', encoding='utf-8') as df:
                         df.write(d_text.strip() + '\n')
                     print(f"[ASYNC THREAD SUCCÈS] 📝 Description écrite dans {desc_path.name}", flush=True)
             except Exception as e_desc:
+                record_alexandre_agent("Nadine", "nadine_description_tiktok_async", time.time(), status="WARNING", details=str(e_desc))
                 print(f"[ASYNC THREAD WARNING] Erreur description : {e_desc}", file=sys.stderr)
 
         desc_thread = threading.Thread(target=_async_desc_worker, daemon=True)
@@ -1464,23 +1924,20 @@ def main():
         # ⚡ COURT-CIRCUIT MODE EXPRESS (MODULE 2 : TEXTE MARKDOWN EN < 5S)
         if express_mode:
             print("[PROGRESS] 85% - Formatage Markdown structuré du texte traduit (Mode Express)...", flush=True)
-            md_filename = f"{clean_title_stem} (Traduction Express).md"
+            full_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()])
+
+            # Nom du fichier Markdown téléchargeable
+            md_filename = f"{clean_title_stem} (Traduction Texte).md"
             md_path = OUTPUT_DIR / md_filename
 
-            full_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text")]).strip()
-
-            src_display = "Arabe palestinien (Gaza)" if source_lang == 'ar' else ("Français" if source_lang == 'fr' else "Détection automatique")
-            tgt_display = "Arabe palestinien (VOAR)" if target_lang == 'ar' else "Français (VOSTFR)"
-
             md_lines = [
-                f"# 📝 {semantic_title} - Traduction Texte Express",
-                f"**Fichier source** : `{Path(media_input).name}`  ",
-                f"**Sens** : `{src_display} ➔ {tgt_display}`  ",
-                f"**Durée du média** : `{duration:.1f}s` | **Segments** : `{len(segments)}` | **Moteur IA** : `{ai_model_used}`  ",
+                f"# 📄 {semantic_title}",
+                "",
+                f"> **Source :** {'Arabe (Gaza)' if source_lang == 'ar' else ('Français' if source_lang == 'fr' else 'Détection Auto')} | **Cible :** {'Arabe VOAR' if target_lang == 'ar' else 'Français VOSTFR'} | **Modèle :** {ai_model_used}",
                 "",
                 "---",
                 "",
-                "### 📜 Texte Traduit Intégral",
+                "### 📝 Traduction Complète",
                 "",
                 f"{full_text}",
                 "",
@@ -1508,6 +1965,8 @@ def main():
 
             context_summary = async_desc_result.get("text") or "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
 
+            record_alexandre_agent("Pipeline", "total_python_pipeline", t_global_py_start, status="OK", details=f"Durée totale Python Express: {round(time.time() - t_global_py_start, 2)}s")
+
             response = {
                 "success": True,
                 "express_mode": True,
@@ -1525,7 +1984,8 @@ def main():
                 "markdown_url": f"/download/{md_filename}",
                 "segments_count": len(segments),
                 "segments": segments,
-                "silences_count": len(silences)
+                "silences_count": len(silences),
+                "telemetry": ALEXANDRE_TELEMETRY
             }
             print("\n---JSON_OUTPUT_START---", flush=True)
             print(json.dumps(response, ensure_ascii=False, indent=2), flush=True)
@@ -1541,13 +2001,17 @@ def main():
         ass_path = OUTPUT_DIR / ass_filename
         mp4_path = OUTPUT_DIR / mp4_filename
 
-        # 6. Génération du fichier .ASS
+        # 6. Génération du fichier .ASS (Lionel / Thomas)
         print("[PROGRESS] 75% - Génération et stylisation des sous-titres .ASS...", flush=True)
+        t0_ass = time.time()
         build_ass_file(segments, ass_path, is_video, width, height, duration, sub_color_hex, sub_margin_v)
+        record_alexandre_agent("Lionel", "lionel_ass_styling", t0_ass, details=f"Fichier: {ass_filename}")
 
-        # 7. Incrustation vidéo FFmpeg (S'exécute en parallèle de la rédaction de Nadine en arrière-plan)
+        # 7. Incrustation vidéo FFmpeg (Thomas - S'exécute en parallèle de la rédaction de Nadine en arrière-plan)
         print("[PROGRESS] 80% - Encodage et incrustation vidéo FFmpeg en cours (en parallèle du thread IA)...", flush=True)
+        t0_ffmpeg = time.time()
         render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme, has_audio=has_audio)
+        record_alexandre_agent("Thomas", "thomas_ffmpeg_encode", t0_ffmpeg, details=f"Encodage final: {mp4_filename}")
 
         # 8. Synchronisation de la Smart Description Asynchrone
         if desc_thread.is_alive():
@@ -1564,6 +2028,8 @@ def main():
             print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
 
         print("[PROGRESS] 100% - Vidéo sous-titrée et pack finalisés avec succès !", flush=True)
+
+        record_alexandre_agent("Pipeline", "total_python_pipeline", t_global_py_start, status="OK", details=f"Durée totale Python: {round(time.time() - t_global_py_start, 2)}s")
 
         # 9. Réponse finale JSON
         response = {
@@ -1589,7 +2055,9 @@ def main():
             "desc_filename": desc_filename,
             "desc_url": f"/download/{desc_filename}" if desc_filename else None,
             "segments_count": len(segments),
-            "silences_count": len(silences)
+            "silences_count": len(silences),
+            "execution_profile": ff_prof["label"],
+            "telemetry": ALEXANDRE_TELEMETRY
         }
         print("\n---JSON_OUTPUT_START---", flush=True)
         print(json.dumps(response, ensure_ascii=False, indent=2), flush=True)

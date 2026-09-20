@@ -14,6 +14,7 @@ token*.json
 IDENTIFIANTS_ET_ACCES.md
 drive_synced_files.json
 cache_transcriptions/
+scratch/
 
 # =======================================================
 # 2. DÉPENDANCES & MODULES

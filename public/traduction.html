@@ -2186,6 +2186,11 @@
                                         <a href="${finalData.markdown_url}" download class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.4rem; font-size: 0.92rem; background: var(--color-turquoise); display: flex; align-items: center; gap: 0.5rem;">
                                             <span>⬇️</span> <span>${dict.btnDownloadMarkdown || 'Télécharger le Markdown (.md)'}</span>
                                         </a>
+                                        ${finalData.drive_backup_link ? `
+                                            <a href="${finalData.drive_backup_link}" target="_blank" rel="noopener noreferrer" class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.4rem; font-size: 0.92rem; background: linear-gradient(135deg, #1a73e8, #4285f4); display: flex; align-items: center; gap: 0.5rem; color: white;">
+                                                <span>☁️</span> <span>${dict.btnDriveBackup || 'Lien de Sauvegarde'}</span>
+                                            </a>
+                                        ` : ''}
                                     </div>
                                 </div>
 
@@ -2335,6 +2340,12 @@ ${safeText}
                                     <a href="${finalData.desc_url}" download="${finalData.desc_filename || 'description_tiktok.txt'}" class="aya-btn-download aya-btn-neutral">
                                         <span>📝</span>
                                         <span>Copywriting TikTok</span>
+                                    </a>
+                                ` : ''}
+                                ${finalData.drive_backup_link ? `
+                                    <a href="${finalData.drive_backup_link}" target="_blank" rel="noopener noreferrer" class="aya-btn-download aya-btn-drive" style="background: linear-gradient(135deg, #1a73e8, #4285f4); color: white; border: none; text-decoration: none; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.35);">
+                                        <span>☁️</span>
+                                        <span data-i18n="btnDriveBackup">${dict.btnDriveBackup || 'Lien de Sauvegarde'}</span>
                                     </a>
                                 ` : ''}
                                 <a href="/communaute" id="btnShareCommunity" class="aya-btn-download aya-btn-accent" style="background: linear-gradient(135deg, #0b5394, #00bcd4); color: white; border: none; text-decoration: none;">
