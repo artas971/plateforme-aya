@@ -2010,6 +2010,9 @@
         const btnViewResultSticky = document.getElementById('btnViewResultSticky');
         const chkGenerateTiktokPack = document.getElementById('chkGenerateTiktokPack');
         const forceReprocess = document.getElementById('forceReprocess');
+        const telegramUrlInput = document.getElementById('telegramUrlInput');
+        const btnPasteTelegram = document.getElementById('btnPasteTelegram');
+        const btnClearTelegram = document.getElementById('btnClearTelegram');
 
         const resultBox = document.getElementById('resultBox');
         const resultStatus = document.getElementById('resultStatus');
@@ -2210,9 +2213,6 @@
         });
 
         // Gestion du champ Telegram (Issue #15)
-        const telegramUrlInput = document.getElementById('telegramUrlInput');
-        const btnPasteTelegram = document.getElementById('btnPasteTelegram');
-        const btnClearTelegram = document.getElementById('btnClearTelegram');
 
         function checkFormCanSubmit() {
             const hasFile = !!selectedFile;
@@ -2689,6 +2689,7 @@ ${safeText}
                             console.error('Erreur lors de la copie :', e);
                         }
                     });
+                }
                 const councilBox = document.getElementById('agentsCouncilContainer');
                 if (councilBox) councilBox.innerHTML = '';
                 return;
