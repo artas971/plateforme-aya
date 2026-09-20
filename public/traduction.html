@@ -6,6 +6,7 @@
     <title>Aya Studio V3 - Sous-titrage Automatique Haute Précision</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/aya-rtl.css">
+    <link rel="stylesheet" href="/tiktok-publish-modal.css">
     <style>
         :root {
             --color-primary: #0b5394;
@@ -2348,6 +2349,10 @@ ${safeText}
                                         <span data-i18n="btnDriveBackup">${dict.btnDriveBackup || 'Lien de Sauvegarde'}</span>
                                     </a>
                                 ` : ''}
+                                <button type="button" id="btnOpenTikTokPublish" class="aya-btn-download" style="background: linear-gradient(135deg, #FE2C55, #111827); color: white; border: 1px solid rgba(254, 44, 85, 0.4); font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(254, 44, 85, 0.35);">
+                                    <span>📱</span>
+                                    <span>Prévisualiser & Publier TikTok</span>
+                                </button>
                                 <a href="/communaute" id="btnShareCommunity" class="aya-btn-download aya-btn-accent" style="background: linear-gradient(135deg, #0b5394, #00bcd4); color: white; border: none; text-decoration: none;">
                                     <span>🌍</span>
                                     <span>Partager sur la Communauté</span>
@@ -2357,6 +2362,17 @@ ${safeText}
                     `;
 
                     videoPreviewContainer.innerHTML = previewHtml;
+
+                    const btnTikTokPublish = document.getElementById('btnOpenTikTokPublish');
+                    if (btnTikTokPublish) {
+                        btnTikTokPublish.addEventListener('click', () => {
+                            if (window.openTikTokPublishModal) {
+                                window.openTikTokPublishModal(finalData);
+                            } else {
+                                console.error("[TIKTOK MODAL] Modal non chargé");
+                            }
+                        });
+                    }
 
                     const btnShareComm = document.getElementById('btnShareCommunity');
                     if (btnShareComm) {
@@ -2457,6 +2473,7 @@ ${safeText}
             }
         }
     </script>
+    <script src="/tiktok-publish-modal.js"></script>
     <script src="/aya-i18n.js"></script>
     <script src="/feedback-widget.js"></script>
 </body>
