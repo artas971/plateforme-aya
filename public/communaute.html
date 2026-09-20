@@ -256,14 +256,45 @@
             background: #0f172a;
             border-radius: 12px;
             overflow: hidden;
-            max-height: 280px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
         }
 
         .media-preview-container video, .media-preview-container audio {
             width: 100%;
-            max-height: 280px;
+            max-height: 320px;
             display: block;
+            background: #000;
+        }
+
+        .media-preview-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-replace-media {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f1f5f9;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-replace-media:hover {
+            background: rgba(0, 188, 212, 0.18) !important;
+            border-color: #00bcd4 !important;
+            color: #00bcd4 !important;
         }
 
         .btn-remove-media {
@@ -679,6 +710,16 @@
                             <button type="button" class="btn-remove-media" id="btnRemoveMedia" title="Retirer ce fichier">&times;</button>
                             <video id="videoPreview" controls playsinline style="display: none;"></video>
                             <audio id="audioPreview" controls style="display: none;"></audio>
+                            <div class="media-preview-bar" id="mediaPreviewBar">
+                                <div id="mediaPreviewInfo" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; overflow: hidden;">
+                                    <span id="mediaPreviewBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: rgba(0, 188, 212, 0.15); color: #00bcd4; border: 1px solid rgba(0, 188, 212, 0.3);">🎬 Vidéo prête</span>
+                                    <span id="mediaPreviewName" style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e2e8f0; font-weight: 500;"></span>
+                                </div>
+                                <button type="button" id="btnReplaceMedia" class="btn-replace-media" title="Changer ou réimporter un autre fichier">
+                                    <span>🔄</span>
+                                    <span id="btnReplaceMediaText">Remplacer la vidéo</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -731,6 +772,8 @@
     <script>
         (function() {
             let selectedFile = null;
+            let autoShareMediaUrl = null;
+            let autoShareThumbnail = null;
             let currentPosts = [];
             let activeTagFilter = 'all';
 
@@ -740,6 +783,9 @@
             const videoPreview = document.getElementById('videoPreview');
             const audioPreview = document.getElementById('audioPreview');
             const btnRemoveMedia = document.getElementById('btnRemoveMedia');
+            const btnReplaceMedia = document.getElementById('btnReplaceMedia');
+            const mediaPreviewBadge = document.getElementById('mediaPreviewBadge');
+            const mediaPreviewName = document.getElementById('mediaPreviewName');
             const publishForm = document.getElementById('publishForm');
             const btnPublishPost = document.getElementById('btnPublishPost');
             const publishFeedback = document.getElementById('publishFeedback');
@@ -748,19 +794,84 @@
             const heroPostsCount = document.getElementById('heroPostsCount');
             const feedFilters = document.getElementById('feedFilters');
 
-            // 1. Initialisation Préremplissage depuis sessionStorage si redirection depuis Studio/Traduction
-            try {
-                const autoShareData = JSON.parse(sessionStorage.getItem('aya_share_to_community') || 'null');
-                if (autoShareData) {
-                    if (autoShareData.description) {
-                        document.getElementById('postContentInput').value = autoShareData.description;
+            // 1. Initialisation & Auto-Hydratation (State Passing React Router / sessionStorage / History)
+            function initAutoHydration() {
+                try {
+                    let autoShareData = null;
+
+                    // A. Priorité 1 : React Router / History State (ex: navigate('/communaute', { state: { ... } }))
+                    if (window.history && window.history.state) {
+                        const hState = window.history.state;
+                        autoShareData = hState.ayaShare || hState.state || (hState.usr && hState.usr.ayaShare) || null;
                     }
-                    if (autoShareData.title) {
-                        document.getElementById('tagsInput').value = autoShareData.title;
+
+                    // B. Priorité 2 : SessionStorage (Transfert inter-onglets/pages)
+                    if (!autoShareData) {
+                        autoShareData = JSON.parse(sessionStorage.getItem('aya_share_to_community') || 'null');
                     }
-                    sessionStorage.removeItem('aya_share_to_community');
+
+                    // C. Priorité 3 : Fallback Paramètres d'URL
+                    if (!autoShareData) {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.get('videoUrl') || urlParams.get('description')) {
+                            autoShareData = {
+                                videoUrl: urlParams.get('videoUrl') || '',
+                                description: urlParams.get('description') || '',
+                                title: urlParams.get('title') || '',
+                                videoFilename: urlParams.get('videoFilename') || ''
+                            };
+                        }
+                    }
+
+                    if (autoShareData) {
+                        console.log('⚡ [COMMUNAUTÉ LIONEL] Auto-Hydratation déclenchée avec succès :', autoShareData);
+
+                        // Auto-remplissage du texte / Smart Description
+                        if (autoShareData.description) {
+                            const contentInput = document.getElementById('postContentInput');
+                            if (contentInput) {
+                                contentInput.value = autoShareData.description;
+                            }
+                        }
+
+                        // Auto-remplissage du titre / tags
+                        if (autoShareData.title) {
+                            const tagsInput = document.getElementById('tagsInput');
+                            if (tagsInput) {
+                                tagsInput.value = autoShareData.title;
+                            }
+                        }
+
+                        // Auto-chargement et affichage immédiat dans le lecteur vidéo 9:16
+                        if (autoShareData.videoUrl) {
+                            autoShareMediaUrl = autoShareData.videoUrl;
+                            autoShareThumbnail = autoShareData.coverUrl || null;
+
+                            videoPreview.src = autoShareData.videoUrl;
+                            videoPreview.style.display = 'block';
+                            audioPreview.style.display = 'none';
+
+                            dropzone.style.display = 'none';
+                            previewContainer.style.display = 'block';
+
+                            if (mediaPreviewBadge) {
+                                mediaPreviewBadge.style.display = 'inline-flex';
+                                mediaPreviewBadge.innerHTML = `<span>🎬</span> Vidéo traduite (.ass incrusté)`;
+                            }
+                            if (mediaPreviewName) {
+                                mediaPreviewName.textContent = autoShareData.videoFilename || autoShareData.title || 'Vidéo finale';
+                            }
+                        }
+
+                        // Purge propre du sessionStorage pour ne pas piéger un rechargement futur (F5)
+                        sessionStorage.removeItem('aya_share_to_community');
+                    }
+                } catch(e) {
+                    console.warn('⚠️ [COMMUNAUTÉ] Erreur lors de l\'auto-hydratation :', e);
                 }
-            } catch(e) {}
+            }
+
+            initAutoHydration();
 
             // 2. Gestion Drag & Drop et Sélection de Fichier
             dropzone.addEventListener('click', () => fileInput.click());
@@ -788,24 +899,51 @@
                 }
             });
 
-            btnRemoveMedia.addEventListener('click', () => {
+            // Bouton de Remplacement & Bouton de Retrait du média
+            function clearMediaState() {
                 selectedFile = null;
+                autoShareMediaUrl = null;
+                autoShareThumbnail = null;
                 fileInput.value = '';
                 previewContainer.style.display = 'none';
                 videoPreview.src = '';
                 audioPreview.src = '';
                 videoPreview.style.display = 'none';
                 audioPreview.style.display = 'none';
+                if (mediaPreviewName) mediaPreviewName.textContent = '';
                 dropzone.style.display = 'block';
+                console.log('🔄 [COMMUNAUTÉ] Média réinitialisé : zone d\'upload standard réactivée.');
+            }
+
+            if (btnReplaceMedia) {
+                btnReplaceMedia.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    clearMediaState();
+                });
+            }
+
+            btnRemoveMedia.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearMediaState();
             });
 
             function handleFileSelect(file) {
                 selectedFile = file;
+                autoShareMediaUrl = null;
+                autoShareThumbnail = null;
                 const fileUrl = URL.createObjectURL(file);
                 const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm|mkv)$/i.test(file.name);
 
                 dropzone.style.display = 'none';
                 previewContainer.style.display = 'block';
+
+                if (mediaPreviewBadge) {
+                    mediaPreviewBadge.style.display = 'inline-flex';
+                    mediaPreviewBadge.innerHTML = isVideo ? `<span>📁</span> Fichier local (Vidéo)` : `<span>🎵</span> Fichier local (Audio)`;
+                }
+                if (mediaPreviewName) {
+                    mediaPreviewName.textContent = file.name;
+                }
 
                 if (isVideo) {
                     videoPreview.src = fileUrl;
@@ -826,7 +964,7 @@
                 const author = document.getElementById('authorNameInput').value.trim();
                 const tags = document.getElementById('tagsInput').value.trim();
 
-                if (!content && !selectedFile) {
+                if (!content && !selectedFile && !autoShareMediaUrl) {
                     showFeedback('error', "Veuillez renseigner un texte explicatif ou sélectionner un fichier média.");
                     return;
                 }
@@ -839,7 +977,15 @@
                     formData.append('originalContent', content);
                     if (author) formData.append('authorName', author);
                     if (tags) formData.append('tags', tags);
-                    if (selectedFile) formData.append('media', selectedFile);
+
+                    if (selectedFile) {
+                        formData.append('media', selectedFile);
+                    } else if (autoShareMediaUrl) {
+                        formData.append('mediaUrl', autoShareMediaUrl);
+                        if (autoShareThumbnail) {
+                            formData.append('mediaThumbnail', autoShareThumbnail);
+                        }
+                    }
 
                     const res = await fetch('/api/posts', {
                         method: 'POST',

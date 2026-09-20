@@ -19,6 +19,7 @@ const { Post, isDbConnected } = require('../models');
 // Configuration des répertoires de stockage
 const ROOT_DIR = path.resolve(__dirname, '..');
 const UPLOADS_POSTS_DIR = path.join(ROOT_DIR, 'uploads', 'posts');
+const REPONSED_DIR = path.join(ROOT_DIR, 'fichiers_reponse_a_envoyer');
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const FALLBACK_POSTS_FILE = path.join(DATA_DIR, 'posts.json');
 
@@ -169,11 +170,59 @@ router.post('/', upload.single('media'), async (req, res) => {
                 mediaType = 'audio';
             }
         } else if (mediaUrl) {
+            // Si mediaUrl pointe vers un fichier local généré (/download/ ou /fichiers_reponse_a_envoyer/),
+            // on copie le fichier vers uploads/posts pour garantir sa persistance définitive
+            try {
+                let filenameFromUrl = '';
+                if (mediaUrl.startsWith('/download/')) {
+                    filenameFromUrl = decodeURIComponent(mediaUrl.replace('/download/', ''));
+                } else if (mediaUrl.startsWith('/fichiers_reponse_a_envoyer/')) {
+                    filenameFromUrl = decodeURIComponent(mediaUrl.replace('/fichiers_reponse_a_envoyer/', ''));
+                }
+
+                if (filenameFromUrl) {
+                    const sourcePath = path.join(REPONSED_DIR, filenameFromUrl);
+                    if (fs.existsSync(sourcePath) && !fs.statSync(sourcePath).isDirectory()) {
+                        const sanitizedDestName = sanitizeFileName(filenameFromUrl);
+                        const destPath = path.join(UPLOADS_POSTS_DIR, sanitizedDestName);
+                        fs.copyFileSync(sourcePath, destPath);
+                        mediaUrl = `/uploads/posts/${sanitizedDestName}`;
+                        console.log(`📋 [COMMUNAUTÉ] Vidéo persistée dans uploads/posts : ${sanitizedDestName}`);
+                    }
+                }
+            } catch (copyErr) {
+                console.warn('⚠️ [POSTS] Échec de la copie persistante du média (url conservée) :', copyErr);
+            }
+
             const cleanUrl = mediaUrl.split('?')[0].toLowerCase();
             if (cleanUrl.endsWith('.mp4') || cleanUrl.endsWith('.mov') || cleanUrl.endsWith('.webm')) {
                 mediaType = 'video';
             } else if (cleanUrl.endsWith('.mp3') || cleanUrl.endsWith('.wav') || cleanUrl.endsWith('.m4a')) {
                 mediaType = 'audio';
+            }
+        }
+
+        // Persistance optionnelle de la miniature transmise
+        let mediaThumbnail = body.mediaThumbnail || null;
+        if (mediaThumbnail) {
+            try {
+                let thumbFromUrl = '';
+                if (mediaThumbnail.startsWith('/download/')) {
+                    thumbFromUrl = decodeURIComponent(mediaThumbnail.replace('/download/', ''));
+                } else if (mediaThumbnail.startsWith('/fichiers_reponse_a_envoyer/')) {
+                    thumbFromUrl = decodeURIComponent(mediaThumbnail.replace('/fichiers_reponse_a_envoyer/', ''));
+                }
+                if (thumbFromUrl) {
+                    const thumbSource = path.join(REPONSED_DIR, thumbFromUrl);
+                    if (fs.existsSync(thumbSource) && !fs.statSync(thumbSource).isDirectory()) {
+                        const sanitizedThumb = sanitizeFileName(thumbFromUrl);
+                        const thumbDest = path.join(UPLOADS_POSTS_DIR, sanitizedThumb);
+                        fs.copyFileSync(thumbSource, thumbDest);
+                        mediaThumbnail = `/uploads/posts/${sanitizedThumb}`;
+                    }
+                }
+            } catch (thumbErr) {
+                console.warn('⚠️ [POSTS] Échec de la copie de la miniature :', thumbErr);
             }
         }
 
@@ -205,7 +254,7 @@ router.post('/', upload.single('media'), async (req, res) => {
             sourceLang: body.sourceLang || "ar",
             targetLang: body.targetLang || "fr",
             mediaUrl,
-            mediaThumbnail: body.mediaThumbnail || null,
+            mediaThumbnail: mediaThumbnail || body.mediaThumbnail || null,
             tags,
             moderationStatus: 'pending', // Verrou de sécurité exigé
             likesCount: 0,

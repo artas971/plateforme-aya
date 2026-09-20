@@ -2378,11 +2378,25 @@ ${safeText}
                     if (btnShareComm) {
                         btnShareComm.addEventListener('click', () => {
                             try {
-                                sessionStorage.setItem('aya_share_to_community', JSON.stringify({
+                                const sharePayload = {
                                     description: finalData.context_summary || '',
-                                    title: finalData.clean_title || ''
-                                }));
-                            } catch(e) {}
+                                    title: finalData.clean_title || finalData.semantic_title || '',
+                                    videoUrl: finalData.mp4_url || '',
+                                    videoFilename: finalData.mp4_filename || '',
+                                    coverUrl: finalData.cover_url || '',
+                                    coverFilename: finalData.cover_filename || '',
+                                    timestamp: Date.now()
+                                };
+                                sessionStorage.setItem('aya_share_to_community', JSON.stringify(sharePayload));
+
+                                // Support direct HTML5 History API / React Router location.state
+                                if (window.history && window.history.replaceState) {
+                                    window.history.replaceState({ ayaShare: sharePayload, state: sharePayload }, document.title);
+                                }
+                                console.log('🚀 [COMMUNITY TRANSFER] État complet transmis à /communaute :', sharePayload);
+                            } catch(e) {
+                                console.error('Erreur stockage aya_share_to_community:', e);
+                            }
                         });
                     }
 

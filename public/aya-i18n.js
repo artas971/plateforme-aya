@@ -53,6 +53,7 @@
             placeholderPublishTags: 'Ex: Gaza, Temoignage, Espoir, Justice',
             btnPublishSubmit: '<span>🚀</span> Publier le témoignage',
             btnPublishSubmitting: '<span>⏳</span> Envoi et validation en cours...',
+            btnReplaceMediaText: 'Remplacer la vidéo',
             publishSuccessTitle: '✅ Témoignage soumis avec succès !',
             publishSuccessMsg: 'Votre publication a été transmise avec succès. Elle est actuellement en cours d\'examen par l\'équipe de modération (statut : En attente) avant sa mise en ligne sur le mur public.',
             feedSectionTitle: '✨ Témoignages Publiés',
@@ -295,6 +296,7 @@
             placeholderPublishTags: 'مثال: غزة، شهادة، أمل، عدالة',
             btnPublishSubmit: '<span>🚀</span> إرسال ونشر الشهادة',
             btnPublishSubmitting: '<span>⏳</span> جاري الإرسال والتسجيل...',
+            btnReplaceMediaText: 'استبدال الفيديو',
             publishSuccessTitle: '✅ تم إرسال الشهادة بنجاح!',
             publishSuccessMsg: 'تم استلام منشورك بنجاح. وهو الآن قيد المراجعة والتدقيق من قبل فريق الإشراف (الحالة: قيد الانتظار) قبل ظهوره على الجدار العام.',
             feedSectionTitle: '✨ أحدث الشهادات المنشورة',
@@ -571,6 +573,7 @@
             updateElementText('feedSectionTitle', dict.feedSectionTitle);
             updateElementText('feedEmptyTitle', dict.feedEmptyTitle);
             updateElementText('feedEmptySub', dict.feedEmptySub);
+            updateElementText('btnReplaceMediaText', dict.btnReplaceMediaText);
 
             const btnPublish = document.getElementById('btnPublishPost');
             if (btnPublish && !btnPublish.disabled) {
