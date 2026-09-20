@@ -429,7 +429,43 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             res.end();
         });
 
+        let isCancelled = false;
+
+        const killProcessTree = (pid) => {
+            if (!pid) return;
+            try {
+                if (process.platform === 'win32') {
+                    const { exec } = require('child_process');
+                    exec(`taskkill /PID ${pid} /T /F`, (err) => {
+                        if (err) console.warn(`[TRADUCTION CANCEL] taskkill avertissement (PID: ${pid}) :`, err.message);
+                        else console.log(`[TRADUCTION CANCEL] 🛑 Arbre de processus PID ${pid} neutralisé avec succès.`);
+                    });
+                } else {
+                    process.kill(-pid, 'SIGKILL');
+                }
+            } catch (err) {
+                console.warn(`[TRADUCTION CANCEL] Échec terminaison processus PID ${pid} :`, err.message);
+            }
+        };
+
+        // Interception de l'annulation de la requête côté client (AbortController)
+        req.on('close', () => {
+            if (!res.writableEnded) {
+                isCancelled = true;
+                console.log(`[TRADUCTION CANCEL] ⚠️ Connexion client interrompue (AbortController). Arrêt forcé du pipeline...`);
+                if (pyProcess && pyProcess.pid) {
+                    killProcessTree(pyProcess.pid);
+                }
+                cleanupTemporaryMedia(mediaPath);
+            }
+        });
+
         pyProcess.on('close', async (code) => {
+            if (isCancelled) {
+                console.log(`[TRADUCTION PROCESS] Processus annulé par l'utilisateur (code: ${code}). Aucun post-traitement.`);
+                cleanupTemporaryMedia(mediaPath);
+                return;
+            }
             console.log(`[TRADUCTION PROCESS] Script Python terminé avec le code : ${code}`);
 
             try {
@@ -545,6 +581,66 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(errPayload)}\n---JSON_OUTPUT_END---\n`);
             res.end();
         }
+    }
+});
+
+/**
+ * POST /api/traduction/save-to-drive
+ * Sauvegarde silencieuse des livrables de traduction dans l'espace Drive personnel du testeur
+ */
+router.post('/save-to-drive', async (req, res) => {
+    try {
+        const body = req.body || {};
+        const { backupDeliverablesForClient } = require('../services/driveService');
+
+        const clientName = req.session?.user?.name || req.session?.user?.username || body.clientName || 'Client';
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const files = {
+            mp4: body.mp4_filename || body.mp4Filename,
+            ass: body.ass_filename || body.assFilename,
+            cover: body.cover_filename || body.coverFilename,
+            desc: body.desc_filename || body.descFilename
+        };
+
+        if (!files.mp4 && !files.ass && !files.cover && !files.desc) {
+            return res.status(400).json({
+                success: false,
+                error: "Aucun livrable spécifié pour la sauvegarde sur Google Drive."
+            });
+        }
+
+        console.log(`[DRIVE API] ☁️ Sauvegarde silencieuse demandée pour ${clientName} (${dateStr})...`);
+
+        const result = await backupDeliverablesForClient({
+            clientName,
+            dateStr,
+            files
+        });
+
+        if (result && result.success) {
+            const driveLink = result.folderLink || result.webViewLink || '';
+            return res.json({
+                success: true,
+                message: `Livrables sauvegardés avec succès dans le dossier personnel de ${clientName}.`,
+                drive_link: driveLink,
+                folderUrl: driveLink,
+                webViewLink: result.webViewLink,
+                uploads: result.uploads,
+                uploaded_count: Object.keys(result.uploads || {}).length
+            });
+        } else {
+            return res.status(500).json({
+                success: false,
+                error: result?.reason || "Échec de la sauvegarde sur Google Drive. Vérifiez la configuration ou les quotas.",
+                details: result
+            });
+        }
+    } catch (err) {
+        console.error('[DRIVE API ERROR]', err);
+        return res.status(500).json({
+            success: false,
+            error: err.message || "Erreur interne lors de la sauvegarde sur Google Drive."
+        });
     }
 });
 

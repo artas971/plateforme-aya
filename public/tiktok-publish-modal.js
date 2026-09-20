@@ -4,13 +4,13 @@
  * 
  * Éléments intégrés :
  * 1. Preview Vidéo 9:16 avec Calque "Safe Zone" interactif (simulation interface TikTok)
- * 2. Éditeur de Métadonnées pré-rempli avec le copywriting d'Agent Nadine
+ * 2. Éditeur de Métadonnées pré-rempli avec la Smart Description SEO
  * 3. Compteur dynamique de caractères en temps réel (limite stricte 2 200 car.)
  * 4. Indicateur de statut TikTok en direct (/api/tiktok/auth/status) avec liaison 1-clic
  * 5. Interception 401 avec Silent Refresh automatique (/api/tiktok/auth/refresh)
  * 6. Sauvegarde locale en Brouillon & Publication officielle (/api/tiktok/publish)
  * 
- * @author Agent Lionel (Lead Frontend & UI/UX Designer)
+ * @module TikTokPublishModal
  */
 
 (function () {
@@ -58,7 +58,7 @@
                         <span class="tt-logo">📱</span>
                         <div>
                             <h2 class="tt-title">Aya Studio — Pré-Publication TikTok</h2>
-                            <p class="tt-subtitle">Revue du rendu 9:16, validation du copywriting Nadine et diffusion directe</p>
+                            <p class="tt-subtitle">Revue du rendu 9:16, validation de la description et diffusion directe</p>
                         </div>
                     </div>
                     <div class="tt-header-right">
@@ -165,7 +165,7 @@
 
                         <div class="tt-form-group">
                             <div class="tt-label-row">
-                                <label class="tt-label">📝 Smart Description SEO TikTok (Copywriting Nadine)</label>
+                                <label class="tt-label">📝 Smart Description SEO TikTok (Optimisée IA)</label>
                                 <span id="ttCharCounter" class="tt-counter-ok">0 / 2 200 car.</span>
                             </div>
                             <textarea id="ttTextareaDesc" class="tt-textarea" rows="12" placeholder="Rédigez votre description...">${escapeHtml(initialDesc)}</textarea>
