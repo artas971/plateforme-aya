@@ -181,8 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'Traduisez vos audios et générez vos réponses en un clic',
             userConnectedPrefix: '👤 Connecté :',
             logoutBtnTitle: 'Se déconnecter',
-            navTraductionText: 'Traduction & Sous-titres',
-            navStudioText: 'Studio TikTok V3',
+            navHomeText: '💬 Chat (Accueil)',
+            navTraducteurText: '🛠️ Studio / Traducteur',
+            navTraductionText: '✨ Traduction & Sous-titres',
+            navStudioText: '🎬 Studio TikTok V3',
+            navCommunauteText: '🌍 Communauté',
+            navModerationText: '🛡️ Modération',
             liveIndicatorText: '<span class="pulse"></span> Serveur Actif (localhost:3000)',
             titleReceived: "Fichiers Audio reçus d'Aya",
             msgTime: "Dossier audio_a_traiter",
@@ -326,8 +330,12 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'ترجمة التسجيلات الصوتية وإنشاء الردود الصوتية بنقرة واحدة',
             userConnectedPrefix: '👤 تسجيل الدخول باسم:',
             logoutBtnTitle: 'تسجيل الخروج',
-            navTraductionText: 'الترجمة والدبلجة',
-            navStudioText: 'استوديو تيك توك V3',
+            navHomeText: '💬 المحادثة (الرئيسية)',
+            navTraducteurText: '🛠️ استوديو المترجم',
+            navTraductionText: '✨ الترجمة والدبلجة',
+            navStudioText: '🎬 استوديو تيك توك V3',
+            navCommunauteText: '🌍 المجتمع',
+            navModerationText: '🛡️ الإشراف',
             liveIndicatorText: '<span class="pulse"></span> الخادم نشط ومتصل',
             titleReceived: 'الملفات والتسجيلات الصوتية الواردة',
             msgTime: 'مجلد التسجيلات الواردة',
@@ -513,8 +521,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Header Translations
         setInnerHTML('headerTitle', dict.headerTitle);
         setInnerHTML('headerSub', dict.headerSub);
+        setInnerHTML('navHomeText', dict.navHomeText);
+        setInnerHTML('navTraducteurText', dict.navTraducteurText);
         setInnerHTML('navTraductionText', dict.navTraductionText);
         setInnerHTML('navStudioText', dict.navStudioText);
+        setInnerHTML('navCommunauteText', dict.navCommunauteText);
+        setInnerHTML('navModerationText', dict.navModerationText);
         setInnerHTML('liveIndicatorText', dict.liveIndicatorText);
         if (logoutBtn) logoutBtn.setAttribute('title', dict.logoutBtnTitle);
 

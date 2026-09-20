@@ -16,8 +16,9 @@
             userConnectedPrefix: '👤 Connecté :',
             userAnonymous: 'Invité / Testeur',
             logoutBtnTitle: 'Se déconnecter',
-            navHomeText: 'Accueil / Vocal',
-            navTraductionText: 'Traduction & Sous-titres',
+            navHomeText: '💬 Chat (Accueil)',
+            navTraducteurText: '🛠️ Studio / Traducteur',
+            navTraductionText: '✨ Traduction & Sous-titres',
             navStudioText: 'Studio TikTok V3',
             navCommunauteText: 'Communauté',
             navModerationText: 'Modération',
@@ -259,8 +260,9 @@
             userConnectedPrefix: '👤 متصل باسم:',
             userAnonymous: 'زائر / فاحص',
             logoutBtnTitle: 'تسجيل الخروج',
-            navHomeText: 'الرئيسية / صوتي',
-            navTraductionText: 'الترجمة والدبلجة',
+            navHomeText: '💬 المحادثة (الرئيسية)',
+            navTraducteurText: '🛠️ استوديو المترجم',
+            navTraductionText: '✨ الترجمة والدبلجة',
             navStudioText: 'استوديو تيك توك V3',
             navCommunauteText: 'المجتمع',
             navModerationText: 'الإشراف',
@@ -706,7 +708,8 @@
         const isStudio = path.includes('studio');
         const isCommunaute = path.includes('communaute');
         const isModeration = path.includes('moderation');
-        const isHome = !isTraduction && !isStudio && !isCommunaute && !isModeration;
+        const isTraducteur = path.includes('traducteur');
+        const isHome = !isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur;
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -732,23 +735,27 @@
                     <button class="lang-toggle-btn ${currentLang === 'fr' ? 'active' : ''}" id="langFrBtn">🇫🇷 FR</button>
                     <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn">🇵🇸 العربية</button>
                 </div>
-                <!-- Lien 1 : Accueil / Vocal -->
+                <!-- Lien 1 : Chat (Accueil) -->
                 <a href="/" class="btn-nav-link ${isHome ? 'active' : ''}" id="navHomeLink">
                     <span>💬</span> <span id="navHomeText">${dict.navHomeText}</span>
                 </a>
-                <!-- Lien 2 : Traduction & Sous-titres -->
+                <!-- Lien 2 : Studio / Traducteur -->
+                <a href="/traducteur" class="btn-nav-link ${isTraducteur ? 'active' : ''}" id="navTraducteurLink">
+                    <span>🛠️</span> <span id="navTraducteurText">${dict.navTraducteurText}</span>
+                </a>
+                <!-- Lien 3 : Traduction & Sous-titres -->
                 <a href="/traduction" class="btn-nav-link ${isTraduction ? 'active' : ''}" id="navTraductionLink">
                     <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
                 </a>
-                <!-- Lien 3 : Studio TikTok V3 -->
+                <!-- Lien 4 : Studio TikTok V3 -->
                 <a href="/studio" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink">
                     <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
                 </a>
-                <!-- Lien 4 : Mur Communautaire -->
+                <!-- Lien 5 : Mur Communautaire -->
                 <a href="/communaute" class="btn-nav-link ${isCommunaute ? 'active' : ''}" id="navCommunauteLink">
                     <span>🌍</span> <span id="navCommunauteText">${dict.navCommunauteText}</span>
                 </a>
-                <!-- Lien 5 : Modération (Discret) -->
+                <!-- Lien 6 : Modération (Discret) -->
                 <a href="/moderation" class="btn-nav-link ${isModeration ? 'active' : ''}" id="navModerationLink" title="${dict.navModerationText}" style="opacity: 0.88;">
                     <span>🛡️</span> <span id="navModerationText">${dict.navModerationText}</span>
                 </a>

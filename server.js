@@ -88,6 +88,10 @@ app.get('/', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get(['/traducteur', '/traducteur.html'], requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'traducteur.html'));
+});
+
 app.get('/communaute', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'communaute.html'));
 });

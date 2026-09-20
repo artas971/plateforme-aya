@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlTag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>وكيل التَّرْجَمَة آيَة | استوديو المترجم ولوحة الإنتاج</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="آية">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
+</head>
+<body>
+    <!-- WhatsApp Desktop Share Guidance Modal -->
+    <div id="whatsappGuidanceModal" class="guidance-overlay hidden">
+        <div class="guidance-card">
+            <div class="guidance-header">
+                <div class="guidance-icon-circle">💬</div>
+                <button class="guidance-close-btn" id="closeWhatsAppGuidanceBtn" aria-label="Close">&times;</button>
+            </div>
+            <h3 id="waGuidanceTitle">✅ Note Vocale MP3 Téléchargée !</h3>
+            <p class="guidance-sub" id="waGuidanceSub">Le fichier audio <strong id="waGuidanceFileName" class="filename-badge">note_vocale.mp3</strong> est maintenant dans vos Téléchargements.</p>
+            
+            <div class="guidance-steps">
+                <div class="guidance-step">
+                    <span class="step-num">1</span>
+                    <div class="step-content">
+                        <strong id="waStep1Title">Fichier prêt dans les Téléchargements</strong>
+                        <p id="waStep1Desc">Le fichier audio MP3 a été enregistré automatiquement sur votre ordinateur.</p>
+                    </div>
+                </div>
+                <div class="guidance-step">
+                    <span class="step-num">2</span>
+                    <div class="step-content">
+                        <strong id="waStep2Title">Ouvrez votre conversation WhatsApp</strong>
+                        <p id="waStep2Desc">Cliquez sur le bouton ci-dessous pour ouvrir WhatsApp Web.</p>
+                    </div>
+                </div>
+                <div class="guidance-step">
+                    <span class="step-num">3</span>
+                    <div class="step-content">
+                        <strong id="waStep3Title">Glissez-déposez le fichier MP3</strong>
+                        <p id="waStep3Desc">Faites simplement glisser le fichier téléchargé dans la discussion pour l'envoyer comme note vocale.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guidance-actions">
+                <button id="waOpenWebBtn" class="btn btn-whatsapp full-width">
+                    💬 <span id="waBtnOpenText">Ouvrir WhatsApp Web</span>
+                </button>
+                <button id="waDismissBtn" class="btn btn-secondary full-width">
+                    <span id="waBtnDismissText">J'ai compris</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="avatar-badge">
+                    <span class="avatar-initials">آية</span>
+                    <span class="status-dot"></span>
+                </div>
+                <div>
+                    <h1 id="headerTitle">وكيل التَّرْجَمَة آيَة <span class="badge-tag green">عربي فلسطيني ↔ فرنسي</span></h1>
+                    <p class="subtitle" id="headerSub">استوديو الإنتاج، ترجمة التسجيلات والصوتيات وإنشاء الفيديو</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <!-- User Info Badge & Logout -->
+                <div class="user-badge" id="userBadge">
+                    <span id="userNameDisplay">👤 تسجيل الدخول باسم: آية</span>
+                    <button class="btn-logout" id="logoutBtn" title="تسجيل الخروج">🚪</button>
+                </div>
+                <!-- Language Switcher Toggle -->
+                <div class="lang-switcher">
+                    <button class="lang-toggle-btn" id="langFrBtn">🇫🇷 FR</button>
+                    <button class="lang-toggle-btn active" id="langArBtn">🇵🇸 العربية</button>
+                </div>
+                <!-- Lien Chat Accueil -->
+                <a href="/" class="btn-nav-link" id="navHomeLink">
+                    <span>💬</span> <span id="navHomeText">المحادثة (الرئيسية)</span>
+                </a>
+                <!-- Lien Hub Traducteur -->
+                <a href="/traducteur" class="btn-nav-link active" id="navTraducteurLink">
+                    <span>🛠️</span> <span id="navTraducteurText">استوديو المترجم</span>
+                </a>
+                <!-- Lien Traduction & Sous-titres -->
+                <a href="/traduction" class="btn-nav-link" id="navTraductionBtn">
+                    <span>✨</span> <span id="navTraductionText">الترجمة والدبلجة</span>
+                </a>
+                <!-- Lien Studio TikTok V3 -->
+                <a href="/studio" class="btn-nav-link" id="navStudioBtn">
+                    <span>🎬</span> <span id="navStudioText">استوديو تيك توك V3</span>
+                </a>
+                <!-- Lien Communauté -->
+                <a href="/communaute" class="btn-nav-link" id="navCommunauteBtn">
+                    <span>🌍</span> <span id="navCommunauteText">المجتمع</span>
+                </a>
+                <!-- Lien Modération -->
+                <a href="/moderation" class="btn-nav-link" id="navModerationBtn">
+                    <span>🛡️</span> <span id="navModerationText">الإشراف</span>
+                </a>
+                <span class="live-indicator" id="liveIndicatorText"><span class="pulse"></span> الخادم نشط ومتصل</span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid : Ateliers de Production & Outils Média -->
+        <main class="main-grid">
+            <!-- Left Column: Audio Selector & Received Message -->
+            <section class="card message-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="icon">📥</span>
+                        <h2 id="titleReceived">الملفات والتسجيلات الصوتية الواردة</h2>
+                    </div>
+                    <span class="timestamp" id="msgTime">مجلد التسجيلات الواردة</span>
+                </div>
+
+                <div class="card-body">
+                    <!-- Direct Upload & Translate Box -->
+                    <div class="direct-upload-box">
+                        <h3 id="titleDirectUpload">📤 إرسال ملف صوتي أو فيديو للترجمة</h3>
+                        <p class="mic-sub" id="subDirectUpload">اختر اللغة المطلوبة للترجمة قبل إرسال الملف:</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div class="input-group">
+                                <label for="uploadTargetLangSelect" id="labelUploadTargetLang">اللغة المطلوبة للترجمة:</label>
+                                <select id="uploadTargetLangSelect" class="custom-select">
+                                    <option value="fr" id="uploadOptFr" selected>🇫🇷 الترجمة إلى اللغة الفرنسية (الصوت/الفيديو بالعربية)</option>
+                                    <option value="ar" id="uploadOptAr">🇵🇸 الترجمة إلى العربية الفلسطينية (الصوت/الفيديو بالفرنسية)</option>
+                                </select>
+                            </div>
+
+                            <input type="file" id="directFileInput" accept="audio/*,video/*" style="display: none;">
+                            <button class="btn btn-primary full-width" id="triggerFileBrowseBtn">
+                                📁 اختيار ملف صوت/فيديو للترجمة المباشرة
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Microphone Recording Section -->
+                    <div class="mic-recording-box">
+                        <h3 id="titleMicRec">🎙️ تسجيل ملاحظة صوتية مباشرة (مايكروفون)</h3>
+                        <p class="mic-sub" id="subMicRec">تحدثي في المايكروفون للتسجيل والترجمة المباشرة:</p>
+                        
+                        <div class="mic-controls-row">
+                            <button class="btn btn-danger mic-btn" id="recordMicBtn">
+                                <span class="btn-icon" id="recIcon">🔴</span> <span id="recBtnText">بدء التسجيل الصوتي</span>
+                            </button>
+                            <span class="recording-timer hidden" id="recTimer">🔴 00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Admin Only Local Computer Files Section -->
+                    <div id="adminLocalFilesSection" class="admin-files-box hidden" style="background: rgba(30, 41, 59, 0.85); padding: 16px; border-radius: 12px; margin-bottom: 18px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                        <div class="input-group">
+                            <label for="audioSelect" id="labelAudioSelect">📂 Choisir l'audio/vidéo à traduire :</label>
+                            <select id="audioSelect" class="custom-select bold-select">
+                                <!-- Populated dynamically via JS -->
+                            </select>
+                        </div>
+
+                        <div class="input-group" style="margin-top: 10px; margin-bottom: 12px;">
+                            <label for="selectAudioTargetLang" id="labelSelectAudioTargetLang">Langue de la traduction à générer :</label>
+                            <select id="selectAudioTargetLang" class="custom-select">
+                                <option value="fr" id="optSelectTargetFr">🇫🇷 Traduire & Vocaliser en Français</option>
+                                <option value="ar" id="optSelectTargetAr">🇵🇸 Traduire & Vocaliser en Arabe Palestinien</option>
+                            </select>
+                        </div>
+
+                        <!-- Trigger Processing Button -->
+                        <button class="btn btn-accent full-width" id="processAudioBtn">
+                            <span class="btn-icon">✨</span> إنشاء واستماع باللغة الفرنسية
+                        </button>
+                    </div>
+
+                    <!-- Send Audio to John's Folder Button -->
+                    <button class="btn btn-primary full-width" id="sendReceivedAudioToJohnBtn" style="margin-top: -8px;">
+                        📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"
+                    </button>
+
+                    <!-- Beta Mode: Video Subtitles Editor (.ASS Preview) -->
+                    <div id="betaSubtitleSection" class="beta-subtitles-card hidden" style="background: #0f172a; padding: 18px; border-radius: 12px; margin-top: 14px; margin-bottom: 14px; border: 1px solid #38bdf8; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                            <h3 id="betaSubTitle" style="color: #38bdf8; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                🎬 Mode Bêta : Aperçu & Édition des Sous-Titres (.ASS)
+                            </h3>
+                            <span class="badge-tag green">Bêta VOSTFR</span>
+                        </div>
+                        <p id="betaSubDesc" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 12px;">
+                            Le fichier de sous-titres a été généré en Français avec le timing exact. Vous pouvez relire et modifier le texte ou les horodatages ci-dessous avant d'incruster les sous-titres sur la vidéo finalisée :
+                        </p>
+
+                        <div class="input-group">
+                            <label for="assEditorTextarea" id="labelAssEditor" style="color: #f1f5f9; font-weight: 600;">📝 Contenu du fichier .ASS (Modifiable) :</label>
+                            <textarea id="assEditorTextarea" rows="8" style="font-family: monospace; font-size: 0.88rem; background: #1e293b; color: #38bdf8; border: 1px solid #475569; border-radius: 8px; padding: 10px;"></textarea>
+                        </div>
+
+                        <button class="btn btn-accent full-width" id="btnBurnSubtitles" style="margin-top: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;">
+                            🎬 Générer la Vidéo Sous-Titrée MP4 (Incrustation)
+                        </button>
+                    </div>
+
+                    <!-- Media Player (Audio/Video) -->
+                    <div class="media-container" id="mediaContainer">
+                        <audio id="ayaAudio" controls class="audio-player hidden"></audio>
+                        <video id="ayaVideo" controls class="video-player"></video>
+                    </div>
+
+                    <!-- Arabic Original Transcript -->
+                    <div class="transcript-box arabic-box">
+                        <div class="box-label">
+                            <span id="labelArabicBox">النص الأصلي باللغة العربية</span>
+                            <span class="lang-flag">🇵🇸</span>
+                        </div>
+                        <p class="arabic-text" id="arabicText">
+                            جاري تحميل النص العربي...
+                        </p>
+                        <div class="phonetic-text" id="phoneticText">
+                        </div>
+
+                        <!-- Copy Buttons Bar -->
+                        <div class="copy-bar">
+                            <button class="btn btn-outline btn-sm" id="copyArabicTextBtn">
+                                📋 نسخ النص العربي
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- French Translation -->
+                    <div class="transcript-box french-box">
+                        <div class="box-label">
+                            <span id="labelFrenchBox">Traduction en Français</span>
+                            <span class="lang-flag">🇫🇷</span>
+                        </div>
+                        <p class="french-text" id="frenchText">
+                            Chargement de la traduction...
+                        </p>
+
+                        <!-- Action Bar for French -->
+                        <div class="action-bar-split">
+                            <button class="btn btn-primary" id="playFrenchBtn">
+                                <span class="btn-icon">🔊</span> Écouter en Français
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="copyFrenchTextBtn">
+                                📋 Copier la traduction
+                            </button>
+                            <audio id="frenchAudio" src=""></audio>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons Stack for Received & Direct Audio -->
+                    <div class="action-buttons-stack hidden" id="receivedAudioActionsStack" style="margin-top: 14px;">
+                        <button class="btn btn-whatsapp full-width" id="sendReceivedAudioWhatsAppBtn">
+                            💬 إرسال التسجيل الصوتي عبر واتساب (مشاركة مباشرة)
+                        </button>
+                        <button class="btn btn-primary full-width" id="downloadReceivedAudioBtn">
+                            ⬇️ تحميل الملف الصوتي (.mp3)
+                        </button>
+                    </div>
+
+                    <!-- Vocabulary Section -->
+                    <div class="vocab-section">
+                        <h4 id="titleVocab">💡 مفردات وكلمات مفتاحية من التسجيل:</h4>
+                        <div class="vocab-chips" id="vocabChips">
+                            <!-- Chips inserted dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Reply / Text Generator -->
+            <section class="card reply-card">
+                <!-- TikTok VOSTFR Video & .ASS Subtitle Creator Card (Protocole V3) -->
+                <div class="card vostfr-creator-card" style="margin-bottom: 24px; background: rgba(15, 23, 42, 0.95); border: 1px solid #3b82f6; border-radius: 12px; padding: 16px; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);">
+                    <div class="card-header" style="border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 14px;">
+                        <div class="card-title">
+                            <span class="icon">🎬</span>
+                            <h2 style="font-size: 1.2rem; color: #60a5fa; margin: 0;">Créateur de Vidéo TikTok & Sous-titres .ASS (Protocole V3)</h2>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <p class="section-desc" style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 14px;">
+                            Sélectionnez une photo de fond depuis vos dossiers et saisissez le titre pour créer une vidéo TikTok verticale 1080x1920 avec sous-titres Impact Jaune selon le Protocole V3.
+                        </p>
+
+                        <div class="input-group">
+                            <label for="vostfrMediaFileInput"><b>1. Audio / Vidéo à traduire :</b></label>
+                            <input type="file" id="vostfrMediaFileInput" accept="audio/*,video/*" class="custom-select" style="padding: 6px; width: 100%; box-sizing: border-box;">
+                            <small style="color: #64748b; margin-top: 4px; display: block;">Laissez vide pour utiliser l'audio actuellement chargé dans l'application.</small>
+                        </div>
+
+                        <div class="input-group" style="margin-top: 12px;">
+                            <label for="vostfrVideoTitle"><b>2. Titre de la vidéo :</b></label>
+                            <input type="text" id="vostfrVideoTitle" class="custom-select" placeholder="Ex: Témoignage d'urgence - Gaza 2026" style="padding: 10px; width: 100%; box-sizing: border-box;">
+                        </div>
+
+                        <div class="input-group" style="margin-top: 12px;">
+                            <label for="vostfrBgImageInput"><b>3. Photo de fond d'écran (vos dossiers) :</b></label>
+                            <input type="file" id="vostfrBgImageInput" accept="image/*" class="custom-select" style="padding: 6px; width: 100%; box-sizing: border-box;">
+                        </div>
+
+                        <button class="btn btn-accent full-width" id="generateVostfrVideoBtn" style="margin-top: 16px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; padding: 12px; font-weight: bold; width: 100%;">
+                            ✨ Générer la Vidéo TikTok 1080x1920 & Sous-titres .ASS
+                        </button>
+
+                        <!-- Results Section -->
+                        <div id="vostfrResultSection" class="hidden" style="margin-top: 18px; padding-top: 16px; border-top: 1px dashed #334155;">
+                            <div class="media-container" style="max-width: 280px; margin: 0 auto 14px auto;">
+                                <video id="vostfrPreviewVideo" controls class="video-player" style="border-radius: 12px; border: 2px solid #3b82f6; width: 100%;"></video>
+                            </div>
+
+                            <div class="action-buttons-stack" style="display: flex; flex-direction: column; gap: 8px;">
+                                <a id="downloadVostfrMp4Btn" href="#" download class="btn btn-primary full-width" style="text-align: center; text-decoration: none; display: block; padding: 10px;">
+                                    📥 Télécharger la Vidéo TikTok (.mp4)
+                                </a>
+                                <a id="downloadAssFileBtn" href="#" download class="btn btn-outline full-width" style="text-align: center; text-decoration: none; display: block; padding: 10px; border-color: #eab308; color: #fef08a;">
+                                    📄 Télécharger les sous-titres .ASS (Protocole V3)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-header">
+                    <div class="card-title">
+                        <span class="icon">📤</span>
+                        <h2 id="titleSend">إنشاء تسجيل صوتي وترجمة</h2>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- SECTION 1: Message en Français ➔ Arabe -->
+                    <div class="input-section-box">
+                        <div class="section-badge-header">
+                            <span class="badge-icon">🇫🇷 ➔ 🇵🇸</span>
+                            <h3 id="labelSectionFrToAr">كتابة بالفرنسية (لإنشاء تسجيل صوتي بالعربية الفلسطينية)</h3>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group flex-1">
+                                <label for="voiceSelect" id="labelVoiceSelect">اختيار الصوت العربي:</label>
+                                <select id="voiceSelect" class="custom-select">
+                                    <option value="ar-JO-SanaNeural" selected>🌸 سناء (صوت أنثوي فلسطيني / بلاد الشام)</option>
+                                    <option value="ar-LB-LaylaNeural">🌸 ليلى (صوت أنثوي لبناني)</option>
+                                    <option value="ar-LB-RamiNeural">🎙️ رامي (صوت رجالي بلاد الشام)</option>
+                                    <option value="ar-EG-SalmaNeural">🌸 سلمى (صوت أنثوي مصري)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="replyInputFr" id="labelReplyInputFr">رسالتك باللغة الفرنسية:</label>
+                            <textarea id="replyInputFr" rows="3" placeholder="اكتب ردك باللغة الفرنسية هنا..."></textarea>
+                        </div>
+
+                        <button class="btn btn-accent full-width" id="generateReplyFrBtn">
+                            <span class="btn-icon">✨</span> إنشاء التسجيل الصوتي بالعربية
+                        </button>
+                    </div>
+
+                    <hr class="section-divider">
+
+                    <!-- SECTION 2: Message en Arabe ➔ Français -->
+                    <div class="input-section-box arabic-input-section">
+                        <div class="section-badge-header">
+                            <span class="badge-icon">🇵🇸 ➔ 🇫🇷</span>
+                            <h3 id="labelSectionArToFr">كتابة باللغة العربية (للترجمة والتسجيل الصوتي بالفرنسية)</h3>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="replyInputAr" id="labelReplyInputAr">الرسالة باللغة العربية:</label>
+                            <textarea id="replyInputAr" rows="3" placeholder="اكتبي رسالتك باللغة العربية هنا..." style="direction: rtl; text-align: right;"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary full-width" id="generateReplyArBtn">
+                            <span class="btn-icon">✨</span> إنشاء التسجيل الصوتي والترجمة بالفرنسية
+                        </button>
+                    </div>
+
+                    <!-- Generated Reply Preview & Action Buttons -->
+                    <div class="reply-result-container hidden" id="replyResult">
+                        <div class="transcript-box arabic-result-box">
+                            <div class="box-label">
+                                <span id="labelArabicResult">الترجمة مع الصوت المسموع</span>
+                                <span class="lang-flag" id="flagResult">🇵🇸</span>
+                            </div>
+                            <p class="arabic-text large" id="arabicReplyText">
+                                ...
+                            </p>
+                            <div class="copy-bar">
+                                <button class="btn btn-outline btn-sm" id="copyReplyArabicBtn">
+                                    📋 نسخ النص
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="audio-player-card">
+                            <div class="audio-info">
+                                <span class="audio-icon">🎙️</span>
+                                <div>
+                                    <strong id="titleAudioCard">التسجيل الصوتي المنشأ</strong>
+                                    <span class="audio-sub" id="voiceUsedSub">محفوظ في مجلد الردود</span>
+                                </div>
+                            </div>
+                            <audio id="arabicReplyAudio" controls class="custom-audio-player"></audio>
+                        </div>
+
+                        <!-- Action Buttons Stack -->
+                        <div class="action-buttons-stack">
+                            <button class="btn btn-whatsapp full-width" id="sendAudioWhatsAppBtn">
+                                💬 إرسال التسجيل الصوتي عبر واتساب (مشاركة مباشرة)
+                            </button>
+                            <button class="btn btn-primary full-width" id="downloadAudioBtn">
+                                ⬇️ تحميل الملف الصوتي (.mp3)
+                            </button>
+                            <button class="btn btn-accent full-width" id="sendAudioToJohnBtn">
+                                📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"
+                            </button>
+                            <button class="btn btn-danger-outline full-width" id="purgeAudioBtn">
+                                🗑️ حذف التسجيل الصوتي من القرص
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p id="footerText">وكيل الترجمة آية &bull; استوديو الإنتاج ولوحة العمليات (localhost:3000/traducteur)</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="/feedback-widget.js"></script>
+</body>
+</html>
