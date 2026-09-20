@@ -1410,22 +1410,188 @@
             cursor: not-allowed;
         }
 
-        /* Bouton d'Annulation Propre (Ticket 5) */
-        .btn-cancel-process {
-            align-self: flex-end;
-            background: #fee2e2;
-            border: 1px solid #ef4444;
-            color: #b91c1c;
-            padding: 0.45rem 1rem;
-            border-radius: 6px;
+        /* =========================================================================
+           HUD Contextuel Flottant (Sticky Bottom Bar V2 - Fusion StatusBox)
+           ========================================================================= */
+        .aya-sticky-bottom-bar {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translate(-50%, 140%);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            width: calc(100% - 2.5rem);
+            max-width: 860px;
+            background: rgba(15, 23, 42, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(56, 189, 248, 0.45);
+            border-radius: 18px;
+            padding: 1.1rem 1.4rem;
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 188, 212, 0.22);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1000;
+            box-sizing: border-box;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), 
+                        opacity 0.35s ease, 
+                        visibility 0.45s,
+                        border-color 0.3s ease,
+                        box-shadow 0.3s ease;
+        }
+
+        .aya-sticky-bottom-bar.active {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .aya-sticky-bottom-bar.success {
+            border-color: rgba(16, 185, 129, 0.85);
+            box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.35);
+        }
+
+        .sticky-hud-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .sticky-hud-media {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .sticky-hud-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            min-width: 0;
+        }
+
+        .sticky-media-title {
+            font-size: 0.95rem;
             font-weight: 700;
-            font-size: 0.85rem;
+            color: #f8fafc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 380px;
+        }
+
+        .sticky-media-sub {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sticky-hud-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .progress-percent {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #38bdf8;
+            font-family: 'Consolas', monospace;
+            min-width: 52px;
+            text-align: right;
+        }
+
+        .aya-sticky-bottom-bar.success .progress-percent {
+            color: #34d399;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00bcd4, #38bdf8);
+            border-radius: 999px;
+            transition: width 0.35s ease;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.6);
+        }
+
+        .aya-sticky-bottom-bar.success .progress-bar-fill {
+            background: linear-gradient(90deg, #10b981, #34d399);
+            box-shadow: 0 0 14px rgba(52, 211, 153, 0.7);
+        }
+
+        .sticky-hud-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .progress-log {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .sticky-pills-summary {
+            display: flex;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .sticky-pill {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            white-space: nowrap;
+        }
+
+        .sticky-pill.active-pack {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-cancel-process {
+            background: rgba(239, 68, 68, 0.18);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 0.45rem 0.95rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.82rem;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             transition: all 0.2s ease;
-            margin-top: 0.25rem;
         }
 
         .btn-cancel-process:hover {
@@ -1434,144 +1600,40 @@
             transform: translateY(-1px);
         }
 
-        /* Sticky Bottom Bar Flottante (Ticket 6) */
-        .aya-sticky-bottom-bar {
-            position: fixed;
-            bottom: 1.25rem;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 3rem);
-            max-width: 820px;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1.5px solid rgba(0, 188, 212, 0.4);
-            border-radius: 16px;
-            padding: 0.85rem 1.4rem;
-            box-shadow: 0 10px 35px rgba(11, 83, 148, 0.18), 0 2px 10px rgba(0, 0, 0, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1.25rem;
-            z-index: 999;
-            box-sizing: border-box;
-            transition: all 0.3s ease;
-        }
-
-        .sticky-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .sticky-bar-icon {
-            font-size: 1.6rem;
-            flex-shrink: 0;
-        }
-
-        .sticky-bar-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            min-width: 0;
-        }
-
-        .sticky-bar-title {
-            font-size: 0.92rem;
-            font-weight: 700;
-            color: var(--color-dark-gray);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 340px;
-        }
-
-        .sticky-bar-pills {
-            display: flex;
-            gap: 0.4rem;
-            flex-wrap: nowrap;
-            overflow: hidden;
-        }
-
-        .sticky-pill {
-            font-size: 0.72rem;
-            font-weight: 600;
-            padding: 0.15rem 0.55rem;
-            border-radius: 12px;
-            background: rgba(11, 83, 148, 0.08);
-            color: var(--color-primary);
-            white-space: nowrap;
-        }
-
-        .sticky-pill.active-pack {
-            background: rgba(0, 188, 212, 0.12);
-            color: #0891b2;
-            border: 1px solid rgba(0, 188, 212, 0.3);
-        }
-
-        .sticky-bar-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            flex-shrink: 0;
-        }
-
-        .sticky-reprocess-label {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            user-select: none;
-            white-space: nowrap;
-        }
-
-        .btn-submit-sticky {
-            background: var(--color-turquoise);
-            color: #ffffff;
+        .btn-view-result-sticky {
+            background: linear-gradient(135deg, #10b981, #059669);
             border: none;
-            padding: 0.7rem 1.3rem;
+            color: #ffffff;
+            padding: 0.5rem 1.1rem;
             border-radius: 8px;
-            font-size: 0.92rem;
             font-weight: 700;
+            font-size: 0.85rem;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.45rem;
-            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
             transition: all 0.2s ease;
-            white-space: nowrap;
         }
 
-        .btn-submit-sticky:hover:not(:disabled) {
-            background: #0097a7;
+        .btn-view-result-sticky:hover {
+            background: #047857;
             transform: translateY(-1px);
-        }
-
-        .btn-submit-sticky:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: none;
         }
 
         @media (max-width: 680px) {
             .aya-sticky-bottom-bar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.75rem;
-                padding: 0.75rem 1rem;
                 bottom: 0.75rem;
-                width: calc(100% - 1.5rem);
+                width: calc(100% - 1.25rem);
+                padding: 0.85rem 1rem;
             }
-            .sticky-bar-actions {
-                justify-content: space-between;
+            .sticky-media-title {
+                max-width: 180px;
             }
-            .btn-submit-sticky {
-                flex: 1;
-                justify-content: center;
+            .sticky-hud-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.4rem;
             }
         }
     </style>
@@ -1872,25 +1934,7 @@
                 </label>
             </div>
 
-            <!-- 7. Indicateur de Progression en Temps Réel (Streaming) -->
-            <div class="status-box" id="statusBox">
-                <div class="progress-header">
-                    <div class="progress-header-left">
-                        <span class="pulse-dot"></span>
-                        <span id="statusText">Initialisation du pipeline...</span>
-                    </div>
-                    <span id="progressPercent" class="progress-percent">0%</span>
-                </div>
-                <div class="progress-bar-track">
-                    <div class="progress-bar-fill" id="progressBarFill"></div>
-                </div>
-                <div class="progress-log" id="progressLog">Connexion au serveur établie...</div>
-                <button type="button" id="btnCancelProcess" class="btn-cancel-process" style="display: none;">
-                    <span>🛑</span> <span>Annuler le traitement</span>
-                </button>
-            </div>
-
-            <!-- 8. Zone de Résultat et Lecteur Vidéo -->
+            <!-- 7. Zone de Résultat et Lecteur Vidéo -->
             <div class="result-box" id="resultBox">
                 <div class="result-header">
                     <span class="result-title" id="resultStatus"><span>✅</span> Vidéo sous-titrée disponible</span>
@@ -1901,27 +1945,42 @@
             </div>
         </section>
 
-        <!-- Sticky Bottom Bar Flottante (Ticket 6) -->
-        <aside class="aya-sticky-bottom-bar" id="stickyBottomBar">
-            <div class="sticky-bar-left">
-                <span class="sticky-bar-icon">⚡</span>
-                <div class="sticky-bar-info">
-                    <span class="sticky-bar-title" id="stickyMediaName">Aucun fichier sélectionné</span>
-                    <div class="sticky-bar-pills" id="stickyPills">
-                        <span class="sticky-pill" id="pillSourceLang">Source : Auto</span>
-                        <span class="sticky-pill" id="pillTargetLang">Cible : FR</span>
-                        <span class="sticky-pill active-pack" id="pillPack">Pack TikTok : Actif</span>
+        <!-- HUD Contextuel Flottant (Sticky Bottom Bar V2) -->
+        <aside class="aya-sticky-bottom-bar" id="stickyBottomBar" aria-live="polite">
+            <!-- Étage 1 : En-tête HUD (Statut, Fichier, Pourcentage & Bouton Annuler) -->
+            <div class="sticky-hud-header">
+                <div class="sticky-hud-media">
+                    <span class="pulse-dot" id="stickyPulseDot"></span>
+                    <div class="sticky-hud-titles">
+                        <span class="sticky-media-title" id="stickyMediaName">Traitement en cours...</span>
+                        <span class="sticky-media-sub" id="statusText">Initialisation du pipeline IA...</span>
                     </div>
                 </div>
+                
+                <div class="sticky-hud-meta">
+                    <span class="progress-percent" id="progressPercent">0%</span>
+                    <button type="button" id="btnCancelProcess" class="btn-cancel-process" title="Interrompre le traitement" style="display: none;">
+                        <span>🛑</span> <span class="cancel-text">Annuler</span>
+                    </button>
+                    <button type="button" id="btnViewResultSticky" class="btn-view-result-sticky" style="display: none;">
+                        <span>🎯</span> <span>Voir le résultat</span>
+                    </button>
+                </div>
             </div>
-            <div class="sticky-bar-actions">
-                <label class="sticky-reprocess-label" title="Ignorer le cache et forcer le ré-encodage">
-                    <input type="checkbox" id="forceReprocessSticky" style="cursor: pointer; accent-color: var(--color-turquoise);">
-                    <span>Forcer retraitement</span>
-                </label>
-                <button type="button" class="btn-submit-sticky" id="btnSubmitSticky" disabled>
-                    <span>⚡</span> <span>Lancer</span>
-                </button>
+
+            <!-- Étage 2 : Jauge de Progression Fluide -->
+            <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+            </div>
+
+            <!-- Étage 3 : Logs SSE en direct & Badges de configuration -->
+            <div class="sticky-hud-footer">
+                <div class="progress-log" id="progressLog">Connexion au serveur établie...</div>
+                <div class="sticky-pills-summary" id="stickyPills">
+                    <span class="sticky-pill" id="pillSourceLang">Source : Auto</span>
+                    <span class="sticky-pill" id="pillTargetLang">Cible : FR</span>
+                    <span class="sticky-pill active-pack" id="pillPack">Pack TikTok : Actif</span>
+                </div>
             </div>
         </aside>
     </main>
@@ -1936,7 +1995,6 @@
         const btnRemoveFile = document.getElementById('btnRemoveFile');
         const btnSubmit = document.getElementById('btnSubmit');
 
-        const statusBox = document.getElementById('statusBox');
         const statusText = document.getElementById('statusText');
         const progressPercent = document.getElementById('progressPercent');
         const progressBarFill = document.getElementById('progressBarFill');
@@ -1949,8 +2007,7 @@
         const pillSourceLang = document.getElementById('pillSourceLang');
         const pillTargetLang = document.getElementById('pillTargetLang');
         const pillPack = document.getElementById('pillPack');
-        const forceReprocessSticky = document.getElementById('forceReprocessSticky');
-        const btnSubmitSticky = document.getElementById('btnSubmitSticky');
+        const btnViewResultSticky = document.getElementById('btnViewResultSticky');
         const chkGenerateTiktokPack = document.getElementById('chkGenerateTiktokPack');
         const forceReprocess = document.getElementById('forceReprocess');
 
@@ -1969,9 +2026,6 @@
                 } else {
                     traductionFormCard.classList.remove('form-locked');
                 }
-            }
-            if (btnSubmitSticky) {
-                btnSubmitSticky.disabled = isLocked;
             }
         }
 
@@ -1997,10 +2051,6 @@
                 if (stickyMediaName) stickyMediaName.textContent = "Lien Telegram";
             } else {
                 if (stickyMediaName) stickyMediaName.textContent = "Aucun fichier sélectionné";
-            }
-
-            if (btnSubmitSticky) {
-                btnSubmitSticky.disabled = btnSubmit.disabled;
             }
         }
 
@@ -2169,33 +2219,14 @@
             const hasTg = telegramUrlInput && telegramUrlInput.value.trim().length > 0;
             const canSubmit = (hasFile || hasTg);
             btnSubmit.disabled = !canSubmit;
-            if (btnSubmitSticky) {
-                btnSubmitSticky.disabled = !canSubmit;
-            }
             if (btnClearTelegram) {
                 btnClearTelegram.style.display = hasTg ? 'inline-block' : 'none';
             }
             syncStickyBar();
         }
 
-        // Synchronisation des contrôles de la Sticky Bottom Bar
-        if (forceReprocessSticky && forceReprocess) {
-            forceReprocessSticky.addEventListener('change', () => {
-                forceReprocess.checked = forceReprocessSticky.checked;
-            });
-            forceReprocess.addEventListener('change', () => {
-                forceReprocessSticky.checked = forceReprocess.checked;
-            });
-        }
         if (chkGenerateTiktokPack) {
             chkGenerateTiktokPack.addEventListener('change', syncStickyBar);
-        }
-        if (btnSubmitSticky) {
-            btnSubmitSticky.addEventListener('click', () => {
-                if (!btnSubmit.disabled) {
-                    btnSubmit.click();
-                }
-            });
         }
 
         // Bouton d'annulation propre (Ticket 5)
@@ -2203,7 +2234,7 @@
             btnCancelProcess.addEventListener('click', () => {
                 if (currentAbortController) {
                     btnCancelProcess.disabled = true;
-                    btnCancelProcess.innerHTML = '<span>⏳</span> <span>Annulation en cours...</span>';
+                    btnCancelProcess.innerHTML = '<span>⏳</span> <span>Annulation...</span>';
                     currentAbortController.abort();
                 }
             });
@@ -2250,11 +2281,11 @@
         // Mise à jour de la jauge de progression
         function updateProgress(pct, msg) {
             const safePct = Math.min(100, Math.max(0, pct));
-            progressBarFill.style.width = `${safePct}%`;
-            progressPercent.textContent = `${safePct}%`;
+            if (progressBarFill) progressBarFill.style.width = `${safePct}%`;
+            if (progressPercent) progressPercent.textContent = `${safePct}%`;
             if (msg) {
-                statusText.textContent = msg;
-                progressLog.textContent = msg;
+                if (statusText) statusText.textContent = msg;
+                if (progressLog) progressLog.textContent = msg;
             }
         }
 
@@ -2375,15 +2406,21 @@
             const subColor = activeColorCard ? (activeColorCard.dataset.color || '#FFFF00') : '#FFFF00';
             const subPosition = activePosCard ? (activePosCard.dataset.pos || '950') : '950';
 
-            // Verrouillage de l'UI & activation du bouton d'annulation
+            // Verrouillage de l'UI & activation du HUD Contextuel
+            syncStickyBar();
             setFormLocked(true);
             btnSubmit.disabled = true;
-            if (btnSubmitSticky) btnSubmitSticky.disabled = true;
-            statusBox.style.display = 'flex';
+            if (stickyBottomBar) {
+                stickyBottomBar.classList.remove('success');
+                stickyBottomBar.classList.add('active');
+            }
             if (btnCancelProcess) {
                 btnCancelProcess.style.display = 'inline-flex';
                 btnCancelProcess.disabled = false;
-                btnCancelProcess.innerHTML = '<span>🛑</span> <span>Annuler le traitement</span>';
+                btnCancelProcess.innerHTML = '<span>🛑</span> <span class="cancel-text">Annuler</span>';
+            }
+            if (btnViewResultSticky) {
+                btnViewResultSticky.style.display = 'none';
             }
             resultBox.style.display = 'none';
             videoPreviewContainer.innerHTML = '';
@@ -2458,9 +2495,7 @@
 
                 // Fin du flux : extraction de l'objet JSON final
                 btnSubmit.disabled = false;
-                if (btnSubmitSticky) btnSubmitSticky.disabled = false;
                 setFormLocked(false);
-                if (btnCancelProcess) btnCancelProcess.style.display = 'none';
                 resultBox.style.display = 'flex';
 
                 const jsonMatch = receivedText.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
@@ -2475,17 +2510,37 @@
                 }
 
                 if (finalData && finalData.success) {
+                    updateProgress(100, "Vidéo et sous-titres finalisés avec succès !");
+                    if (stickyBottomBar) stickyBottomBar.classList.add('success');
+                    if (btnCancelProcess) btnCancelProcess.style.display = 'none';
+                    if (btnViewResultSticky) {
+                        btnViewResultSticky.style.display = 'inline-flex';
+                        btnViewResultSticky.onclick = () => {
+                            resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            setTimeout(() => {
+                                if (stickyBottomBar) stickyBottomBar.classList.remove('active', 'success');
+                            }, 800);
+                        };
+                    }
+                    setTimeout(() => {
+                        if (stickyBottomBar && stickyBottomBar.classList.contains('success')) {
+                            stickyBottomBar.classList.remove('active', 'success');
+                        }
+                    }, 5000);
                     renderTranslationResult(finalData);
                 } else {
                     const rawMsg = (finalData && (finalData.message || finalData.error)) || "Une erreur est survenue lors du traitement.";
                     const errCode = (finalData && finalData.code) || '';
                     renderUiErrorCard({ code: errCode, rawMessage: rawMsg });
                     updateProgress(100, `Erreur : ${rawMsg}`);
+                    if (btnCancelProcess) btnCancelProcess.style.display = 'none';
+                    setTimeout(() => {
+                        if (stickyBottomBar) stickyBottomBar.classList.remove('active');
+                    }, 2500);
                 }
 
             } catch (err) {
                 btnSubmit.disabled = false;
-                if (btnSubmitSticky) btnSubmitSticky.disabled = false;
                 setFormLocked(false);
                 if (btnCancelProcess) btnCancelProcess.style.display = 'none';
                 resultBox.style.display = 'flex';
@@ -2496,9 +2551,15 @@
                         code: 'PROCESS_CANCELLED',
                         rawMessage: "Le traitement a été interrompu à votre demande. Le processus a été stoppé proprement et les fichiers temporaires ont été purgés."
                     });
+                    setTimeout(() => {
+                        if (stickyBottomBar) stickyBottomBar.classList.remove('active');
+                    }, 1200);
                 } else {
                     renderUiErrorCard({ code: 'NETWORK_ERROR', rawMessage: err.message });
                     updateProgress(100, `Erreur réseau : ${err.message}`);
+                    setTimeout(() => {
+                        if (stickyBottomBar) stickyBottomBar.classList.remove('active');
+                    }, 3000);
                 }
             }
         });
