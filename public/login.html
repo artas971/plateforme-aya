@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Testeurs - Plateforme Aya</title>
+    <title>Authentification - Plateforme Aya</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,8 +17,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Amiri', serif;
-            color: var(--color-dark-gray);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--color-dark-gray, #1e293b);
         }
 
         html[dir="rtl"] body {
@@ -27,7 +27,7 @@
 
         .login-wrapper {
             width: 100%;
-            max-width: 440px;
+            max-width: 480px;
             padding: 1.5rem;
             box-sizing: border-box;
         }
@@ -35,12 +35,12 @@
         .login-card {
             background: #ffffff;
             border: 1px solid rgba(153, 153, 153, 0.25);
-            border-radius: 14px;
-            padding: 2.25rem 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
             position: relative;
         }
 
@@ -48,7 +48,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
         }
 
         .login-brand {
@@ -61,14 +60,14 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--color-primary-blue), #073763);
+            background: linear-gradient(135deg, var(--color-primary-blue, #0b5394), #073763);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #ffffff;
             font-weight: 800;
             font-size: 1.1rem;
-            border: 2px solid var(--color-turquoise);
+            border: 2px solid var(--color-turquoise, #00bcd4);
             box-shadow: 0 0 10px rgba(0, 188, 212, 0.35);
         }
 
@@ -76,14 +75,14 @@
             margin: 0;
             font-size: 1.35rem;
             font-weight: 800;
-            color: var(--color-primary-blue);
+            color: var(--color-primary-blue, #0b5394);
             line-height: 1.2;
         }
 
         .login-title-group p {
             margin: 0.2rem 0 0 0;
             font-size: 0.8rem;
-            color: var(--color-gray-secondary);
+            color: var(--color-gray-secondary, #64748b);
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
@@ -108,14 +107,71 @@
             border-radius: 16px;
             font-size: 0.76rem;
             font-weight: 700;
-            color: var(--color-dark-gray);
+            color: var(--color-dark-gray, #1e293b);
             transition: all 0.2s;
         }
 
         .lang-btn.active {
             background: #ffffff;
-            color: var(--color-primary-blue);
+            color: var(--color-primary-blue, #0b5394);
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Système d'onglets (Tabs) */
+        .auth-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            gap: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .auth-tab-btn.active {
+            background: #ffffff;
+            color: var(--color-primary-blue, #0b5394);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Sous-onglets pour la Connexion (Mon Compte / Sas Testeur) */
+        .login-sub-modes {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-sub-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-sub-btn.active {
+            background: rgba(11, 83, 148, 0.08);
+            border-color: var(--color-primary-blue, #0b5394);
+            color: var(--color-primary-blue, #0b5394);
+            font-weight: 700;
         }
 
         .security-badge {
@@ -124,7 +180,7 @@
             border-radius: 8px;
             padding: 0.65rem 0.9rem;
             font-size: 0.8rem;
-            color: var(--color-primary-blue);
+            color: var(--color-primary-blue, #0b5394);
             display: flex;
             align-items: center;
             gap: 0.6rem;
@@ -134,28 +190,30 @@
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .form-label {
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            color: var(--color-dark-gray);
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--color-dark-gray, #1e293b);
+            font-family: inherit;
         }
 
-        html[dir="rtl"] .form-label {
-            font-family: 'Cairo', sans-serif !important;
+        .form-label .optional {
+            font-size: 0.78rem;
+            font-weight: 400;
+            color: #64748b;
         }
 
         .form-select, .form-input {
             width: 100%;
             box-sizing: border-box;
-            padding: 0.85rem 1rem;
+            padding: 0.8rem 1rem;
             border: 1.5px solid rgba(153, 153, 153, 0.35);
             border-radius: 8px;
-            font-size: 0.95rem;
-            color: var(--color-dark-gray);
+            font-size: 0.92rem;
+            color: var(--color-dark-gray, #1e293b);
             background: #ffffff;
             transition: border-color 0.2s, box-shadow 0.2s;
             font-family: inherit;
@@ -163,17 +221,77 @@
 
         .form-select:focus, .form-input:focus {
             outline: none;
-            border-color: var(--color-turquoise);
+            border-color: var(--color-turquoise, #00bcd4);
             box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.18);
         }
 
+        /* Validation UI States */
+        .form-input.is-valid {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+        }
+
+        .form-input.is-invalid {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+        }
+
+        .input-feedback {
+            font-size: 0.78rem;
+            font-weight: 600;
+            min-height: 18px;
+        }
+
+        .text-success { color: #059669; }
+        .text-danger { color: #dc2626; }
+        .text-muted { color: #64748b; }
+
+        /* Conteneur mot de passe avec œil */
+        .password-field-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-field-wrap .form-input {
+            padding-right: 44px;
+        }
+
+        html[dir="rtl"] .password-field-wrap .form-input {
+            padding-right: 1rem;
+            padding-left: 44px;
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.15rem;
+            padding: 4px;
+            color: #64748b;
+            line-height: 1;
+            user-select: none;
+            transition: transform 0.15s ease;
+        }
+
+        html[dir="rtl"] .btn-toggle-eye {
+            right: auto;
+            left: 10px;
+        }
+
+        .btn-toggle-eye:hover {
+            transform: scale(1.15);
+        }
+
         .btn-submit-login {
-            background: var(--color-turquoise);
+            background: var(--color-turquoise, #00bcd4);
             color: #ffffff;
             border: none;
             padding: 0.95rem;
             border-radius: 8px;
-            font-size: 1.02rem;
+            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -182,11 +300,7 @@
             justify-content: center;
             gap: 0.6rem;
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.35);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        html[dir="rtl"] .btn-submit-login {
-            font-family: 'Cairo', sans-serif !important;
+            font-family: inherit;
         }
 
         .btn-submit-login:hover:not(:disabled) {
@@ -201,6 +315,7 @@
             transform: none;
         }
 
+        /* Bannières */
         .error-banner {
             display: none;
             background: rgba(239, 68, 68, 0.1);
@@ -209,13 +324,41 @@
             border-radius: 8px;
             padding: 0.75rem 1rem;
             font-size: 0.85rem;
-            line-height: 1.4;
+            line-height: 1.45;
+        }
+
+        .success-banner {
+            display: none;
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+        }
+
+        .btn-link-action {
+            display: inline-block;
+            background: none;
+            border: none;
+            padding: 4px 0;
+            margin-top: 6px;
+            color: #0284c7;
+            text-decoration: underline;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        .btn-link-action:hover {
+            color: #0369a1;
         }
 
         .login-footer-note {
             text-align: center;
             font-size: 0.75rem;
-            color: var(--color-gray-secondary);
+            color: var(--color-gray-secondary, #64748b);
             margin-top: 0.5rem;
         }
     </style>
@@ -229,7 +372,7 @@
                     <div class="avatar-badge-login">آية</div>
                     <div class="login-title-group">
                         <h1 id="txtTitle">Plateforme Aya</h1>
-                        <p id="txtSubtitle">Sas de Sécurité Testeurs</p>
+                        <p id="txtSubtitle">Espace d'Authentification</p>
                     </div>
                 </div>
                 <div class="lang-switch-login">
@@ -238,83 +381,242 @@
                 </div>
             </div>
 
-            <!-- Badge Sécurisé -->
-            <div class="security-badge">
-                <span style="font-size: 1.3rem;">🛡️</span>
-                <span id="txtBadge">Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve et John.</span>
-            </div>
-
-            <!-- Message d'Erreur -->
+            <!-- Bannières d'alerte et de succès -->
+            <div class="success-banner" id="successBanner"></div>
             <div class="error-banner" id="errorBanner"></div>
 
-            <!-- Formulaire d'Authentification -->
-            <form id="loginForm" style="display: flex; flex-direction: column; gap: 1.25rem;">
-                <!-- 1. Sélection de l'Identité -->
-                <div class="form-group">
-                    <label class="form-label" for="selectTester" id="labelTester">1. Qui êtes-vous ?</label>
-                    <select class="form-select" id="selectTester" required>
-                        <option value="" disabled selected id="optPlaceholder">-- Sélectionnez votre identité --</option>
-                        <option value="anais">Anaïs</option>
-                        <option value="aya">Aya</option>
-                        <option value="soso">Soso</option>
-                        <option value="steve">Steve</option>
-                        <option value="john">John</option>
-                    </select>
+            <!-- Système d'onglets (Tabs) : Connexion / Inscription -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab-btn active" id="tabLoginBtn">🔑 Connexion</button>
+                <button type="button" class="auth-tab-btn" id="tabRegisterBtn">✨ Créer un compte</button>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- SECTION 1 : FORMULAIRE DE CONNEXION                           -->
+            <!-- ============================================================== -->
+            <div id="sectionLogin">
+                <!-- Sous-onglets pour la Connexion -->
+                <div class="login-sub-modes">
+                    <button type="button" class="login-sub-btn active" id="subBtnCredentials">👤 Mon Compte</button>
+                    <button type="button" class="login-sub-btn" id="subBtnTester">🛡️ Testeurs Habilités</button>
                 </div>
 
-                <!-- 2. Code d'accès -->
-                <div class="form-group">
-                    <label class="form-label" for="inputCode" id="labelCode">2. Code d'accès</label>
-                    <input type="password" class="form-input" id="inputCode" placeholder="Entrez le code d'accès..." required autocomplete="current-password">
-                </div>
+                <!-- A. Formulaire Connexion par Compte (Par défaut) -->
+                <form id="loginFormAccount" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="loginIdentifier" id="labelLoginId">Pseudonyme ou E-mail</label>
+                        <input type="text" class="form-input" id="loginIdentifier" placeholder="ex: artas971 ou nom@exemple.com" required autocomplete="username">
+                    </div>
 
-                <!-- Bouton Connexion -->
-                <button type="submit" class="btn-submit-login" id="btnSubmit">
-                    <span>🔐</span> <span id="txtSubmit">Déverrouiller & Accéder</span>
-                </button>
-            </form>
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword" id="labelLoginPass">Mot de passe</label>
+                        <div class="password-field-wrap">
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Entrez votre mot de passe..." required autocomplete="current-password">
+                            <button type="button" class="btn-toggle-eye" id="toggleLoginPassword" title="Afficher/Masquer">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit-login" id="btnSubmitAccount">
+                        <span>🚀</span> <span id="txtSubmitAccount">Se connecter</span>
+                    </button>
+                </form>
+
+                <!-- B. Formulaire Sas Testeurs Historiques -->
+                <form id="loginFormTester" style="display: none; flex-direction: column; gap: 1rem;">
+                    <div class="security-badge">
+                        <span style="font-size: 1.2rem;">🛡️</span>
+                        <span id="txtBadge">Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve et John.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="selectTester" id="labelTester">1. Qui êtes-vous ?</label>
+                        <select class="form-select" id="selectTester" required>
+                            <option value="" disabled selected id="optPlaceholder">-- Sélectionnez votre identité --</option>
+                            <option value="anais">Anaïs</option>
+                            <option value="aya">Aya</option>
+                            <option value="soso">Soso</option>
+                            <option value="steve">Steve</option>
+                            <option value="john">John</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="inputCode" id="labelCode">2. Code d'accès</label>
+                        <div class="password-field-wrap">
+                            <input type="password" class="form-input" id="inputCode" placeholder="Entrez le code d'accès..." required autocomplete="current-password">
+                            <button type="button" class="btn-toggle-eye" id="toggleCodePassword" title="Afficher/Masquer">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit-login" id="btnSubmitTester">
+                        <span>🔐</span> <span id="txtSubmitTester">Déverrouiller & Accéder</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- SECTION 2 : FORMULAIRE D'INSCRIPTION (Ticket 1 & 2)            -->
+            <!-- ============================================================== -->
+            <div id="sectionRegister" style="display: none;">
+                <form id="registerForm" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- 1. Pseudonyme unique (Type TikTok : texte sans @ forcé) -->
+                    <div class="form-group">
+                        <label class="form-label" for="regUsername" id="labelRegUser">
+                            Pseudonyme unique <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" class="form-input" id="regUsername" placeholder="ex: artas971" required autocomplete="username" minlength="3" maxlength="30">
+                        <div class="input-feedback" id="usernameFeedback"></div>
+                    </div>
+
+                    <!-- 2. Nom d'affichage (Facultatif) -->
+                    <div class="form-group">
+                        <label class="form-label" for="regDisplayName" id="labelRegName">
+                            Nom d'affichage <span class="optional">(Facultatif, modifiable plus tard)</span>
+                        </label>
+                        <input type="text" class="form-input" id="regDisplayName" placeholder="ex: Artas ou Nom & Prénom" autocomplete="name" maxlength="50">
+                    </div>
+
+                    <!-- 3. Adresse E-mail (Requis - Bouclier Anti-Spam) -->
+                    <div class="form-group">
+                        <label class="form-label" for="regEmail" id="labelRegEmail">
+                            Adresse E-mail <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="email" class="form-input" id="regEmail" placeholder="nom@exemple.com" required autocomplete="email">
+                        <div class="input-feedback" id="emailFeedback"></div>
+                    </div>
+
+                    <!-- 4. Mot de passe avec toggle œil -->
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword" id="labelRegPass">
+                            Mot de passe (8 caractères minimum) <span style="color: #ef4444;">*</span>
+                        </label>
+                        <div class="password-field-wrap">
+                            <input type="password" class="form-input" id="regPassword" placeholder="Au moins 8 caractères..." required minlength="8" autocomplete="new-password">
+                            <button type="button" class="btn-toggle-eye" id="toggleRegPassword" title="Afficher/Masquer">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit-login" id="btnSubmitRegister">
+                        <span>✨</span> <span id="txtSubmitRegister">Créer mon compte Aya</span>
+                    </button>
+                </form>
+            </div>
 
             <div class="login-footer-note" id="txtFooter">
-                Projet Aya &copy; 2026 • Accès restreint et chiffré
+                Projet Aya &copy; 2026 • Plateforme multilingue et sécurisée
             </div>
         </div>
     </div>
 
     <script>
+        // Dictionnaires de traduction FR / AR
         const dict = {
             fr: {
                 dir: 'ltr',
                 title: 'Plateforme Aya',
-                subtitle: 'Sas de Sécurité Testeurs',
+                subtitle: 'Espace d\'Authentification',
+                tabLogin: '🔑 Connexion',
+                tabRegister: '✨ Créer un compte',
+                subAccount: '👤 Mon Compte',
+                subTester: '🛡️ Testeurs Habilités',
                 badge: 'Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve et John.',
+                labelLoginId: 'Pseudonyme ou E-mail',
+                placeholderLoginId: 'ex: artas971 ou nom@exemple.com',
+                labelLoginPass: 'Mot de passe',
+                placeholderLoginPass: 'Entrez votre mot de passe...',
+                submitAccount: 'Se connecter',
+                submittingAccount: 'Connexion en cours...',
                 labelTester: '1. Qui êtes-vous ?',
                 optPlaceholder: '-- Sélectionnez votre identité --',
                 labelCode: '2. Code d\'accès',
                 placeholderCode: 'Entrez le code d\'accès...',
-                submit: 'Déverrouiller & Accéder',
-                submitting: 'Vérification des accès...',
-                footer: 'Projet Aya © 2026 • Accès restreint et chiffré',
-                errEmpty: 'Veuillez sélectionner votre nom et saisir le code d\'accès.',
-                errFailed: 'Échec de connexion : code d\'accès invalide.'
+                submitTester: 'Déverrouiller & Accéder',
+                submittingTester: 'Vérification des accès...',
+                labelRegUser: 'Pseudonyme unique *',
+                placeholderRegUser: 'ex: artas971',
+                labelRegName: 'Nom d\'affichage (Facultatif, modifiable plus tard)',
+                placeholderRegName: 'ex: Artas ou Nom & Prénom',
+                labelRegEmail: 'Adresse E-mail *',
+                placeholderRegEmail: 'nom@exemple.com',
+                labelRegPass: 'Mot de passe (8 caractères minimum) *',
+                placeholderRegPass: 'Au moins 8 caractères...',
+                submitRegister: 'Créer mon compte Aya',
+                submittingRegister: 'Création du compte...',
+                footer: 'Projet Aya © 2026 • Plateforme multilingue et sécurisée',
+                msgVerifiedSuccess: '✨ <b>E-mail vérifié avec succès !</b> Votre compte est désormais actif. Vous pouvez vous connecter.',
+                msgVerifiedExpired: '⚠️ <b>Lien expiré ou invalide.</b> Veuillez demander le renvoi d\'un nouveau lien de confirmation.',
+                msgVerifiedMissing: '⚠️ <b>Jeton manquant.</b> Veuillez vérifier le lien reçu dans votre boîte e-mail.',
+                msgRequireVerification: '⚠️ <b>Compte non vérifié :</b> Veuillez cliquer sur le lien envoyé à votre adresse e-mail.<br>',
+                btnResend: '📩 Renvoyer l\'e-mail de confirmation',
+                errEmptyTester: 'Veuillez sélectionner votre nom et saisir le code d\'accès.',
+                errEmptyAccount: 'Veuillez saisir votre identifiant et votre mot de passe.',
+                errPassShort: 'Le mot de passe doit comporter au moins 8 caractères.',
+                errUserTaken: 'Ce pseudonyme est déjà pris.',
+                errUserAvailable: 'Pseudonyme disponible !',
+                errUserMin: 'Le pseudonyme doit comporter au moins 3 caractères.',
+                errEmailInvalid: 'Format d\'adresse e-mail invalide.',
+                errEmailTaken: 'Cette adresse e-mail est déjà associée à un compte.',
+                errEmailAvailable: 'Adresse e-mail disponible !'
             },
             ar: {
                 dir: 'rtl',
                 title: 'منصة آية الذكية',
-                subtitle: 'بوابة الدخول الآمنة للفاحصين',
+                subtitle: 'بوابة تسجيل الدخول والحسابات',
+                tabLogin: '🔑 تسجيل الدخول',
+                tabRegister: '✨ إنشاء حساب جديد',
+                subAccount: '👤 حسابي الشخصي',
+                subTester: '🛡️ الفاحصون المعتمدون',
                 badge: 'منطقة مخصصة حصرياً لفريق الفحص المعتمد: أنس، آية، سوسو، ستيف، جون.',
+                labelLoginId: 'اسم المستخدم أو البريد الإلكتروني',
+                placeholderLoginId: 'مثال: artas971 أو name@example.com',
+                labelLoginPass: 'كلمة المرور',
+                placeholderLoginPass: 'أدخل كلمة المرور...',
+                submitAccount: 'تسجيل الدخول',
+                submittingAccount: 'جاري تسجيل الدخول...',
                 labelTester: '١. من أنت؟ (اختر هويتك)',
                 optPlaceholder: '-- اختر اسمك من القائمة --',
                 labelCode: '٢. رمز الدخول السري',
                 placeholderCode: 'أدخل رمز الدخول المعتمد...',
-                submit: 'فتح الدخول والانتقال للمنصة',
-                submitting: 'جاري التحقق من الصلاحيات...',
-                footer: 'مشروع آية © 2026 • دخول مشفر ومحمي',
-                errEmpty: 'يرجى اختيار اسمك وكتابة رمز الدخول السري.',
-                errFailed: 'فشل تسجيل الدخول: رمز الدخول غير صحيح.'
+                submitTester: 'فتح الدخول والانتقال للمنصة',
+                submittingTester: 'جاري التحقق من الصلاحيات...',
+                labelRegUser: 'اسم المستخدم الفريد *',
+                placeholderRegUser: 'مثال: artas971',
+                labelRegName: 'الاسم الظاهر (اختياري، يمكن تغييره لاحقاً)',
+                placeholderRegName: 'مثال: أرتاس أو الاسم الكامل',
+                labelRegEmail: 'البريد الإلكتروني *',
+                placeholderRegEmail: 'name@example.com',
+                labelRegPass: 'كلمة المرور (٨ خانات على الأقل) *',
+                placeholderRegPass: 'على الأقل ٨ أحرف أو أرقام...',
+                submitRegister: 'إنشاء حسابي على منصة آية',
+                submittingRegister: 'جاري إنشاء الحساب...',
+                footer: 'مشروع آية © 2026 • منصة متعددة اللغات ومؤمنة بالكامل',
+                msgVerifiedSuccess: '✨ <b>تم تأكيد بريدك الإلكتروني بنجاح!</b> حسابك مفعل الآن، تفضل بتسجيل الدخول.',
+                msgVerifiedExpired: '⚠️ <b>الرابط منتهي الصلاحية أو غير صالح.</b> يرجى طلب إرسال رابط تأكيد جديد.',
+                msgVerifiedMissing: '⚠️ <b>رمز التأكيد مفقود.</b> يرجى فتح الرابط المرسل إلى بريدك.',
+                msgRequireVerification: '⚠️ <b>الحساب بحاجة لتأكيد البريد:</b> يرجى فتح رسالة التفعيل المرسلة لبريدك.<br>',
+                btnResend: '📩 إعادة إرسال بريد التأكيد',
+                errEmptyTester: 'يرجى اختيار اسمك وكتابة رمز الدخول السري.',
+                errEmptyAccount: 'يرجى إدخال اسم المستخدم وكلمة المرور.',
+                errPassShort: 'كلمة المرور يجب ألا تقل عن ٨ خانات.',
+                errUserTaken: 'اسم المستخدم هذا محجوز مسبقاً.',
+                errUserAvailable: 'اسم المستخدم متاح!',
+                errUserMin: 'يجب أن يتكون اسم المستخدم من ٣ أحرف على الأقل.',
+                errEmailInvalid: 'صيغة البريد الإلكتروني غير صحيحة.',
+                errEmailTaken: 'هذا البريد الإلكتروني مسجل بحساب آخر.',
+                errEmailAvailable: 'البريد الإلكتروني متاح!'
             }
         };
 
         let currentLang = localStorage.getItem('aya_lang') || 'fr';
+
+        // Utilitaires de debounce (débruitage de 400ms)
+        function debounce(func, delay = 400) {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), delay);
+            };
+        }
 
         function setLanguage(lang) {
             currentLang = lang;
@@ -326,12 +628,31 @@
 
             document.getElementById('txtTitle').textContent = d.title;
             document.getElementById('txtSubtitle').textContent = d.subtitle;
+            document.getElementById('tabLoginBtn').textContent = d.tabLogin;
+            document.getElementById('tabRegisterBtn').textContent = d.tabRegister;
+            document.getElementById('subBtnCredentials').textContent = d.subAccount;
+            document.getElementById('subBtnTester').textContent = d.subTester;
             document.getElementById('txtBadge').textContent = d.badge;
+            document.getElementById('labelLoginId').textContent = d.labelLoginId;
+            document.getElementById('loginIdentifier').placeholder = d.placeholderLoginId;
+            document.getElementById('labelLoginPass').textContent = d.labelLoginPass;
+            document.getElementById('loginPassword').placeholder = d.placeholderLoginPass;
+            document.getElementById('txtSubmitAccount').textContent = d.submitAccount;
             document.getElementById('labelTester').textContent = d.labelTester;
             document.getElementById('optPlaceholder').textContent = d.optPlaceholder;
             document.getElementById('labelCode').textContent = d.labelCode;
             document.getElementById('inputCode').placeholder = d.placeholderCode;
-            document.getElementById('txtSubmit').textContent = d.submit;
+            document.getElementById('txtSubmitTester').textContent = d.submitTester;
+
+            document.getElementById('labelRegUser').innerHTML = d.labelRegUser;
+            document.getElementById('regUsername').placeholder = d.placeholderRegUser;
+            document.getElementById('labelRegName').innerHTML = d.labelRegName;
+            document.getElementById('regDisplayName').placeholder = d.placeholderRegName;
+            document.getElementById('labelRegEmail').innerHTML = d.labelRegEmail;
+            document.getElementById('regEmail').placeholder = d.placeholderRegEmail;
+            document.getElementById('labelRegPass').innerHTML = d.labelRegPass;
+            document.getElementById('regPassword').placeholder = d.placeholderRegPass;
+            document.getElementById('txtSubmitRegister').textContent = d.submitRegister;
             document.getElementById('txtFooter').textContent = d.footer;
 
             if (lang === 'ar') {
@@ -347,23 +668,356 @@
         document.getElementById('btnAr').addEventListener('click', () => setLanguage('ar'));
         setLanguage(currentLang);
 
-        // Soumission du formulaire
-        const loginForm = document.getElementById('loginForm');
+        // ==============================================================
+        // GESTION DES ONGLETS PRINCIPAUX (Connexion / Inscription)
+        // ==============================================================
+        const tabLoginBtn = document.getElementById('tabLoginBtn');
+        const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+        const sectionLogin = document.getElementById('sectionLogin');
+        const sectionRegister = document.getElementById('sectionRegister');
+        const errorBanner = document.getElementById('errorBanner');
+        const successBanner = document.getElementById('successBanner');
+
+        tabLoginBtn.addEventListener('click', () => {
+            tabLoginBtn.classList.add('active');
+            tabRegisterBtn.classList.remove('active');
+            sectionLogin.style.display = 'block';
+            sectionRegister.style.display = 'none';
+            errorBanner.style.display = 'none';
+        });
+
+        tabRegisterBtn.addEventListener('click', () => {
+            tabRegisterBtn.classList.add('active');
+            tabLoginBtn.classList.remove('active');
+            sectionLogin.style.display = 'none';
+            sectionRegister.style.display = 'block';
+            errorBanner.style.display = 'none';
+        });
+
+        // Sous-modes de connexion (Mon Compte / Sas Testeurs)
+        const subBtnCredentials = document.getElementById('subBtnCredentials');
+        const subBtnTester = document.getElementById('subBtnTester');
+        const loginFormAccount = document.getElementById('loginFormAccount');
+        const loginFormTester = document.getElementById('loginFormTester');
+
+        subBtnCredentials.addEventListener('click', () => {
+            subBtnCredentials.classList.add('active');
+            subBtnTester.classList.remove('active');
+            loginFormAccount.style.display = 'flex';
+            loginFormTester.style.display = 'none';
+            errorBanner.style.display = 'none';
+        });
+
+        subBtnTester.addEventListener('click', () => {
+            subBtnTester.classList.add('active');
+            subBtnCredentials.classList.remove('active');
+            loginFormAccount.style.display = 'none';
+            loginFormTester.style.display = 'flex';
+            errorBanner.style.display = 'none';
+        });
+
+        // ==============================================================
+        // BASCULE DE VISIBILITÉ DES MOTS DE PASSE (ŒIL 👁️ / 🙈)
+        // ==============================================================
+        function attachPasswordToggle(inputId, toggleBtnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(toggleBtnId);
+            if (!input || !btn) return;
+
+            btn.addEventListener('click', () => {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btn.textContent = '🙈';
+                } else {
+                    input.type = 'password';
+                    btn.textContent = '👁️';
+                }
+            });
+        }
+
+        attachPasswordToggle('loginPassword', 'toggleLoginPassword');
+        attachPasswordToggle('inputCode', 'toggleCodePassword');
+        attachPasswordToggle('regPassword', 'toggleRegPassword');
+
+        // ==============================================================
+        // GESTION DES RETOURS D'URL (?verified=success, etc.)
+        // ==============================================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const verifiedParam = urlParams.get('verified');
+        const d = dict[currentLang] || dict.fr;
+
+        if (verifiedParam === 'success') {
+            successBanner.innerHTML = d.msgVerifiedSuccess;
+            successBanner.style.display = 'block';
+            const usernameParam = urlParams.get('username');
+            if (usernameParam) {
+                document.getElementById('loginIdentifier').value = usernameParam;
+            }
+        } else if (verifiedParam === 'expired') {
+            errorBanner.innerHTML = d.msgVerifiedExpired;
+            errorBanner.style.display = 'block';
+        } else if (verifiedParam === 'missing_token') {
+            errorBanner.innerHTML = d.msgVerifiedMissing;
+            errorBanner.style.display = 'block';
+        }
+
+        // ==============================================================
+        // DÉBRUITAGE TEMPS RÉEL (Pseudonyme & E-mail)
+        // ==============================================================
+        const regUsername = document.getElementById('regUsername');
+        const usernameFeedback = document.getElementById('usernameFeedback');
+        const regEmail = document.getElementById('regEmail');
+        const emailFeedback = document.getElementById('emailFeedback');
+
+        let isUsernameValid = false;
+        let isEmailValid = false;
+
+        const checkUsernameLive = debounce(async (usernameVal) => {
+            const d = dict[currentLang] || dict.fr;
+            const cleaned = usernameVal.trim();
+            if (cleaned.length < 3) {
+                regUsername.classList.remove('is-valid');
+                if (cleaned.length > 0) {
+                    regUsername.classList.add('is-invalid');
+                    usernameFeedback.innerHTML = `<span class="text-danger">${d.errUserMin}</span>`;
+                } else {
+                    regUsername.classList.remove('is-invalid');
+                    usernameFeedback.innerHTML = '';
+                }
+                isUsernameValid = false;
+                return;
+            }
+
+            usernameFeedback.innerHTML = `<span class="text-muted">⏳ Vérification...</span>`;
+
+            try {
+                const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(cleaned)}`);
+                const data = await res.json();
+
+                if (data.available) {
+                    regUsername.classList.remove('is-invalid');
+                    regUsername.classList.add('is-valid');
+                    usernameFeedback.innerHTML = `<span class="text-success">✓ ${d.errUserAvailable} (${data.username})</span>`;
+                    isUsernameValid = true;
+                } else {
+                    regUsername.classList.remove('is-valid');
+                    regUsername.classList.add('is-invalid');
+                    usernameFeedback.innerHTML = `<span class="text-danger">✗ ${data.message || d.errUserTaken}</span>`;
+                    isUsernameValid = false;
+                }
+            } catch (err) {
+                usernameFeedback.innerHTML = `<span class="text-muted">Erreur réseau</span>`;
+            }
+        }, 400);
+
+        regUsername.addEventListener('input', (e) => {
+            checkUsernameLive(e.target.value);
+        });
+
+        const checkEmailLive = debounce(async (emailVal) => {
+            const d = dict[currentLang] || dict.fr;
+            const cleaned = emailVal.trim();
+            const emailRegex = /^\S+@\S+\.\S+$/;
+
+            if (!emailRegex.test(cleaned)) {
+                regEmail.classList.remove('is-valid');
+                if (cleaned.length > 0) {
+                    regEmail.classList.add('is-invalid');
+                    emailFeedback.innerHTML = `<span class="text-danger">${d.errEmailInvalid}</span>`;
+                } else {
+                    regEmail.classList.remove('is-invalid');
+                    emailFeedback.innerHTML = '';
+                }
+                isEmailValid = false;
+                return;
+            }
+
+            emailFeedback.innerHTML = `<span class="text-muted">⏳ Vérification...</span>`;
+
+            try {
+                const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(cleaned)}`);
+                const data = await res.json();
+
+                if (data.available) {
+                    regEmail.classList.remove('is-invalid');
+                    regEmail.classList.add('is-valid');
+                    emailFeedback.innerHTML = `<span class="text-success">✓ ${d.errEmailAvailable}</span>`;
+                    isEmailValid = true;
+                } else {
+                    regEmail.classList.remove('is-valid');
+                    regEmail.classList.add('is-invalid');
+                    emailFeedback.innerHTML = `<span class="text-danger">✗ ${data.message || d.errEmailTaken}</span>`;
+                    isEmailValid = false;
+                }
+            } catch (err) {
+                emailFeedback.innerHTML = `<span class="text-muted">Erreur réseau</span>`;
+            }
+        }, 400);
+
+        regEmail.addEventListener('input', (e) => {
+            checkEmailLive(e.target.value);
+        });
+
+        // ==============================================================
+        // SOUMISSION DU FORMULAIRE D'INSCRIPTION
+        // ==============================================================
+        const registerForm = document.getElementById('registerForm');
+        const regDisplayName = document.getElementById('regDisplayName');
+        const regPassword = document.getElementById('regPassword');
+        const btnSubmitRegister = document.getElementById('btnSubmitRegister');
+        const txtSubmitRegister = document.getElementById('txtSubmitRegister');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBanner.style.display = 'none';
+            successBanner.style.display = 'none';
+
+            const d = dict[currentLang] || dict.fr;
+            const username = regUsername.value.trim();
+            const email = regEmail.value.trim();
+            const password = regPassword.value;
+            const displayName = regDisplayName.value.trim();
+
+            if (!username || !email || !password) {
+                errorBanner.textContent = "Veuillez remplir tous les champs obligatoires.";
+                errorBanner.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 8) {
+                errorBanner.textContent = d.errPassShort;
+                errorBanner.style.display = 'block';
+                regPassword.focus();
+                return;
+            }
+
+            btnSubmitRegister.disabled = true;
+            txtSubmitRegister.textContent = d.submittingRegister;
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password,
+                        firstName: displayName
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    registerForm.reset();
+                    regUsername.classList.remove('is-valid', 'is-invalid');
+                    regEmail.classList.remove('is-valid', 'is-invalid');
+                    usernameFeedback.innerHTML = '';
+                    emailFeedback.innerHTML = '';
+
+                    // Basculer vers l'onglet Connexion et afficher le message de confirmation
+                    tabLoginBtn.click();
+                    successBanner.innerHTML = `✨ <b>Inscription réussie !</b> Un e-mail de confirmation vient d'être envoyé à <b>${escapeHtml(email)}</b>.<br>Veuillez cliquer sur le lien pour activer votre compte.`;
+                    successBanner.style.display = 'block';
+                    document.getElementById('loginIdentifier').value = username;
+                } else {
+                    errorBanner.textContent = data.error || "Erreur lors de l'inscription.";
+                    errorBanner.style.display = 'block';
+                }
+            } catch (err) {
+                errorBanner.textContent = `Erreur réseau : ${err.message}`;
+                errorBanner.style.display = 'block';
+            } finally {
+                btnSubmitRegister.disabled = false;
+                txtSubmitRegister.textContent = d.submitRegister;
+            }
+        });
+
+        // ==============================================================
+        // SOUMISSION CONNEXION COMPTE PERSONNEL
+        // ==============================================================
+        const btnSubmitAccount = document.getElementById('btnSubmitAccount');
+        const txtSubmitAccount = document.getElementById('txtSubmitAccount');
+
+        loginFormAccount.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBanner.style.display = 'none';
+
+            const d = dict[currentLang] || dict.fr;
+            const identifier = document.getElementById('loginIdentifier').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!identifier || !password) {
+                errorBanner.textContent = d.errEmptyAccount;
+                errorBanner.style.display = 'block';
+                return;
+            }
+
+            btnSubmitAccount.disabled = true;
+            txtSubmitAccount.textContent = d.submittingAccount;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success && data.user) {
+                    localStorage.setItem('aya_user', JSON.stringify(data.user));
+                    const redirect = urlParams.get('redirect') || '/';
+                    window.location.href = redirect;
+                } else if (data.requireVerification) {
+                    // Compte non vérifié : affiche bouton renvoi
+                    errorBanner.innerHTML = `${d.msgRequireVerification}<button type="button" class="btn-link-action" id="btnResendMail">${d.btnResend}</button>`;
+                    errorBanner.style.display = 'block';
+
+                    document.getElementById('btnResendMail')?.addEventListener('click', async () => {
+                        try {
+                            const resendRes = await fetch('/api/auth/resend-verification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: data.email || identifier })
+                            });
+                            const resendData = await resendRes.json();
+                            alert(resendData.message || "E-mail renvoyé !");
+                        } catch (err) {
+                            alert("Erreur lors du renvoi de l'e-mail.");
+                        }
+                    });
+                } else {
+                    errorBanner.textContent = data.error || "Échec de connexion : vérifiez vos identifiants.";
+                    errorBanner.style.display = 'block';
+                }
+            } catch (err) {
+                errorBanner.textContent = `Erreur réseau : ${err.message}`;
+                errorBanner.style.display = 'block';
+            } finally {
+                btnSubmitAccount.disabled = false;
+                txtSubmitAccount.textContent = d.submitAccount;
+            }
+        });
+
+        // ==============================================================
+        // SOUMISSION CONNEXION SAS TESTEURS HABILITÉS
+        // ==============================================================
         const selectTester = document.getElementById('selectTester');
         const inputCode = document.getElementById('inputCode');
-        const btnSubmit = document.getElementById('btnSubmit');
-        const txtSubmit = document.getElementById('txtSubmit');
-        const errorBanner = document.getElementById('errorBanner');
+        const btnSubmitTester = document.getElementById('btnSubmitTester');
+        const txtSubmitTester = document.getElementById('txtSubmitTester');
 
-        // Pré-sélectionner si utilisateur déjà en mémoire locale
+        // Pré-sélectionner si testeur déjà en mémoire locale
         try {
             const cachedUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
-            if (cachedUser.id && ['anais', 'aya', 'soso', 'steve', 'john'].includes(cachedUser.id)) {
-                selectTester.value = cachedUser.id;
+            const cleanId = (cachedUser.id || '').replace(/^@/, '');
+            if (cleanId && ['anais', 'aya', 'soso', 'steve', 'john'].includes(cleanId)) {
+                selectTester.value = cleanId;
             }
         } catch(e) {}
 
-        loginForm.addEventListener('submit', async (e) => {
+        loginFormTester.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorBanner.style.display = 'none';
 
@@ -372,13 +1026,13 @@
             const d = dict[currentLang] || dict.fr;
 
             if (!testerId || !code) {
-                errorBanner.textContent = d.errEmpty;
+                errorBanner.textContent = d.errEmptyTester;
                 errorBanner.style.display = 'block';
                 return;
             }
 
-            btnSubmit.disabled = true;
-            txtSubmit.textContent = d.submitting;
+            btnSubmitTester.disabled = true;
+            txtSubmitTester.textContent = d.submittingTester;
 
             try {
                 const res = await fetch('/api/auth/login', {
@@ -393,26 +1047,26 @@
                 const data = await res.json();
 
                 if (data.success && data.user) {
-                    // Sauvegarde du testeur dans localStorage
                     localStorage.setItem('aya_user', JSON.stringify(data.user));
-                    
-                    // Redirection vers l'accueil ou studio
-                    const urlParams = new URLSearchParams(window.location.search);
                     const redirect = urlParams.get('redirect') || '/';
                     window.location.href = redirect;
                 } else {
-                    errorBanner.textContent = data.error || d.errFailed;
+                    errorBanner.textContent = data.error || "Code d'accès testeur invalide.";
                     errorBanner.style.display = 'block';
-                    btnSubmit.disabled = false;
-                    txtSubmit.textContent = d.submit;
                 }
             } catch (err) {
                 errorBanner.textContent = `Erreur réseau : ${err.message}`;
                 errorBanner.style.display = 'block';
-                btnSubmit.disabled = false;
-                txtSubmit.textContent = d.submit;
+            } finally {
+                btnSubmitTester.disabled = false;
+                txtSubmitTester.textContent = d.submitTester;
             }
         });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
     </script>
 </body>
 </html>
