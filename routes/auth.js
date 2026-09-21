@@ -68,7 +68,11 @@ function requireAuth(req, res, next) {
         '/api/auth/check-email',
         '/api/auth/verify',
         '/api/auth/resend-verification',
-        '/api/tiktok/auth/callback'
+        '/api/tiktok/auth/callback',
+        '/cgu',
+        '/cgu.html',
+        '/confidentialite',
+        '/confidentialite.html'
     ];
 
     if (publicPaths.includes(req.path)) {

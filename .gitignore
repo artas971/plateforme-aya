@@ -42,6 +42,7 @@ venv/
 audio_a_traiter/
 fichiers_reponse_a_envoyer/
 uploads/
+public/avatars/
 message pour john/
 archive_mk/
 feedbacks/

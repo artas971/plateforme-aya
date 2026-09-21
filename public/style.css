@@ -2556,6 +2556,229 @@ html[dir="rtl"] .step-content p {
     box-shadow: 0 6px 16px rgba(0, 112, 186, 0.35);
 }
 
+/* ==========================================================================
+   Bandeau de Cookies Techniques (RGPD & ePrivacy)
+   ========================================================================== */
+.aya-cookie-banner {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 48px);
+    max-width: 920px;
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 188, 212, 0.15);
+    z-index: 999999;
+    padding: 16px 22px;
+    color: #e2e8f0;
+    font-family: var(--font-ui, 'Plus Jakarta Sans', sans-serif);
+    animation: ayaCookieSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+@keyframes ayaCookieSlideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 30px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.aya-cookie-banner.aya-cookie-banner-closing {
+    opacity: 0;
+    transform: translate(-50%, 30px);
+    pointer-events: none;
+}
+
+.aya-cookie-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.aya-cookie-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.aya-cookie-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.aya-cookie-title {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+}
+
+.aya-cookie-desc {
+    margin: 0;
+    font-size: 0.84rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+}
+
+.aya-cookie-desc strong {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.aya-cookie-desc code {
+    background: rgba(255, 255, 255, 0.12);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #38bdf8;
+}
+
+.aya-cookie-link {
+    color: #38bdf8;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.aya-cookie-link:hover {
+    color: #7dd3fc;
+}
+
+.aya-cookie-actions {
+    flex-shrink: 0;
+}
+
+.aya-cookie-btn {
+    background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(0, 188, 212, 0.3);
+    transition: all 0.2s ease;
+}
+
+.aya-cookie-btn:hover {
+    background: linear-gradient(135deg, #26c6da 0%, #00838f 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 188, 212, 0.45);
+}
+
+.aya-cookie-btn:active {
+    transform: translateY(0);
+}
+
+/* RTL Support */
+[dir="rtl"] .aya-cookie-banner {
+    font-family: var(--font-arabic, 'Cairo', sans-serif);
+}
+
+@media (max-width: 768px) {
+    .aya-cookie-banner {
+        bottom: 12px;
+        width: calc(100% - 24px);
+        padding: 14px 16px;
+    }
+    .aya-cookie-banner-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .aya-cookie-actions {
+        width: 100%;
+    }
+    .aya-cookie-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 11px;
+    }
+}
+
+/* ==========================================================================
+   Pied de page Légal Harmonisé (Footer)
+   ========================================================================== */
+.aya-legal-footer {
+    background: #0f172a;
+    color: #94a3b8;
+    padding: 28px 20px;
+    text-align: center;
+    font-size: 0.84rem;
+    border-top: 1px solid #1e293b;
+    margin-top: auto;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--font-ui, 'Plus Jakarta Sans', sans-serif);
+}
+
+.aya-legal-footer-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.aya-legal-footer-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.aya-legal-footer-links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-weight: 500;
+}
+
+.aya-legal-footer-links a:hover {
+    color: #38bdf8;
+    text-decoration: underline;
+}
+
+.aya-legal-footer-sep {
+    color: #475569;
+}
+
+.aya-legal-footer-paypal {
+    color: #38bdf8 !important;
+    font-weight: 600;
+}
+
+.aya-legal-footer-paypal:hover {
+    color: #7dd3fc !important;
+}
+
+.aya-legal-footer-copyright {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
 
 
 

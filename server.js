@@ -75,6 +75,15 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// Pages légales & RGPD publiques (accessibles sans session : conformité Stripe, RGPD et visiteurs)
+app.get(['/cgu', '/cgu.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'cgu.html'));
+});
+
+app.get(['/confidentialite', '/confidentialite.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'confidentialite.html'));
+});
+
 // Fichiers Statiques (avec index: false pour que '/' passe obligatoirement par requireAuth)
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));
