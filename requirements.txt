@@ -1,0 +1,29 @@
+# ==============================================================================
+# Plateforme Aya - Dépendances Python (Production & Local)
+# Compatible Ubuntu 24.04 LTS & Windows 10/11
+# ==============================================================================
+
+# Transcription IA & Moteur de Synthèse
+faster-whisper>=1.0.0
+edge-tts>=6.1.10
+
+# Traitement & Normalisation d'Images (Avatars WebP, Canvas 9:16)
+Pillow>=10.2.0
+
+# Téléchargement & Extraction Médias (Telegram / YouTube / Direct)
+yt-dlp>=2024.3.10
+
+# Moteur FFmpeg & Multimédia
+imageio-ffmpeg>=0.4.9
+
+# Configuration & Variables d'Environnement
+python-dotenv>=1.0.0
+
+# Services Cloud Google (Drive API, OAuth2, Fallback Chirp Speech)
+google-api-python-client>=2.118.0
+google-auth>=2.27.0
+google-auth-oauthlib>=1.2.0
+google-cloud-speech>=2.21.0
+
+# Utilitaires Réseau HTTP
+requests>=2.31.0
