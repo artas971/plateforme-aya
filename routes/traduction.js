@@ -255,10 +255,31 @@ router.get('/traduction', (req, res) => {
 
 const { spawn } = require('child_process');
 const { downloadTelegramMedia } = require('../services/telegramDownloader');
+const {
+    acquireUserLock,
+    releaseUserLock,
+    reserveCredit,
+    commitCredit,
+    rollbackCredit,
+    getUserWallet
+} = require('../services/walletService');
+const {
+    recordVideoGeneration,
+    updateVideoDriveInfo
+} = require('../services/videoHistoryService');
 
 // 2. POST /api/traduction/process : Réception du média (Upload ou Lien Telegram) et déclenchement de la traduction / sous-titrage avec Streaming Temps Réel
 router.post('/api/traduction/process', upload.single('media'), async (req, res) => {
     const tReqStart = performance.now();
+    const user = req.session?.user;
+    const userId = user?.id || user?.username || 'anonymous';
+    const username = user?.username || user?.name || 'Utilisateur';
+
+    let hasLock = false;
+    let creditReserved = false;
+    let creditCommitted = false;
+    let mediaPath = '';
+
     try {
         const b = req.body || {};
         const telegramUrl = (b.telegram_url || '').trim();
@@ -270,6 +291,34 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                 error: "Veuillez sélectionner un fichier média ou renseigner un lien Telegram public valide."
             });
         }
+
+        // 1. Verrou de Concurrence (SEC-1) : Empêche les requêtes parallèles d'un même utilisateur
+        if (!acquireUserLock(userId)) {
+            if (req.file) cleanupTemporaryMedia(req.file.path);
+            return res.status(429).json({
+                success: false,
+                code: "CONCURRENT_JOB_RUNNING",
+                message: "Un traitement vidéo est déjà en cours d'exécution pour votre compte. Veuillez patienter jusqu'à sa finalisation.",
+                error: "Un traitement vidéo est déjà en cours d'exécution pour votre compte."
+            });
+        }
+        hasLock = true;
+
+        // 2. Réservation du Crédit (Phase 1 Escrow / Ticket 3) : Décrémente le solde et incrémente le séquestre
+        const reserveRes = await reserveCredit(userId);
+        if (!reserveRes.success) {
+            releaseUserLock(userId);
+            hasLock = false;
+            if (req.file) cleanupTemporaryMedia(req.file.path);
+            return res.status(402).json({
+                success: false,
+                code: "INSUFFICIENT_CREDITS",
+                message: "Votre solde de crédits est insuffisant (0 crédit disponible). Veuillez recharger votre compte.",
+                error: "Solde de crédits insuffisant.",
+                remainingCredits: reserveRes.remainingCredits || 0
+            });
+        }
+        creditReserved = true;
 
         const targetLang = (b.target_lang || 'fr').toLowerCase();
         const sourceLang = (b.source_lang || 'auto').toLowerCase();
@@ -287,7 +336,6 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         res.setHeader('Cache-Control', 'no-cache, no-transform');
         res.setHeader('X-Content-Type-Options', 'nosniff');
 
-        let mediaPath = '';
         let originalName = '';
         let fileSizeMb = '0.00';
 
@@ -310,6 +358,15 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             } catch (dlErr) {
                 console.error("[Telegram Import Error]:", dlErr.message);
                 const errorMsg = "Le fichier Telegram est trop lourd (>20Mo) ou protégé. Veuillez le télécharger manuellement et l'uploader via la zone de dépôt.";
+
+                if (creditReserved && !creditCommitted) {
+                    await rollbackCredit(userId, "TELEGRAM_DOWNLOAD_FAILED");
+                    creditReserved = false;
+                }
+                if (hasLock) {
+                    releaseUserLock(userId);
+                    hasLock = false;
+                }
 
                 res.write(`[PROGRESS] 100% - Erreur Téléchargement : ${errorMsg}\n`);
                 res.write(`---JSON_OUTPUT_START---\n${JSON.stringify({ 
@@ -417,8 +474,16 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             console.error('[TRADUCTION PY STDERR]', errChunk.trim());
         });
 
-        pyProcess.on('error', (err) => {
+        pyProcess.on('error', async (err) => {
             console.error('[TRADUCTION SPAWN ERROR]', err);
+            if (creditReserved && !creditCommitted) {
+                await rollbackCredit(userId, "PROCESS_SPAWN_ERROR");
+                creditReserved = false;
+            }
+            if (hasLock) {
+                releaseUserLock(userId);
+                hasLock = false;
+            }
             cleanupTemporaryMedia(mediaPath);
             res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify({
                 success: false,
@@ -449,10 +514,18 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         };
 
         // Interception de l'annulation de la requête côté client (AbortController)
-        req.on('close', () => {
+        req.on('close', async () => {
             if (!res.writableEnded) {
                 isCancelled = true;
                 console.log(`[TRADUCTION CANCEL] ⚠️ Connexion client interrompue (AbortController). Arrêt forcé du pipeline...`);
+                if (creditReserved && !creditCommitted) {
+                    await rollbackCredit(userId, "CLIENT_ABORT");
+                    creditReserved = false;
+                }
+                if (hasLock) {
+                    releaseUserLock(userId);
+                    hasLock = false;
+                }
                 if (pyProcess && pyProcess.pid) {
                     killProcessTree(pyProcess.pid);
                 }
@@ -463,6 +536,10 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         pyProcess.on('close', async (code) => {
             if (isCancelled) {
                 console.log(`[TRADUCTION PROCESS] Processus annulé par l'utilisateur (code: ${code}). Aucun post-traitement.`);
+                if (hasLock) {
+                    releaseUserLock(userId);
+                    hasLock = false;
+                }
                 cleanupTemporaryMedia(mediaPath);
                 return;
             }
@@ -480,6 +557,39 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                 }
 
                 if (finalData && finalData.success) {
+                    // ARCH-1 : Débit du crédit dès que les livrables locaux MP4/ASS sont générés
+                    if (creditReserved && !creditCommitted) {
+                        await commitCredit(userId);
+                        creditCommitted = true;
+                    }
+
+                    // SAFE-1 & Ticket 1 : Enregistrement dans l'historique personnel
+                    let recordedVideo = null;
+                    try {
+                        recordedVideo = await recordVideoGeneration({
+                            userId,
+                            username,
+                            title: finalData.title || rawTitle || originalName,
+                            originalMediaName: originalName || path.basename(mediaPath),
+                            targetLang,
+                            duration: Number(finalData.duration || 0),
+                            fileSizeMb: Number(fileSizeMb || 0),
+                            mp4Url: finalData.mp4_url || (finalData.mp4_filename ? `/download/${finalData.mp4_filename}` : null),
+                            mp4Filename: finalData.mp4_filename || null,
+                            assUrl: finalData.ass_url || (finalData.ass_filename ? `/download/${finalData.ass_filename}` : null),
+                            assFilename: finalData.ass_filename || null,
+                            coverUrl: finalData.cover_url || (finalData.cover_filename ? `/download/${finalData.cover_filename}` : null),
+                            coverFilename: finalData.cover_filename || null,
+                            descFilename: finalData.desc_filename || null,
+                            contextSummary: finalData.context || userContext || "",
+                            costCredits: 1,
+                            status: 'completed',
+                            drive: { status: 'pending' }
+                        });
+                    } catch (recErr) {
+                        console.error('[VIDEO HISTORY RECORD ERROR]', recErr);
+                    }
+
                     // Sauvegarde automatique et silencieuse sur Google Drive en tâche de fond (Zéro-Friction)
                     const clientName = req.session?.user?.name || req.session?.user?.username || b.client_name || 'Client';
                     const dateStr = new Date().toISOString().slice(0, 10);
@@ -498,20 +608,47 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                         try {
                             const { backupDeliverablesForClient } = require('../services/driveService');
                             backupDeliverablesForClient(deliverablesToBackup)
-                                .then(backupResult => {
+                                .then(async (backupResult) => {
+                                    const driveInfo = {
+                                        status: (backupResult && backupResult.success) ? 'uploaded' : 'error',
+                                        folderId: backupResult?.folderId || null,
+                                        folderLink: backupResult?.folderLink || backupResult?.webViewLink || null,
+                                        mp4FileId: backupResult?.uploads?.mp4?.id || null,
+                                        assFileId: backupResult?.uploads?.ass?.id || null,
+                                        uploadedAt: new Date(),
+                                        errorReason: backupResult?.reason || null
+                                    };
+                                    const vidId = recordedVideo?._id || recordedVideo?.id;
+                                    if (vidId) {
+                                        await updateVideoDriveInfo(vidId, driveInfo);
+                                    }
                                     if (backupResult && backupResult.success) {
                                         console.log(`[DRIVE SILENT BACKUP] ✅ Archivage serveur réussi en arrière-plan pour ${clientName} (${backupResult.folderLink || backupResult.webViewLink || 'OK'})`);
                                     } else {
                                         console.log(`[DRIVE SILENT BACKUP] ℹ️ Archivage en arrière-plan : ${backupResult?.reason || 'Non configuré'}`);
                                     }
                                 })
-                                .catch(driveErr => {
+                                .catch(async (driveErr) => {
                                     console.warn('[DRIVE SILENT BACKUP WARNING] Échec archivage en arrière-plan :', driveErr.message);
+                                    const vidId = recordedVideo?._id || recordedVideo?.id;
+                                    if (vidId) {
+                                        await updateVideoDriveInfo(vidId, {
+                                            status: 'error',
+                                            errorReason: driveErr.message
+                                        });
+                                    }
                                 });
                         } catch (driveErr) {
                             console.warn('[DRIVE SILENT BACKUP WARNING] driveService non disponible :', driveErr.message);
                         }
                     });
+
+                    // Enrichir finalData avec le solde à jour du portefeuille et l'identifiant de la vidéo
+                    const wallet = await getUserWallet(userId);
+                    finalData.wallet = wallet;
+                    if (recordedVideo) {
+                        finalData.video_id = recordedVideo._id || recordedVideo.id;
+                    }
 
                     // Télémétrie et Rapport d'Audit Alexandre
                     const tTotalEnd = performance.now();
@@ -551,21 +688,30 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
                     // Envoi du JSON final enrichi vers le frontend
                     res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
-                } else if (finalData) {
-                    // Échec métier émis par Python
-                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
                 } else {
-                    // Si pour une raison quelconque le bloc JSON final n'a pas été émis par Python
-                    const fallbackRes = {
-                        success: code === 0,
-                        code: code === 0 ? null : "PROCESS_FAILED",
-                        message: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres.",
-                        error: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres."
-                    };
-                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(fallbackRes)}\n---JSON_OUTPUT_END---\n`);
+                    // Échec métier : restitution immédiate du crédit séquestré (Rollback)
+                    if (creditReserved && !creditCommitted) {
+                        await rollbackCredit(userId, "PIPELINE_FAILED");
+                        creditReserved = false;
+                    }
+
+                    if (finalData) {
+                        res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
+                    } else {
+                        const fallbackRes = {
+                            success: code === 0,
+                            code: code === 0 ? null : "PROCESS_FAILED",
+                            message: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres.",
+                            error: code === 0 ? null : "Une anomalie s'est produite lors de la génération des sous-titres."
+                        };
+                        res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(fallbackRes)}\n---JSON_OUTPUT_END---\n`);
+                    }
                 }
             } finally {
-                // Nettoyage systématique du média source et des extractions audio (Garbage Collection - Max)
+                if (hasLock) {
+                    releaseUserLock(userId);
+                    hasLock = false;
+                }
                 cleanupTemporaryMedia(mediaPath);
                 res.end();
             }
@@ -573,6 +719,14 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
     } catch (err) {
         console.error('[TRADUCTION ERROR]', err);
+        if (creditReserved && !creditCommitted) {
+            await rollbackCredit(userId, "SERVER_ERROR");
+            creditReserved = false;
+        }
+        if (hasLock) {
+            releaseUserLock(userId);
+            hasLock = false;
+        }
         cleanupTemporaryMedia(mediaPath);
         const errPayload = {
             success: false,

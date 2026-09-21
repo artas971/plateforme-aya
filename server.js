@@ -114,6 +114,7 @@ const feedbackRouter = require('./routes/feedback');
 const postsRouter = require('./routes/posts');
 const adminRouter = require('./routes/admin');
 const tiktokRouter = require('./routes/tiktok');
+const userRouter = require('./routes/user');
 
 app.use('/api/chat', chatRouter);
 app.use(studioRouter);
@@ -123,6 +124,7 @@ app.use('/api/agents', agentsRouter);
 app.use('/api/feedback', feedbackRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/user', userRouter);
 app.use(traductionRouter);
 app.use(tiktokRouter);
 

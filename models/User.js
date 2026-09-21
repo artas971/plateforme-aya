@@ -108,6 +108,18 @@ const UserSchema = new mongoose.Schema({
         type: String,
         enum: ['fr', 'ar'],
         default: 'fr'
+    },
+
+    // Ticket 3 : Portefeuille virtuel (Wallet V2.1)
+    credits: {
+        type: Number,
+        default: 5, // 5 crédits offerts par défaut
+        min: [0, "Le solde de crédits ne peut pas être inférieur à 0"]
+    },
+    creditsReserved: {
+        type: Number,
+        default: 0,
+        min: [0, "Les crédits réservés ne peuvent pas être inférieurs à 0"]
     }
 }, {
     timestamps: true,
