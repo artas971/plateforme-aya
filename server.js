@@ -100,6 +100,10 @@ app.get('/moderation', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'moderation.html'));
 });
 
+app.get(['/profil', '/profil.html'], requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'profil.html'));
+});
+
 // Verrouillage de sécurité global : toutes les routes applicatives et API suivantes nécessitent d'être connecté
 app.use(requireAuth);
 

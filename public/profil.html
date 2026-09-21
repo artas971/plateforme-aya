@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" id="htmlTag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aya Studio | Mon Profil & Portefeuille</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0b5394">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Aya Profil">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
+</head>
+<body>
+    <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
+    <header class="app-header" id="ayaGlobalNavbar"></header>
+
+    <main class="profile-container">
+        <!-- En-tête Page Profil -->
+        <div style="text-align: center; margin-bottom: 6px;">
+            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); margin-bottom: 6px;">
+                👤 Espace Profil & Portefeuille Solidaire
+            </h1>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+                Gérez votre identité, suivez vos crédits de traduction et retrouvez toutes vos vidéos archivées.
+            </p>
+        </div>
+
+        <!-- Grille Principale : Sidebar (Profil/Wallet) + Main (Historique Vidéos) -->
+        <div class="profile-grid">
+            
+            <!-- Colonne Gauche : Identité & Portefeuille -->
+            <div class="profile-sidebar">
+                
+                <!-- BLOC 1 : Identité & Avatar (PERF-1) -->
+                <section class="profile-card">
+                    <div class="profile-card-header">
+                        <div class="profile-card-title">
+                            <span>✨</span> Mon Identité
+                        </div>
+                        <span id="profileRoleBadge" class="wallet-badge-role" style="background: rgba(11, 83, 148, 0.1); color: var(--color-primary); border-color: rgba(11, 83, 148, 0.2);">
+                            Contributeur
+                        </span>
+                    </div>
+
+                    <!-- Sélecteur & Prévisualisation Avatar -->
+                    <div class="avatar-section">
+                        <div class="avatar-wrapper" id="avatarUploadBtn" title="Cliquer pour changer votre photo de profil">
+                            <img id="profileAvatarImg" src="/icon.png" alt="Avatar" class="avatar-img" onerror="this.src='/icon.png'">
+                            <div class="avatar-overlay">
+                                <span style="font-size: 1.4rem;">📷</span>
+                                <span>Modifier</span>
+                            </div>
+                            <div class="avatar-spinner" id="avatarSpinner">
+                                <span>⏳</span>
+                            </div>
+                        </div>
+                        <!-- Input file invisible -->
+                        <input type="file" id="avatarFileInput" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                        <small style="color: var(--text-secondary); font-size: 0.76rem; text-align: center;">
+                            Formats acceptés : PNG, JPG, WebP (&lt; 2 Mo)<br>Normalisé en WebP carré 256x256
+                        </small>
+                    </div>
+
+                    <!-- Pseudonyme TikTok (Immuable) -->
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 20px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary);">
+                            Identifiant Unique
+                        </span>
+                        <div class="tiktok-username-badge">
+                            <span id="profileUsername">@chargement</span>
+                            <button class="btn-copy-username" id="btnCopyUsername" title="Copier le pseudonyme">📋</button>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire Nom d'affichage -->
+                    <form id="profileForm" onsubmit="return false;">
+                        <div class="profile-form-group">
+                            <label for="profileNameInput" class="profile-form-label">Nom d'affichage libre :</label>
+                            <div class="profile-input-wrapper">
+                                <input type="text" id="profileNameInput" class="profile-input" placeholder="Ex: Artas Architecte" maxlength="50" required>
+                                <button type="button" id="btnSaveName" class="btn-save-profile">
+                                    <span>💾</span> Enregistrer
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- E-mail & Statut de vérification -->
+                        <div class="profile-form-group" style="margin-bottom: 0;">
+                            <label class="profile-form-label">Adresse E-mail :</label>
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem;">
+                                <span id="profileEmail" style="color: var(--text-primary); font-weight: 600;">...</span>
+                                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #059669; font-weight: 700;">
+                                    <span>✅</span> Confirmé
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- BLOC 2 : Portefeuille Solidaire (Wallet) -->
+                <section class="wallet-card">
+                    <div class="wallet-header">
+                        <div class="wallet-title">
+                            <span>💳</span> Portefeuille Virtuel
+                        </div>
+                        <span style="font-size: 0.75rem; background: rgba(0, 188, 212, 0.25); color: #ffffff; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(0, 188, 212, 0.5);">
+                            Solidaire V2.1
+                        </span>
+                    </div>
+
+                    <div class="wallet-balance-row">
+                        <div class="balance-item available">
+                            <span class="balance-label">Disponibles</span>
+                            <span class="balance-value" id="walletAvailableCredits">--</span>
+                        </div>
+                        <div class="balance-item reserved">
+                            <span class="balance-label">En traitement</span>
+                            <span class="balance-value" id="walletReservedCredits">--</span>
+                        </div>
+                    </div>
+
+                    <div class="wallet-footer">
+                        <button type="button" class="btn-recharge" id="btnRechargeWallet">
+                            <span>⚡</span> Recharger mon solde
+                        </button>
+                        <p class="wallet-hint">
+                            💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage incrusté 9:16 + archivage Drive).
+                        </p>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Colonne Droite : Historique des Vidéos Générées -->
+            <div class="profile-main">
+                
+                <section class="profile-card" style="min-height: 520px;">
+                    <div class="history-header">
+                        <div class="profile-card-title" style="font-size: 1.25rem;">
+                            <span>🎬</span> Historique de mes Vidéos
+                            <span id="historyCountBadge" style="font-size: 0.8rem; background: rgba(11, 83, 148, 0.1); color: var(--color-primary); padding: 3px 10px; border-radius: 20px; margin-left: 6px;">
+                                0 vidéo
+                            </span>
+                        </div>
+                        <button type="button" id="btnRefreshHistory" class="btn-action-sm" style="max-width: 130px;">
+                            <span>🔄</span> Actualiser
+                        </button>
+                    </div>
+
+                    <!-- Loader -->
+                    <div id="videoHistoryLoading" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                        <div class="pulse" style="margin: 0 auto 12px auto; width: 12px; height: 12px;"></div>
+                        <span>Chargement de votre historique personnel...</span>
+                    </div>
+
+                    <!-- État Vide -->
+                    <div id="videoHistoryEmpty" class="empty-history-box" style="display: none;">
+                        <span class="empty-history-icon">🎥</span>
+                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
+                            Aucune vidéo générée pour le moment
+                        </h3>
+                        <p style="color: var(--text-secondary); max-width: 440px; font-size: 0.92rem;">
+                            Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.
+                        </p>
+                        <a href="/traduction" class="btn-nav-link" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff;">
+                            <span>✨</span> Lancer une première traduction
+                        </a>
+                    </div>
+
+                    <!-- Grille des Vidéos -->
+                    <div id="videoHistoryGrid" class="video-grid" style="display: none;"></div>
+                </section>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Recharger Mon Solde (Stripe & Dons Solidaires) -->
+    <div class="aya-modal-backdrop" id="rechargeModal" style="display: none;">
+        <div class="aya-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+                    <span>⚡</span> Recharger mes Crédits Aya
+                </h3>
+                <button type="button" id="btnCloseRechargeModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;">
+                    ✕
+                </button>
+            </div>
+
+            <div style="background: rgba(0, 188, 212, 0.08); border: 1px solid rgba(0, 188, 212, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <p style="font-size: 0.9rem; color: var(--color-primary); line-height: 1.5; margin-bottom: 8px; font-weight: 600;">
+                    🕊️ Infrastructure Solidaire & Open-Source
+                </p>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                    La passerelle de paiement sécurisée Stripe et le module de micro-dons solidaires pour financer les GPU et quotas Whisper/Gemini sont en cours de déploiement.
+                </p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                    <div>
+                        <strong style="font-size: 0.92rem; color: var(--color-primary);">Pack Découverte</strong>
+                        <div style="font-size: 0.78rem; color: var(--text-secondary);">5 Crédits inclus à l'inscription</div>
+                    </div>
+                    <span style="font-weight: 700; color: #059669; font-size: 0.9rem;">Offert 🎁</span>
+                </div>
+
+                <div style="border: 1.5px dashed var(--color-turquoise); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(0, 188, 212, 0.04);">
+                    <div>
+                        <strong style="font-size: 0.92rem; color: var(--color-primary);">Pack Solidaire (20 crédits)</strong>
+                        <div style="font-size: 0.78rem; color: var(--text-secondary);">Paiement sécurisé Stripe</div>
+                    </div>
+                    <span style="font-weight: 700; color: var(--color-turquoise); font-size: 0.85rem;">Bientôt disponible</span>
+                </div>
+            </div>
+
+            <button type="button" id="btnAcknowledgeRecharge" class="btn-save-profile" style="width: 100%; justify-content: center; padding: 12px;">
+                Compris, merci !
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Lecteur Vidéo Plein Écran -->
+    <div class="aya-modal-backdrop" id="videoPreviewModal" style="display: none;">
+        <div class="aya-modal-content" style="max-width: 640px; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 id="modalVideoTitle" style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    Lecture Vidéo
+                </h3>
+                <button type="button" id="btnCloseVideoModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;">
+                    ✕
+                </button>
+            </div>
+            <div style="background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; max-height: 480px;">
+                <video id="modalVideoPlayer" controls preload="metadata" style="width: 100%; max-height: 480px;"></video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/aya-i18n.js"></script>
+    <script src="/profil.js"></script>
+</body>
+</html>

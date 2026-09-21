@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "googleapis": "^181.0.0",
+    "jimp": "^1.6.1",
     "localtunnel": "^2.0.2",
     "mongoose": "^9.10.1",
     "multer": "^2.2.0",

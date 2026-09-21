@@ -22,6 +22,7 @@
             navStudioText: 'Studio TikTok V3',
             navCommunauteText: 'Communauté',
             navModerationText: 'Modération',
+            navProfilText: 'Mon Profil',
             navbarLiveText: 'Serveur Actif',
 
             // Page Modération Back-Office (Phase 2.5)
@@ -266,6 +267,7 @@
             navStudioText: 'استوديو تيك توك V3',
             navCommunauteText: 'المجتمع',
             navModerationText: 'الإشراف',
+            navProfilText: 'الملف الشخصي',
             navbarLiveText: 'الخادم نشط ومتصل',
 
             // Page Modération Back-Office (Phase 2.5)
@@ -536,13 +538,34 @@
         updateElementText('navStudioText', dict.navStudioText);
         updateElementText('navCommunauteText', dict.navCommunauteText);
         updateElementText('navModerationText', dict.navModerationText);
+        updateElementText('navProfilText', dict.navProfilText);
         updateElementText('navbarLiveText', dict.navbarLiveText);
 
         const userObj = getUserSession();
         const userNameSpan = document.getElementById('navbarUserName');
+        const avatarImg = document.getElementById('navbarAvatarImg');
         if (userNameSpan) {
             const name = userObj ? (userObj.name || userObj.username) : dict.userAnonymous;
             userNameSpan.textContent = `${dict.userConnectedPrefix} ${name}`;
+        }
+        if (avatarImg && userObj && userObj.avatar) {
+            avatarImg.src = userObj.avatar;
+        }
+
+        if (!window._ayaUserSyncDone) {
+            window._ayaUserSyncDone = true;
+            fetch('/api/user/profile')
+                .then(r => r.json())
+                .then(d => {
+                    if (d && d.success && d.user) {
+                        localStorage.setItem('aya_user', JSON.stringify(d.user));
+                        const currentAvatar = document.getElementById('navbarAvatarImg');
+                        const currentName = document.getElementById('navbarUserName');
+                        if (currentAvatar && d.user.avatar) currentAvatar.src = d.user.avatar;
+                        if (currentName) currentName.textContent = `${dict.userConnectedPrefix} ${d.user.name || d.user.username}`;
+                    }
+                })
+                .catch(() => {});
         }
 
         // Mise à jour des textes de la page /moderation
@@ -709,7 +732,8 @@
         const isCommunaute = path.includes('communaute');
         const isModeration = path.includes('moderation');
         const isTraducteur = path.includes('traducteur');
-        const isHome = !isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur;
+        const isProfil = path.includes('profil');
+        const isHome = !isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil;
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -727,7 +751,10 @@
             <div class="header-actions">
                 <!-- Statut Utilisateur & Déconnexion -->
                 <div class="user-badge" id="navbarUserBadge">
-                    <span id="navbarUserName">👤 متصل</span>
+                    <a href="/profil" id="navbarUserProfileLink" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;" title="${dict.navProfilText}">
+                        <img id="navbarAvatarImg" src="/icon.png" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1.5px solid var(--color-turquoise);" alt="Avatar" onerror="this.src='/icon.png'">
+                        <span id="navbarUserName">👤 متصل</span>
+                    </a>
                     <button class="btn-logout" id="navbarLogoutBtn" title="${dict.logoutBtnTitle}">🚪</button>
                 </div>
                 <!-- Sélecteur de Langue Dynamique -->
@@ -758,6 +785,10 @@
                 <!-- Lien 6 : Modération (Discret) -->
                 <a href="/moderation" class="btn-nav-link ${isModeration ? 'active' : ''}" id="navModerationLink" title="${dict.navModerationText}" style="opacity: 0.88;">
                     <span>🛡️</span> <span id="navModerationText">${dict.navModerationText}</span>
+                </a>
+                <!-- Lien 7 : Mon Profil -->
+                <a href="/profil" class="btn-nav-link ${isProfil ? 'active' : ''}" id="navProfilLink">
+                    <span>👤</span> <span id="navProfilText">${dict.navProfilText}</span>
                 </a>
                 <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">${dict.navbarLiveText}</span></span>
             </div>

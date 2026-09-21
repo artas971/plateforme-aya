@@ -201,4 +201,76 @@ router.put('/profile', async (req, res) => {
     }
 });
 
+const multer = require('multer');
+const { processAndSaveAvatar } = require('../services/avatarService');
+
+const avatarUpload = multer({
+    dest: path.join(__dirname, '../uploads'),
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2 Mo max
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error("Format invalide. Seules les images (PNG, JPG, WebP) de moins de 2 Mo sont autorisées."));
+        }
+    }
+});
+
+/**
+ * POST /api/user/avatar : Upload et normalisation WebP 256x256 de l'avatar (PERF-1)
+ */
+router.post('/avatar', (req, res, next) => {
+    avatarUpload.single('avatar')(req, res, (err) => {
+        if (err) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ success: false, error: "L'image est trop lourde (2 Mo maximum)." });
+            }
+            return res.status(400).json({ success: false, error: err.message });
+        }
+        next();
+    });
+}, async (req, res) => {
+    try {
+        const sessionUser = req.session?.user;
+        if (!sessionUser) {
+            return res.status(401).json({ success: false, error: "Non connecté." });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: "Aucun fichier image fourni." });
+        }
+
+        const userId = sessionUser.id;
+        const result = await processAndSaveAvatar(req.file.path, userId || sessionUser.username);
+
+        // Mise à jour persistance
+        if (isDbConnected()) {
+            await User.findByIdAndUpdate(userId, { $set: { avatar: result.avatarUrl } });
+        } else {
+            const users = readFallbackUsers();
+            const target = users.find(u => u.id === userId || u.username === sessionUser.username);
+            if (target) {
+                target.avatar = result.avatarUrl;
+                saveFallbackUsers(users);
+            }
+        }
+
+        // Mise à jour session
+        req.session.user.avatar = result.avatarUrl;
+
+        console.log(`[USER AVATAR] 🖼️ Nouvel avatar enregistré pour ${sessionUser.username} : ${result.avatarUrl}`);
+
+        return res.json({
+            success: true,
+            message: "Avatar mis à jour avec succès !",
+            avatar: result.avatarUrl,
+            sizeBytes: result.sizeBytes
+        });
+    } catch (err) {
+        console.error('[API USER AVATAR ERROR]', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 module.exports = router;
+

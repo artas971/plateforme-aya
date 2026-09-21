@@ -1,0 +1,471 @@
+/**
+ * Logique Frontend - Espace Profil & Portefeuille Solidaire (Phase 5)
+ * Auteur : Max (Backend Lead) & Lionel (UX/UI Designer)
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Éléments du DOM Profil
+    const profileAvatarImg = document.getElementById('profileAvatarImg');
+    const avatarUploadBtn = document.getElementById('avatarUploadBtn');
+    const avatarFileInput = document.getElementById('avatarFileInput');
+    const avatarSpinner = document.getElementById('avatarSpinner');
+    const profileRoleBadge = document.getElementById('profileRoleBadge');
+    const profileUsername = document.getElementById('profileUsername');
+    const btnCopyUsername = document.getElementById('btnCopyUsername');
+    const profileNameInput = document.getElementById('profileNameInput');
+    const btnSaveName = document.getElementById('btnSaveName');
+    const profileEmail = document.getElementById('profileEmail');
+
+    // Éléments du DOM Wallet
+    const walletAvailableCredits = document.getElementById('walletAvailableCredits');
+    const walletReservedCredits = document.getElementById('walletReservedCredits');
+    const btnRechargeWallet = document.getElementById('btnRechargeWallet');
+    const rechargeModal = document.getElementById('rechargeModal');
+    const btnCloseRechargeModal = document.getElementById('btnCloseRechargeModal');
+    const btnAcknowledgeRecharge = document.getElementById('btnAcknowledgeRecharge');
+
+    // Éléments du DOM Historique Vidéos
+    const historyCountBadge = document.getElementById('historyCountBadge');
+    const btnRefreshHistory = document.getElementById('btnRefreshHistory');
+    const videoHistoryLoading = document.getElementById('videoHistoryLoading');
+    const videoHistoryEmpty = document.getElementById('videoHistoryEmpty');
+    const videoHistoryGrid = document.getElementById('videoHistoryGrid');
+
+    // Éléments du Modal Vidéo
+    const videoPreviewModal = document.getElementById('videoPreviewModal');
+    const modalVideoPlayer = document.getElementById('modalVideoPlayer');
+    const modalVideoTitle = document.getElementById('modalVideoTitle');
+    const btnCloseVideoModal = document.getElementById('btnCloseVideoModal');
+
+    /**
+     * Affiche un toast flottant élégant
+     */
+    function showToast(message, type = 'info') {
+        const existing = document.querySelector('.aya-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = 'aya-toast';
+        
+        let icon = 'ℹ️';
+        if (type === 'success') icon = '✅';
+        if (type === 'error') icon = '❌';
+        if (type === 'warning') icon = '⚠️';
+
+        toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span><span>${message}</span>`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(15px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
+    }
+
+    /**
+     * Formate la durée en mm:ss
+     */
+    function formatDuration(seconds) {
+        if (!seconds || isNaN(seconds)) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    /**
+     * Formate une date ISO en affichage lisible
+     */
+    function formatDate(isoStr) {
+        if (!isoStr) return '';
+        try {
+            const d = new Date(isoStr);
+            return d.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (e) {
+            return isoStr;
+        }
+    }
+
+    /**
+     * 1. Charge le profil et le portefeuille utilisateur
+     */
+    async function loadUserProfile() {
+        try {
+            const res = await fetch('/api/user/profile');
+            const data = await res.json();
+
+            if (data.success && data.user) {
+                const user = data.user;
+
+                // Identité
+                if (profileAvatarImg && user.avatar) {
+                    profileAvatarImg.src = user.avatar;
+                }
+                if (profileUsername) {
+                    profileUsername.textContent = user.username || '@utilisateur';
+                }
+                if (profileNameInput) {
+                    profileNameInput.value = user.name || user.username || '';
+                }
+                if (profileEmail) {
+                    profileEmail.textContent = user.email || 'Non renseigné';
+                }
+                if (profileRoleBadge) {
+                    profileRoleBadge.textContent = user.role || 'Contributeur';
+                }
+
+                // Portefeuille
+                if (walletAvailableCredits) {
+                    walletAvailableCredits.textContent = user.credits !== undefined ? user.credits : 0;
+                }
+                if (walletReservedCredits) {
+                    walletReservedCredits.textContent = user.creditsReserved !== undefined ? user.creditsReserved : 0;
+                }
+
+                // Synchronisation locale pour aya-i18n.js et autres pages
+                localStorage.setItem('aya_user', JSON.stringify(user));
+
+                // Mise à jour de la navbar globale si déjà montée
+                const navAvatar = document.getElementById('navbarAvatarImg');
+                const navName = document.getElementById('navbarUserName');
+                if (navAvatar && user.avatar) navAvatar.src = user.avatar;
+                if (navName) navName.textContent = user.name || user.username;
+            } else {
+                if (data.requireAuth) {
+                    window.location.href = '/login';
+                }
+            }
+        } catch (err) {
+            console.error('[PROFIL ERROR] Échec chargement profil :', err);
+        }
+    }
+
+    /**
+     * 2. Changement d'avatar avec prévisualisation locale FileReader et compression WebP (PERF-1)
+     */
+    if (avatarUploadBtn && avatarFileInput) {
+        avatarUploadBtn.addEventListener('click', () => {
+            avatarFileInput.click();
+        });
+
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Contrôle taille (2 Mo max)
+            if (file.size > 2 * 1024 * 1024) {
+                showToast("L'image sélectionnée dépasse la limite autorisée de 2 Mo.", "error");
+                avatarFileInput.value = '';
+                return;
+            }
+
+            // Contrôle format
+            if (!file.type.startsWith('image/')) {
+                showToast("Format invalide. Seuls les formats PNG, JPG et WebP sont autorisés.", "error");
+                avatarFileInput.value = '';
+                return;
+            }
+
+            // A. Prévisualisation locale immédiate Zéro-Délai (FileReader)
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                profileAvatarImg.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // B. Envoi au serveur pour normalisation WebP 256x256
+            avatarSpinner.classList.add('active');
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const res = await fetch('/api/user/avatar', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await res.json();
+
+                if (result.success && result.avatar) {
+                    profileAvatarImg.src = result.avatar;
+                    
+                    // Mise à jour navbar
+                    const navAvatar = document.getElementById('navbarAvatarImg');
+                    if (navAvatar) navAvatar.src = result.avatar;
+
+                    // Mise à jour localStorage
+                    try {
+                        const local = JSON.parse(localStorage.getItem('aya_user') || '{}');
+                        local.avatar = result.avatar;
+                        localStorage.setItem('aya_user', JSON.stringify(local));
+                    } catch (e) {}
+
+                    showToast("Photo de profil mise à jour et normalisée en WebP 256x256 !", "success");
+                } else {
+                    showToast(result.error || "Échec du traitement de l'image.", "error");
+                }
+            } catch (err) {
+                console.error('[AVATAR UPLOAD ERROR]', err);
+                showToast("Erreur réseau lors du téléversement de l'avatar.", "error");
+            } finally {
+                avatarSpinner.classList.remove('active');
+                avatarFileInput.value = '';
+            }
+        });
+    }
+
+    /**
+     * 3. Modification du nom d'affichage (PUT /api/user/profile)
+     */
+    if (btnSaveName && profileNameInput) {
+        btnSaveName.addEventListener('click', async () => {
+            const newName = profileNameInput.value.trim();
+            if (!newName) {
+                showToast("Le nom d'affichage ne peut pas être vide.", "warning");
+                return;
+            }
+
+            btnSaveName.disabled = true;
+            btnSaveName.innerHTML = '<span>⏳</span> Envoi...';
+
+            try {
+                const res = await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName })
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    showToast("Nom d'affichage mis à jour avec succès !", "success");
+                    
+                    // Mise à jour navbar
+                    const navName = document.getElementById('navbarUserName');
+                    if (navName) navName.textContent = newName;
+
+                    // Mise à jour localStorage
+                    try {
+                        const local = JSON.parse(localStorage.getItem('aya_user') || '{}');
+                        local.name = newName;
+                        localStorage.setItem('aya_user', JSON.stringify(local));
+                    } catch (e) {}
+                } else {
+                    showToast(result.error || "Impossible de mettre à jour le profil.", "error");
+                }
+            } catch (err) {
+                showToast("Erreur de connexion au serveur.", "error");
+            } finally {
+                btnSaveName.disabled = false;
+                btnSaveName.innerHTML = '<span>💾</span> Enregistrer';
+            }
+        });
+    }
+
+    /**
+     * 4. Copie du pseudonyme
+     */
+    if (btnCopyUsername && profileUsername) {
+        btnCopyUsername.addEventListener('click', () => {
+            const text = profileUsername.textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Pseudonyme ${text} copié !`, 'info');
+            });
+        });
+    }
+
+    /**
+     * 5. Modal Recharger mon solde (Stripe & Dons Solidaires)
+     */
+    if (btnRechargeWallet && rechargeModal) {
+        btnRechargeWallet.addEventListener('click', () => {
+            rechargeModal.style.display = 'flex';
+        });
+    }
+    if (btnCloseRechargeModal) {
+        btnCloseRechargeModal.addEventListener('click', () => {
+            rechargeModal.style.display = 'none';
+        });
+    }
+    if (btnAcknowledgeRecharge) {
+        btnAcknowledgeRecharge.addEventListener('click', () => {
+            rechargeModal.style.display = 'none';
+        });
+    }
+
+    /**
+     * 6. Charge l'historique personnel des vidéos
+     */
+    async function loadVideoHistory() {
+        if (!videoHistoryGrid) return;
+
+        videoHistoryLoading.style.display = 'block';
+        videoHistoryEmpty.style.display = 'none';
+        videoHistoryGrid.style.display = 'none';
+        videoHistoryGrid.innerHTML = '';
+
+        try {
+            const res = await fetch('/api/user/videos?page=1&limit=50');
+            const data = await res.json();
+
+            videoHistoryLoading.style.display = 'none';
+
+            if (data.success && Array.isArray(data.videos) && data.videos.length > 0) {
+                if (historyCountBadge) {
+                    historyCountBadge.textContent = `${data.total || data.videos.length} vidéo${(data.total || data.videos.length) > 1 ? 's' : ''}`;
+                }
+
+                data.videos.forEach(video => {
+                    const card = createVideoCard(video);
+                    videoHistoryGrid.appendChild(card);
+                });
+
+                videoHistoryGrid.style.display = 'grid';
+            } else {
+                if (historyCountBadge) historyCountBadge.textContent = '0 vidéo';
+                videoHistoryEmpty.style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('[HISTORY ERROR]', err);
+            videoHistoryLoading.style.display = 'none';
+            videoHistoryEmpty.style.display = 'flex';
+        }
+    }
+
+    /**
+     * Crée le composant visuel d'une carte vidéo dans l'historique
+     */
+    function createVideoCard(v) {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+
+        const title = v.title || v.originalMediaName || 'Génération Vidéo';
+        const dateStr = formatDate(v.createdAt);
+        const durationStr = formatDuration(v.duration);
+        const langTag = v.targetLang === 'ar' ? 'VOAR (Arabe)' : 'VOSTFR (Français)';
+
+        // Statut Drive
+        const isDriveUploaded = v.drive && v.drive.status === 'uploaded';
+        const driveLink = v.drive?.folderLink || v.drive?.webViewLink || '';
+
+        // Vignette
+        const thumbUrl = v.coverUrl || '';
+        const thumbHtml = thumbUrl
+            ? `<img src="${thumbUrl}" alt="${title}" onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\\'video-thumb-placeholder\\'>🎬</span>'">`
+            : `<span class="video-thumb-placeholder">🎬</span>`;
+
+        card.innerHTML = `
+            <div class="video-card-thumb">
+                ${thumbHtml}
+                <span class="video-card-badge-cost">-1 Crédit</span>
+                ${v.duration ? `<span class="video-card-duration">⏱️ ${durationStr}</span>` : ''}
+            </div>
+            <div class="video-card-body">
+                <h4 class="video-card-title" title="${title}">${title}</h4>
+                <div class="video-meta-row">
+                    <span>📅 ${dateStr}</span>
+                    <span>•</span>
+                    <span style="color: var(--color-primary); font-weight: 600;">${langTag}</span>
+                    ${v.fileSizeMb ? `<span>• ${v.fileSizeMb} Mo</span>` : ''}
+                </div>
+            </div>
+            <div class="video-card-footer">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 8px;">
+                    ${isDriveUploaded 
+                        ? `<span class="drive-status-tag uploaded">☁️ Sauvegardé Drive</span>`
+                        : `<span class="drive-status-tag pending">📦 Archivage local</span>`
+                    }
+                    ${isDriveUploaded && driveLink 
+                        ? `<a href="${driveLink}" target="_blank" class="btn-drive-open" title="Consulter dans Google Drive">
+                                <span>☁️</span> Ouvrir sur Drive
+                           </a>`
+                        : ''
+                    }
+                </div>
+
+                <div class="video-actions-row">
+                    ${v.mp4Url ? `
+                        <button type="button" class="btn-action-sm primary btn-play-video" data-url="${v.mp4Url}" data-title="${title}">
+                            <span>▶️</span> Lire
+                        </button>
+                        <a href="${v.mp4Url}" download class="btn-action-sm" title="Télécharger le fichier MP4 final">
+                            <span>⬇️</span> MP4
+                        </a>
+                    ` : ''}
+                    ${v.assUrl ? `
+                        <a href="${v.assUrl}" download class="btn-action-sm" title="Télécharger les sous-titres .ASS">
+                            <span>📝</span> .ASS
+                        </a>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+
+        // Événement lecture
+        const playBtn = card.querySelector('.btn-play-video');
+        if (playBtn) {
+            playBtn.addEventListener('click', () => {
+                const url = playBtn.getAttribute('data-url');
+                const t = playBtn.getAttribute('data-title');
+                openVideoModal(url, t);
+            });
+        }
+
+        return card;
+    }
+
+    /**
+     * 7. Modal Lecteur Vidéo
+     */
+    function openVideoModal(videoUrl, title) {
+        if (!videoPreviewModal || !modalVideoPlayer) return;
+        modalVideoTitle.textContent = title || 'Aperçu Vidéo';
+        modalVideoPlayer.src = videoUrl;
+        videoPreviewModal.style.display = 'flex';
+        modalVideoPlayer.play().catch(() => {});
+    }
+
+    function closeVideoModal() {
+        if (!videoPreviewModal || !modalVideoPlayer) return;
+        modalVideoPlayer.pause();
+        modalVideoPlayer.src = '';
+        videoPreviewModal.style.display = 'none';
+    }
+
+    if (btnCloseVideoModal) {
+        btnCloseVideoModal.addEventListener('click', closeVideoModal);
+    }
+    if (videoPreviewModal) {
+        videoPreviewModal.addEventListener('click', (e) => {
+            if (e.target === videoPreviewModal) closeVideoModal();
+        });
+    }
+
+    if (btnRefreshHistory) {
+        btnRefreshHistory.addEventListener('click', () => {
+            loadVideoHistory();
+            loadUserProfile();
+            showToast("Historique actualisé.", "info");
+        });
+    }
+
+    // Fermeture des modales avec Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (rechargeModal && rechargeModal.style.display === 'flex') {
+                rechargeModal.style.display = 'none';
+            }
+            if (videoPreviewModal && videoPreviewModal.style.display === 'flex') {
+                closeVideoModal();
+            }
+        }
+    });
+
+    // Initialisation
+    loadUserProfile();
+    loadVideoHistory();
+});
