@@ -1,9 +1,10 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { exec } = require('child_process');
+const { formatPythonCommand } = require('../utils/runtime');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AUDIO_A_TRAITER_DIR = path.join(ROOT_DIR, 'audio_a_traiter');
@@ -30,8 +31,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 function runPython(command) {
+    const formattedCmd = formatPythonCommand(command);
     return new Promise((resolve, reject) => {
-        exec(command, { cwd: ROOT_DIR, env: process.env }, (error, stdout, stderr) => {
+        exec(formattedCmd, { cwd: ROOT_DIR, env: process.env }, (error, stdout, stderr) => {
             if (error) reject(error);
             else resolve(stdout);
         });
@@ -145,6 +147,13 @@ router.post('/api/login', (req, res) => {
 
 router.post('/api/open-audio-folder', async (req, res) => {
     try {
+        if (process.platform !== 'win32') {
+            return res.json({
+                success: true,
+                headless: true,
+                message: 'Dossier accessible sur le serveur. Explorateur graphique local indisponible sous Linux headless.'
+            });
+        }
         const { filename } = req.body;
         let targetPath = REPONSED_DIR;
         if (filename) {

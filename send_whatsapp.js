@@ -3,13 +3,15 @@ const qrcode = require('qrcode-terminal');
 const path = require('path');
 const fs = require('fs');
 
-const EDGE_PATH = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
+const EDGE_PATH = process.env.CHROME_BIN || (process.platform === 'win32'
+    ? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
+    : (fs.existsSync('/usr/bin/chromium-browser') ? '/usr/bin/chromium-browser' : (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined)));
 
-// Initialisation du client WhatsApp Web avec navigateur Edge
+// Initialisation du client WhatsApp Web avec navigateur disponible
 const client = new Client({
     authStrategy: new LocalAuth({ dataPath: path.join(__dirname, '.wwebjs_auth') }),
     puppeteer: {
-        executablePath: fs.existsSync(EDGE_PATH) ? EDGE_PATH : undefined,
+        executablePath: (EDGE_PATH && fs.existsSync(EDGE_PATH)) ? EDGE_PATH : undefined,
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }

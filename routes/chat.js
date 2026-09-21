@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { exec } = require('child_process');
+const { formatPythonCommand } = require('../utils/runtime');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AUDIO_A_TRAITER_DIR = path.join(ROOT_DIR, 'audio_a_traiter');
@@ -27,8 +28,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 function runPython(command) {
+    const formattedCmd = formatPythonCommand(command);
     return new Promise((resolve, reject) => {
-        exec(command, { cwd: ROOT_DIR, env: process.env }, (error, stdout, stderr) => {
+        exec(formattedCmd, { cwd: ROOT_DIR, env: process.env }, (error, stdout, stderr) => {
             if (error) reject(error);
             else resolve(stdout);
         });

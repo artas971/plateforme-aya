@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "id": "vid_1790028690343_e3wbdq",
+    "user": "@artas971",
+    "username": "@artas971",
+    "title": "Test Vidéo Automatisé Phase 5",
+    "originalMediaName": "source_discours.mp4",
+    "targetLang": "fr",
+    "duration": 45.2,
+    "fileSizeMb": 12.5,
+    "mp4Url": "/download/test_video.mp4",
+    "mp4Filename": "test_video.mp4",
+    "assUrl": "/download/test_video.ass",
+    "assFilename": "test_video.ass",
+    "coverUrl": "/download/test_cover.jpg",
+    "coverFilename": "test_cover.jpg",
+    "descFilename": "test_desc.txt",
+    "contextSummary": "Discours historique de test",
+    "keywords": [],
+    "drive": {
+      "status": "uploaded",
+      "folderId": "folder_drive_12345",
+      "folderLink": "https://drive.google.com/drive/folders/folder_drive_12345",
+      "mp4FileId": "mp4_file_67890",
+      "assFileId": null,
+      "uploadedAt": "2026-09-21T22:11:30.345Z",
+      "errorReason": null
+    },
+    "costCredits": 1,
+    "status": "completed",
+    "createdAt": "2026-09-21T22:11:30.343Z",
+    "updatedAt": "2026-09-21T22:11:30.345Z"
+  },
+  {
+    "id": "vid_1790027620575_ivjiv5",
+    "user": "usr_1790024221536_oek8gw",
+    "username": "@artas971",
+    "title": "ÙØ²Ø§Ø±Ø¹.mp4",
+    "originalMediaName": "ÙØ²Ø§Ø±Ø¹.mp4",
+    "targetLang": "fr",
+    "duration": 154.1,
+    "fileSizeMb": 111.49,
+    "mp4Url": "/download/Arracher nos racines et nos (VOSTFR).mp4",
+    "mp4Filename": "Arracher nos racines et nos (VOSTFR).mp4",
+    "assUrl": "/download/Arracher nos racines et nos (VOSTFR).ass",
+    "assFilename": "Arracher nos racines et nos (VOSTFR).ass",
+    "coverUrl": "/download/Arracher nos racines et nos (Couverture 9-16).jpg",
+    "coverFilename": "Arracher nos racines et nos (Couverture 9-16).jpg",
+    "descFilename": "Arracher nos racines et nos (Description TikTok).txt",
+    "contextSummary": "\"La prévention\" ne protège pas nos terres...\r\n\r\nUn agriculteur témoigne de la coupe d'oliviers par des colons dans le village de Beit Lid, à l'est de Tulkarem.",
+    "keywords": [],
+    "drive": {
+      "status": "uploaded",
+      "folderId": null,
+      "folderLink": "https://drive.google.com/drive/folders/1p-qR-SFG-HNqo8ZE35yUlJmsjjc_FTl3",
+      "mp4FileId": "1T423Cdg3RAfP7ZBfsqL1_ftJSlzF6k1n",
+      "assFileId": "1oLt0LVKI58uDSWu_deQU9LZkUKYI9r2F",
+      "uploadedAt": "2026-09-21T21:53:51.692Z",
+      "errorReason": null
+    },
+    "costCredits": 1,
+    "status": "completed",
+    "createdAt": "2026-09-21T21:53:40.575Z",
+    "updatedAt": "2026-09-21T21:53:51.697Z"
+  }
+]

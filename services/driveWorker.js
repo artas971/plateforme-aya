@@ -16,6 +16,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const { getPythonBin } = require('../utils/runtime');
 const { google } = require('googleapis');
 const cron = require('node-cron');
 
@@ -247,7 +248,7 @@ function runPythonPipeline(mediaPath, sourceLang, targetLang, subColor, subPosit
         console.log(`[DRIVE PIPELINE] 🚀 Lancement du traitement pour : ${path.basename(mediaPath)}`);
         console.log(`  - Langue source : ${sourceLang} | Cible : ${targetLang} | Couleur : ${subColor} | Position : ${subPosition} | Pack TikTok : ${generateTiktokPack}`);
 
-        const pyProcess = spawn('py', [
+        const pyProcess = spawn(getPythonBin(), [
             scriptPath,
             mediaPath,
             targetLang,

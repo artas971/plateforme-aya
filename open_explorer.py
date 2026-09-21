@@ -2,7 +2,12 @@ import sys
 import subprocess
 import os
 
-target_path = sys.argv[1] if len(sys.argv) > 1 else r"C:\Users\artas\Desktop\aya\fichiers_reponse_a_envoyer"
+if sys.platform != 'win32':
+    print("HEADLESS_SKIPPED")
+    sys.exit(0)
+
+default_target = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fichiers_reponse_a_envoyer")
+target_path = sys.argv[1] if len(sys.argv) > 1 else default_target
 
 if os.path.exists(target_path):
     if os.path.isfile(target_path):

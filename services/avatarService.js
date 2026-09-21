@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const { getPythonBin } = require('../utils/runtime');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AVATARS_DIR = path.join(ROOT_DIR, 'public', 'avatars');
@@ -31,7 +32,7 @@ async function processAndSaveAvatar(tempFilePath, userIdentifier) {
 
     return new Promise((resolve, reject) => {
         // Exécution du script Python optimisé avec Pillow (LANCZOS + WebP)
-        const pyProcess = spawn('py', [SCRIPT_PATH, tempFilePath, outputPath, '256'], {
+        const pyProcess = spawn(getPythonBin(), [SCRIPT_PATH, tempFilePath, outputPath, '256'], {
             cwd: ROOT_DIR
         });
 

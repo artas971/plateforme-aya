@@ -9,6 +9,7 @@
  */
 
 const { spawn } = require('child_process');
+const { getPythonBin } = require('../utils/runtime');
 const path = require('path');
 const fs = require('fs');
 
@@ -25,7 +26,7 @@ function ensureYtDlpUpdated() {
     lastYtDlpUpdateCheck = now;
 
     return new Promise((resolve) => {
-        const proc = spawn('py', ['-m', 'pip', 'install', '-U', 'yt-dlp'], { windowsHide: true });
+        const proc = spawn(getPythonBin(), ['-m', 'pip', 'install', '-U', 'yt-dlp'], { windowsHide: true });
         proc.on('close', (code) => {
             if (code === 0) {
                 console.log("[Telegram Downloader] yt-dlp vérifié et à jour.");
@@ -136,7 +137,7 @@ function downloadWithYtDlp(url, outputDir, onProgress) {
         if (onProgress) onProgress(15, "Connexion et extraction du flux Telegram via yt-dlp...");
 
         const startTime = Date.now();
-        const proc = spawn('py', args, { windowsHide: true });
+        const proc = spawn(getPythonBin(), args, { windowsHide: true });
         let downloadedFilePath = null;
         let lastError = '';
 

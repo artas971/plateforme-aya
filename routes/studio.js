@@ -5,6 +5,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
 const { execSync } = require('child_process');
+const { getPythonBin } = require('../utils/runtime');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const REPONSED_DIR = path.join(ROOT_DIR, 'fichiers_reponse_a_envoyer');
@@ -82,8 +83,9 @@ router.post('/api/generate_v3_studio', uploadStudio.fields([{ name: 'media_file'
         const projectUUID = body.project_uuid || (crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex'));
         const finalFileName = `video_${projectUUID}_1080x1920.mp4`;
         const pyScript = path.join(ROOT_DIR, 'run_studio_v3_full_pipeline.py');
+        const pythonBin = getPythonBin();
 
-        const cmd = `py "${pyScript}" "${mediaPath}" "${bgPath}" "${mode}" "${title}" "${titleColor}" "${subColor}" "${titleMargin}" "${subMargin}" "${showHeader}" "${headerText}" "${headerColor}" "${projectUUID}"`;
+        const cmd = `${pythonBin} "${pyScript}" "${mediaPath}" "${bgPath}" "${mode}" "${title}" "${titleColor}" "${subColor}" "${titleMargin}" "${subMargin}" "${showHeader}" "${headerText}" "${headerColor}" "${projectUUID}"`;
 
         console.log("[Thomas] Exécution de :", cmd);
         execSync(cmd, { cwd: ROOT_DIR, env: process.env });

@@ -254,6 +254,7 @@ router.get('/traduction', (req, res) => {
 });
 
 const { spawn } = require('child_process');
+const { getPythonBin, killProcessTree } = require('../utils/runtime');
 const { downloadTelegramMedia } = require('../services/telegramDownloader');
 const {
     acquireUserLock,
@@ -429,7 +430,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         const tPySpawn = performance.now();
         const initDurationS = Number(((tPySpawn - tReqStart) / 1000).toFixed(2));
 
-        const pyProcess = spawn('py', pyArgs, {
+        const pyProcess = spawn(getPythonBin(), pyArgs, {
             cwd: ROOT_DIR,
             env: {
                 ...process.env,
@@ -496,23 +497,6 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
         let isCancelled = false;
 
-        const killProcessTree = (pid) => {
-            if (!pid) return;
-            try {
-                if (process.platform === 'win32') {
-                    const { exec } = require('child_process');
-                    exec(`taskkill /PID ${pid} /T /F`, (err) => {
-                        if (err) console.warn(`[TRADUCTION CANCEL] taskkill avertissement (PID: ${pid}) :`, err.message);
-                        else console.log(`[TRADUCTION CANCEL] 🛑 Arbre de processus PID ${pid} neutralisé avec succès.`);
-                    });
-                } else {
-                    process.kill(-pid, 'SIGKILL');
-                }
-            } catch (err) {
-                console.warn(`[TRADUCTION CANCEL] Échec terminaison processus PID ${pid} :`, err.message);
-            }
-        };
-
         // Interception de l'annulation de la requête côté client (AbortController)
         req.on('close', async () => {
             if (!res.writableEnded) {
@@ -527,7 +511,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                     hasLock = false;
                 }
                 if (pyProcess && pyProcess.pid) {
-                    killProcessTree(pyProcess.pid);
+                    killProcessTree(pyProcess.pid, 'TRADUCTION CANCEL');
                 }
                 cleanupTemporaryMedia(mediaPath);
             }
