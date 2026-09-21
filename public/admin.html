@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour de Contrôle & Supervision | Aya Studio</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="/assets/tiktok_app_icon_1024x1024.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #080d1a;
+            --bg-card: #0f172a;
+            --bg-card-hover: #1e293b;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-focus: rgba(16, 185, 129, 0.4);
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.2);
+            --primary-hover: #059669;
+            --accent-amber: #f59e0b;
+            --accent-blue: #3b82f6;
+            --accent-indigo: #6366f1;
+            --accent-teal: #06b6d4;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            padding-bottom: 3rem;
+            background-image: 
+                radial-gradient(circle at 15% 10%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 85% 90%, rgba(99, 102, 241, 0.04) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* Top Header */
+        header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 0.85rem 1.5rem;
+        }
+
+        .header-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .brand-zone {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-supervision {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .live-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            color: #a7f3d0;
+            background: rgba(6, 78, 59, 0.4);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border-color: var(--border-color);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Top Bar Meta */
+        .page-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title-group h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .page-title-group p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.2rem;
+        }
+
+        .refresh-group {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .auto-refresh-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 4 Big KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.4rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        .kpi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.9rem;
+        }
+
+        .kpi-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+        }
+
+        .kpi-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .icon-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        .icon-teal { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 0.4rem;
+        }
+
+        .kpi-sub {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            color: var(--text-dim);
+        }
+
+        .pill-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+
+        .pill-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .pill-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .pill-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+        /* Detail 2-Columns Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 960px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+        }
+
+        .panel-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Packs Breakdown */
+        .packs-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .pack-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .pack-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .pack-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+
+        .pack-1-badge { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+        .pack-5-badge { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .pack-25-badge { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+
+        .pack-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #fff;
+        }
+
+        .pack-price {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+
+        .pack-count {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        /* System Info List */
+        .sys-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+        }
+
+        .sys-info-item {
+            padding: 0.85rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+
+        .sys-info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.2rem;
+        }
+
+        .sys-info-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Activity Table Section */
+        .activity-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.95rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.015);
+            color: #fff;
+        }
+
+        .activity-title-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .activity-icon {
+            font-size: 1.1rem;
+        }
+
+        .activity-date {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        /* Loading & Error States */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Access Denied Modal */
+        #deniedModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 13, 26, 0.95);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .denied-card {
+            background: #0f172a;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 16px;
+            padding: 2.5rem;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="header-inner">
+            <div class="brand-zone">
+                <img src="/assets/tiktok_app_icon_1024x1024.png" alt="Aya Studio Logo" class="brand-logo">
+                <div class="brand-title">
+                    Aya Studio
+                    <span class="badge-supervision">Supervision Admin</span>
+                </div>
+                <div class="live-status">
+                    <span class="pulse-dot"></span>
+                    <span id="liveStatusText">Live Uptime</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn btn-ghost" onclick="fetchAdminData()">
+                    <span id="refreshIcon">🔄</span> Actualiser
+                </button>
+                <a href="/moderation" class="btn btn-ghost">🛡️ Modération</a>
+                <a href="/profil" class="btn btn-ghost">👤 Mon Profil</a>
+                <a href="/api/auth/logout" class="btn btn-ghost" style="color: #ef4444;">🚪 Quitter</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <div class="container">
+        
+        <!-- Page Meta & Controls -->
+        <div class="page-meta">
+            <div class="page-title-group">
+                <h1>Tour de Contrôle & Business KPIs</h1>
+                <p>Supervision en temps réel des utilisateurs, des ventes Stripe et de la santé serveur.</p>
+            </div>
+            <div class="refresh-group">
+                <label class="auto-refresh-label">
+                    <input type="checkbox" id="autoRefreshToggle" checked> Auto-refresh (30s)
+                </label>
+                <span>•</span>
+                <span id="lastUpdated">Dernière synchro : --:--:--</span>
+            </div>
+        </div>
+
+        <!-- 4 Grand KPI Cards -->
+        <div class="kpi-grid">
+            
+            <!-- KPI 1 : Inscrits -->
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Communauté & Inscrits</span>
+                    <div class="kpi-icon-wrap icon-emerald">👥</div>
+                </div>
+                <div class="kpi-value" id="kpiUsers">--</div>
+                <div class="kpi-sub">
+                    <span class="pill-badge pill-green" id="kpiNewUsers24h">+0 en 24h</span>
+                    <span>Comptes enregistrés</span>
+                </div>
+            </div>
+
+            <!-- KPI 2 : Chiffre d'Affaires Brut -->
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Chiffre d'Affaires Brut</span>
+                    <div class="kpi-icon-wrap icon-amber">💳</div>
+                </div>
+                <div class="kpi-value" id="kpiRevenue">-- €</div>
+                <div class="kpi-sub">
+                    <span class="pill-badge pill-amber" id="kpiCreditsSold">0 crédits</span>
+                    <span>Vendus via Stripe</span>
+                </div>
+            </div>
+
+            <!-- KPI 3 : Vidéos Générées -->
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Vidéos Générées</span>
+                    <div class="kpi-icon-wrap icon-indigo">🎬</div>
+                </div>
+                <div class="kpi-value" id="kpiVideos">--</div>
+                <div class="kpi-sub">
+                    <span class="pill-badge pill-blue">Format TikTok 9:16</span>
+                    <span>Sous-titrage VOSTFR</span>
+                </div>
+            </div>
+
+            <!-- KPI 4 : Santé & Uptime Serveur -->
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">Santé Serveur & Uptime</span>
+                    <div class="kpi-icon-wrap icon-teal">⚡</div>
+                </div>
+                <div class="kpi-value" id="kpiUptime" style="font-size: 1.75rem;">--</div>
+                <div class="kpi-sub">
+                    <span class="pill-badge pill-green" id="kpiDbStatus">MongoDB</span>
+                    <span id="kpiRam">RAM : -- Mo</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Section Détails (Ventes Stripe & Specs Système) -->
+        <div class="content-grid">
+            
+            <!-- Détails Vente de Packs -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>📦 Répartition des Ventes de Packs Stripe</span>
+                    <a href="https://dashboard.stripe.com/test/payments" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size: 0.75rem; padding: 0.3rem 0.65rem;">
+                        Stripe Dashboard ↗
+                    </a>
+                </div>
+                <div class="packs-breakdown">
+                    
+                    <div class="pack-item">
+                        <div class="pack-info">
+                            <div class="pack-badge pack-1-badge">1</div>
+                            <div>
+                                <div class="pack-name">Pack Solo (1 Crédit)</div>
+                                <div class="pack-price">0,99 € • Idéal découverte</div>
+                            </div>
+                        </div>
+                        <div class="pack-count" id="countPack1">0</div>
+                    </div>
+
+                    <div class="pack-item">
+                        <div class="pack-info">
+                            <div class="pack-badge pack-5-badge">5</div>
+                            <div>
+                                <div class="pack-name">Pack Créateur (5 Crédits)</div>
+                                <div class="pack-price">2,99 € • Pack populaire</div>
+                            </div>
+                        </div>
+                        <div class="pack-count" id="countPack5">0</div>
+                    </div>
+
+                    <div class="pack-item">
+                        <div class="pack-info">
+                            <div class="pack-badge pack-25-badge">25</div>
+                            <div>
+                                <div class="pack-name">Pack Pro (25 Crédits)</div>
+                                <div class="pack-price">9,99 € • Volume & Économie</div>
+                            </div>
+                        </div>
+                        <div class="pack-count" id="countPack25">0</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Specs Système & Infrastructure Hetzner -->
+            <div class="panel-card">
+                <div class="panel-title">
+                    <span>🖥️ Infrastructure & Profil d'Exécution</span>
+                    <span class="pill-badge pill-green" id="sysEnvBadge">PRODUCTION</span>
+                </div>
+                
+                <div class="sys-info-grid">
+                    <div class="sys-info-item">
+                        <div class="sys-info-label">Mode Base de Données</div>
+                        <div class="sys-info-val" id="sysDbMode">--</div>
+                    </div>
+
+                    <div class="sys-info-item">
+                        <div class="sys-info-label">Profil d'Exécution AYA</div>
+                        <div class="sys-info-val" id="sysProfile">--</div>
+                    </div>
+
+                    <div class="sys-info-item">
+                        <div class="sys-info-label">Moteur Node.js</div>
+                        <div class="sys-info-val" id="sysNode">--</div>
+                    </div>
+
+                    <div class="sys-info-item">
+                        <div class="sys-info-label">OS / Architecture</div>
+                        <div class="sys-info-val" id="sysPlatform">--</div>
+                    </div>
+
+                    <div class="sys-info-item">
+                        <div class="sys-info-label">Mémoire Heap / RSS</div>
+                        <div class="sys-info-val" id="sysMemFull">-- / -- Mo</div>
+                    </div>
+
+                    <div class="sys-info-item">
+                        <div class="sys-info-label">Modération en attente</div>
+                        <div class="sys-info-val" id="sysPendingPosts">0 post(s)</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Activity Feed (10 Derniers Événements) -->
+        <div class="activity-section">
+            <div class="panel-title">
+                <span>📋 Journal des 10 Derniers Événements</span>
+                <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-dim);">Flux chronologique temps réel</span>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Événement</th>
+                            <th>Détail / Utilisateur</th>
+                            <th>Horodatage</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                                ⏳ Chargement des activités récentes...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal d'erreur 403 / Non Autorisé -->
+    <div id="deniedModal">
+        <div class="denied-card">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⛔</div>
+            <h2 style="color: #ef4444; margin-bottom: 0.75rem;">Accès Réservé (403)</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                Cette tour de contrôle est strictement réservée à l'administrateur configuré (<strong id="deniedEmailMsg">ADMIN_EMAIL</strong>). Votre session actuelle n'est pas habilitée.
+            </p>
+            <a href="/profil" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">← Retour à mon Espace Profil</a>
+        </div>
+    </div>
+
+    <!-- Script de Récupération & Affichage des Métriques -->
+    <script>
+        let autoRefreshTimer = null;
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '--';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffSeconds = Math.floor((now - date) / 1000);
+
+            if (diffSeconds < 60) return `À l'instant`;
+            if (diffSeconds < 3600) return `Il y a ${Math.floor(diffSeconds / 60)} min`;
+            if (diffSeconds < 86400) return `Il y a ${Math.floor(diffSeconds / 3600)}h`;
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function fetchAdminData() {
+            const refreshIcon = document.getElementById('refreshIcon');
+            refreshIcon.classList.add('spin');
+
+            try {
+                const response = await fetch('/api/admin/stats', {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login?redirect=/admin';
+                    return;
+                }
+
+                if (response.status === 403) {
+                    document.getElementById('deniedModal').style.display = 'flex';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.error('Erreur API Admin :', data.error);
+                    return;
+                }
+
+                // 1. Remplissage des 4 Grandes Cartes KPIs
+                const kpis = data.kpis || {};
+                const sys = data.system || {};
+
+                document.getElementById('kpiUsers').textContent = kpis.totalUsers || 0;
+                document.getElementById('kpiNewUsers24h').textContent = `+${kpis.newUsers24h || 0} en 24h`;
+                
+                document.getElementById('kpiRevenue').textContent = `${(kpis.totalRevenueEur || 0).toFixed(2)} €`;
+                document.getElementById('kpiCreditsSold').textContent = `${kpis.totalCreditsSold || 0} crédits`;
+
+                document.getElementById('kpiVideos').textContent = kpis.totalVideos || 0;
+                
+                document.getElementById('kpiUptime').textContent = sys.uptimeFormatted || '--';
+                document.getElementById('kpiDbStatus').textContent = sys.dbConnected ? 'MongoDB OK' : 'Local JSON';
+                document.getElementById('kpiRam').textContent = `RAM : ${sys.memoryUsageMb ? sys.memoryUsageMb.heapUsed : '--'} Mo`;
+
+                // 2. Détail des Packs Stripe
+                const packs = kpis.packsSold || {};
+                document.getElementById('countPack1').textContent = packs.pack_1 || 0;
+                document.getElementById('countPack5').textContent = packs.pack_5 || 0;
+                document.getElementById('countPack25').textContent = packs.pack_25 || 0;
+
+                // 3. Spécifications Système
+                document.getElementById('sysEnvBadge').textContent = sys.environment || 'DEV';
+                document.getElementById('sysDbMode').textContent = sys.dbMode || '--';
+                document.getElementById('sysProfile').textContent = sys.execProfile || '--';
+                document.getElementById('sysNode').textContent = sys.nodeVersion || '--';
+                document.getElementById('sysPlatform').textContent = `${sys.platform || '--'}`;
+                
+                if (sys.memoryUsageMb) {
+                    document.getElementById('sysMemFull').textContent = `${sys.memoryUsageMb.heapUsed} / ${sys.memoryUsageMb.rss} Mo`;
+                }
+
+                if (data.stats) {
+                    document.getElementById('sysPendingPosts').textContent = `${data.stats.pending || 0} post(s)`;
+                }
+
+                // 4. Journal d'Activité Récent
+                renderActivities(data.recentActivities || []);
+
+                // 5. Mise à jour de l'heure
+                document.getElementById('lastUpdated').textContent = `Dernière synchro : ${new Date().toLocaleTimeString('fr-FR')}`;
+
+            } catch (err) {
+                console.error('Erreur communication tour de contrôle :', err);
+            } finally {
+                setTimeout(() => refreshIcon.classList.remove('spin'), 400);
+            }
+        }
+
+        function renderActivities(list) {
+            const tbody = document.getElementById('activityTableBody');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                            Aucune activité récente enregistrée.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            list.forEach(item => {
+                let badgeClass = 'pill-blue';
+                let badgeText = 'Enregistré';
+
+                if (item.type === 'STRIPE_PURCHASE') {
+                    badgeClass = 'pill-amber';
+                    badgeText = 'Payé (Stripe)';
+                } else if (item.type === 'USER_REGISTRATION') {
+                    badgeClass = 'pill-green';
+                    badgeText = 'Nouveau Compte';
+                } else if (item.type === 'VIDEO_GENERATION') {
+                    badgeClass = 'pill-blue';
+                    badgeText = 'Généré';
+                }
+
+                html += `
+                    <tr>
+                        <td style="width: 45px; text-align: center; font-size: 1.25rem;">
+                            ${item.icon || '📌'}
+                        </td>
+                        <td>
+                            <div class="activity-title-cell">
+                                <span>${item.title || 'Action'}</span>
+                            </div>
+                        </td>
+                        <td>${item.detail || '--'}</td>
+                        <td class="activity-date" title="${new Date(item.date || '').toLocaleString('fr-FR')}">
+                            ${formatRelativeTime(item.date)}
+                        </td>
+                        <td>
+                            <span class="pill-badge ${badgeClass}">${badgeText}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // Auto-refresh logic (30s)
+        function initAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            
+            function setupTimer() {
+                if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+                if (toggle.checked) {
+                    autoRefreshTimer = setInterval(fetchAdminData, 30000);
+                }
+            }
+
+            toggle.addEventListener('change', setupTimer);
+            setupTimer();
+        }
+
+        // Chargement initial
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAdminData();
+            initAutoRefresh();
+        });
+    </script>
+</body>
+</html>

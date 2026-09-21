@@ -89,6 +89,65 @@ app.get(['/reset-password', '/reset-password.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
 });
 
+// Middleware d'Autorisation Administrateur Strict (Tour de Contrôle)
+function requireAdmin(req, res, next) {
+    if (!req.session || !req.session.user || !req.session.user.authenticated) {
+        if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+            return res.status(401).json({ success: false, error: "Authentification requise." });
+        }
+        return res.redirect('/login?redirect=' + encodeURIComponent(req.originalUrl || '/admin'));
+    }
+
+    const adminEmails = (process.env.ADMIN_EMAIL || 'artas971@gmail.com')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+
+    const userEmail = (req.session.user.email || '').trim().toLowerCase();
+    const userRole = (req.session.user.role || '').trim().toLowerCase();
+
+    if (adminEmails.includes(userEmail) || userRole === 'admin') {
+        return next();
+    }
+
+    if (req.xhr || (req.headers.accept && req.headers.accept.includes('application/json'))) {
+        return res.status(403).json({ success: false, error: "Accès refusé. Réservé à l'administrateur." });
+    }
+
+    return res.status(403).send(`
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>403 - Accès Réservé | Aya Studio</title>
+            <style>
+                body { background: #080d1a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
+                .card { background: #0f172a; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; padding: 2.5rem; max-width: 480px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+                .icon { font-size: 3rem; margin-bottom: 1rem; }
+                h1 { color: #ef4444; margin: 0 0 0.75rem 0; font-size: 1.6rem; font-weight: 700; }
+                p { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; }
+                .btn { display: inline-flex; align-items: center; gap: 0.5rem; background: #10b981; color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; }
+                .btn:hover { background: #059669; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <div class="icon">⛔</div>
+                <h1>Accès Réservé (403)</h1>
+                <p>Cette tour de contrôle est strictement réservée à l'administrateur de la plateforme Aya Studio. Le compte <strong>${req.session.user.email || 'actuel'}</strong> n'a pas les autorisations nécessaires.</p>
+                <a href="/profil" class="btn">← Retour à mon Espace</a>
+            </div>
+        </body>
+        </html>
+    `);
+}
+
+// Page d'administration & Tour de Contrôle (Interception AVANT express.static pour étanchéité totale)
+app.get(['/admin', '/admin.html'], requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // Fichiers Statiques (avec index: false pour que '/' passe obligatoirement par requireAuth)
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));

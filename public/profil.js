@@ -128,6 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     walletReservedCredits.textContent = user.creditsReserved !== undefined ? user.creditsReserved : 0;
                 }
 
+                // Afficher le lien vers la tour de contrôle si l'utilisateur est administrateur
+                const adminContainer = document.getElementById('adminTourBtnContainer');
+                if (adminContainer && (user.email === 'artas971@gmail.com' || user.role === 'admin')) {
+                    adminContainer.style.display = 'inline-block';
+                }
+
                 // Synchronisation locale pour aya-i18n.js et autres pages
                 localStorage.setItem('aya_user', JSON.stringify(user));
 

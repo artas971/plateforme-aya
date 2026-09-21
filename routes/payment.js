@@ -109,6 +109,26 @@ router.post('/api/payment/webhook', async (req, res) => {
             
             if (result.success) {
                 console.log(`[STRIPE WEBHOOK] ✅ Portefeuille de ${userId} crédité de +${credits} (Nouveau solde: ${result.credits}).`);
+                
+                // Enregistrement de la transaction financière pour la supervision admin
+                try {
+                    const { recordTransaction } = require('../services/transactionService');
+                    const amountEur = session.amount_total ? (session.amount_total / 100) : (credits === 1 ? 0.99 : credits === 5 ? 2.99 : credits === 25 ? 9.99 : 0);
+                    await recordTransaction({
+                        userId: result.user?.id || result.user?._id || userId,
+                        username: result.user?.username || userId,
+                        email: result.user?.email || session.customer_details?.email || null,
+                        packId,
+                        credits,
+                        amount: amountEur,
+                        currency: (session.currency || 'EUR').toUpperCase(),
+                        provider: 'stripe',
+                        providerTransactionId: session.payment_intent || session.id,
+                        status: 'succeeded'
+                    });
+                } catch (txErr) {
+                    console.warn('[STRIPE WEBHOOK] ⚠️ Enregistrement transaction non-bloquant :', txErr.message);
+                }
             } else {
                 console.error(`[STRIPE WEBHOOK] ⚠️ Échec du crédit portefeuille pour ${userId} :`, result.reason);
             }

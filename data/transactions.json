@@ -1,0 +1,16 @@
+[
+  {
+    "id": "tx_1790025100000_a1b2c3",
+    "userId": "usr_1790024221536_oek8gw",
+    "username": "@artas971",
+    "email": "artas971@gmail.com",
+    "packId": "pack_25",
+    "credits": 25,
+    "amount": 9.99,
+    "currency": "EUR",
+    "provider": "stripe",
+    "providerTransactionId": "cs_test_pack25_init",
+    "status": "succeeded",
+    "createdAt": "2026-09-21T21:15:00.000Z"
+  }
+]
