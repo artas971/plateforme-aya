@@ -106,8 +106,16 @@ app.get('/download/:filename', (req, res) => {
 app.use('/download', express.static(REPONSED_DIR));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Routes de pages protégées
-app.get('/', requireAuth, (req, res) => {
+// Racine / et Landing Page : Vitrine publique si visiteur anonyme, redirection automatique /profil si connecté
+app.get(['/', '/landing', '/landing.html'], (req, res) => {
+    if (req.session && req.session.user && req.session.user.authenticated) {
+        return res.redirect('/profil');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// Route du Chat temps réel protégée (ancien index.html)
+app.get(['/chat', '/chat.html'], requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

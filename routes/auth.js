@@ -80,7 +80,10 @@ function requireAuth(req, res, next) {
         '/reset-password',
         '/reset-password.html',
         '/api/auth/forgot-password',
-        '/api/auth/reset-password'
+        '/api/auth/reset-password',
+        '/',
+        '/landing',
+        '/landing.html'
     ];
 
     if (publicPaths.includes(req.path)) {

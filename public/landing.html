@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aya Studio — La voix des témoignages palestiniens traduite pour TikTok en 60s</title>
+    
+    <!-- Méta SEO Standards -->
+    <meta name="description" content="Plateforme IA solidaire de transcription et sous-titrage vidéo. Convertissez les témoignages arabes palestiniens en vidéos VOSTFR captivantes au format TikTok en moins de 60 secondes.">
+    <meta name="keywords" content="sous-titrage IA, traduction palestinienne, Whisper levantin, TikTok VOSTFR, Aya Studio, Palestine, transcription vidéo">
+    <meta name="author" content="Aya Studio Team">
+    <meta name="theme-color" content="#10b981">
+    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="canonical" href="https://aya-studio.internal/">
+
+    <!-- Méta OpenGraph (Facebook, WhatsApp, Telegram, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aya-studio.internal/">
+    <meta property="og:title" content="Aya Studio — La voix des témoignages palestiniens traduite pour TikTok en 60s">
+    <meta property="og:description" content="Plateforme IA solidaire de transcription et sous-titrage vidéo. Convertissez les témoignages arabes palestiniens en vidéos VOSTFR captivantes au format TikTok en moins de 60 secondes.">
+    <meta property="og:image" content="/assets/tiktok_app_icon_1024x1024.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="Aya Studio">
+
+    <!-- Méta Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://aya-studio.internal/">
+    <meta name="twitter:title" content="Aya Studio — La voix des témoignages palestiniens traduite pour TikTok en 60s">
+    <meta name="twitter:description" content="Plateforme IA solidaire de sous-titrage. Convertissez les récits du terrain en capsules TikTok percutantes grâce à notre IA acoustique levantine.">
+    <meta name="twitter:image" content="/assets/tiktok_app_icon_1024x1024.png">
+
+    <!-- Typographie Officielle -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        :root {
+            --bg-dark: #080d1a;
+            --card-dark: #0f172a;
+            --border-dark: rgba(51, 65, 85, 0.6);
+            --emerald: #10b981;
+            --emerald-dark: #059669;
+            --emerald-glow: rgba(16, 185, 129, 0.25);
+            --turquoise: #00bcd4;
+            --aya-blue: #0b5394;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        html[dir="rtl"] body {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        /* 1. Header & Barre de Navigation */
+        .landing-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(8, 13, 26, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 24px;
+        }
+
+        .landing-nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-logo-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--emerald), var(--aya-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 1.1rem;
+            box-shadow: 0 0 16px var(--emerald-glow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-badge-pill {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.18);
+            color: var(--emerald);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+        }
+
+        .btn-nav-login {
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 18px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-nav-login:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-nav-cta {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+            color: #ffffff;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 15px var(--emerald-glow);
+            transition: all 0.2s;
+        }
+
+        .btn-nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .lang-btn.active {
+            background: var(--emerald);
+            color: #ffffff;
+            border-color: var(--emerald);
+        }
+
+        /* 2. Hero Section */
+        .hero-section {
+            position: relative;
+            padding: 90px 24px 70px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-bg-glow {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 450px;
+            background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.18) 0%, rgba(11, 83, 148, 0.08) 45%, transparent 70%);
+            filter: blur(50px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #6ee7b7;
+            margin-bottom: 24px;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .hero-title {
+            font-size: 3.2rem;
+            font-weight: 900;
+            line-height: 1.18;
+            letter-spacing: -0.03em;
+            margin: 0 auto 24px auto;
+            max-width: 960px;
+            background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-highlight {
+            background: linear-gradient(135deg, #34d399 0%, #00bcd4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            max-width: 780px;
+            margin: 0 auto 40px auto;
+            line-height: 1.65;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .btn-hero-primary {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+            color: #ffffff;
+            padding: 16px 36px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.45);
+            transition: all 0.25s ease;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            padding: 16px 30px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .hero-guarantees {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            font-size: 0.85rem;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        .guarantee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 3. Visual Mockup & Pipeline Preview */
+        .mockup-container {
+            max-width: 1000px;
+            margin: 40px auto 100px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .mockup-frame {
+            background: var(--card-dark);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.12);
+            overflow: hidden;
+        }
+
+        .mockup-header-bar {
+            background: #090e1a;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .window-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .window-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+        .dot-green { background: #10b981; }
+
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 30px;
+            padding: 30px;
+            align-items: center;
+        }
+
+        .pipeline-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 14px 18px;
+            transition: border-color 0.2s;
+        }
+
+        .step-item:hover {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-text h4 {
+            margin: 0 0 4px 0;
+            font-size: 0.95rem;
+            color: #ffffff;
+        }
+
+        .step-text p {
+            margin: 0;
+            font-size: 0.82rem;
+            color: #94a3b8;
+        }
+
+        /* Smartphone Preview */
+        .phone-mockup {
+            background: #000000;
+            border: 4px solid #1e293b;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+            aspect-ratio: 9 / 16;
+            max-width: 310px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 16px;
+            position: relative;
+        }
+
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+        }
+
+        .phone-top-ui {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #ffffff;
+            z-index: 2;
+            font-weight: 700;
+        }
+
+        .live-tag {
+            background: #ef4444;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .phone-center-subtitle {
+            z-index: 2;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .sub-arabic-highlight {
+            display: block;
+            font-family: 'Cairo', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fcd34d;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+        }
+
+        .sub-french-impact {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.85);
+            border-left: 3px solid var(--emerald);
+            padding: 8px 14px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+        }
+
+        .phone-bottom-ui {
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .audio-wave-anim {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            height: 24px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: var(--emerald);
+            border-radius: 3px;
+            animation: waveBounce 1.2s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { height: 8px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(2) { height: 16px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(3) { height: 24px; animation-delay: 0.3s; }
+        .wave-bar:nth-child(4) { height: 18px; animation-delay: 0.4s; }
+        .wave-bar:nth-child(5) { height: 10px; animation-delay: 0.5s; }
+
+        @keyframes waveBounce {
+            0%, 100% { transform: scaleY(0.4); }
+            50% { transform: scaleY(1); }
+        }
+
+        /* 4. Section Fonctionnalités (4 Piliers) */
+        .features-section {
+            padding: 80px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-tag {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--emerald);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 12px 0;
+        }
+
+        .section-sub {
+            font-size: 1rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-box {
+            background: var(--card-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-box:hover {
+            transform: translateY(-4px);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--emerald);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+
+        .feature-box h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 10px 0;
+        }
+
+        .feature-box p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        /* 5. Section Tarifs Transparents */
+        .pricing-section {
+            padding: 80px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .price-card {
+            background: var(--card-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 18px;
+            padding: 32px 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .price-card.featured {
+            border-color: var(--emerald);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, var(--card-dark) 100%);
+        }
+
+        .price-card-badge {
+            position: absolute;
+            top: -12px;
+            right: 24px;
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .price-header {
+            margin-bottom: 20px;
+        }
+
+        .price-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 8px 0;
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .price-unit {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .price-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 6px;
+            min-height: 42px;
+        }
+
+        .price-features {
+            list-style: none;
+            padding: 0;
+            margin: 24px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 20px 0;
+        }
+
+        .price-features li {
+            font-size: 0.86rem;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .price-features li span {
+            color: var(--emerald);
+            font-weight: 800;
+        }
+
+        .btn-price-action {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-price-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-price-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-price-primary {
+            background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-dark) 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 15px var(--emerald-glow);
+        }
+
+        .btn-price-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Carte PayPal Séparée */
+        .paypal-solidarity-block {
+            background: linear-gradient(135deg, rgba(0, 112, 186, 0.1) 0%, rgba(0, 48, 135, 0.15) 100%);
+            border: 1px solid rgba(0, 112, 186, 0.35);
+            border-radius: 16px;
+            padding: 24px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .paypal-text h3 {
+            margin: 0 0 6px 0;
+            font-size: 1.1rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .paypal-text p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            max-width: 680px;
+        }
+
+        /* 6. Section Call To Action Final */
+        .final-cta-section {
+            padding: 90px 24px;
+            text-align: center;
+            background: linear-gradient(180deg, transparent 0%, rgba(16, 185, 129, 0.06) 100%);
+        }
+
+        .cta-box {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-dark);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 24px;
+            padding: 50px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(16, 185, 129, 0.15);
+        }
+
+        .cta-box h2 {
+            font-size: 2.3rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 16px 0;
+        }
+
+        .cta-box p {
+            font-size: 1.05rem;
+            color: #94a3b8;
+            margin: 0 auto 30px auto;
+            max-width: 580px;
+        }
+
+        @media (max-width: 860px) {
+            .hero-title { font-size: 2.2rem; }
+            .mockup-grid { grid-template-columns: 1fr; }
+            .nav-actions .nav-link { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. En-tête & Navigation -->
+    <header class="landing-header">
+        <div class="landing-nav-container">
+            <a href="/" class="brand-logo-group">
+                <div class="brand-avatar">آية</div>
+                <div>
+                    <span class="brand-name">Aya Studio</span>
+                    <span class="brand-badge-pill">SaaS Solidaire</span>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                <a href="#pipeline" class="nav-link" id="navLinkFeatures">Fonctionnalités</a>
+                <a href="#tarifs" class="nav-link" id="navLinkPricing">Tarifs</a>
+                <a href="/login" class="btn-nav-login" id="navBtnLogin">Connexion</a>
+                <a href="/login" class="btn-nav-cta" id="navBtnCta">✨ 5 Crédits offerts</a>
+
+                <!-- Sélecteur Bilingue FR / AR -->
+                <div style="display: flex; gap: 4px; margin-left: 6px;">
+                    <button type="button" class="lang-btn active" id="btnLangFr">FR</button>
+                    <button type="button" class="lang-btn" id="btnLangAr">عربي</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. Hero Section Principale -->
+    <section class="hero-section">
+        <div class="hero-bg-glow"></div>
+        
+        <div class="hero-pill" id="heroPill">
+            <span>🇵🇸</span> Plateforme IA Levantine & Traduction Solidaire
+        </div>
+
+        <h1 class="hero-title" id="heroTitle">
+            La voix des témoignages palestiniens traduite pour <span class="hero-highlight">TikTok en 60s</span>
+        </h1>
+
+        <p class="hero-subtitle" id="heroSubtitle">
+            De la parole acoustique levantine aux sous-titres animés percutants : donnez une caisse de résonance mondiale aux récits du terrain sans aucune compétence de montage vidéo.
+        </p>
+
+        <div class="hero-cta-group">
+            <a href="/login" class="btn-hero-primary" id="btnHeroCta">
+                <span>🚀</span> Commencer gratuitement (5 Crédits offerts)
+            </a>
+            <a href="#pipeline" class="btn-hero-secondary" id="btnHeroDemo">
+                <span>⚡</span> Voir la démo en action
+            </a>
+        </div>
+
+        <div class="hero-guarantees">
+            <span class="guarantee-item">🛡️ <b>Faster-Whisper Local</b> (Zéro fuite acoustique)</span>
+            <span>•</span>
+            <span class="guarantee-item">⏱️ <b>Purge auto 24h</b> (Conforme RGPD)</span>
+            <span>•</span>
+            <span class="guarantee-item">💳 <b>Sans engagement</b> (Crédits rechargeables)</span>
+        </div>
+    </section>
+
+    <!-- 3. Mockup Interactif du Pipeline IA -->
+    <section class="mockup-container" id="pipeline">
+        <div class="mockup-frame">
+            <div class="mockup-header-bar">
+                <div class="window-dots">
+                    <span class="window-dot dot-red"></span>
+                    <span class="window-dot dot-yellow"></span>
+                    <span class="window-dot dot-green"></span>
+                </div>
+                <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">
+                    Pipeline IA de Production : Audio ➔ Whisper Levantin ➔ Rendu VOSTFR 1080p
+                </div>
+                <div style="font-size: 0.75rem; color: #10b981; font-weight: 700;">
+                    ⚡ 60s chrono
+                </div>
+            </div>
+
+            <div class="mockup-grid">
+                <!-- Colonne Gauche : Étapes du Pipeline -->
+                <div class="pipeline-card">
+                    <div class="step-item">
+                        <div class="step-num">1</div>
+                        <div class="step-text">
+                            <h4 id="step1Title">Ingestion Instantanée</h4>
+                            <p id="step1Desc">Glissez une vidéo TikTok, un vocal WhatsApp ou un fichier MP4 brut.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-num">2</div>
+                        <div class="step-text">
+                            <h4 id="step2Title">Acoustique Levantine Locale</h4>
+                            <p id="step2Desc">Moteur Faster-Whisper optimisé pour l'arabe palestinien sans fuite cloud.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-num">3</div>
+                        <div class="step-text">
+                            <h4 id="step3Title">Sous-titrage Animé Impact</h4>
+                            <p id="step3Desc">Incrustation dynamique mot à mot (Karaoké) calibrée pour l'engagement TikTok.</p>
+                        </div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-num">4</div>
+                        <div class="step-text">
+                            <h4 id="step4Title">Export HD & Diffusion Solidaire</h4>
+                            <p id="step4Desc">Téléchargez la vidéo finale ou publiez-la sur le Mur Communautaire.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonne Droite : Smartphone Preview -->
+                <div>
+                    <div class="phone-mockup">
+                        <div class="phone-top-ui">
+                            <span class="live-tag">Témoignage Terrain</span>
+                            <span>Aya Studio HD</span>
+                        </div>
+
+                        <div class="phone-center-subtitle">
+                            <span class="sub-arabic-highlight">صامدون هنا رغم كل الصعاب</span>
+                            <span class="sub-french-impact">NOUS RESTONS DEBOUT MALGRÉ TOUT</span>
+                        </div>
+
+                        <div class="phone-bottom-ui">
+                            <div class="audio-wave-anim">
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                                <span class="wave-bar"></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8;">
+                                <span>Whisper Levantin</span>
+                                <span style="color: #10b981;">100% Précision</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Section Fonctionnalités (4 Piliers) -->
+    <section class="features-section">
+        <div class="section-header">
+            <span class="section-tag" id="pillarsTag">Pourquoi Aya Studio ?</span>
+            <h2 class="section-title" id="pillarsTitle">Une technologie de pointe au service de la vérité</h2>
+            <p class="section-sub" id="pillarsSub">
+                Conçu pour les créateurs, journalistes et citoyens engagés souhaitant relayer les réalités du terrain sans friction.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-box">
+                <div class="feature-icon-wrapper">🎙️</div>
+                <h3 id="feat1Title">Compréhension Levantine</h3>
+                <p id="feat1Desc">Contrairement aux traducteurs génériques, notre IA maîtrise les nuances et expressions du dialecte palestinien pour préserver le sens profond des témoignages.</p>
+            </div>
+
+            <div class="feature-box">
+                <div class="feature-icon-wrapper">⚡</div>
+                <h3 id="feat2Title">Sous-titres TikTok Prêts</h3>
+                <p id="feat2Desc">Les vidéos générées adoptent les standards visuels des réseaux sociaux : contraste élevé, typographie lisible sur smartphone et synchronisation millimétrique.</p>
+            </div>
+
+            <div class="feature-box">
+                <div class="feature-icon-wrapper">🛡️</div>
+                <h3 id="feat3Title">Confidentialité & RGPD</h3>
+                <p id="feat3Desc">Vos médias sont hébergés sur des serveurs sécurisés en Europe et sont automatiquement détruits sous 24 heures pour garantir votre anonymat.</p>
+            </div>
+
+            <div class="feature-box">
+                <div class="feature-icon-wrapper">🍉</div>
+                <h3 id="feat4Title">Mur Communautaire</h3>
+                <p id="feat4Desc">Partagez vos vidéos traduites directement avec la communauté Aya pour amplifier leur portée et soutenir la transmission des témoignages.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Grille Tarifaire Transparente -->
+    <section class="pricing-section" id="tarifs">
+        <div class="section-header">
+            <span class="section-tag" id="pricingTag">Tarification Claire & Éthique</span>
+            <h2 class="section-title" id="pricingTitle">Packs de Crédits à Prix Coûtant</h2>
+            <p class="section-sub" id="pricingSub">
+                Aucun abonnement récurrent imposé. Vos achats financent strictement les calculs serveurs et les tokens d'IA.
+            </p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- Pack 1 Crédit -->
+            <div class="price-card">
+                <div class="price-header">
+                    <h3 class="price-title" id="p1Title">1 Crédit Flash</h3>
+                    <div class="price-amount">0,99 € <span class="price-unit">/ unité</span></div>
+                    <p class="price-desc" id="p1Desc">Dépannage immédiat pour 1 vidéo TikTok VOSTFR complète.</p>
+                </div>
+                <ul class="price-features">
+                    <li><span>✓</span> 1 transcription audio complète</li>
+                    <li><span>✓</span> Traduction levantine fidèle</li>
+                    <li><span>✓</span> Rendu vidéo HD 1080p en 60s</li>
+                    <li><span>✓</span> Export sans filigrane intrusif</li>
+                </ul>
+                <a href="/login" class="btn-price-action btn-price-secondary" id="btnP1">Acheter ce pack</a>
+            </div>
+
+            <!-- Pack 5 Crédits (Populaire) -->
+            <div class="price-card featured">
+                <span class="price-card-badge">Populaire</span>
+                <div class="price-header">
+                    <h3 class="price-title" id="p5Title">Pack 5 Crédits</h3>
+                    <div class="price-amount">2,99 € <span class="price-unit">/ pack</span></div>
+                    <p class="price-desc" id="p5Desc">~0,60 € / vidéo. Idéal pour publier régulièrement sur TikTok.</p>
+                </div>
+                <ul class="price-features">
+                    <li><span>✓</span> 5 vidéos VOSTFR complètes</li>
+                    <li><span>✓</span> Économisez 40% sur le tarif unitaire</li>
+                    <li><span>✓</span> Priorité dans la file d'encodage</li>
+                    <li><span>✓</span> Partage direct Mur Communautaire</li>
+                </ul>
+                <a href="/login" class="btn-price-action btn-price-primary" id="btnP5">Choisir ce pack</a>
+            </div>
+
+            <!-- Pack 25 Crédits (Meilleur Tarif) -->
+            <div class="price-card">
+                <span class="price-card-badge" style="background: #f59e0b;">Meilleur Tarif</span>
+                <div class="price-header">
+                    <h3 class="price-title" id="p25Title">Pack 25 Crédits</h3>
+                    <div class="price-amount">9,99 € <span class="price-unit">/ pack</span></div>
+                    <p class="price-desc" id="p25Desc">~0,40 € / vidéo. Pour les créateurs de contenu intensifs.</p>
+                </div>
+                <ul class="price-features">
+                    <li><span>✓</span> 25 vidéos VOSTFR complètes</li>
+                    <li><span>✓</span> Économisez 60% sur le tarif unitaire</li>
+                    <li><span>✓</span> Support créateur prioritaire</li>
+                    <li><span>✓</span> Crédits valables sans limite de durée</li>
+                </ul>
+                <a href="/login" class="btn-price-action btn-price-secondary" id="btnP25">Choisir ce pack</a>
+            </div>
+        </div>
+
+        <!-- Bloc Dons de Solidarité Séparé (PayPal) -->
+        <div class="paypal-solidarity-block">
+            <div class="paypal-text">
+                <h3><span>❤️</span> Soutien Humanitaire Palestine (Totalement Séparé)</h3>
+                <p>
+                    L'achat de crédits techniques ci-dessus finance uniquement l'infrastructure d'hébergement. Si vous désirez soutenir directement l'équipe bénévole et l'aide humanitaire en Palestine, les dons volontaires s'effectuent via un lien PayPal dédié 100% indépendant.
+                </p>
+            </div>
+            <a href="https://paypal.me/AyaStudioPalestine" target="_blank" rel="noopener noreferrer" class="btn-paypal-donate" style="margin-left: auto;">
+                <span>🕊️</span> Faire un don PayPal
+            </a>
+        </div>
+    </section>
+
+    <!-- 6. Call To Action Final -->
+    <section class="final-cta-section">
+        <div class="cta-box">
+            <h2 id="ctaFinalTitle">Faites entendre la voix du terrain</h2>
+            <p id="ctaFinalSub">Rejoignez notre réseau de créateurs et commencez à traduire vos premières vidéos dès aujourd'hui.</p>
+            <a href="/login" class="btn-hero-primary" style="margin: 0 auto;" id="btnCtaFinal">
+                <span>🚀</span> Créer mon compte (5 Crédits offerts)
+            </a>
+        </div>
+    </section>
+
+    <!-- 7. Pied de page Légal Harmonisé -->
+    <footer class="aya-legal-footer">
+        <div class="aya-legal-footer-inner">
+            <div class="aya-legal-footer-links">
+                <a href="/cgu.html">Conditions Générales (CGU/CGV)</a>
+                <span class="aya-legal-footer-sep">•</span>
+                <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
+                <span class="aya-legal-footer-sep">•</span>
+                <a href="https://paypal.me/AyaStudioPalestine" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+            </div>
+            <p class="aya-legal-footer-copyright">
+                © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Script de Traduction Dynamique (FR / AR) -->
+    <script>
+        (function() {
+            const dict = {
+                fr: {
+                    dir: 'ltr',
+                    navFeatures: 'Fonctionnalités',
+                    navPricing: 'Tarifs',
+                    navLogin: 'Connexion',
+                    navCta: '✨ 5 Crédits offerts',
+                    heroPill: '🇵🇸 Plateforme IA Levantine & Traduction Solidaire',
+                    heroTitle: 'La voix des témoignages palestiniens traduite pour <span class="hero-highlight">TikTok en 60s</span>',
+                    heroSubtitle: 'De la parole acoustique levantine aux sous-titres animés percutants : donnez une caisse de résonance mondiale aux récits du terrain sans aucune compétence de montage vidéo.',
+                    heroCta: '🚀 Commencer gratuitement (5 Crédits offerts)',
+                    heroDemo: '⚡ Voir la démo en action',
+                    pillarsTag: 'Pourquoi Aya Studio ?',
+                    pillarsTitle: 'Une technologie de pointe au service de la vérité',
+                    pillarsSub: 'Conçu pour les créateurs, journalistes et citoyens engagés souhaitant relayer les réalités du terrain sans friction.',
+                    pricingTag: 'Tarification Claire & Éthique',
+                    pricingTitle: 'Packs de Crédits à Prix Coûtant',
+                    pricingSub: 'Aucun abonnement récurrent imposé. Vos achats financent strictement les calculs serveurs et les tokens d\'IA.',
+                    ctaFinalTitle: 'Faites entendre la voix du terrain',
+                    ctaFinalSub: 'Rejoignez notre réseau de créateurs et commencez à traduire vos premières vidéos dès aujourd\'hui.',
+                    btnCtaFinal: '🚀 Créer mon compte (5 Crédits offerts)'
+                },
+                ar: {
+                    dir: 'rtl',
+                    navFeatures: 'المميزات',
+                    navPricing: 'الأسعار',
+                    navLogin: 'تسجيل الدخول',
+                    navCta: '✨ ٥ أرصدة مجانية',
+                    heroPill: '🇵🇸 منصة ذكاء اصطناعي للترجمة التضامنية الشامية',
+                    heroTitle: 'صوت الشهادات الفلسطينية مترجم لمنصة <span class="hero-highlight">تيك توك خلال ٦٠ ثانية</span>',
+                    heroSubtitle: 'من اللهجة الشامية المحكية إلى الترجمة المرئية المتحركة والمؤثرة: امنح شهادات الميدان صدى عالمياً بدون الحاجة لأي خبرة سابقة في المونتاج.',
+                    heroCta: '🚀 ابدأ مجاناً (٥ أرصدة هدية)',
+                    heroDemo: '⚡ شاهد طريقة العمل',
+                    pillarsTag: 'لماذا استوديو آية؟',
+                    pillarsTitle: 'تقنية فائقة في خدمة الحقيقة ونشر الرسالة',
+                    pillarsSub: 'مُصمم لصناع المحتوى والصحفيين والناشطين لنقل واقع الميدان بكل سهولة وأمان.',
+                    pricingTag: 'تسعير واضح وعادل',
+                    pricingTitle: 'باقات رصيد بسعر التكلفة الصافي',
+                    pricingSub: 'لا توجد اشتراكات شهرية إجبارية. مشترياتك تغطي حصرياً تكاليف معالجة الخوادم وسيرفرات الذكاء الاصطناعي.',
+                    ctaFinalTitle: 'ساهم في إيصال صوت الميدان إلى العالم',
+                    ctaFinalSub: 'انضم لشبكة صناع المحتوى وابدأ بترجمة فيديوهاتك الأولى اليوم.',
+                    btnCtaFinal: '🚀 إنشاء حسابي (٥ أرصدة مجانية)'
+                }
+            };
+
+            let currentLang = localStorage.getItem('aya_lang') || 'fr';
+
+            function setLanguage(lang) {
+                currentLang = lang;
+                localStorage.setItem('aya_lang', lang);
+                const d = dict[lang] || dict.fr;
+
+                document.documentElement.setAttribute('dir', d.dir);
+                document.documentElement.setAttribute('lang', lang);
+
+                document.getElementById('navLinkFeatures').textContent = d.navFeatures;
+                document.getElementById('navLinkPricing').textContent = d.navPricing;
+                document.getElementById('navBtnLogin').textContent = d.navLogin;
+                document.getElementById('navBtnCta').textContent = d.navCta;
+                document.getElementById('heroPill').innerHTML = d.heroPill;
+                document.getElementById('heroTitle').innerHTML = d.heroTitle;
+                document.getElementById('heroSubtitle').textContent = d.heroSubtitle;
+                document.getElementById('btnHeroCta').innerHTML = d.heroCta;
+                document.getElementById('btnHeroDemo').innerHTML = d.heroDemo;
+                document.getElementById('pillarsTag').textContent = d.pillarsTag;
+                document.getElementById('pillarsTitle').textContent = d.pillarsTitle;
+                document.getElementById('pillarsSub').textContent = d.pillarsSub;
+                document.getElementById('pricingTag').textContent = d.pricingTag;
+                document.getElementById('pricingTitle').textContent = d.pricingTitle;
+                document.getElementById('pricingSub').textContent = d.pricingSub;
+                document.getElementById('ctaFinalTitle').textContent = d.ctaFinalTitle;
+                document.getElementById('ctaFinalSub').textContent = d.ctaFinalSub;
+                document.getElementById('btnCtaFinal').innerHTML = d.btnCtaFinal;
+
+                if (lang === 'ar') {
+                    document.getElementById('btnLangAr').classList.add('active');
+                    document.getElementById('btnLangFr').classList.remove('active');
+                } else {
+                    document.getElementById('btnLangFr').classList.add('active');
+                    document.getElementById('btnLangAr').classList.remove('active');
+                }
+            }
+
+            document.getElementById('btnLangFr').addEventListener('click', () => setLanguage('fr'));
+            document.getElementById('btnLangAr').addEventListener('click', () => setLanguage('ar'));
+            setLanguage(currentLang);
+        })();
+    </script>
+
+    <!-- Bandeau de Cookies Techniques (RGPD) -->
+    <script src="/cookie-banner.js"></script>
+</body>
+</html>
