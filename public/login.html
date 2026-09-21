@@ -410,7 +410,10 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="loginPassword" id="labelLoginPass">Mot de passe</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" for="loginPassword" id="labelLoginPass">Mot de passe</label>
+                            <a href="#" id="linkForgotPassword" style="font-size: 0.78rem; color: #0284c7; text-decoration: none; font-weight: 600;">Mot de passe oublié ?</a>
+                        </div>
                         <div class="password-field-wrap">
                             <input type="password" class="form-input" id="loginPassword" placeholder="Entrez votre mot de passe..." required autocomplete="current-password">
                             <button type="button" class="btn-toggle-eye" id="toggleLoginPassword" title="Afficher/Masquer">👁️</button>
@@ -419,6 +422,29 @@
 
                     <button type="submit" class="btn-submit-login" id="btnSubmitAccount">
                         <span>🚀</span> <span id="txtSubmitAccount">Se connecter</span>
+                    </button>
+                </form>
+
+                <!-- C. Formulaire Mot de Passe Oublié -->
+                <form id="formForgotPassword" style="display: none; flex-direction: column; gap: 1rem;">
+                    <div class="security-badge" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25); color: #047857;">
+                        <span style="font-size: 1.2rem;">🔒</span>
+                        <span id="txtForgotDesc">Saisissez votre e-mail ou pseudonyme. Nous vous enverrons un lien sécurisé valable 1 heure pour réinitialiser votre mot de passe.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="forgotIdentifier" id="labelForgotId">Adresse E-mail ou Pseudonyme</label>
+                        <input type="text" class="form-input" id="forgotIdentifier" placeholder="ex: nom@exemple.com ou @artas971" required>
+                    </div>
+
+                    <div id="forgotFeedback" style="display: none; font-size: 0.82rem; padding: 0.75rem 1rem; border-radius: 8px; line-height: 1.45;"></div>
+
+                    <button type="submit" class="btn-submit-login" id="btnSubmitForgot" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <span>📩</span> <span id="txtSubmitForgot">Envoyer le lien de réinitialisation</span>
+                    </button>
+
+                    <button type="button" class="btn-link-action" id="btnBackToLogin" style="text-align: center; margin-top: 4px; color: #64748b; font-weight: 600;">
+                        ← <span id="txtBackToLogin">Retour à la connexion</span>
                     </button>
                 </form>
 
@@ -573,7 +599,15 @@
                 errUserMin: 'Le pseudonyme doit comporter au moins 3 caractères.',
                 errEmailInvalid: 'Format d\'adresse e-mail invalide.',
                 errEmailTaken: 'Cette adresse e-mail est déjà associée à un compte.',
-                errEmailAvailable: 'Adresse e-mail disponible !'
+                errEmailAvailable: 'Adresse e-mail disponible !',
+                linkForgot: 'Mot de passe oublié ?',
+                txtForgotDesc: 'Saisissez votre e-mail ou pseudonyme. Nous vous enverrons un lien sécurisé valable 1 heure pour réinitialiser votre mot de passe.',
+                labelForgotId: 'Adresse E-mail ou Pseudonyme',
+                placeholderForgotId: 'ex: nom@exemple.com ou @artas971',
+                submitForgot: 'Envoyer le lien de réinitialisation',
+                submittingForgot: 'Envoi en cours...',
+                backToLogin: 'Retour à la connexion',
+                forgotSuccess: '✨ Si un compte correspond à ces informations, un lien de réinitialisation vous a été envoyé.'
             },
             ar: {
                 dir: 'rtl',
@@ -620,7 +654,15 @@
                 errUserMin: 'يجب أن يتكون اسم المستخدم من ٣ أحرف على الأقل.',
                 errEmailInvalid: 'صيغة البريد الإلكتروني غير صحيحة.',
                 errEmailTaken: 'هذا البريد الإلكتروني مسجل بحساب آخر.',
-                errEmailAvailable: 'البريد الإلكتروني متاح!'
+                errEmailAvailable: 'البريد الإلكتروني متاح!',
+                linkForgot: 'نسيت كلمة المرور؟',
+                txtForgotDesc: 'أدخل بريدك الإلكتروني أو اسم المستخدم. سنرسل لك رابطاً آمناً صالحاً لمدة ساعة لإعادة تعيين كلمة المرور.',
+                labelForgotId: 'البريد الإلكتروني أو اسم المستخدم',
+                placeholderForgotId: 'مثال: name@example.com أو @artas971',
+                submitForgot: 'إرسال رابط استعادة الحساب',
+                submittingForgot: 'جاري الإرسال...',
+                backToLogin: 'العودة لتسجيل الدخول',
+                forgotSuccess: '✨ إذا كان هناك حساب مرتبط بهذه البيانات، فقد تم إرسال رابط الاستعادة إلى بريدك.'
             }
         };
 
@@ -671,6 +713,13 @@
             document.getElementById('regPassword').placeholder = d.placeholderRegPass;
             document.getElementById('txtSubmitRegister').textContent = d.submitRegister;
             document.getElementById('txtFooter').textContent = d.footer;
+
+            if (document.getElementById('linkForgotPassword')) document.getElementById('linkForgotPassword').textContent = d.linkForgot;
+            if (document.getElementById('txtForgotDesc')) document.getElementById('txtForgotDesc').textContent = d.txtForgotDesc;
+            if (document.getElementById('labelForgotId')) document.getElementById('labelForgotId').textContent = d.labelForgotId;
+            if (document.getElementById('forgotIdentifier')) document.getElementById('forgotIdentifier').placeholder = d.placeholderForgotId;
+            if (document.getElementById('txtSubmitForgot')) document.getElementById('txtSubmitForgot').textContent = d.submitForgot;
+            if (document.getElementById('txtBackToLogin')) document.getElementById('txtBackToLogin').textContent = d.backToLogin;
 
             if (lang === 'ar') {
                 document.getElementById('btnAr').classList.add('active');
@@ -732,6 +781,86 @@
             loginFormTester.style.display = 'flex';
             errorBanner.style.display = 'none';
         });
+
+        // ==============================================================
+        // GESTION DU FLUX "MOT DE PASSE OUBLIÉ"
+        // ==============================================================
+        const linkForgotPassword = document.getElementById('linkForgotPassword');
+        const formForgotPassword = document.getElementById('formForgotPassword');
+        const btnBackToLogin = document.getElementById('btnBackToLogin');
+        const forgotFeedback = document.getElementById('forgotFeedback');
+        const forgotIdentifier = document.getElementById('forgotIdentifier');
+        const btnSubmitForgot = document.getElementById('btnSubmitForgot');
+        const txtSubmitForgot = document.getElementById('txtSubmitForgot');
+        const loginSubModes = document.querySelector('.login-sub-modes');
+
+        if (linkForgotPassword) {
+            linkForgotPassword.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginFormAccount.style.display = 'none';
+                loginFormTester.style.display = 'none';
+                if (loginSubModes) loginSubModes.style.display = 'none';
+                formForgotPassword.style.display = 'flex';
+                errorBanner.style.display = 'none';
+                forgotFeedback.style.display = 'none';
+                forgotIdentifier.focus();
+            });
+        }
+
+        if (btnBackToLogin) {
+            btnBackToLogin.addEventListener('click', () => {
+                formForgotPassword.style.display = 'none';
+                if (loginSubModes) loginSubModes.style.display = 'flex';
+                loginFormAccount.style.display = 'flex';
+                errorBanner.style.display = 'none';
+                forgotFeedback.style.display = 'none';
+            });
+        }
+
+        if (formForgotPassword) {
+            formForgotPassword.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const d = dict[currentLang] || dict.fr;
+                const value = forgotIdentifier.value.trim();
+                if (!value) return;
+
+                btnSubmitForgot.disabled = true;
+                txtSubmitForgot.textContent = d.submittingForgot;
+                forgotFeedback.style.display = 'none';
+
+                try {
+                    const res = await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: value, identifier: value })
+                    });
+                    const data = await res.json();
+
+                    forgotFeedback.style.display = 'block';
+                    if (data.success) {
+                        forgotFeedback.style.background = '#ecfdf5';
+                        forgotFeedback.style.border = '1px solid #10b981';
+                        forgotFeedback.style.color = '#065f46';
+                        forgotFeedback.innerHTML = d.forgotSuccess;
+                        forgotIdentifier.value = '';
+                    } else {
+                        forgotFeedback.style.background = '#fef2f2';
+                        forgotFeedback.style.border = '1px solid #ef4444';
+                        forgotFeedback.style.color = '#b91c1c';
+                        forgotFeedback.textContent = data.error || "Une erreur est survenue.";
+                    }
+                } catch (err) {
+                    forgotFeedback.style.display = 'block';
+                    forgotFeedback.style.background = '#fef2f2';
+                    forgotFeedback.style.border = '1px solid #ef4444';
+                    forgotFeedback.style.color = '#b91c1c';
+                    forgotFeedback.textContent = `Erreur réseau : ${err.message}`;
+                } finally {
+                    btnSubmitForgot.disabled = false;
+                    txtSubmitForgot.textContent = d.submitForgot;
+                }
+            });
+        }
 
         // ==============================================================
         // BASCULE DE VISIBILITÉ DES MOTS DE PASSE (ŒIL 👁️ / 🙈)

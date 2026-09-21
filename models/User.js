@@ -44,6 +44,16 @@ const UserSchema = new mongoose.Schema({
         select: false,
         default: null
     },
+    resetPasswordToken: {
+        type: String,
+        select: false,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        select: false,
+        default: null
+    },
 
     // Ticket 1 : Mot de passe haché et sécurisé
     password: {
@@ -149,6 +159,8 @@ UserSchema.methods.toJSON = function () {
     delete userObject.password;
     delete userObject.verificationToken;
     delete userObject.verificationTokenExpires;
+    delete userObject.resetPasswordToken;
+    delete userObject.resetPasswordExpires;
     return userObject;
 };
 

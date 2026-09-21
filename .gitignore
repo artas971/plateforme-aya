@@ -10,6 +10,7 @@ credentials*.json
 token*.json
 *identifiant*
 *password*
+!public/reset-password.html
 *credentials*
 IDENTIFIANTS_ET_ACCES.md
 drive_synced_files.json

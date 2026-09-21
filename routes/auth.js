@@ -6,7 +6,11 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { isDbConnected } = require('../config/database');
-const { sendVerificationEmail } = require('../services/emailService');
+const { 
+    sendVerificationEmail, 
+    sendPasswordResetEmail, 
+    sendWelcomeEmail 
+} = require('../services/emailService');
 
 // Mode Fallback Autonome (JSON local si MongoDB n'est pas actif)
 const DATA_DIR = path.join(__dirname, '../data');
@@ -72,7 +76,11 @@ function requireAuth(req, res, next) {
         '/cgu',
         '/cgu.html',
         '/confidentialite',
-        '/confidentialite.html'
+        '/confidentialite.html',
+        '/reset-password',
+        '/reset-password.html',
+        '/api/auth/forgot-password',
+        '/api/auth/reset-password'
     ];
 
     if (publicPaths.includes(req.path)) {
@@ -397,6 +405,13 @@ router.get(['/verify', '/api/auth/verify'], async (req, res) => {
 
         console.log(`[AUTH VERIFY] ✅ E-mail confirmé avec succès pour l'utilisateur : ${verifiedUser.username} (${verifiedUser.email})`);
 
+        // Envoi automatique de l'e-mail de bienvenue
+        sendWelcomeEmail({
+            email: verifiedUser.email,
+            username: verifiedUser.username,
+            req
+        }).catch(err => console.error('[AUTH WELCOME EMAIL ERROR]', err));
+
         // Redirection vers la page de connexion avec statut de succès
         return res.redirect(`/login?verified=success&username=${encodeURIComponent(verifiedUser.username)}`);
     } catch (err) {
@@ -471,6 +486,167 @@ router.post('/api/auth/resend-verification', async (req, res) => {
     } catch (err) {
         console.error('[AUTH RESEND-VERIFICATION ERROR]', err);
         return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * POST /api/auth/forgot-password : Demande de réinitialisation de mot de passe (Jeton valide 1h)
+ */
+router.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+        const { email: rawEmail, identifier: rawIdentifier } = req.body;
+        const lookup = (rawEmail || rawIdentifier || '').trim().toLowerCase();
+
+        if (!lookup) {
+            return res.status(400).json({
+                success: false,
+                error: "Veuillez renseigner votre adresse e-mail ou votre pseudonyme."
+            });
+        }
+
+        let user = null;
+        const normalizedUser = normalizeUsername(lookup);
+
+        if (isDbConnected()) {
+            user = await User.findOne({
+                $or: [
+                    { email: lookup },
+                    { username: normalizedUser }
+                ]
+            }).select('+resetPasswordToken +resetPasswordExpires');
+        } else {
+            const users = readFallbackUsers();
+            user = users.find(u => u.email === lookup || u.username === normalizedUser);
+        }
+
+        // Protection contre l'énumération d'utilisateurs : on répond toujours positivement
+        if (!user) {
+            console.log(`[AUTH FORGOT-PASSWORD] ℹ️ Demande reçue pour identifiant inexistant : ${lookup}`);
+            return res.json({
+                success: true,
+                message: "Si un compte correspond à ces informations, un lien de réinitialisation vous a été envoyé."
+            });
+        }
+
+        // Génération d'un jeton cryptographique sécurisé (valable 1 heure)
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
+
+        if (isDbConnected()) {
+            user.resetPasswordToken = resetToken;
+            user.resetPasswordExpires = resetExpires;
+            await user.save();
+        } else {
+            const users = readFallbackUsers();
+            const idx = users.findIndex(u => u.id === user.id || u.username === user.username);
+            if (idx !== -1) {
+                users[idx].resetPasswordToken = resetToken;
+                users[idx].resetPasswordExpires = resetExpires.toISOString();
+                saveFallbackUsers(users);
+                user = users[idx];
+            }
+        }
+
+        console.log(`[AUTH FORGOT-PASSWORD] 🔑 Jeton de réinitialisation généré pour ${user.username} (${user.email}) - Valable 1h.`);
+
+        // Envoi de l'e-mail avec template Dark Mode & Vert Émeraude
+        const emailResult = await sendPasswordResetEmail({
+            email: user.email,
+            username: user.username,
+            token: resetToken,
+            req
+        });
+
+        return res.json({
+            success: true,
+            message: "Si un compte correspond à ces informations, un lien de réinitialisation vous a été envoyé.",
+            emailDelivery: emailResult.mode,
+            devToken: emailResult.mode === 'console_fallback' ? resetToken : undefined
+        });
+
+    } catch (err) {
+        console.error('[AUTH FORGOT-PASSWORD ERROR]', err);
+        return res.status(500).json({
+            success: false,
+            error: `Erreur lors de la demande de réinitialisation : ${err.message}`
+        });
+    }
+});
+
+/**
+ * POST /api/auth/reset-password : Enregistrement du nouveau mot de passe après validation du jeton
+ */
+router.post('/api/auth/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !token.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: "Le jeton de réinitialisation est obligatoire."
+            });
+        }
+
+        if (!password || password.length < 8) {
+            return res.status(400).json({
+                success: false,
+                error: "Le nouveau mot de passe doit comporter au moins 8 caractères."
+            });
+        }
+
+        let user = null;
+
+        if (isDbConnected()) {
+            user = await User.findOne({
+                resetPasswordToken: token.trim(),
+                resetPasswordExpires: { $gt: new Date() }
+            }).select('+password +resetPasswordToken +resetPasswordExpires');
+
+            if (user) {
+                user.password = password; // Haché automatiquement par le middleware pre('save')
+                user.resetPasswordToken = null;
+                user.resetPasswordExpires = null;
+                await user.save();
+            }
+        } else {
+            const users = readFallbackUsers();
+            const found = users.find(u => 
+                u.resetPasswordToken === token.trim() && 
+                u.resetPasswordExpires && 
+                new Date(u.resetPasswordExpires) > new Date()
+            );
+
+            if (found) {
+                const salt = await bcrypt.genSalt(10);
+                found.password = await bcrypt.hash(password, salt);
+                found.resetPasswordToken = null;
+                found.resetPasswordExpires = null;
+                saveFallbackUsers(users);
+                user = found;
+            }
+        }
+
+        if (!user) {
+            console.warn(`[AUTH RESET-PASSWORD] ⚠️ Tentative avec jeton invalide ou expiré : ${token}`);
+            return res.status(400).json({
+                success: false,
+                error: "Le lien de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande."
+            });
+        }
+
+        console.log(`[AUTH RESET-PASSWORD] ✅ Mot de passe mis à jour avec succès pour : ${user.username} (${user.email})`);
+
+        return res.json({
+            success: true,
+            message: "Votre mot de passe a été réinitialisé avec succès ! Vous pouvez maintenant vous connecter."
+        });
+
+    } catch (err) {
+        console.error('[AUTH RESET-PASSWORD ERROR]', err);
+        return res.status(500).json({
+            success: false,
+            error: `Erreur lors de la réinitialisation : ${err.message}`
+        });
     }
 });
 

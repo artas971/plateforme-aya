@@ -84,6 +84,11 @@ app.get(['/confidentialite', '/confidentialite.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'confidentialite.html'));
 });
 
+// Page de réinitialisation de mot de passe publique (accessible via le lien reçu par e-mail)
+app.get(['/reset-password', '/reset-password.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
+});
+
 // Fichiers Statiques (avec index: false pour que '/' passe obligatoirement par requireAuth)
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));
