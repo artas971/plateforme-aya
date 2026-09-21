@@ -186,46 +186,96 @@
 
     <!-- Modal Recharger Mon Solde (Stripe & Dons Solidaires) -->
     <div class="aya-modal-backdrop" id="rechargeModal" style="display: none;">
-        <div class="aya-modal-content">
+        <div class="aya-modal-content recharge-modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
                     <span>⚡</span> Recharger mes Crédits Aya
                 </h3>
-                <button type="button" id="btnCloseRechargeModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;">
+                <button type="button" id="btnCloseRechargeModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;" title="Fermer">
                     ✕
                 </button>
             </div>
 
-            <div style="background: rgba(0, 188, 212, 0.08); border: 1px solid rgba(0, 188, 212, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                <p style="font-size: 0.9rem; color: var(--color-primary); line-height: 1.5; margin-bottom: 8px; font-weight: 600;">
-                    🕊️ Infrastructure Solidaire & Open-Source
-                </p>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
-                    La passerelle de paiement sécurisée Stripe et le module de micro-dons solidaires pour financer les GPU et quotas Whisper/Gemini sont en cours de déploiement.
-                </p>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-                    <div>
-                        <strong style="font-size: 0.92rem; color: var(--color-primary);">Pack Découverte</strong>
-                        <div style="font-size: 0.78rem; color: var(--text-secondary);">5 Crédits inclus à l'inscription</div>
-                    </div>
-                    <span style="font-weight: 700; color: #059669; font-size: 0.9rem;">Offert 🎁</span>
+            <!-- Bannière Transparence & Sécurité -->
+            <div class="recharge-banner">
+                <div class="recharge-banner-title">
+                    <span>🛡️</span> Tarification Autofinancée & Transparente
                 </div>
-
-                <div style="border: 1.5px dashed var(--color-turquoise); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(0, 188, 212, 0.04);">
-                    <div>
-                        <strong style="font-size: 0.92rem; color: var(--color-primary);">Pack Solidaire (20 crédits)</strong>
-                        <div style="font-size: 0.78rem; color: var(--text-secondary);">Paiement sécurisé Stripe</div>
-                    </div>
-                    <span style="font-weight: 700; color: var(--color-turquoise); font-size: 0.85rem;">Bientôt disponible</span>
+                <div class="recharge-banner-text">
+                    Chaque pack couvre strictement les coûts serveurs (Hetzner) et les tokens IA (Gemini). Vos crédits n'expirent jamais et sont utilisables immédiatement.
                 </div>
             </div>
 
-            <button type="button" id="btnAcknowledgeRecharge" class="btn-save-profile" style="width: 100%; justify-content: center; padding: 12px;">
-                Compris, merci !
-            </button>
+            <!-- Grille des 3 Packs Stripe -->
+            <div class="packs-container" id="stripePacksContainer">
+                <!-- Pack 1 : Flash -->
+                <div class="pack-card" data-pack-id="pack_1">
+                    <div class="pack-info">
+                        <div class="pack-header-row">
+                            <span class="pack-title">1 Crédit Flash</span>
+                        </div>
+                        <div class="pack-desc">1 vidéo TikTok complète : transcription Faster-Whisper + traduction dialectale + encodage 1080x1920.</div>
+                        <div class="pack-unit-price">0,99 € / vidéo</div>
+                    </div>
+                    <div class="pack-action">
+                        <span class="pack-price">0,99 €</span>
+                        <button type="button" class="btn-stripe-buy" data-pack="pack_1">
+                            <span>💳</span> Acheter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pack 5 : Découverte (Populaire) -->
+                <div class="pack-card popular" data-pack-id="pack_5">
+                    <div class="pack-info">
+                        <div class="pack-header-row">
+                            <span class="pack-title">Pack 5 Crédits</span>
+                            <span class="pack-badge popular">Populaire</span>
+                        </div>
+                        <div class="pack-desc">5 vidéos complètes avec sous-titres animés et archivage Google Drive.</div>
+                        <div class="pack-unit-price">~0,60 € / vidéo (Économisez 40%)</div>
+                    </div>
+                    <div class="pack-action">
+                        <span class="pack-price">2,99 €</span>
+                        <button type="button" class="btn-stripe-buy" data-pack="pack_5">
+                            <span>💳</span> Acheter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pack 25 : Créateur Pro (Meilleur Tarif) -->
+                <div class="pack-card best-value" data-pack-id="pack_25">
+                    <div class="pack-info">
+                        <div class="pack-header-row">
+                            <span class="pack-title">Pack 25 Crédits</span>
+                            <span class="pack-badge best-value">Meilleur Tarif</span>
+                        </div>
+                        <div class="pack-desc">25 vidéos complètes. Le pack idéal pour les créateurs de contenu réguliers.</div>
+                        <div class="pack-unit-price">~0,40 € / vidéo (Économisez 60%)</div>
+                    </div>
+                    <div class="pack-action">
+                        <span class="pack-price">9,99 €</span>
+                        <button type="button" class="btn-stripe-buy" data-pack="pack_25">
+                            <span>💳</span> Acheter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloc Séparé : Dons de Solidarité (PayPal) -->
+            <div class="paypal-donation-card">
+                <div class="paypal-text-block">
+                    <div class="paypal-title">
+                        <span>❤️</span> Soutenir l'équipe / Don Palestine
+                    </div>
+                    <div class="paypal-desc">
+                        Les dons volontaires sont libres et 100% indépendants des crédits techniques. Ils soutiennent nos bénévoles et l'aide humanitaire.
+                    </div>
+                </div>
+                <a href="https://paypal.me/AyaStudioPalestine" target="_blank" rel="noopener noreferrer" class="btn-paypal-donate" id="btnPaypalDonation">
+                    <span>🕊️</span> Don PayPal
+                </a>
+            </div>
         </div>
     </div>
 

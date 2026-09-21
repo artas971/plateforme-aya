@@ -265,6 +265,65 @@ async function getUserWallet(userIdentifier) {
     return { credits: 0, creditsReserved: 0 };
 }
 
+/**
+ * Crédite un compte utilisateur (ex: suite à un achat Stripe validé)
+ * Fonctionne à la fois sur MongoDB et sur le fichier local de fallback.
+ *
+ * @param {string} userIdentifier - ID, username ou email de l'utilisateur
+ * @param {number} amount - Nombre de crédits à ajouter (> 0)
+ * @param {string} [reason='stripe_purchase'] - Contexte du rechargement
+ * @returns {Promise<{success: boolean, credits: number, user?: object}>}
+ */
+async function addCredits(userIdentifier, amount, reason = 'stripe_purchase') {
+    const qty = Math.max(1, parseInt(amount, 10) || 1);
+    const uid = String(userIdentifier || '').trim();
+    if (!uid) return { success: false, reason: "USER_REQUIRED" };
+
+    if (isDbConnected()) {
+        try {
+            const query = (uid.startsWith('@') || uid.includes('@')) 
+                ? { $or: [{ username: uid }, { email: uid.toLowerCase() }] }
+                : { _id: uid };
+
+            const user = await User.findOneAndUpdate(
+                query,
+                { $inc: { credits: qty } },
+                { new: true }
+            );
+
+            if (user) {
+                console.log(`[WALLET CREDIT] 💰 +${qty} crédits crédités pour ${user.username} (${reason}). Nouveau solde : ${user.credits}`);
+                return { success: true, credits: user.credits, user: user.toJSON() };
+            }
+        } catch (err) {
+            console.error('[WALLET CREDIT ERROR (MONGO)]', err);
+        }
+    }
+
+    // Mode Autonome JSON
+    const users = readFallbackUsers();
+    const user = users.find(u => 
+        u.id === uid || 
+        u.username?.toLowerCase() === uid.toLowerCase() || 
+        u.email?.toLowerCase() === uid.toLowerCase()
+    );
+
+    if (user) {
+        const prev = user.credits || 0;
+        user.credits = prev + qty;
+        saveFallbackUsers(users);
+        console.log(`[WALLET CREDIT (JSON)] 💰 +${qty} crédits crédités pour ${user.username} (${reason}). Nouveau solde : ${user.credits}`);
+        return { success: true, credits: user.credits, user };
+    }
+
+    // Si c'est un des testeurs historiques autorisés sans entrée DB
+    if (['anais', 'aya', 'soso', 'steve', 'john'].includes(uid.replace(/^@/, '').toLowerCase())) {
+        return { success: true, credits: 999, user: { username: `@${uid.replace(/^@/, '')}` } };
+    }
+
+    return { success: false, reason: "USER_NOT_FOUND" };
+}
+
 module.exports = {
     acquireUserLock,
     releaseUserLock,
@@ -272,5 +331,6 @@ module.exports = {
     reserveCredit,
     commitCredit,
     rollbackCredit,
-    getUserWallet
+    getUserWallet,
+    addCredits
 };

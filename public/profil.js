@@ -281,21 +281,72 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * 5. Modal Recharger mon solde (Stripe & Dons Solidaires)
      */
-    if (btnRechargeWallet && rechargeModal) {
-        btnRechargeWallet.addEventListener('click', () => {
-            rechargeModal.style.display = 'flex';
-        });
+    function openRechargeModal() {
+        if (!rechargeModal) return;
+        rechargeModal.style.display = 'flex';
+
+        // Synchroniser le lien PayPal et la configuration depuis le backend
+        fetch('/api/payment/packs')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.paypalUrl) {
+                    const btnPaypal = document.getElementById('btnPaypalDonation');
+                    if (btnPaypal) btnPaypal.href = data.paypalUrl;
+                }
+            })
+            .catch(() => {});
+    }
+
+    if (btnRechargeWallet) {
+        btnRechargeWallet.addEventListener('click', openRechargeModal);
     }
     if (btnCloseRechargeModal) {
         btnCloseRechargeModal.addEventListener('click', () => {
             rechargeModal.style.display = 'none';
         });
     }
-    if (btnAcknowledgeRecharge) {
-        btnAcknowledgeRecharge.addEventListener('click', () => {
-            rechargeModal.style.display = 'none';
+    if (rechargeModal) {
+        rechargeModal.addEventListener('click', (e) => {
+            if (e.target === rechargeModal) rechargeModal.style.display = 'none';
         });
     }
+
+    // Gestion du clic d'achat sur un pack de crédits (Stripe Checkout)
+    const stripeBuyButtons = document.querySelectorAll('.btn-stripe-buy');
+    stripeBuyButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const packId = btn.getAttribute('data-pack');
+            if (!packId) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> Redirection...';
+
+            try {
+                const res = await fetch('/api/payment/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ packId })
+                });
+
+                const data = await res.json();
+
+                if (data.success && data.url) {
+                    // Redirection fluide vers Stripe Checkout
+                    window.location.href = data.url;
+                } else {
+                    showToast(data.error || "Impossible d'initialiser le paiement Stripe.", "error");
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            } catch (err) {
+                showToast("Erreur de connexion au serveur.", "error");
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    });
 
     /**
      * 6. Charge l'historique personnel des vidéos
@@ -464,6 +515,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Gestion des retours de paiement Stripe (?payment=success ou ?payment=cancelled)
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('payment') === 'success') {
+            showToast("🎉 Paiement validé avec succès ! Vos crédits ont été ajoutés à votre portefeuille.", "success");
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => loadUserProfile(), 500);
+        } else if (urlParams.get('payment') === 'cancelled') {
+            showToast("Le paiement a été annulé. Aucun débit n'a été effectué.", "info");
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    } catch (e) {}
 
     // Initialisation
     loadUserProfile();

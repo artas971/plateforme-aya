@@ -37,12 +37,18 @@ app.use((req, res, next) => {
 
 // Middlewares Globaux & Limites de taille
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ 
+    limit: '50mb',
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+}));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session Express (Authentification des Testeurs Habilités)
 const session = require('express-session');
 const { authRouter, requireAuth } = require('./routes/auth');
+const paymentRouter = require('./routes/payment');
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'aya_secret_key_palestine_2026',
@@ -57,6 +63,9 @@ app.use(session({
 
 // Routeur d'authentification publique (/api/auth/login, /api/auth/session, /logout)
 app.use(authRouter);
+
+// Routeur de paiement et webhooks Stripe (/api/payment/packs, /checkout, /webhook)
+app.use(paymentRouter);
 
 // Page de connexion publique (redirection vers / si déjà connecté)
 app.get('/login', (req, res) => {
