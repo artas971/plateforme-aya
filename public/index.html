@@ -166,14 +166,53 @@
                         <!-- Rendered dynamically -->
                     </div>
 
+                    <!-- Bandeau de réponse (Masqué par défaut) -->
+                    <div id="chatReplyBanner" style="display: none;">
+                        <div class="reply-content">
+                            <span id="replySenderName"></span>
+                            <p id="replyTextSnippet"></p>
+                        </div>
+                        <button id="closeReplyBtn" type="button" title="Annuler la réponse">✕</button>
+                    </div>
+
                     <!-- Chat Input Bar -->
                     <div class="chat-input-bar">
-                        <button class="btn btn-danger mic-chat-btn" id="chatMicBtn" title="تسجيل ملاحظة صوتية">
+                        <select id="chatRecipientSelect" class="chat-recipient-select" title="Destinataire du message">
+                            <option value="all">🌍 Tout le monde</option>
+                            <option value="Steve">👤 Steve</option>
+                            <option value="Soso">👤 Soso</option>
+                            <option value="John">👤 John</option>
+                            <option value="Anaïs">👤 Anaïs</option>
+                            <option value="Aya">👤 Aya</option>
+                        </select>
+
+                        <button class="btn btn-danger mic-chat-btn" id="chatMicBtn" title="Enregistrer une note vocale">
                             🎙️
                         </button>
-                        <input type="text" id="chatInputText" class="custom-select flex-1" placeholder="اكتبي رسالتك هنا...">
+
+                        <div class="chat-input-area">
+                            <button type="button" class="btn btn-outline" id="emojiBtn" title="Ajouter un émoji" style="padding: 8px 12px; font-size: 1.2rem; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer;">😀</button>
+                            
+                            <div id="chatEmojiPicker" style="display: none;">
+                                <span class="emoji-option">👍</span>
+                                <span class="emoji-option">🙏</span>
+                                <span class="emoji-option">🇵🇸</span>
+                                <span class="emoji-option">❤️</span>
+                                <span class="emoji-option">✨</span>
+                                <span class="emoji-option">📢</span>
+                                <span class="emoji-option">🍉</span>
+                                <span class="emoji-option">😀</span>
+                                <span class="emoji-option">😂</span>
+                                <span class="emoji-option">🔥</span>
+                                <span class="emoji-option">✌️</span>
+                                <span class="emoji-option">✊</span>
+                            </div>
+
+                            <input type="text" id="chatInputText" class="custom-select flex-1" placeholder="Tapez votre message ici...">
+                        </div>
+
                         <button class="btn btn-accent" id="chatSendBtn">
-                            🚀 <span id="btnChatSendText">إرسال</span>
+                            🚀 <span id="btnChatSendText">Envoyer</span>
                         </button>
                     </div>
                 </div>

@@ -288,8 +288,24 @@ Tu dois impérativement répondre au format JSON strict avec exactement ces deux
 router.get('/messages', (req, res) => {
     try {
         const status = getChatStatus();
-        const messages = purge24hEphemeralChat();
-        res.json({ messages, disabled: status.disabled });
+        const allMessages = purge24hEphemeralChat();
+
+        // Récupération de l'utilisateur en session ou query fallback
+        const sessionUser = req.session?.user;
+        const currentName = (sessionUser?.name || sessionUser?.username || req.query.user || '').trim().toLowerCase();
+        const isAdmin = sessionUser && (sessionUser.role === 'admin' || sessionUser.username?.toLowerCase() === 'john');
+
+        // Filtrage sécurisé : on ne renvoie un message privé que si l'utilisateur est concerné (expéditeur ou destinataire) ou admin
+        const visibleMessages = allMessages.filter(msg => {
+            if (!msg.recipient || msg.recipient === 'all') return true;
+            if (isAdmin) return true;
+            if (!currentName) return false;
+            const senderLower = (msg.sender || '').toLowerCase();
+            const recipientLower = (msg.recipient || '').toLowerCase();
+            return senderLower === currentName || recipientLower === currentName;
+        });
+
+        res.json({ messages: visibleMessages, disabled: status.disabled });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -303,7 +319,7 @@ router.post('/send', async (req, res) => {
             return res.status(403).json({ error: "Le chat est actuellement désactivé par l'administrateur." });
         }
 
-        const { text, sender } = req.body;
+        const { text, sender, recipient, replyTo } = req.body;
         if (!text || !text.trim()) return res.status(400).json({ error: 'Texte requis' });
 
         const originalText = text.trim();
@@ -318,9 +334,17 @@ router.post('/send', async (req, res) => {
             ? sender.trim() 
             : defaultSender;
 
+        const targetRecipient = (recipient && recipient !== 'all') ? recipient.trim() : 'all';
+
         const newMessage = {
             id: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             sender: finalSender,
+            recipient: targetRecipient,
+            replyTo: replyTo && replyTo.text ? {
+                id: replyTo.id || null,
+                sender: replyTo.sender || 'Inconnu',
+                text: String(replyTo.text).substring(0, 300)
+            } : null,
             userLang: detectedLang,
             originalText: originalText,
             translatedText: translatedText,
@@ -336,7 +360,7 @@ router.post('/send', async (req, res) => {
         messages.push(newMessage);
         saveChatMessages(messages);
 
-        console.log(`[Chat Send Immédiat] ID: ${newMessage.id} | De: ${newMessage.sender} (${newMessage.userLang})`);
+        console.log(`[Chat Send Immédiat] ID: ${newMessage.id} | De: ${newMessage.sender} -> Dest: ${newMessage.recipient} (${newMessage.userLang})`);
         res.json({ success: true, message: newMessage });
     } catch (err) {
         console.error("Chat send error:", err);
@@ -432,6 +456,23 @@ router.post('/send-audio', upload.single('audio'), async (req, res) => {
         const isFrenchSender = (userLang === 'fr');
         const targetLang = isFrenchSender ? 'ar' : 'fr';
 
+        let replyTo = null;
+        if (req.body.replyTo) {
+            try {
+                const parsed = typeof req.body.replyTo === 'string' ? JSON.parse(req.body.replyTo) : req.body.replyTo;
+                if (parsed && parsed.text) {
+                    replyTo = {
+                        id: parsed.id || null,
+                        sender: parsed.sender || 'Inconnu',
+                        text: String(parsed.text).substring(0, 300)
+                    };
+                }
+            } catch (e) {
+                // ignore json parse error
+            }
+        }
+        const recipient = (req.body.recipient && req.body.recipient !== 'all') ? req.body.recipient.trim() : 'all';
+
         await runPython(`py process_single_file.py "${audioFilePath}" "${targetLang}"`);
 
         const outPath = path.join(ROOT_DIR, 'single_process_out.json');
@@ -444,6 +485,8 @@ router.post('/send-audio', upload.single('audio'), async (req, res) => {
             const newMessage = {
                 id: `chat_rec_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                 sender: sender,
+                recipient: recipient,
+                replyTo: replyTo,
                 userLang: userLang,
                 originalText: originalText,
                 translatedText: translatedText,

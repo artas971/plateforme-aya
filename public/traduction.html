@@ -2722,7 +2722,7 @@ ${safeText}
 
                     <!-- 2. Lecteur Vidéo élégant -->
                     <div class="aya-video-wrapper">
-                        <video class="aya-video-player" controls autoplay playsinline src="${finalData.mp4_url}"></video>
+                        <video class="aya-video-player" controls preload="metadata" playsinline src="${finalData.mp4_url}"></video>
                     </div>
 
                     <!-- 2bis. Contexte de la vidéo (Smart Description SEO) -->
@@ -2794,28 +2794,48 @@ ${safeText}
                 });
             }
 
-            // Partage vers la communauté (State Passing sécurisé dans un nouvel onglet)
+            // Partage vers la communauté (State Passing via localStorage pour multi-onglets)
             const btnShareComm = document.getElementById('btnShareCommunity');
             if (btnShareComm) {
-                btnShareComm.addEventListener('click', () => {
+                btnShareComm.addEventListener('click', (e) => {
                     try {
-                        const sharePayload = {
-                            description: finalData.context_summary || '',
-                            title: finalData.clean_title || finalData.semantic_title || '',
-                            videoUrl: finalData.mp4_url || '',
+                        const videoNode = document.querySelector('.aya-video-player');
+                        const videoUrl = videoNode ? videoNode.src : (finalData.mp4_url || '');
+                        const descriptionText = finalData.context_summary || (document.getElementById('videoContextText') ? document.getElementById('videoContextText').innerText.trim() : '');
+
+                        // Extraction des 5 hashtags / mots-clés
+                        let hashtags = '';
+                        const hashtagRegex = /#[\p{L}\d_]+/gu;
+                        const matches = descriptionText.match(hashtagRegex);
+                        if (matches && matches.length > 0) {
+                            hashtags = matches.slice(0, 5).join(', ');
+                        } else if (finalData.keywords && Array.isArray(finalData.keywords) && finalData.keywords.length > 0) {
+                            hashtags = finalData.keywords.slice(0, 5).map(k => k.startsWith('#') ? k : '#' + k).join(', ');
+                        } else {
+                            hashtags = '#Gaza, #Temoignage, #Palestine, #AyaStudio, #Memoire';
+                        }
+
+                        // Récupération du pseudo utilisateur depuis la session/navbar
+                        const pseudoNode = document.getElementById('navbarUserName') || document.getElementById('navUserName');
+                        let pseudo = pseudoNode ? pseudoNode.innerText.replace(/^[👤\s:]+/, '').replace(/^Connecté\s*:/i, '').trim() : '';
+                        if (!pseudo || pseudo.toLowerCase() === 'connecté') pseudo = 'Aya Témoin';
+
+                        const shareData = {
+                            videoUrl: videoUrl,
                             videoFilename: finalData.mp4_filename || '',
+                            description: descriptionText,
+                            title: finalData.clean_title || finalData.semantic_title || '',
+                            hashtags: hashtags,
+                            pseudo: pseudo,
                             coverUrl: finalData.cover_url || '',
-                            coverFilename: finalData.cover_filename || '',
                             timestamp: Date.now()
                         };
-                        sessionStorage.setItem('aya_share_to_community', JSON.stringify(sharePayload));
 
-                        if (window.history && window.history.replaceState) {
-                            window.history.replaceState({ ayaShare: sharePayload, state: sharePayload }, document.title);
-                        }
-                        console.log('🚀 [COMMUNITY TRANSFER] État complet transmis à /communaute :', sharePayload);
-                    } catch(e) {
-                        console.error('Erreur stockage aya_share_to_community:', e);
+                        localStorage.setItem('aya_share_to_community', JSON.stringify(shareData));
+                        sessionStorage.setItem('aya_share_to_community', JSON.stringify(shareData));
+                        console.log('🚀 [COMMUNITY TRANSFER] Données de partage sauvegardées dans le localStorage :', shareData);
+                    } catch(err) {
+                        console.error('Erreur stockage aya_share_to_community:', err);
                     }
                 });
             }

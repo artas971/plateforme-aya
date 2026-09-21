@@ -123,6 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatInputText = document.getElementById('chatInputText');
     const chatSendBtn = document.getElementById('chatSendBtn');
     const chatMicBtn = document.getElementById('chatMicBtn');
+    const chatReplyBanner = document.getElementById('chatReplyBanner');
+    const replySenderName = document.getElementById('replySenderName');
+    const replyTextSnippet = document.getElementById('replyTextSnippet');
+    const closeReplyBtn = document.getElementById('closeReplyBtn');
+    const chatRecipientSelect = document.getElementById('chatRecipientSelect');
+    const emojiBtn = document.getElementById('emojiBtn');
+    const chatEmojiPicker = document.getElementById('chatEmojiPicker');
+    let currentReplyTo = null;
 
     // Admin Chat Toolbar Elements
     const adminChatToolbar = document.getElementById('adminChatToolbar');
@@ -1687,27 +1695,112 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function initiateReply(msgId, sender, text) {
+        currentReplyTo = {
+            id: msgId,
+            sender: sender,
+            text: (text || '').substring(0, 200)
+        };
+        if (chatReplyBanner && replySenderName && replyTextSnippet) {
+            replySenderName.textContent = `↩️ Répondre à ${sender}`;
+            replyTextSnippet.textContent = currentReplyTo.text;
+            chatReplyBanner.style.display = 'flex';
+        }
+        if (chatInputText) {
+            chatInputText.focus();
+        }
+    }
+
+    function cancelReply() {
+        currentReplyTo = null;
+        if (chatReplyBanner) {
+            chatReplyBanner.style.display = 'none';
+        }
+    }
+
+    function scrollToChatMessage(msgId) {
+        if (!msgId) return;
+        const targetEl = document.getElementById(`chat-msg-${msgId}`);
+        if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetEl.classList.add('highlight-target');
+            setTimeout(() => {
+                targetEl.classList.remove('highlight-target');
+            }, 2000);
+        }
+    }
+    window.scrollToChatMessage = scrollToChatMessage;
+
     function createBubbleElement(msg, dict) {
         const myName = currentUser ? (currentUser.name || currentUser.username).toLowerCase() : '';
         const isMe = myName && msg.sender.toLowerCase().includes(myName);
+        const isPrivate = msg.recipient && msg.recipient !== 'all';
         const bubble = document.createElement('div');
-        bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'}`;
+        bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'} ${isPrivate ? 'private' : ''}`;
         bubble.id = `chat-msg-${msg.id}`;
 
         const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const audioControlsHtml = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
 
+        let dmBadgeHtml = '';
+        if (isPrivate) {
+            if (isMe) {
+                dmBadgeHtml = `<div class="dm-badge">🔒 Privé pour ${escapeChatHtml(msg.recipient)}</div>`;
+            } else {
+                dmBadgeHtml = `<div class="dm-badge">🔒 De ${escapeChatHtml(msg.sender)} (Privé)</div>`;
+            }
+        }
+
+        let quoteHtml = '';
+        if (msg.replyTo && msg.replyTo.text) {
+            quoteHtml = `
+                <div class="quote-box" data-target-id="${escapeChatHtml(msg.replyTo.id || '')}" title="Cliquer pour voir le message original">
+                    <strong>↩️ ${escapeChatHtml(msg.replyTo.sender || 'Message')}</strong>
+                    <p>${escapeChatHtml(msg.replyTo.text)}</p>
+                </div>
+            `;
+        }
+
         bubble.innerHTML = `
+            ${dmBadgeHtml}
             <div class="chat-sender-name">
                 <span>👤 ${escapeChatHtml(msg.sender)}</span>
-                <span class="chat-time-tag">🕒 ${timeStr}</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="chat-time-tag">🕒 ${timeStr}</span>
+                    <button type="button" class="chat-reply-btn" title="Répondre">↩️</button>
+                </div>
             </div>
+            ${quoteHtml}
             <div class="chat-text-original">${escapeChatHtml(msg.originalText)}</div>
             <div class="chat-text-translated">✨ ${escapeChatHtml(msg.translatedText)}</div>
             <div class="chat-audio-wrapper" id="audio-wrap-${msg.id}">
                 ${audioControlsHtml}
             </div>
         `;
+
+        // Interaction Clic droit pour répondre
+        bubble.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            initiateReply(msg.id, msg.sender, msg.originalText);
+        });
+
+        // Bouton Répondre ↩️
+        const replyBtn = bubble.querySelector('.chat-reply-btn');
+        if (replyBtn) {
+            replyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                initiateReply(msg.id, msg.sender, msg.originalText);
+            });
+        }
+
+        // Clic sur la citation
+        const quoteEl = bubble.querySelector('.quote-box');
+        if (quoteEl && msg.replyTo && msg.replyTo.id) {
+            quoteEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                scrollToChatMessage(msg.replyTo.id);
+            });
+        }
 
         attachAudioControls(bubble);
         return bubble;
@@ -1747,7 +1840,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const dict = i18n[currentLang];
 
         try {
-            const res = await fetch('/api/chat/messages');
+            const myName = currentUser ? (currentUser.name || currentUser.username) : '';
+            const fetchUrl = myName ? `/api/chat/messages?user=${encodeURIComponent(myName)}` : '/api/chat/messages';
+            const res = await fetch(fetchUrl);
             const data = await res.json();
             const messages = data.messages || [];
             isChatDisabled = !!data.disabled;
@@ -1873,6 +1968,8 @@ document.addEventListener('DOMContentLoaded', () => {
             chatSendBtn.innerHTML = '⏳';
         }
 
+        const recipientVal = (chatRecipientSelect && chatRecipientSelect.value) ? chatRecipientSelect.value : 'all';
+
         try {
             // ÉTAPE 1 : Appel d'envoi & traduction textuelle immédiate (< 1-2 sec)
             const res = await fetch('/api/chat/send', {
@@ -1881,6 +1978,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     text: textVal,
                     sender: currentUser ? (currentUser.name || currentUser.username) : (currentLang === 'ar' ? 'آية' : 'Utilisateur'),
+                    recipient: recipientVal,
+                    replyTo: currentReplyTo,
                     userLang: currentLang
                 })
             });
@@ -1889,6 +1988,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success && data.message) {
                 const newMsg = data.message;
                 chatInputText.value = '';
+                cancelReply();
+                if (chatRecipientSelect) chatRecipientSelect.value = 'all';
 
                 // Afficher immédiatement la bulle dans #chatHistoryBox sans attendre le TTS
                 if (chatHistoryBox) {
@@ -1965,10 +2066,17 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMicBtn.innerHTML = '⏳';
         }
 
+        const recipientVal = (chatRecipientSelect && chatRecipientSelect.value) ? chatRecipientSelect.value : 'all';
         const formData = new FormData();
         formData.append('audio', blob, `chat_rec_${Date.now()}.webm`);
         formData.append('userLang', currentLang);
         formData.append('sender', currentUser ? (currentUser.name || currentUser.username) : (currentLang === 'ar' ? 'آية' : 'Utilisateur'));
+        if (recipientVal !== 'all') {
+            formData.append('recipient', recipientVal);
+        }
+        if (currentReplyTo) {
+            formData.append('replyTo', JSON.stringify(currentReplyTo));
+        }
 
         try {
             const res = await fetch('/api/chat/send-audio', {
@@ -1978,6 +2086,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await res.json();
             if (data.success) {
+                cancelReply();
+                if (chatRecipientSelect) chatRecipientSelect.value = 'all';
                 await loadChatMessages();
             } else {
                 alert(dict.alertChatVoiceError + " : " + (data.error || ""));
@@ -2007,6 +2117,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatInputText) {
         chatInputText.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendChatMessage();
+        });
+    }
+
+    // Emoji Picker & Close Reply Banner Listeners
+    if (emojiBtn && chatEmojiPicker) {
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            chatEmojiPicker.style.display = chatEmojiPicker.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!chatEmojiPicker.contains(e.target) && e.target !== emojiBtn) {
+                chatEmojiPicker.style.display = 'none';
+            }
+        });
+
+        chatEmojiPicker.querySelectorAll('.emoji-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const emoji = option.textContent.trim();
+                if (chatInputText) {
+                    const start = chatInputText.selectionStart ?? chatInputText.value.length;
+                    const end = chatInputText.selectionEnd ?? chatInputText.value.length;
+                    const val = chatInputText.value;
+                    chatInputText.value = val.substring(0, start) + emoji + val.substring(end);
+                    const newPos = start + emoji.length;
+                    chatInputText.setSelectionRange(newPos, newPos);
+                    chatInputText.focus();
+                }
+                chatEmojiPicker.style.display = 'none';
+            });
+        });
+    }
+
+    if (closeReplyBtn) {
+        closeReplyBtn.addEventListener('click', () => {
+            cancelReply();
         });
     }
 

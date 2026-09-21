@@ -799,18 +799,27 @@
                 try {
                     let autoShareData = null;
 
-                    // A. Priorité 1 : React Router / History State (ex: navigate('/communaute', { state: { ... } }))
-                    if (window.history && window.history.state) {
+                    // A. Priorité 1 : LocalStorage (Transfert inter-onglets standard)
+                    try {
+                        const localRaw = localStorage.getItem('aya_share_to_community');
+                        if (localRaw) autoShareData = JSON.parse(localRaw);
+                    } catch(e) {}
+
+                    // B. Priorité 2 : SessionStorage
+                    if (!autoShareData) {
+                        try {
+                            const sessionRaw = sessionStorage.getItem('aya_share_to_community');
+                            if (sessionRaw) autoShareData = JSON.parse(sessionRaw);
+                        } catch(e) {}
+                    }
+
+                    // C. Priorité 3 : React Router / History State
+                    if (!autoShareData && window.history && window.history.state) {
                         const hState = window.history.state;
                         autoShareData = hState.ayaShare || hState.state || (hState.usr && hState.usr.ayaShare) || null;
                     }
 
-                    // B. Priorité 2 : SessionStorage (Transfert inter-onglets/pages)
-                    if (!autoShareData) {
-                        autoShareData = JSON.parse(sessionStorage.getItem('aya_share_to_community') || 'null');
-                    }
-
-                    // C. Priorité 3 : Fallback Paramètres d'URL
+                    // D. Priorité 4 : Fallback Paramètres d'URL
                     if (!autoShareData) {
                         const urlParams = new URLSearchParams(window.location.search);
                         if (urlParams.get('videoUrl') || urlParams.get('description')) {
@@ -818,6 +827,8 @@
                                 videoUrl: urlParams.get('videoUrl') || '',
                                 description: urlParams.get('description') || '',
                                 title: urlParams.get('title') || '',
+                                hashtags: urlParams.get('hashtags') || '',
+                                pseudo: urlParams.get('pseudo') || '',
                                 videoFilename: urlParams.get('videoFilename') || ''
                             };
                         }
@@ -826,7 +837,7 @@
                     if (autoShareData) {
                         console.log('⚡ [COMMUNAUTÉ LIONEL] Auto-Hydratation déclenchée avec succès :', autoShareData);
 
-                        // Auto-remplissage du texte / Smart Description
+                        // 1. Pré-remplissage du texte / Smart Description
                         if (autoShareData.description) {
                             const contentInput = document.getElementById('postContentInput');
                             if (contentInput) {
@@ -834,15 +845,24 @@
                             }
                         }
 
-                        // Auto-remplissage du titre / tags
-                        if (autoShareData.title) {
-                            const tagsInput = document.getElementById('tagsInput');
-                            if (tagsInput) {
-                                tagsInput.value = autoShareData.title;
+                        // 2. Pré-remplissage du Pseudonyme
+                        if (autoShareData.pseudo) {
+                            const authorInput = document.getElementById('authorNameInput');
+                            if (authorInput) {
+                                authorInput.value = autoShareData.pseudo;
                             }
                         }
 
-                        // Auto-chargement et affichage immédiat dans le lecteur vidéo 9:16
+                        // 3. Pré-remplissage des Mots-clés / Hashtags
+                        const tagsValue = autoShareData.hashtags || autoShareData.title || '';
+                        if (tagsValue) {
+                            const tagsInput = document.getElementById('tagsInput');
+                            if (tagsInput) {
+                                tagsInput.value = tagsValue;
+                            }
+                        }
+
+                        // 4. Auto-chargement et affichage immédiat dans le lecteur vidéo 9:16
                         if (autoShareData.videoUrl) {
                             autoShareMediaUrl = autoShareData.videoUrl;
                             autoShareThumbnail = autoShareData.coverUrl || null;
@@ -863,7 +883,22 @@
                             }
                         }
 
-                        // Purge propre du sessionStorage pour ne pas piéger un rechargement futur (F5)
+                        // 5. Affichage du bandeau de confirmation non intrusif
+                        const existingBanner = document.querySelector('.share-success-banner');
+                        if (!existingBanner) {
+                            const banner = document.createElement('div');
+                            banner.className = 'share-success-banner';
+                            banner.innerHTML = '✨ <b>Données importées !</b> Vous pouvez modifier le texte, le pseudonyme et les hashtags avant de publier.';
+                            const publishCard = document.querySelector('.publish-card');
+                            if (publishCard) {
+                                publishCard.prepend(banner);
+                            } else {
+                                document.body.prepend(banner);
+                            }
+                        }
+
+                        // Purge propre pour ne pas ré-importer au rechargement (F5)
+                        localStorage.removeItem('aya_share_to_community');
                         sessionStorage.removeItem('aya_share_to_community');
                     }
                 } catch(e) {
