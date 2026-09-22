@@ -38,10 +38,9 @@
 
         .aya-feedback-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            inset: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(11, 83, 148, 0.5);
             backdrop-filter: blur(6px);
             z-index: 100000;

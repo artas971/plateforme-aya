@@ -1203,6 +1203,105 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
                 pass
 
 
+# ==============================================================================
+# GESTION DES MOTS DE LIAISON ET VALIDATION DE TITRE (Fins fermées 9:16)
+# ==============================================================================
+DANGLING_STOPWORDS_FR = {
+    # Articles et prépositions
+    'du', 'de', 'des', 'd', 'd’', "d'",
+    'le', 'la', 'les', 'l', 'l’', "l'",
+    'un', 'une',
+    'au', 'aux', 'a', 'à',
+    'en', 'dans', 'sur', 'sous', 'vers', 'chez', 'par', 'pour', 'avec', 'sans', 'contre',
+    # Conjonctions & pronoms relatifs
+    'et', 'ou', 'ni', 'mais', 'car', 'donc', 'or', 'que', 'qui', 'qu', 'qu’', "qu'",
+    # Déterminants possessifs / démonstratifs
+    'mon', 'ton', 'son', 'ma', 'ta', 'sa', 'mes', 'tes', 'ses',
+    'notre', 'votre', 'leur', 'nos', 'vos', 'leurs',
+    'ce', 'cet', 'cette', 'ces'
+}
+
+DANGLING_STOPWORDS_AR = {
+    'من', 'في', 'على', 'إلى', 'الى', 'عن', 'مع', 'حتى',
+    'و', 'أو', 'او', 'ثم', 'ف', 'بل', 'لكن',
+    'أن', 'ان', 'إن', 'بأن', 'بان', 'كي', 'لكي',
+    'لا', 'ما', 'لم', 'لن',
+    'كل', 'بعض', 'أي', 'اي', 'ذو', 'ذا', 'ذي'
+}
+
+
+def _strip_dangling_trailing_words(text: str) -> str:
+    """
+    Retire récursivement tout mot de liaison, préposition ou déterminant orphelin en fin de chaîne.
+    Garantit qu'aucun titre ou stem ne se termine par 'du', 'de', 'et', 'nos', etc.
+    """
+    if not text:
+        return ""
+    cur = text
+    while True:
+        # Nettoyage de la ponctuation orpheline finale
+        cur = re.sub(r'[\s\.,;:!\?\-\–\—\(\)\[\]«»"\'’…]+$', '', cur).strip()
+        words = cur.split()
+        if not words:
+            break
+        last_word = words[-1].lower()
+        clean_last = re.sub(r'[\'’]$', '', last_word)
+        if clean_last in DANGLING_STOPWORDS_FR or last_word in DANGLING_STOPWORDS_FR or last_word in DANGLING_STOPWORDS_AR:
+            words.pop()
+            cur = " ".join(words).strip()
+            continue
+        break
+    return cur
+
+
+def validate_and_sanitize_title(title: str, max_words: int = 6, max_chars: int = 48, fallback: str = "Témoignage de Palestine") -> str:
+    """
+    Valide et assainit le Titre Sémantique (Garantie Anti-Troncature & Fins Fermées) :
+    1. Nettoie la ponctuation parasite, les guillemets et balises (VOSTFR/VOAR).
+    2. Respecte le gabarit maximal de mots (3 à 6 mots) et de caractères (max 48 car).
+    3. Garantit un groupe de sens fermé : supprime récursivement toute préposition,
+       déterminant ou mot de liaison orphelin ('du', 'de', 'nos', 'et', etc.).
+    4. Assure un repli propre si la chaîne résultante est trop courte ou vide.
+    """
+    if not title or not title.strip():
+        return fallback
+
+    # 1. Nettoyage initial des balises et guillemets
+    cleaned = title.strip().replace('\n', ' ').strip('"\':«» ')
+    cleaned = re.sub(r'^(?:titre\s*:\s*|\*\*|\*|#+)', '', cleaned, flags=re.IGNORECASE).strip('"\':«»* ')
+    cleaned = re.sub(r'\s*\((?:VOSTFR|VOAR|VOST[A-Z]+|VO[A-Z]+)\)$', '', cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+    if not cleaned:
+        return fallback
+
+    # 2. Découpage aux mots entiers (max_words)
+    words = cleaned.split()
+    if len(words) > max_words:
+        cleaned = " ".join(words[:max_words])
+
+    # 3. Tronquage sécurisé en caractères si dépassement exceptionnel (sans couper de mot)
+    if len(cleaned) > max_chars:
+        truncated = cleaned[:max_chars]
+        last_space = truncated.rfind(' ')
+        if last_space > 12:
+            cleaned = truncated[:last_space].strip()
+        else:
+            cleaned = truncated.strip()
+
+    # 4. Élimination récursive des mots de liaison orphelins en fin de chaîne
+    sanitized = _strip_dangling_trailing_words(cleaned)
+
+    # 5. Sécurité : si le nettoyage a tout vidé ou laissé un résidu < 3 caractères
+    if not sanitized or len(sanitized) < 3:
+        base_clean = _strip_dangling_trailing_words(title)
+        if base_clean and len(base_clean) >= 3:
+            return base_clean
+        return fallback
+
+    return sanitized
+
+
 def sanitize_filename_stem(raw_text: str, max_length: int = 50) -> str:
     """
     Assainit un nom de fichier pour éliminer définitivement tout risque de Mojibake :
@@ -1210,6 +1309,7 @@ def sanitize_filename_stem(raw_text: str, max_length: int = 50) -> str:
     2. Dé-diacritise (supprime tous les accents : 'rôle' -> 'role', 'mère' -> 'mere')
     3. Retire les caractères spéciaux : ne conserve STRICTEMENT que l'alphanumérique, espaces et tirets
     4. Tronque proprement à 50 caractères maximum sans couper au milieu d'un mot.
+    5. Élimine récursivement les mots de liaison orphelins en fin de stem ('du', 'de', 'nos'...).
     """
     if not raw_text:
         return "media"
@@ -1246,6 +1346,9 @@ def sanitize_filename_stem(raw_text: str, max_length: int = 50) -> str:
             text = truncated[:last_space].strip()
         else:
             text = truncated.strip()
+
+    # 5. Élimination récursive des mots de liaison orphelins en fin de stem
+    text = _strip_dangling_trailing_words(text)
 
     return text if text else "media"
 
@@ -1528,15 +1631,18 @@ def generate_semantic_title(segments: list, target_lang: str = 'fr', user_contex
 Analyse attentivement le témoignage suivant pour en dégager l'essence.
 Rédige un titre ultra-court, percutant et humain ({lang_instruction}) pour la couverture de la vidéo.
 {context_directive}
-CONSIGNES STRICTES ANTI-PARESSE & COGNITIVES :
+CONSIGNES STRICTES DE TITRAGE & COGNITIVES :
 - IGNORE TOTALEMENT LES SALUTATIONS ET FORMULES DE POLITESSE DU DÉBUT (bonjour, merci, etc.). CONCENTRE-TOI SUR LE DRAME OU L'ACTION.
-- Longueur STRICTE : ENTRE 15 ET 35 CARACTÈRES. Évite absolument les phrases à rallonge.
+- GROUPE DE SENS COMPLET & FERMÉ : Le titre DOIT former une unité de sens achevée, autonome et percutante de 3 à 6 mots (environ 20 à 45 caractères).
+- INTERDICTION FORMELLE DE FIN OUVERTE : Il est STRICTEMENT INTERDIT d'interrompre l'idée en cours de route ou de terminer par un mot de liaison, une préposition ou un article (jamais de fin sur 'du', 'de', 'des', 'le', 'la', 'et', 'nos', 'dans', 'pour', 'avec', etc.). Le dernier mot doit obligatoirement être un nom, un adjectif ou un verbe qui conclut l'idée.
 - INTERDICTION ABSOLUE de simplement copier ou résumer la première phrase (ex: invocations ou formules de politesse). Tu dois extraire le SUJET CENTRAL ou l'ACTION de la vidéo.
-- Règle n°3 : INTERDICTION de renvoyer uniquement un chiffre ou un seul mot. Le titre doit décrire une situation ou une action complète (Ex: "Le seul survivant de la famille" et NON "100").
-- Règle n°4 : Ne rajoute jamais la mention "(VOSTFR)" ou "(VOAR)" dans le texte généré.
-- EXEMPLES DE LA DIRECTION :
-  * Mauvais titre : '100', 'Maison', 'Bonjour comment vas-tu', 'Loué soit Dieu' ou 'Au nom de Dieu'.
-  * Bon titre : 'Face à l'Interrogatoire', 'Le seul survivant de la famille' ou 'Pas un pouce de notre terre'.
+- INTERDICTION de renvoyer uniquement un chiffre ou un seul mot. Le titre doit décrire une situation ou une action complète.
+- Ne rajoute jamais la mention "(VOSTFR)" ou "(VOAR)" dans le texte généré.
+- EXEMPLES DE CONTRASTE OBLIGATOIRES :
+  * ❌ Inachevé / Tronqué : 'Un village coupé du', 'Arracher nos racines et nos', 'Vivre sous la'
+  * ✅ Achevé & Complet : 'Un village coupé du monde', 'Arracher nos racines et nos terres', 'Vivre sous les décombres'
+  * ❌ Trop vague / Inapproprié : '100', 'Maison', 'Bonjour comment vas-tu', 'Loué soit Dieu'
+  * ✅ Bon titre percutant : 'Face à l'Interrogatoire', 'Le seul survivant de la famille', 'Pas un pouce de notre terre'
 - Renvoie UNIQUEMENT le texte brut du titre. AUCUN guillemet, AUCUN JSON, AUCUN préambule, AUCUN point final.
 - Interdiction absolue d'inclure des timestamps ou des noms de fichiers techniques.
 
@@ -1599,18 +1705,15 @@ TITRE :"""
         else:
             semantic_title = clean_fallback
 
-    # Nettoyage final strict (Règle n°4)
-    semantic_title = re.sub(r'\s*\((?:VOSTFR|VOAR)\)', '', semantic_title, flags=re.IGNORECASE).strip()
+    # Validation sémantique anti-troncature & garantie de fins fermées (3 à 6 mots, max 48 car.)
+    semantic_title = validate_and_sanitize_title(
+        semantic_title,
+        max_words=6,
+        max_chars=48,
+        fallback=clean_fallback
+    )
 
-    # Tronquage propre entre 15 et 35 caractères maximum
-    if len(semantic_title) > 35:
-        truncated = semantic_title[:33]
-        if ' ' in truncated:
-            semantic_title = truncated.rsplit(' ', 1)[0]
-        else:
-            semantic_title = truncated
-
-    return semantic_title.strip()
+    return semantic_title
 
 
 def _extract_dynamic_hashtags(segments: list, user_context: str = "") -> list:
@@ -2012,7 +2115,7 @@ def main():
         greeting_pattern = r'^(?:bonjour|salut|merci|comment\s+vas[-\s]?tu|coucou|bienvenue|bonsoir|all[oô]|salam|ahlan|marhaban|lou[ée]\s+soit\s+dieu|au\s+nom\s+de\s+dieu|alhamdulillah|bismillah)\b'
         if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE):
             if custom_title and not is_raw_or_technical_filename(custom_title) and not re.search(greeting_pattern, custom_title, re.IGNORECASE) and len(custom_title) > 3:
-                semantic_title = custom_title[:40]
+                semantic_title = validate_and_sanitize_title(custom_title, max_words=6, max_chars=48, fallback=clean_fallback)
             else:
                 semantic_title = clean_fallback
 

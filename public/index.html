@@ -109,62 +109,11 @@
         }
     </style>
 </head>
-<body>
+<<body>
+    <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
+    <header class="app-header" id="ayaGlobalNavbar"></header>
+
     <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="brand">
-                <div class="avatar-badge">
-                    <span class="avatar-initials">آية</span>
-                    <span class="status-dot"></span>
-                </div>
-                <div>
-                    <h1 id="headerTitle">وكيل التَّرْجَمَة آيَة <span class="badge-tag green">عربي فلسطيني ↔ فرنسي</span></h1>
-                    <p class="subtitle" id="headerSub">المحادثة المباشرة المؤقتة، تبادل الرسائل المترجمة والملاحظات الصوتية</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <!-- User Info Badge & Logout -->
-                <div class="user-badge" id="userBadge">
-                    <span id="userNameDisplay">👤 تسجيل الدخول باسم: آية</span>
-                    <button class="btn-logout" id="logoutBtn" title="تسجيل الخروج">🚪</button>
-                </div>
-                <!-- Language Switcher Toggle -->
-                <div class="lang-switcher">
-                    <button class="lang-toggle-btn" id="langFrBtn">🇫🇷 FR</button>
-                    <button class="lang-toggle-btn active" id="langArBtn">🇵🇸 العربية</button>
-                </div>
-                <!-- Lien Chat Accueil -->
-                <a href="/chat-en-direct" class="btn-nav-link active" id="navHomeLink">
-                    <span>💬</span> <span id="navHomeText">المحادثة (الرئيسية)</span>
-                </a>
-                <!-- Lien Hub Traducteur -->
-                <a href="/traducteur" class="btn-nav-link" id="navTraducteurLink">
-                    <span>🛠️</span> <span id="navTraducteurText">استوديو المترجم</span>
-                </a>
-                <!-- Lien Traduction & Sous-titres -->
-                <a href="/traduction" class="btn-nav-link" id="navTraductionBtn">
-                    <span>✨</span> <span id="navTraductionText">الترجمة والدبلجة</span>
-                </a>
-                <!-- Lien Studio TikTok V3 -->
-                <a href="/studio" class="btn-nav-link" id="navStudioBtn">
-                    <span>🎬</span> <span id="navStudioText">استوديو تيك توك V3</span>
-                </a>
-                <!-- Lien Communauté -->
-                <a href="/communaute" class="btn-nav-link" id="navCommunauteBtn">
-                    <span>🌍</span> <span id="navCommunauteText">المجتمع</span>
-                </a>
-                <!-- Lien Modération -->
-                <a href="/moderation" class="btn-nav-link" id="navModerationBtn">
-                    <span>🛡️</span> <span id="navModerationText">الإشراف</span>
-                </a>
-                <!-- Lien Profil -->
-                <a href="/profil" class="btn-nav-link" id="navProfilBtn">
-                    <span>👤</span> <span id="navProfilText">الملف الشخصي</span>
-                </a>
-                <span class="live-indicator" id="liveIndicatorText"><span class="pulse"></span> الخادم نشط ومتصل</span>
-            </div>
-        </header>
 
         <!-- Main Container: Ephemeral 24h Chat Section (Élément Central & Unique) -->
         <main class="chat-main-container">
@@ -185,14 +134,14 @@
 
                 <div class="card-body chat-card-body">
                     <!-- Admin Chat Control Toolbar (Admin Only) -->
-                    <div id="adminChatToolbar" class="admin-chat-toolbar hidden" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: rgba(30, 41, 59, 0.85); border-radius: 10px; border: 1px solid #334155;">
-                        <button class="btn btn-sm btn-outline" id="adminToggleChatBtn" style="color: #93c5fd; border-color: #3b82f6;">
+                    <div id="adminChatToolbar" class="admin-chat-toolbar hidden">
+                        <button class="btn btn-sm btn-outline" id="adminToggleChatBtn">
                             ⏸️ Désactiver le Chat
                         </button>
                         <button class="btn btn-sm btn-secondary" id="adminArchiveChatBtn">
                             📦 Archiver la Conversation
                         </button>
-                        <button class="btn btn-sm btn-danger" id="adminResetChatBtn" style="background: #ef4444; color: white;">
+                        <button class="btn btn-sm btn-danger" id="adminResetChatBtn">
                             🗑️ Réinitialiser (Effacer) le Chat
                         </button>
                     </div>

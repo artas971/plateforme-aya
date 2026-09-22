@@ -81,6 +81,9 @@ html[dir="rtl"],
 body[dir="rtl"] {
     direction: rtl;
     text-align: right;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
 }
 
 /* 2. RÈGLE FRANÇAIS (html[dir="ltr"]) : Amiri pour le texte avec fallback sans-serif UI */
@@ -89,6 +92,9 @@ body[dir="ltr"] {
     direction: ltr;
     text-align: left;
     font-family: var(--font-latin);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
 }
 
 html[dir="ltr"] button,

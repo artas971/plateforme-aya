@@ -101,6 +101,20 @@ function saveChatStatus(status) {
     }
 }
 
+function isUserAdmin(req) {
+    const sessionUser = req.session?.user;
+    if (!sessionUser) return false;
+    const adminEmails = (process.env.ADMIN_EMAIL || 'artas971@gmail.com')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+    const userEmail = (sessionUser.email || '').trim().toLowerCase();
+    const userRole = (sessionUser.role || '').trim().toLowerCase();
+    const userName = (sessionUser.username || sessionUser.name || '').trim().toLowerCase();
+
+    return userRole === 'admin' || userName === 'john' || (userEmail && adminEmails.includes(userEmail));
+}
+
 // -----------------------------------------------------------------------------
 // ROUTES /api/chat/*
 // -----------------------------------------------------------------------------
@@ -116,6 +130,9 @@ router.get('/status', (req, res) => {
 
 router.post('/toggle-status', (req, res) => {
     try {
+        if (!isUserAdmin(req)) {
+            return res.status(403).json({ error: "Accès refusé. Action réservée aux administrateurs." });
+        }
         const status = getChatStatus();
         status.disabled = !status.disabled;
         saveChatStatus(status);
@@ -128,9 +145,27 @@ router.post('/toggle-status', (req, res) => {
 
 router.post('/reset', (req, res) => {
     try {
+        if (!isUserAdmin(req)) {
+            return res.status(403).json({ error: "Accès refusé. Action réservée aux administrateurs." });
+        }
+
+        // Nettoyage des fichiers audio associés sur le disque
+        const currentMessages = getChatMessages();
+        currentMessages.forEach(msg => {
+            if (msg.audioFile) {
+                const mp3Path = path.join(REPONSED_DIR, msg.audioFile);
+                if (fs.existsSync(mp3Path)) {
+                    try {
+                        fs.unlinkSync(mp3Path);
+                        console.log(`[Admin Chat Reset] Audio supprimé : ${msg.audioFile}`);
+                    } catch (e) {}
+                }
+            }
+        });
+
         saveChatMessages([]);
-        console.log(`[Admin Chat Reset] Conversation totalement réinitialisée par l'admin`);
-        res.json({ success: true, message: 'Conversation réinitialisée et effacée avec succès.' });
+        console.log(`[Admin Chat Reset] Conversation totalement réinitialisée et effacée par l'admin`);
+        res.json({ success: true, message: 'Conversation réinitialisée et effacée avec succès pour tous les utilisateurs.' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -138,6 +173,9 @@ router.post('/reset', (req, res) => {
 
 router.post('/archive', (req, res) => {
     try {
+        if (!isUserAdmin(req)) {
+            return res.status(403).json({ error: "Accès refusé. Action réservée aux administrateurs." });
+        }
         const messages = getChatMessages();
         const timestampStr = new Date().toISOString().replace(/[:.]/g, '-');
         const archivePayload = {
@@ -147,6 +185,9 @@ router.post('/archive', (req, res) => {
             messages: messages
         };
 
+        if (!fs.existsSync(MESSAGE_FOR_JOHN_DIR)) {
+            fs.mkdirSync(MESSAGE_FOR_JOHN_DIR, { recursive: true });
+        }
         const jsonPath = path.join(MESSAGE_FOR_JOHN_DIR, `archive_chat_${timestampStr}.json`);
         fs.writeFileSync(jsonPath, JSON.stringify(archivePayload, null, 2), 'utf8');
 
@@ -162,6 +203,45 @@ router.post('/archive', (req, res) => {
         console.log(`[Admin Chat Archive] Conversation archivée (${messages.length} messages) : ${jsonPath}`);
         res.json({ success: true, archivedCount: messages.length, file: path.basename(jsonPath) });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/delete-message', (req, res) => {
+    try {
+        if (!isUserAdmin(req)) {
+            return res.status(403).json({ error: "Accès refusé. Action réservée aux administrateurs." });
+        }
+
+        const { messageId } = req.body;
+        if (!messageId) {
+            return res.status(400).json({ error: "Identifiant de message (messageId) requis" });
+        }
+
+        let messages = getChatMessages();
+        const msgIndex = messages.findIndex(m => m.id === messageId);
+        if (msgIndex === -1) {
+            return res.status(404).json({ error: "Message introuvable ou déjà supprimé." });
+        }
+
+        const deletedMsg = messages[msgIndex];
+        if (deletedMsg.audioFile) {
+            const mp3Path = path.join(REPONSED_DIR, deletedMsg.audioFile);
+            if (fs.existsSync(mp3Path)) {
+                try {
+                    fs.unlinkSync(mp3Path);
+                    console.log(`[Admin Modération] Audio supprimé du disque : ${deletedMsg.audioFile}`);
+                } catch (e) {}
+            }
+        }
+
+        messages.splice(msgIndex, 1);
+        saveChatMessages(messages);
+
+        console.log(`[Admin Modération] Message ${messageId} supprimé avec succès par l'administrateur`);
+        res.json({ success: true, deletedId: messageId, remainingCount: messages.length });
+    } catch (err) {
+        console.error("Delete message error:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -295,7 +375,7 @@ router.get('/messages', (req, res) => {
         // Récupération de l'utilisateur en session ou query fallback
         const sessionUser = req.session?.user;
         const currentName = (sessionUser?.name || sessionUser?.username || req.query.user || '').trim().toLowerCase();
-        const isAdmin = sessionUser && (sessionUser.role === 'admin' || sessionUser.username?.toLowerCase() === 'john');
+        const isAdmin = isUserAdmin(req);
 
         // Filtrage sécurisé : on ne renvoie un message privé que si l'utilisateur est concerné (expéditeur ou destinataire) ou admin
         const visibleMessages = allMessages.filter(msg => {
@@ -307,13 +387,13 @@ router.get('/messages', (req, res) => {
             return senderLower === currentName || recipientLower === currentName;
         });
 
-        res.json({ messages: visibleMessages, disabled: status.disabled });
+        res.json({ messages: visibleMessages, disabled: status.disabled, isAdmin: !!isAdmin });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// Étape 1 : Envoi & Traduction Textuelle Immédiate (Moins de 1 à 2 secondes)
+// Étape 1 : Envoi Instantané Non-Bloquant (< 5ms) avec Traitement Asynchrone en Arrière-plan
 router.post('/send', async (req, res) => {
     try {
         const status = getChatStatus();
@@ -321,17 +401,16 @@ router.post('/send', async (req, res) => {
             return res.status(403).json({ error: "Le chat est actuellement désactivé par l'administrateur." });
         }
 
-        const { text, sender, recipient, replyTo } = req.body;
+        const { text, sender, recipient, replyTo, userLang } = req.body;
         if (!text || !text.trim()) return res.status(400).json({ error: 'Texte requis' });
 
         const originalText = text.trim();
 
-        // Traduction bidirectionnelle automatique par Gemini
-        const result = await translateChatBidirectional(originalText);
-        const detectedLang = result.detected_lang;
-        const translatedText = result.translated_text;
+        // Détection ultra-rapide locale de la langue par regex (0 ms)
+        const isAr = containsArabic(originalText);
+        const quickDetectedLang = isAr ? 'ar' : (userLang === 'ar' ? 'ar' : 'fr');
 
-        const defaultSender = detectedLang === 'fr' ? 'John' : 'Aya';
+        const defaultSender = quickDetectedLang === 'fr' ? 'John' : 'Aya';
         const finalSender = (sender && sender.trim() && sender !== 'Utilisateur' && sender !== 'آية') 
             ? sender.trim() 
             : defaultSender;
@@ -347,13 +426,15 @@ router.post('/send', async (req, res) => {
                 sender: replyTo.sender || 'Inconnu',
                 text: String(replyTo.text).substring(0, 300)
             } : null,
-            userLang: detectedLang,
+            userLang: quickDetectedLang,
             originalText: originalText,
-            translatedText: translatedText,
+            translatedText: '',
+            translationStatus: 'translating',
+            status: 'sent',
             audioFile: null,
             audioUrl: null,
             audioStatus: 'pending',
-            ai_model_used: result.model_used,
+            ai_model_used: null,
             timestamp: Date.now(),
             expiresAt: Date.now() + TWENTY_FOUR_HOURS_MS
         };
@@ -362,8 +443,35 @@ router.post('/send', async (req, res) => {
         messages.push(newMessage);
         saveChatMessages(messages);
 
-        console.log(`[Chat Send Immédiat] ID: ${newMessage.id} | De: ${newMessage.sender} -> Dest: ${newMessage.recipient} (${newMessage.userLang})`);
+        console.log(`[Chat Send Immédiat] ID: ${newMessage.id} | De: ${newMessage.sender} -> Dest: ${newMessage.recipient} (Envoi immédiat sans blocage)`);
+
+        // Réponse instantanée au client sans bloquer sur l'API externe (< 5ms)
         res.json({ success: true, message: newMessage });
+
+        // Traitement asynchrone découplé en arrière-plan : Traduction Gemini & Vocalisation
+        setImmediate(async () => {
+            try {
+                const result = await translateChatBidirectional(originalText);
+                const currentMsgs = getChatMessages();
+                const idx = currentMsgs.findIndex(m => m.id === newMessage.id);
+                if (idx !== -1) {
+                    currentMsgs[idx].translatedText = result.translated_text || '';
+                    currentMsgs[idx].userLang = result.detected_lang || quickDetectedLang;
+                    currentMsgs[idx].translationStatus = 'ready';
+                    currentMsgs[idx].ai_model_used = result.model_used;
+                    saveChatMessages(currentMsgs);
+                    console.log(`[Chat Traduction Async Terminée] ID: ${newMessage.id} -> ${result.translated_text.substring(0, 30)}...`);
+                }
+            } catch (asyncErr) {
+                console.warn(`[Chat Traduction Async Warning] ID: ${newMessage.id} :`, asyncErr.message);
+                const currentMsgs = getChatMessages();
+                const idx = currentMsgs.findIndex(m => m.id === newMessage.id);
+                if (idx !== -1) {
+                    currentMsgs[idx].translationStatus = 'error';
+                    saveChatMessages(currentMsgs);
+                }
+            }
+        });
     } catch (err) {
         console.error("Chat send error:", err);
         res.status(500).json({ error: err.message });
@@ -400,7 +508,11 @@ router.post('/tts', async (req, res) => {
         const textToSpeak = msg.translatedText;
 
         if (!textToSpeak || !textToSpeak.trim()) {
-            return res.status(400).json({ error: "Texte traduit vide pour la synthèse vocale" });
+            return res.status(202).json({ 
+                success: false, 
+                pending: true, 
+                message: "La traduction automatique est en cours de finalisation..." 
+            });
         }
 
         if (!fs.existsSync(REPONSED_DIR)) {

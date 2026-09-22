@@ -189,10 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'Traduisez vos audios et générez vos réponses en un clic',
             userConnectedPrefix: '👤 Connecté :',
             logoutBtnTitle: 'Se déconnecter',
-            navHomeText: 'Chat (Accueil)',
-            navTraducteurText: 'Studio / Traducteur',
-            navTraductionText: 'Traduction & Sous-titres',
-            navStudioText: 'Studio TikTok V3',
+            navHomeText: 'Direct',
+            navTraducteurText: 'Traducteur',
+            navTraductionText: 'Traduction',
+            navStudioText: 'Studio 9:16',
             navCommunauteText: 'Communauté',
             navModerationText: 'Modération',
             liveIndicatorText: '<span class="pulse"></span> Serveur Actif (localhost:3000)',
@@ -278,6 +278,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alertChatResetConfirm: 'Êtes-vous sûr de vouloir réinitialiser et effacer la conversation ? Cette action est irréversible.',
             alertChatResetSuccess: '✅ La conversation a été totalement réinitialisée et effacée.',
             alertChatArchiveSuccess: '✅ La conversation a été archivée avec succès dans le dossier Message pour John !',
+            alertDeleteMsgConfirm: 'Êtes-vous sûr de vouloir supprimer ce message pour tous les utilisateurs ?',
+            alertDeleteMsgSuccess: '✅ Message supprimé avec succès.',
+            adminDeleteMsgTitle: 'Supprimer ce message (Modération Admin)',
             footerText: 'Agent Traducteur Aya &bull; Interface Web & Serveur Local (localhost:3000)',
             // WhatsApp Guidance Modal Translations
             waGuidanceTitle: '✅ Note Vocale MP3 Téléchargée !',
@@ -338,10 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
             headerSub: 'ترجمة التسجيلات الصوتية وإنشاء الردود الصوتية بنقرة واحدة',
             userConnectedPrefix: '👤 تسجيل الدخول باسم:',
             logoutBtnTitle: 'تسجيل الخروج',
-            navHomeText: 'المحادثة (الرئيسية)',
-            navTraducteurText: 'استوديو المترجم',
-            navTraductionText: 'الترجمة والدبلجة',
-            navStudioText: 'استوديو تيك توك V3',
+            navHomeText: 'المحادثة',
+            navTraducteurText: 'المترجم',
+            navTraductionText: 'الترجمة',
+            navStudioText: 'استوديو 9:16',
             navCommunauteText: 'المجتمع',
             navModerationText: 'الإشراف',
             liveIndicatorText: '<span class="pulse"></span> الخادم نشط ومتصل',
@@ -427,6 +430,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alertChatResetConfirm: 'هل أنت تأكد من إعادة تعيين وحذف المحادثة بالكامل؟ لا يمكن التراجع عن هذا الإجراء.',
             alertChatResetSuccess: '✅ تمت إعادة تعيين المحادثة وحذفها بالكامل.',
             alertChatArchiveSuccess: '✅ تمت أرشفة المحادثة بنجاح في مجلد رسالة إلى جون!',
+            alertDeleteMsgConfirm: 'هل أنت متأكد من حذف هذه الرسالة لجميع المستخدمين؟',
+            alertDeleteMsgSuccess: '✅ تم حذف الرسالة بنجاح.',
+            adminDeleteMsgTitle: 'حذف هذه الرسالة (إشراف المسؤول)',
             footerText: 'وكيل الترجمة آية &bull; واجهة الويب والخادم المحلي (localhost:3000)',
             // WhatsApp Guidance Modal Translations
             waGuidanceTitle: '✅ تم تحميل الملاحظة الصوتية MP3 بنجاح!',
@@ -858,10 +864,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 userNameDisplay.textContent = `${dict.userConnectedPrefix} ${name}`;
             }
 
-            // Affichage local admin pour John
+            // Affichage local admin pour John et administrateurs
             const isAdmin = (currentUser.role === 'admin' || 
                 (currentUser.username && currentUser.username.toLowerCase() === 'john') ||
-                (currentUser.id && currentUser.id.toLowerCase() === 'john'));
+                (currentUser.id && currentUser.id.toLowerCase() === 'john') ||
+                (currentUser.email && (currentUser.email.toLowerCase() === 'artas971@gmail.com' || currentUser.email.toLowerCase().includes('admin'))));
 
             if (adminLocalFilesSection) {
                 if (isAdmin) {
@@ -1748,8 +1755,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const myName = currentUser ? (currentUser.name || currentUser.username).toLowerCase() : '';
         const isMe = myName && msg.sender.toLowerCase().includes(myName);
         const isPrivate = msg.recipient && msg.recipient !== 'all';
+        const isSending = msg.status === 'sending';
+        const isError = msg.status === 'error';
+        const statusClass = isSending ? 'sending' : (isError ? 'has-error' : 'sent-confirmed');
+
         const bubble = document.createElement('div');
-        bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'} ${isPrivate ? 'private' : ''}`;
+        bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'} ${isPrivate ? 'private' : ''} ${statusClass}`;
         bubble.id = `chat-msg-${msg.id}`;
 
         const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1774,18 +1785,65 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
+        const isUserAdminCurrent = (window.isAyaChatAdmin === true) || (currentUser && (
+            currentUser.role === 'admin' ||
+            (currentUser.username && currentUser.username.toLowerCase() === 'john') ||
+            (currentUser.id && currentUser.id.toLowerCase() === 'john') ||
+            (currentUser.email && currentUser.email.toLowerCase() === 'artas971@gmail.com')
+        ));
+
+        let deleteBtnHtml = '';
+        if (isUserAdminCurrent) {
+            const deleteTitle = dict.adminDeleteMsgTitle || "Supprimer ce message (Modération Admin)";
+            deleteBtnHtml = `<button type="button" class="chat-delete-btn" data-msg-id="${escapeChatHtml(msg.id)}" title="${escapeChatHtml(deleteTitle)}">🗑️</button>`;
+        }
+
+        let statusBadgeHtml = '';
+        if (isMe) {
+            if (isSending) {
+                statusBadgeHtml = `<span class="chat-status-tag status-sending" title="En cours d'envoi...">⏳</span>`;
+            } else if (isError) {
+                statusBadgeHtml = `<span class="chat-status-tag status-error" title="Échec d'envoi">⚠️</span>`;
+            } else {
+                statusBadgeHtml = `<span class="chat-status-tag status-sent" title="Envoyé">✓</span>`;
+            }
+        }
+
+        let translatedTextContent = '';
+        if (msg.translatedText && msg.translatedText.trim()) {
+            translatedTextContent = `✨ ${escapeChatHtml(msg.translatedText)}`;
+        } else if (msg.translationStatus === 'translating' || !msg.translatedText) {
+            const translatingLabel = currentLang === 'ar' ? 'جاري الترجمة...' : 'Traduction en cours...';
+            translatedTextContent = `<span class="chat-translating-pulse">✨ <em>${translatingLabel}</em></span>`;
+        } else {
+            translatedTextContent = `✨ ${escapeChatHtml(msg.translatedText || '')}`;
+        }
+
+        let errorBannerHtml = '';
+        if (isError) {
+            errorBannerHtml = `
+                <div class="chat-msg-error-banner">
+                    <span>⚠️ ${currentLang === 'ar' ? 'فشل الإرسال' : 'Échec de transmission'}</span>
+                    <button type="button" class="btn-chat-retry">🔄 ${currentLang === 'ar' ? 'إعادة المحاولة' : 'Réessayer'}</button>
+                </div>
+            `;
+        }
+
         bubble.innerHTML = `
             ${dmBadgeHtml}
             <div class="chat-sender-name">
                 <span>👤 ${escapeChatHtml(msg.sender)}</span>
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span class="chat-time-tag">🕒 ${timeStr}</span>
+                    ${statusBadgeHtml}
                     <button type="button" class="chat-reply-btn" title="Répondre">↩️</button>
+                    ${deleteBtnHtml}
                 </div>
             </div>
             ${quoteHtml}
             <div class="chat-text-original">${escapeChatHtml(msg.originalText)}</div>
-            <div class="chat-text-translated">✨ ${escapeChatHtml(msg.translatedText)}</div>
+            <div class="chat-text-translated" data-translated="${escapeChatHtml(msg.translatedText || '')}">${translatedTextContent}</div>
+            ${errorBannerHtml}
             <div class="chat-audio-wrapper" id="audio-wrap-${msg.id}">
                 ${audioControlsHtml}
             </div>
@@ -1806,12 +1864,63 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Bouton Supprimer un message (Modération Admin)
+        const deleteBtn = bubble.querySelector('.chat-delete-btn');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const confirmPrompt = dict.alertDeleteMsgConfirm || "Êtes-vous sûr de vouloir supprimer ce message pour tous les utilisateurs ?";
+                if (!confirm(confirmPrompt)) return;
+
+                try {
+                    deleteBtn.disabled = true;
+                    const res = await fetch('/api/chat/delete-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messageId: msg.id })
+                    });
+                    const resData = await res.json();
+                    if (resData.success) {
+                        bubble.remove();
+                        renderedChatMessageIds.delete(msg.id);
+                        if (renderedChatMessageIds.size === 0 && chatHistoryBox) {
+                            chatHistoryBox.innerHTML = `
+                                <div style="text-align: center; color: #94a3b8; padding: 20px; font-size: 0.9rem;">
+                                    ${dict.chatEmptyNotice}
+                                </div>
+                            `;
+                        }
+                    } else {
+                        deleteBtn.disabled = false;
+                        alert(resData.error || "Erreur lors de la suppression du message.");
+                    }
+                } catch (err) {
+                    deleteBtn.disabled = false;
+                    console.error("Delete message error:", err);
+                }
+            });
+        }
+
         // Clic sur la citation
         const quoteEl = bubble.querySelector('.quote-box');
         if (quoteEl && msg.replyTo && msg.replyTo.id) {
             quoteEl.addEventListener('click', (e) => {
                 e.stopPropagation();
                 scrollToChatMessage(msg.replyTo.id);
+            });
+        }
+
+        // Bouton Réessayer en cas d'erreur de transmission
+        const retryBtn = bubble.querySelector('.btn-chat-retry');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                bubble.remove();
+                renderedChatMessageIds.delete(msg.id);
+                if (chatInputText) {
+                    chatInputText.value = msg.originalText;
+                    sendChatMessage();
+                }
             });
         }
 
@@ -1860,7 +1969,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const messages = data.messages || [];
             isChatDisabled = !!data.disabled;
 
-            const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.username.toLowerCase() === 'john');
+            const isAdmin = data.isAdmin !== undefined 
+                ? !!data.isAdmin 
+                : (currentUser && (
+                    currentUser.role === 'admin' || 
+                    (currentUser.username && currentUser.username.toLowerCase() === 'john') ||
+                    (currentUser.id && currentUser.id.toLowerCase() === 'john') ||
+                    (currentUser.email && currentUser.email.toLowerCase() === 'artas971@gmail.com')
+                ));
+            window.isAyaChatAdmin = isAdmin;
+
+            // Affichage de la barre d'outils admin
+            if (adminChatToolbar) {
+                if (isAdmin) {
+                    adminChatToolbar.classList.remove('hidden');
+                } else {
+                    adminChatToolbar.classList.add('hidden');
+                }
+            }
 
             // Update Admin Toggle Button text & style
             if (adminToggleChatBtn) {
@@ -1900,7 +2026,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Si le chat est totalement vide (suite à réinitialisation par exemple)
             if (messages.length === 0) {
+                stopCurrentChatAudio();
                 chatHistoryBox.innerHTML = `
                     <div style="text-align: center; color: #94a3b8; padding: 20px; font-size: 0.9rem;">
                         ${dict.chatEmptyNotice}
@@ -1910,11 +2038,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Si le chat vient d'être réinitialisé ou si la liste a été vidée
+            // Détection et suppression immédiate du DOM des messages modérés ou supprimés pour tous les clients
             const incomingIds = new Set(messages.map(m => m.id));
-            if (renderedChatMessageIds.size > 0 && messages.length < renderedChatMessageIds.size) {
-                chatHistoryBox.innerHTML = '';
-                renderedChatMessageIds.clear();
+            for (const renderedId of Array.from(renderedChatMessageIds)) {
+                if (renderedId.startsWith('temp_')) {
+                    continue; // Ne pas supprimer les messages en cours d'envoi optimiste
+                }
+                if (!incomingIds.has(renderedId)) {
+                    const bubbleEl = document.getElementById(`chat-msg-${renderedId}`);
+                    if (bubbleEl) {
+                        bubbleEl.remove();
+                    }
+                    renderedChatMessageIds.delete(renderedId);
+                }
             }
 
             // Premier affichage complet
@@ -1932,8 +2068,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     chatHistoryBox.appendChild(bubble);
                     renderedChatMessageIds.add(msg.id);
 
-                    // Si pas encore d'audioUrl, lancer la récupération asynchrone
-                    if (!msg.audioUrl) {
+                    // Si la traduction est prête et pas encore d'audioUrl, lancer la récupération asynchrone
+                    if (msg.translatedText && !msg.audioUrl) {
                         fetchChatAudioTts(msg.id);
                     }
                 });
@@ -1948,15 +2084,32 @@ document.addEventListener('DOMContentLoaded', () => {
                         renderedChatMessageIds.add(msg.id);
                         hasNew = true;
 
-                        if (!msg.audioUrl) {
+                        if (msg.translatedText && !msg.audioUrl) {
                             fetchChatAudioTts(msg.id);
                         }
-                    } else if (msg.audioUrl) {
-                        // Si l'audio vient de devenir disponible
-                        const audioWrap = document.getElementById(`audio-wrap-${msg.id}`);
-                        if (audioWrap && audioWrap.querySelector('.chat-audio-loading')) {
-                            audioWrap.innerHTML = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
-                            attachAudioControls(audioWrap);
+                    } else {
+                        // Le message existe déjà dans le DOM : vérifier si la traduction ou l'audio viennent d'arriver
+                        const bubbleEl = document.getElementById(`chat-msg-${msg.id}`);
+                        if (bubbleEl) {
+                            // 1. Mise à jour de la traduction asynchrone si prête
+                            if (msg.translatedText) {
+                                const transEl = bubbleEl.querySelector('.chat-text-translated');
+                                if (transEl && transEl.dataset.translated !== msg.translatedText) {
+                                    transEl.dataset.translated = msg.translatedText;
+                                    transEl.innerHTML = `✨ ${escapeChatHtml(msg.translatedText)}`;
+                                    if (!msg.audioUrl) {
+                                        fetchChatAudioTts(msg.id);
+                                    }
+                                }
+                            }
+                            // 2. Mise à jour du lecteur audio si audio prêt
+                            if (msg.audioUrl) {
+                                const audioWrap = document.getElementById(`audio-wrap-${msg.id}`);
+                                if (audioWrap && audioWrap.querySelector('.chat-audio-loading')) {
+                                    audioWrap.innerHTML = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
+                                    attachAudioControls(audioWrap);
+                                }
+                            }
                         }
                     }
                 });
@@ -1970,64 +2123,146 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function markOptimisticMessageError(tempId, textVal) {
+        const bubbleEl = document.getElementById(`chat-msg-${tempId}`);
+        if (!bubbleEl) return;
+        bubbleEl.classList.remove('sending');
+        bubbleEl.classList.add('has-error');
+
+        const statusTag = bubbleEl.querySelector('.chat-status-tag');
+        if (statusTag) {
+            statusTag.className = 'chat-status-tag status-error';
+            statusTag.textContent = '⚠️';
+            statusTag.title = 'Échec de transmission';
+        }
+
+        const dict = i18n[currentLang];
+        const errorBanner = document.createElement('div');
+        errorBanner.className = 'chat-msg-error-banner';
+        errorBanner.innerHTML = `
+            <span>⚠️ ${currentLang === 'ar' ? 'فشل الإرسال' : 'Échec d\'envoi'}</span>
+            <button type="button" class="btn-chat-retry">🔄 ${currentLang === 'ar' ? 'إعادة المحاولة' : 'Réessayer'}</button>
+        `;
+        const retryBtn = errorBanner.querySelector('.btn-chat-retry');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                bubbleEl.remove();
+                renderedChatMessageIds.delete(tempId);
+                if (chatInputText) {
+                    chatInputText.value = textVal;
+                    sendChatMessage();
+                }
+            });
+        }
+        bubbleEl.appendChild(errorBanner);
+    }
+
     async function sendChatMessage() {
         if (!chatInputText) return;
         const textVal = chatInputText.value.trim();
         if (!textVal) return;
         const dict = i18n[currentLang];
 
-        if (chatSendBtn) {
-            chatSendBtn.disabled = true;
-            chatSendBtn.innerHTML = '⏳';
+        const recipientVal = (chatRecipientSelect && chatRecipientSelect.value) ? chatRecipientSelect.value : 'all';
+        const replySnapshot = currentReplyTo;
+        const senderName = currentUser ? (currentUser.name || currentUser.username) : (currentLang === 'ar' ? 'آية' : 'Utilisateur');
+
+        // 1. GÉNÉRATION DE L'IDENTIFIANT TEMPORAIRE OPTIMISTE
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+        const optimisticMsg = {
+            id: tempId,
+            tempId: tempId,
+            sender: senderName,
+            recipient: recipientVal,
+            replyTo: replySnapshot,
+            userLang: currentLang,
+            originalText: textVal,
+            translatedText: '',
+            translationStatus: 'translating',
+            status: 'sending',
+            timestamp: Date.now()
+        };
+
+        // 2. INJECTION IMMÉDIATE DANS LE DOM (0 MS DE LATENCE PERÇUE)
+        if (chatHistoryBox) {
+            if (renderedChatMessageIds.size === 0) {
+                chatHistoryBox.innerHTML = '';
+            }
+            const optimisticBubble = createBubbleElement(optimisticMsg, dict);
+            chatHistoryBox.appendChild(optimisticBubble);
+            renderedChatMessageIds.add(tempId);
+            chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
         }
 
-        const recipientVal = (chatRecipientSelect && chatRecipientSelect.value) ? chatRecipientSelect.value : 'all';
+        // 3. VIDER INSTANTANÉMENT L'INPUT ET REDONNER LA MAIN À L'UTILISATEUR
+        chatInputText.value = '';
+        chatInputText.focus();
+        cancelReply();
 
+        // 4. TRANSMISSION ASYNCHRONE NON BLOQUANTE VERS LE SERVEUR
         try {
-            // ÉTAPE 1 : Appel d'envoi & traduction textuelle immédiate (< 1-2 sec)
             const res = await fetch('/api/chat/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     text: textVal,
-                    sender: currentUser ? (currentUser.name || currentUser.username) : (currentLang === 'ar' ? 'آية' : 'Utilisateur'),
+                    sender: senderName,
                     recipient: recipientVal,
-                    replyTo: currentReplyTo,
+                    replyTo: replySnapshot,
                     userLang: currentLang
                 })
             });
 
             const data = await res.json();
             if (data.success && data.message) {
-                const newMsg = data.message;
-                chatInputText.value = '';
-                cancelReply();
-                if (chatRecipientSelect) chatRecipientSelect.value = 'all';
+                const realMsg = data.message;
+                const bubbleEl = document.getElementById(`chat-msg-${tempId}`);
+                if (bubbleEl) {
+                    // Réconciliation d'identifiant : bascule vers l'ID définitif du serveur
+                    bubbleEl.id = `chat-msg-${realMsg.id}`;
+                    bubbleEl.classList.remove('sending');
+                    bubbleEl.classList.add('sent-confirmed');
 
-                // Afficher immédiatement la bulle dans #chatHistoryBox sans attendre le TTS
-                if (chatHistoryBox) {
-                    if (renderedChatMessageIds.size === 0) {
-                        chatHistoryBox.innerHTML = '';
+                    // Bascule de l'icône de statut de ⏳ vers ✓
+                    const statusTag = bubbleEl.querySelector('.chat-status-tag');
+                    if (statusTag) {
+                        statusTag.className = 'chat-status-tag status-sent';
+                        statusTag.textContent = '✓';
+                        statusTag.title = 'Envoyé';
                     }
-                    const bubble = createBubbleElement(newMsg, dict);
-                    chatHistoryBox.appendChild(bubble);
-                    renderedChatMessageIds.add(newMsg.id);
-                    chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
-                }
 
-                // ÉTAPE 2 : Déclenchement asynchrone du TTS en arrière-plan
-                fetchChatAudioTts(newMsg.id);
+                    // Mise à jour de la corbeille admin si admin
+                    const deleteBtn = bubbleEl.querySelector('.chat-delete-btn');
+                    if (deleteBtn) {
+                        deleteBtn.dataset.msgId = realMsg.id;
+                    }
+
+                    // Mise à jour du set d'identifiants
+                    renderedChatMessageIds.delete(tempId);
+                    renderedChatMessageIds.add(realMsg.id);
+
+                    // Mise à jour de l'ID du wrapper audio
+                    const audioWrap = bubbleEl.querySelector('.chat-audio-wrapper');
+                    if (audioWrap) {
+                        audioWrap.id = `audio-wrap-${realMsg.id}`;
+                    }
+
+                    // Si la traduction a été complétée instantanément
+                    if (realMsg.translatedText) {
+                        const transEl = bubbleEl.querySelector('.chat-text-translated');
+                        if (transEl) {
+                            transEl.innerHTML = `✨ ${escapeChatHtml(realMsg.translatedText)}`;
+                            transEl.dataset.translated = realMsg.translatedText;
+                        }
+                    }
+                }
             } else {
-                alert(dict.alertChatError + (data.error || ""));
+                markOptimisticMessageError(tempId, textVal);
             }
         } catch (err) {
-            console.error("Chat send error:", err);
-            alert(dict.alertChatError + (err.message || ""));
-        } finally {
-            if (chatSendBtn) {
-                chatSendBtn.disabled = false;
-                chatSendBtn.innerHTML = '🚀 <span id="btnChatSendText">' + dict.btnChatSendText + '</span>';
-            }
+            console.error("Optimistic chat send error:", err);
+            markOptimisticMessageError(tempId, textVal);
         }
     }
 
@@ -2190,16 +2425,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const dict = i18n[currentLang];
             if (!confirm(dict.alertChatResetConfirm)) return;
             try {
+                adminResetChatBtn.disabled = true;
                 const res = await fetch('/api/chat/reset', { method: 'POST' });
                 const data = await res.json();
+                adminResetChatBtn.disabled = false;
                 if (data.success) {
                     alert(dict.alertChatResetSuccess);
                     stopCurrentChatAudio();
                     renderedChatMessageIds.clear();
-                    if (chatHistoryBox) chatHistoryBox.innerHTML = '';
+                    if (chatHistoryBox) {
+                        chatHistoryBox.innerHTML = `
+                            <div style="text-align: center; color: #94a3b8; padding: 20px; font-size: 0.9rem;">
+                                ${dict.chatEmptyNotice}
+                            </div>
+                        `;
+                    }
                     await loadChatMessages();
+                } else {
+                    alert(data.error || "Erreur lors de la réinitialisation.");
                 }
             } catch (err) {
+                adminResetChatBtn.disabled = false;
                 console.error("Reset chat error:", err);
             }
         });
@@ -2209,19 +2455,29 @@ document.addEventListener('DOMContentLoaded', () => {
         adminArchiveChatBtn.addEventListener('click', async () => {
             const dict = i18n[currentLang];
             try {
+                adminArchiveChatBtn.disabled = true;
                 const res = await fetch('/api/chat/archive', { method: 'POST' });
                 const data = await res.json();
+                adminArchiveChatBtn.disabled = false;
                 if (data.success) {
-                    alert(dict.alertChatArchiveSuccess);
+                    const count = data.archivedCount !== undefined ? data.archivedCount : 0;
+                    const file = data.file || '';
+                    const msg = currentLang === 'ar'
+                        ? `✅ تم أرشفة المحادثة بنجاح (${count} رسالة في ${file})!`
+                        : `✅ La conversation a été archivée avec succès (${count} messages dans ${file}) !`;
+                    alert(msg);
+                } else {
+                    alert(data.error || "Erreur lors de l'archivage.");
                 }
             } catch (err) {
+                adminArchiveChatBtn.disabled = false;
                 console.error("Archive chat error:", err);
             }
         });
     }
 
-    // Auto-refresh chat every 4 seconds
-    setInterval(loadChatMessages, 4000);
+    // Auto-refresh chat every 2.5 seconds pour une modération réactive instantanée
+    setInterval(loadChatMessages, 2500);
 
     // VOSTFR Video TikTok & ASS Subtitle Creator Handler (Protocole V3)
     const vostfrMediaFileInput = document.getElementById('vostfrMediaFileInput');

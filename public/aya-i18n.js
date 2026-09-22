@@ -11,19 +11,19 @@
         fr: {
             dir: 'ltr',
             // Navbar Globale
-            navbarBrandTitle: 'وكيل التَّرْجَمَة آيَة <span class="badge-tag green">Arabe Palestinien ↔ Français</span>',
+            navbarBrandTitle: 'Aya Studio',
             navbarBrandSub: 'Studio de doublage, transcription et synchronisation instantanée',
             userConnectedPrefix: '👤 Connecté :',
             userAnonymous: 'Invité / Testeur',
             logoutBtnTitle: 'Se déconnecter',
-            navHomeText: 'Direct / Chat',
-            navTraducteurText: 'Studio / Traducteur',
-            navTraductionText: 'Traduction & Sous-titres',
-            navStudioText: 'Studio TikTok V3',
+            navHomeText: 'Direct',
+            navTraducteurText: 'Traducteur',
+            navTraductionText: 'Traduction',
+            navStudioText: 'Studio 9:16',
             navCommunauteText: 'Communauté',
             navModerationText: 'Modération',
-            navProfilText: 'Mon Profil',
-            navbarLiveText: 'Serveur Actif',
+            navProfilText: 'Profil',
+            navbarLiveText: 'Actif',
 
             // Page Modération Back-Office (Phase 2.5)
             moderationDocTitle: 'AYA Back-Office | Modération des Témoignages',
@@ -354,19 +354,19 @@
         ar: {
             dir: 'rtl',
             // Navbar Globale
-            navbarBrandTitle: 'وكيل التَّرْجَمَة آيَة <span class="badge-tag green">عربي فلسطيني ↔ فرنسي</span>',
+            navbarBrandTitle: 'آية ستوديو',
             navbarBrandSub: 'استوديو الدبلجة والترجمة الفورية للفيديوهات والتسجيلات',
             userConnectedPrefix: '👤 متصل باسم:',
             userAnonymous: 'زائر / فاحص',
             logoutBtnTitle: 'تسجيل الخروج',
-            navHomeText: 'المحادثة المباشرة',
-            navTraducteurText: 'استوديو المترجم',
-            navTraductionText: 'الترجمة والدبلجة',
-            navStudioText: 'استوديو تيك توك V3',
+            navHomeText: 'المحادثة',
+            navTraducteurText: 'المترجم',
+            navTraductionText: 'الترجمة',
+            navStudioText: 'استوديو 9:16',
             navCommunauteText: 'المجتمع',
             navModerationText: 'الإشراف',
-            navProfilText: 'الملف الشخصي',
-            navbarLiveText: 'الخادم نشط ومتصل',
+            navProfilText: 'الملف',
+            navbarLiveText: 'متصل',
 
             // Page Modération Back-Office (Phase 2.5)
             moderationDocTitle: 'منصة آية - لوحة الإشراف والمراجعة',
