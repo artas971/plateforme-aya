@@ -207,13 +207,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             background: var(--card-bg);
             border-radius: 14px;
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            padding: 1.75rem;
-            position: relative;
+            padding: 1.25rem 1.75rem 1.75rem;
+            position: sticky;
+            top: 80px;
+            max-height: calc(100vh - 100px);
+            overflow: hidden;
+            align-self: flex-start;
         }
         .simulator-header {
             width: 100%;
@@ -229,8 +233,13 @@
             overflow: hidden;
             border: 4px solid #0f172a;
             background: #000000;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-height: calc(100vh - 200px);
         }
-        canvas { display: block; background: #000000; }
+        canvas { display: block; background: #000000; width: 100%; height: 100%; object-fit: contain; }
 
         .filename-info {
             font-size: 0.8rem;
@@ -396,7 +405,7 @@
             <span id="simRealtime" style="font-size: 0.8rem; color: #10B981; font-weight: 600;">● Aperçu Temps Réel Actif</span>
         </div>
         <div class="canvas-wrapper">
-            <canvas id="tiktokCanvas" width="810" height="1440" style="width: 100%; height: auto; display: block;"></canvas>
+            <canvas id="tiktokCanvas" width="405" height="720"></canvas>
         </div>
     </div>
 </div>
@@ -428,7 +437,25 @@
 <script>
     var canvas = document.getElementById('tiktokCanvas');
     var ctx = canvas ? canvas.getContext('2d') : null;
-    
+
+    // ─── Dimensions logiques (coordonnées de dessin) ───────────────────────
+    var LOGI_W = 405;
+    var LOGI_H = 720;
+
+    // ─── Netteté HiDPI (Retina, 125%, 150%...) ────────────────────────────
+    // On upscale le canvas physique par devicePixelRatio, puis on scale le ctx
+    // pour que toutes les coordonnées de dessin restent en pixels logiques.
+    function initCanvasDPR() {
+        if (!canvas || !ctx) return;
+        var dpr = window.devicePixelRatio || 1;
+        canvas.width  = Math.round(LOGI_W * dpr);
+        canvas.height = Math.round(LOGI_H * dpr);
+        canvas.style.width  = '100%';
+        canvas.style.height = '100%';
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+        ctx.scale(dpr, dpr);
+    }
+
     var selectedTitleColor = '#D8D0BE';
     var selectedSubColor = '#FFFF00';
     var selectedHeaderColor = '#CE1126';
@@ -436,6 +463,7 @@
     var isUserImageLoaded = false;
 
     window.onload = function() {
+        initCanvasDPR();
         if (window.location.protocol === 'file:') {
             var warn = document.getElementById('fileProtocolWarning');
             if (warn) warn.style.display = 'block';
@@ -481,23 +509,23 @@
 
     function drawCanvas() {
         if (!canvas || !ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+        ctx.clearRect(0, 0, LOGI_W, LOGI_H);
+
         // 1. Draw Background
         if (isUserImageLoaded && bgImage.complete && bgImage.naturalWidth !== 0) {
-            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImage, 0, 0, LOGI_W, LOGI_H);
         } else {
-            var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            var grad = ctx.createLinearGradient(0, 0, 0, LOGI_H);
             grad.addColorStop(0, '#0F172A');
             grad.addColorStop(0.5, '#1E1B4B');
             grad.addColorStop(1, '#020617');
             ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, LOGI_W, LOGI_H);
 
             ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
-            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+            ctx.strokeRect(15, 15, LOGI_W - 30, LOGI_H - 30);
             ctx.setLineDash([]);
 
             ctx.fillStyle = '#94A3B8';
@@ -506,34 +534,34 @@
             var emptyNotice = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar')
                 ? '🖼️ اختر صورة الخلفية 9:16 من اللوحة الجانبية'
                 : '🖼️ Sélectionnez votre image de fond 9:16 à gauche';
-            ctx.fillText(emptyNotice, canvas.width / 2, canvas.height / 2);
+            ctx.fillText(emptyNotice, LOGI_W / 2, LOGI_H / 2);
         }
-        
+
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+        ctx.fillRect(0, 0, LOGI_W, LOGI_H);
+
         // 2. Interactive Header Banner / Logo
         var showHeaderChk = document.getElementById('header-show-chk');
         if (showHeaderChk && showHeaderChk.checked) {
             var headerInput = document.getElementById('header-text-input');
             var headerText = headerInput ? headerInput.value.toUpperCase() : 'TÉMOIGNAGE DIRECT';
             ctx.fillStyle = selectedHeaderColor;
-            ctx.fillRect(40, 24, canvas.width - 80, 26);
+            ctx.fillRect(40, 24, LOGI_W - 80, 26);
             ctx.fillStyle = '#FFFFFF';
             var hasArHeader = /[\u0600-\u06FF]/.test(headerText);
             ctx.font = hasArHeader ? 'bold 13px "Cairo", sans-serif' : 'bold 12px "Inter", Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(headerText, canvas.width / 2, 41);
+            ctx.fillText(headerText, LOGI_W / 2, 41);
         }
-        
+
         // 3. Title under logo
         var titleMarginEl = document.getElementById('title-margin');
         var marginV = titleMarginEl ? parseInt(titleMarginEl.value) : 380;
-        var titleY = (marginV / 1920) * canvas.height;
-        
+        var titleY = (marginV / 1920) * LOGI_H;
+
         var titleInput = document.getElementById('video-title');
         var titleText = titleInput ? titleInput.value.toUpperCase() : 'PAROLES ET TÉMOIGNAGES DU TERRAIN';
-        
+
         var hasArTitle = /[\u0600-\u06FF]/.test(titleText);
         ctx.font = hasArTitle ? '700 16px "Cairo", sans-serif' : '900 17px "Arial Black", Impact';
         ctx.fillStyle = selectedTitleColor;
@@ -546,7 +574,7 @@
         for (var n = 0; n < words.length; n++) {
             var testLine = line + words[n] + ' ';
             var metrics = ctx.measureText(testLine);
-            if (metrics.width > canvas.width - 60 && n > 0) {
+            if (metrics.width > LOGI_W - 60 && n > 0) {
                 lines.push(line);
                 line = words[n] + ' ';
             } else {
@@ -554,17 +582,17 @@
             }
         }
         lines.push(line);
-        
+
         for (var i = 0; i < lines.length; i++) {
-            ctx.strokeText(lines[i], canvas.width / 2, titleY + (i * 22));
-            ctx.fillText(lines[i], canvas.width / 2, titleY + (i * 22));
+            ctx.strokeText(lines[i], LOGI_W / 2, titleY + (i * 22));
+            ctx.fillText(lines[i], LOGI_W / 2, titleY + (i * 22));
         }
 
         // 4. Subtitles Bottom
         var subMarginEl = document.getElementById('sub-margin');
         var subMarginV = subMarginEl ? parseInt(subMarginEl.value) : 1440;
-        var subY = (subMarginV / 1920) * canvas.height;
-        
+        var subY = (subMarginV / 1920) * LOGI_H;
+
         var modeEl = document.getElementById('mode-select');
         var mode = modeEl ? modeEl.value : 'VOSTFR';
         var line1 = mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض الترجمة الصوتية";
@@ -576,10 +604,10 @@
         ctx.fillStyle = selectedSubColor;
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 4;
-        
+
         for (var j = 0; j < subLines.length; j++) {
-            ctx.strokeText(subLines[j], canvas.width / 2, subY + (j * 26));
-            ctx.fillText(subLines[j], canvas.width / 2, subY + (j * 26));
+            ctx.strokeText(subLines[j], LOGI_W / 2, subY + (j * 26));
+            ctx.fillText(subLines[j], LOGI_W / 2, subY + (j * 26));
         }
     }
 
