@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/aya-rtl.css">
     <style>
         :root {
             --bg-body: #080d1a;
@@ -143,10 +144,12 @@
         .btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.45rem;
             font-size: 0.85rem;
             font-weight: 600;
             padding: 0.55rem 1rem;
+            min-height: 44px;
             border-radius: 8px;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -549,9 +552,17 @@
             }
 
             .header-actions .btn {
-                padding: 0.4rem 0.65rem;
-                font-size: 0.78rem;
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
                 white-space: nowrap;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            input, select, textarea {
+                font-size: 16px !important;
             }
 
             .container {
@@ -609,6 +620,32 @@
             .table-responsive table {
                 min-width: 520px;
             }
+        }
+
+        /* Support RTL Arabe */
+        html[dir="rtl"] body {
+            direction: rtl;
+            text-align: right;
+            font-family: var(--font-arabic, 'Cairo', sans-serif);
+        }
+        html[dir="rtl"] .header-inner {
+            direction: rtl;
+        }
+        html[dir="rtl"] .page-meta {
+            direction: rtl;
+        }
+        html[dir="rtl"] th,
+        html[dir="rtl"] td {
+            text-align: right;
+        }
+        html[dir="rtl"] .kpi-card {
+            text-align: right;
+        }
+        html[dir="rtl"] .kpi-header {
+            flex-direction: row;
+        }
+        html[dir="rtl"] .panel-title {
+            direction: rtl;
         }
     </style>
 </head>

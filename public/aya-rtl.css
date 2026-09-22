@@ -423,6 +423,25 @@ html[dir="rtl"] .legal-footer-nav {
     flex-direction: row-reverse;
 }
 
+html[dir="rtl"] .legal-highlight-box {
+    border-left: none !important;
+    border-right: 4px solid #10b981;
+    border-radius: 12px 0 0 12px !important;
+    text-align: right !important;
+}
+
+html[dir="rtl"] .legal-warning-box {
+    border-left: none !important;
+    border-right: 4px solid #f59e0b;
+    border-radius: 12px 0 0 12px !important;
+    text-align: right !important;
+}
+
+html[dir="rtl"] .subcontractor-table th,
+html[dir="rtl"] .subcontractor-table td {
+    text-align: right !important;
+}
+
 /* -------------------------------------------------------------
    Isolation Bidi — Nombres et prix en contexte RTL
    Empêche les chiffres et devises de s'inverser en mode RTL

@@ -1942,6 +1942,8 @@ html[dir="rtl"] .step-content p {
     padding: 26px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     transition: all 0.25s ease;
+    overflow: hidden;
+    min-width: 0;
 }
 
 .profile-card-header {
@@ -2084,11 +2086,14 @@ html[dir="rtl"] .step-content p {
 
 .profile-input-wrapper {
     display: flex;
+    flex-direction: column;
     gap: 10px;
+    width: 100%;
 }
 
 .profile-input {
-    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
     padding: 10px 14px;
     border: 1.5px solid var(--border-color);
     border-radius: 10px;
@@ -2106,6 +2111,10 @@ html[dir="rtl"] .step-content p {
 }
 
 .btn-save-profile {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    min-height: 42px;
     background: var(--color-primary);
     color: #ffffff;
     border: none;
@@ -3174,7 +3183,95 @@ html[dir="rtl"] .step-content p {
     }
 
     .btn-action-sm {
-        min-height: 42px;
+        min-height: 44px;
+    }
+
+    /* Blindage Tap Targets (>= 44px Apple HIG) */
+    .btn-stripe-buy {
+        min-height: 44px;
+    }
+
+    .btn-save-profile,
+    .btn-recharge {
+        min-height: 44px;
+    }
+
+    .lang-toggle-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-logout-minimal {
+        min-height: 44px;
+        min-width: 44px;
+        justify-content: center;
+    }
+
+    .nav-link-modern,
+    .btn-nav-link {
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Modal Backdrop & Padding Mobile (375px/390px) */
+    .aya-modal-backdrop {
+        padding: 10px;
+    }
+
+    .aya-modal-content {
+        padding: 20px 16px;
+        border-radius: 14px;
+        max-width: 100%;
+    }
+
+    .recharge-modal-content {
+        max-height: 92vh;
+    }
+
+    /* PayPal Donation Card Mobile */
+    .paypal-donation-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .paypal-donation-card .btn-paypal-donate {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
+
+    /* Boutons de fermeture modales (Tap target >= 44px) */
+    #btnCloseRechargeModal,
+    #btnCloseVideoModal {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+    }
+}
+
+/* ==========================================================================
+   ÉRADICATION AUTO-ZOOM SAFARI iOS (font-size: 16px !important sur mobile)
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    input,
+    select,
+    textarea,
+    .form-control,
+    .form-input,
+    .form-select,
+    .form-textarea,
+    .profile-input,
+    .search-input {
+        font-size: 16px !important;
     }
 }
 

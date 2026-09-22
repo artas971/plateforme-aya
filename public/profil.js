@@ -73,6 +73,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
+    function isRtl() {
+        return (document.documentElement.getAttribute('dir') === 'rtl' || localStorage.getItem('aya_lang') === 'ar');
+    }
+
     /**
      * Formate une date ISO en affichage lisible
      */
@@ -80,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isoStr) return '';
         try {
             const d = new Date(isoStr);
-            return d.toLocaleDateString('fr-FR', {
+            const locale = isRtl() ? 'ar-EG' : 'fr-FR';
+            return d.toLocaleDateString(locale, {
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric',
@@ -372,8 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
             videoHistoryLoading.style.display = 'none';
 
             if (data.success && Array.isArray(data.videos) && data.videos.length > 0) {
+                const rtl = isRtl();
                 if (historyCountBadge) {
-                    historyCountBadge.textContent = `${data.total || data.videos.length} vidéo${(data.total || data.videos.length) > 1 ? 's' : ''}`;
+                    const total = data.total || data.videos.length;
+                    historyCountBadge.textContent = rtl ? `${total} فيديو` : `${total} vidéo${total > 1 ? 's' : ''}`;
                 }
 
                 data.videos.forEach(video => {
@@ -383,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 videoHistoryGrid.style.display = 'grid';
             } else {
-                if (historyCountBadge) historyCountBadge.textContent = '0 vidéo';
+                if (historyCountBadge) historyCountBadge.textContent = isRtl() ? '٠ فيديو' : '0 vidéo';
                 videoHistoryEmpty.style.display = 'flex';
             }
         } catch (err) {
@@ -400,10 +407,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'video-card';
 
-        const title = v.title || v.originalMediaName || 'Génération Vidéo';
+        const rtl = isRtl();
+        const defaultTitle = rtl ? 'فيديو مترجم' : 'Génération Vidéo';
+        const title = v.title || v.originalMediaName || defaultTitle;
         const dateStr = formatDate(v.createdAt);
         const durationStr = formatDuration(v.duration);
-        const langTag = v.targetLang === 'ar' ? 'VOAR (Arabe)' : 'VOSTFR (Français)';
+        const langTag = v.targetLang === 'ar' 
+            ? (rtl ? 'ترجمة عربية (VOAR)' : 'VOAR (Arabe)') 
+            : (rtl ? 'ترجمة فرنسية (VOSTFR)' : 'VOSTFR (Français)');
+        const costTag = rtl ? '-١ رصيد' : '-1 Crédit';
+        const sizeUnit = rtl ? 'ميغابايت' : 'Mo';
+        const playLabel = rtl ? 'تشغيل' : 'Lire';
+        const assLabel = rtl ? 'الترجمة (.ASS)' : '.ASS';
+        const deleteLabel = rtl ? 'حذف' : 'Supprimer';
 
         // Vignette
         const thumbUrl = v.coverUrl || '';
@@ -414,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `
             <div class="video-card-thumb">
                 ${thumbHtml}
-                <span class="video-card-badge-cost">-1 Crédit</span>
+                <span class="video-card-badge-cost">${costTag}</span>
                 ${v.duration ? `<span class="video-card-duration">⏱️ ${durationStr}</span>` : ''}
             </div>
             <div class="video-card-body">
@@ -423,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>📅 ${dateStr}</span>
                     <span>•</span>
                     <span style="color: var(--color-primary); font-weight: 600;">${langTag}</span>
-                    ${v.fileSizeMb ? `<span>• ${v.fileSizeMb} Mo</span>` : ''}
+                    ${v.fileSizeMb ? `<span>• ${v.fileSizeMb} ${sizeUnit}</span>` : ''}
                 </div>
             </div>
             <div class="video-card-footer">
@@ -431,20 +447,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                         ${v.mp4Url ? `
                             <button type="button" class="btn-action-sm primary btn-play-video" data-url="${v.mp4Url}" data-title="${title}">
-                                <span>▶️</span> Lire
+                                <span>▶️</span> ${playLabel}
                             </button>
-                            <a href="${v.mp4Url}" download class="btn-action-sm" title="Télécharger le fichier MP4 final">
+                            <a href="${v.mp4Url}" download class="btn-action-sm" title="${rtl ? 'تحميل ملف الفيديو النهائي' : 'Télécharger le fichier MP4 final'}">
                                 <span>⬇️</span> MP4
                             </a>
                         ` : ''}
                         ${v.assUrl ? `
-                            <a href="${v.assUrl}" download class="btn-action-sm" title="Télécharger les sous-titres .ASS">
-                                <span>📝</span> .ASS
+                            <a href="${v.assUrl}" download class="btn-action-sm" title="${rtl ? 'تحميل ملف الترجمة' : 'Télécharger les sous-titres .ASS'}">
+                                <span>📝</span> ${assLabel}
                             </a>
                         ` : ''}
                     </div>
-                    <button type="button" class="btn-action-sm btn-delete-video" data-id="${v.id || v._id}" title="Supprimer cette vidéo de votre historique" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); margin-left: auto;">
-                        <span>🗑️</span> Supprimer
+                    <button type="button" class="btn-action-sm btn-delete-video" data-id="${v.id || v._id}" title="${rtl ? 'حذف هذا الفيديو من سجلك' : 'Supprimer cette vidéo de votre historique'}" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); margin-left: auto;">
+                        <span>🗑️</span> ${deleteLabel}
                     </button>
                 </div>
             </div>
@@ -524,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function openVideoModal(videoUrl, title) {
         if (!videoPreviewModal || !modalVideoPlayer) return;
-        modalVideoTitle.textContent = title || 'Aperçu Vidéo';
+        modalVideoTitle.textContent = title || (isRtl() ? 'مشاهدة الفيديو' : 'Aperçu Vidéo');
         modalVideoPlayer.src = videoUrl;
         videoPreviewModal.style.display = 'flex';
         modalVideoPlayer.play().catch(() => {});
@@ -550,9 +566,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btnRefreshHistory.addEventListener('click', () => {
             loadVideoHistory();
             loadUserProfile();
-            showToast("Historique actualisé.", "info");
+            showToast(isRtl() ? "تم تحديث السجل بنجاح." : "Historique actualisé.", "info");
         });
     }
+
+    // Réagir immédiatement au changement de langue via la Navbar
+    window.addEventListener('aya:languageChanged', () => {
+        loadVideoHistory();
+    });
 
     // Fermeture des modales avec Échap
     document.addEventListener('keydown', (e) => {

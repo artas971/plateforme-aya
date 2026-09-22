@@ -16,7 +16,7 @@
             userConnectedPrefix: '👤 Connecté :',
             userAnonymous: 'Invité / Testeur',
             logoutBtnTitle: 'Se déconnecter',
-            navHomeText: 'Chat (Accueil)',
+            navHomeText: 'Direct / Chat',
             navTraducteurText: 'Studio / Traducteur',
             navTraductionText: 'Traduction & Sous-titres',
             navStudioText: 'Studio TikTok V3',
@@ -359,7 +359,7 @@
             userConnectedPrefix: '👤 متصل باسم:',
             userAnonymous: 'زائر / فاحص',
             logoutBtnTitle: 'تسجيل الخروج',
-            navHomeText: 'المحادثة (الرئيسية)',
+            navHomeText: 'المحادثة المباشرة',
             navTraducteurText: 'استوديو المترجم',
             navTraductionText: 'الترجمة والدبلجة',
             navStudioText: 'استوديو تيك توك V3',
@@ -1074,7 +1074,7 @@
         const isModeration = path.includes('moderation');
         const isTraducteur = path.includes('traducteur');
         const isProfil = path.includes('profil');
-        const isHome = !isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil;
+        const isHome = path === '/' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -1096,6 +1096,9 @@
 
                 <!-- PÔLE CENTRAL : Navigation Principale Allégée -->
                 <nav class="navbar-nav" aria-label="Navigation principale">
+                    <a href="/" class="nav-link-modern ${isHome ? 'active' : ''}" id="navHomeLink">
+                        <span class="nav-icon-live">💬</span> <span id="navHomeText">${dict.navHomeText}</span>
+                    </a>
                     <a href="/traduction" class="nav-link-modern ${isTraduction ? 'active' : ''}" id="navTraductionLink">
                         <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
                     </a>

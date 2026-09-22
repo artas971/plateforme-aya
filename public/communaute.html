@@ -72,22 +72,7 @@
             line-height: 1.6;
         }
 
-        /* Navbar Globale */
-        .app-header {
-            width: 100%;
-            background: var(--color-primary);
-            border-bottom: 2px solid rgba(0, 188, 212, 0.4);
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-sizing: border-box;
-            color: var(--color-white);
-            box-shadow: 0 4px 20px rgba(11, 83, 148, 0.22);
-        }
+
 
         .communaute-container {
             width: 100%;
@@ -229,7 +214,8 @@
             border-radius: 10px;
             border: 1.5px solid #cbd5e1;
             font-family: inherit;
-            font-size: 0.95rem;
+            font-size: 16px !important;
+            min-height: 44px;
             color: #1e293b;
             background-color: #f8fafc;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -483,8 +469,27 @@
         }
 
         @media (max-width: 480px) {
+            .communaute-container {
+                padding: 16px 10px 40px;
+                gap: 20px;
+            }
+            .communaute-hero {
+                padding: 24px 16px !important;
+                border-radius: 14px;
+            }
+            .communaute-hero h1 {
+                font-size: 1.55rem;
+            }
             .feed-grid {
                 grid-template-columns: 1fr;
+            }
+            .post-card-footer {
+                padding: 10px 12px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            input, select, textarea {
+                font-size: 16px !important;
             }
         }
 
@@ -627,9 +632,11 @@
             cursor: pointer;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 8px;
+            min-height: 44px;
             transition: all 0.15s;
         }
 
@@ -1010,10 +1017,12 @@
             function handleFileSelect(file) {
                 if (!file) return;
 
+                const isAr = isArabic();
+
                 // Garde-fou 1 : Taille maximale autorisée (< 500 Mo) - Issue #20
                 const MAX_FILE_SIZE = 500 * 1024 * 1024;
                 if (file.size > MAX_FILE_SIZE) {
-                    showFeedback('error', "⚠️ Fichier trop lourd, maximum 500 Mo.");
+                    showFeedback('error', isAr ? "⚠️ حجم الملف كبير جداً، الحد الأقصى المسموح ٥٠٠ ميغابايت." : "⚠️ Fichier trop lourd, maximum 500 Mo.");
                     fileInput.value = '';
                     return;
                 }
@@ -1022,7 +1031,7 @@
                 const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name);
                 const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm|mkv)$/i.test(file.name);
                 if (!isAudio && !isVideo) {
-                    showFeedback('error', "⚠️ Format non supporté. Choisissez un fichier vidéo (MP4, MOV, MKV, WebM) ou audio (MP3, WAV, M4A).");
+                    showFeedback('error', isAr ? "⚠️ صيغة الملف غير مدعومة. يرجى اختيار ملف فيديو (MP4, MOV, WebM) أو صوتي (MP3, WAV, M4A)." : "⚠️ Format non supporté. Choisissez un fichier vidéo (MP4, MOV, MKV, WebM) ou audio (MP3, WAV, M4A).");
                     fileInput.value = '';
                     return;
                 }
@@ -1037,7 +1046,11 @@
 
                 if (mediaPreviewBadge) {
                     mediaPreviewBadge.style.display = 'inline-flex';
-                    mediaPreviewBadge.innerHTML = isVideo ? `<span>📁</span> Fichier local (Vidéo)` : `<span>🎵</span> Fichier local (Audio)`;
+                    if (isAr) {
+                        mediaPreviewBadge.innerHTML = isVideo ? `<span>📁</span> ملف محلي (فيديو)` : `<span>🎵</span> ملف محلي (صوت)`;
+                    } else {
+                        mediaPreviewBadge.innerHTML = isVideo ? `<span>📁</span> Fichier local (Vidéo)` : `<span>🎵</span> Fichier local (Audio)`;
+                    }
                 }
                 if (mediaPreviewName) {
                     mediaPreviewName.textContent = file.name;
@@ -1058,17 +1071,18 @@
             publishForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                const isAr = isArabic();
                 const content = document.getElementById('postContentInput').value.trim();
                 const author = document.getElementById('authorNameInput').value.trim();
                 const tags = document.getElementById('tagsInput').value.trim();
 
                 if (!content && !selectedFile && !autoShareMediaUrl) {
-                    showFeedback('error', "Veuillez renseigner un texte explicatif ou sélectionner un fichier média.");
+                    showFeedback('error', isAr ? "يرجى كتابة نص توضيحي أو اختيار ملف وسائط للمتابعة." : "Veuillez renseigner un texte explicatif ou sélectionner un fichier média.");
                     return;
                 }
 
                 btnPublishPost.disabled = true;
-                btnPublishPost.innerHTML = `<span>⏳</span> Envoi en cours...`;
+                btnPublishPost.innerHTML = isAr ? `<span>⏳</span> جاري الإرسال...` : `<span>⏳</span> Envoi en cours...`;
 
                 try {
                     const formData = new FormData();
@@ -1155,6 +1169,10 @@
                 }
             }
 
+            function isArabic() {
+                return (document.documentElement.getAttribute('dir') === 'rtl' || localStorage.getItem('aya_lang') === 'ar');
+            }
+
             function extractAndRenderTags(posts) {
                 const allTags = new Set();
                 posts.forEach(p => {
@@ -1163,8 +1181,9 @@
                     }
                 });
 
+                const allFilterLabel = isArabic() ? 'جميع الشهادات' : 'Tous les témoignages';
                 feedFilters.innerHTML = `
-                    <button class="filter-pill ${activeTagFilter === 'all' ? 'active' : ''}" data-tag="all">Tous les témoignages</button>
+                    <button class="filter-pill ${activeTagFilter === 'all' ? 'active' : ''}" data-tag="all">${allFilterLabel}</button>
                 `;
 
                 allTags.forEach(tag => {
@@ -1202,14 +1221,19 @@
                 }
 
                 emptyFeed.style.display = 'none';
+                const isAr = isArabic();
 
                 posts.forEach(post => {
                     const card = document.createElement('article');
                     card.className = 'post-card';
 
-                    const authorName = post.authorName || "Anonyme";
+                    const defaultAuthor = isAr ? "شاهد مجهول" : "Anonyme";
+                    const authorName = post.authorName || defaultAuthor;
                     const initials = authorName.slice(0, 2).toUpperCase();
                     const formattedDate = formatDateRelative(post.createdAt);
+                    const verifiedBadge = isAr ? "✅ موثق" : "✅ Vérifié";
+                    const copyTextLabel = isAr ? "نسخ النص" : "Copier le texte";
+                    const shareTextLabel = isAr ? "مشاركة" : "Partager";
 
                     // Média
                     let mediaHtml = '';
@@ -1248,7 +1272,7 @@
                                     <div class="post-meta-time">${formattedDate}</div>
                                 </div>
                             </div>
-                            <span class="post-status-badge">✅ Vérifié</span>
+                            <span class="post-status-badge">${verifiedBadge}</span>
                         </div>
                         ${mediaHtml}
                         <div class="post-card-body">
@@ -1260,10 +1284,10 @@
                                 <span>❤️</span> <span class="like-count">${post.likesCount || 0}</span>
                             </button>
                             <button class="post-action-btn copy-btn" data-content="${escapeHtml(post.originalContent)}">
-                                <span>📋</span> Copier le texte
+                                <span>📋</span> ${copyTextLabel}
                             </button>
                             <button class="post-action-btn share-btn" data-url="${window.location.origin}/communaute">
-                                <span>🔗</span> Partager
+                                <span>🔗</span> ${shareTextLabel}
                             </button>
                         </div>
                     `;
@@ -1286,7 +1310,7 @@
                     copyBtn.addEventListener('click', () => {
                         navigator.clipboard.writeText(post.originalContent).then(() => {
                             const oldText = copyBtn.innerHTML;
-                            copyBtn.innerHTML = `<span>✅</span> Copié !`;
+                            copyBtn.innerHTML = isAr ? `<span>✅</span> تم النسخ!` : `<span>✅</span> Copié !`;
                             setTimeout(() => copyBtn.innerHTML = oldText, 2000);
                         });
                     });
@@ -1296,14 +1320,14 @@
                     shareBtn.addEventListener('click', () => {
                         if (navigator.share) {
                             navigator.share({
-                                title: `Témoignage de ${authorName} sur Aya`,
+                                title: isAr ? `شهادة ${authorName} على منصة آية` : `Témoignage de ${authorName} sur Aya`,
                                 text: post.originalContent.slice(0, 100) + '...',
                                 url: window.location.href
                             }).catch(() => {});
                         } else {
                             navigator.clipboard.writeText(window.location.href).then(() => {
                                 const oldText = shareBtn.innerHTML;
-                                shareBtn.innerHTML = `<span>✅</span> Lien copié !`;
+                                shareBtn.innerHTML = isAr ? `<span>✅</span> تم نسخ الرابط!` : `<span>✅</span> Lien copié !`;
                                 setTimeout(() => shareBtn.innerHTML = oldText, 2000);
                             });
                         }
@@ -1314,7 +1338,8 @@
             }
 
             function formatDateRelative(dateStr) {
-                if (!dateStr) return "Récemment";
+                const isAr = isArabic();
+                if (!dateStr) return isAr ? "منذ قليل" : "Récemment";
                 const date = new Date(dateStr);
                 const now = new Date();
                 const diffMs = now - date;
@@ -1322,11 +1347,11 @@
                 const diffHours = Math.floor(diffMin / 60);
                 const diffDays = Math.floor(diffHours / 24);
 
-                if (diffMin < 2) return "À l'instant";
-                if (diffMin < 60) return `Il y a ${diffMin} min`;
-                if (diffHours < 24) return `Il y a ${diffHours} h`;
-                if (diffDays < 7) return `Il y a ${diffDays} j`;
-                return date.toLocaleDateString();
+                if (diffMin < 2) return isAr ? "الآن" : "À l'instant";
+                if (diffMin < 60) return isAr ? `منذ ${diffMin} د` : `Il y a ${diffMin} min`;
+                if (diffHours < 24) return isAr ? `منذ ${diffHours} س` : `Il y a ${diffHours} h`;
+                if (diffDays < 7) return isAr ? `منذ ${diffDays} ي` : `Il y a ${diffDays} j`;
+                return date.toLocaleDateString(isAr ? 'ar-EG' : 'fr-FR');
             }
 
             function escapeHtml(str) {

@@ -48,21 +48,7 @@
             align-items: center;
         }
 
-        .app-header {
-            width: 100%;
-            background: var(--color-primary);
-            border-bottom: 2px solid rgba(0, 188, 212, 0.4);
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-sizing: border-box;
-            color: var(--color-white);
-            box-shadow: 0 4px 20px rgba(11, 83, 148, 0.22);
-        }
+
 
         main {
             width: 100%;
@@ -1642,61 +1628,65 @@
                 gap: 0.4rem;
             }
         }
+
+        /* -------------------------------------------------------------
+           RESPONSIVE MOBILE (<480px) - SAUVETAGE GRILLES & ZERO OVERFLOW
+           ------------------------------------------------------------- */
+        @media (max-width: 480px) {
+            .source-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.6rem;
+            }
+            .lang-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.6rem;
+            }
+            .color-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem;
+            }
+            .pos-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.5rem;
+            }
+
+            /* Blindage Tap Targets (>= 44px Apple HIG) */
+            .source-card,
+            .lang-card,
+            .color-card,
+            .pos-card {
+                min-height: 44px;
+            }
+            .btn-action,
+            .btn-generate,
+            .btn-reset,
+            .btn-download {
+                min-height: 44px;
+            }
+
+            /* Éradication Auto-Zoom Safari iOS */
+            input,
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+
+            /* Cartes et marges internes adaptées */
+            .card {
+                padding: 1.1rem 1rem !important;
+            }
+            .page-intro {
+                padding: 0 0.5rem;
+            }
+            .page-intro h2 {
+                font-size: 1.4rem;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <header class="app-header" id="ayaGlobalNavbar">
-        <div class="brand">
-            <div class="avatar-badge">
-                <span class="avatar-initials">آية</span>
-                <span class="status-dot"></span>
-            </div>
-            <div>
-                <h1 id="navbarBrandTitle">وكيل التَّرْجَمَة آيَة <span class="badge-tag green">Arabe Palestinien ↔ Français</span></h1>
-                <p class="subtitle" id="navbarBrandSub">Studio de doublage, transcription et synchronisation instantanée</p>
-            </div>
-        </div>
-        <div class="header-actions">
-            <div class="user-badge" id="navbarUserBadge">
-                <span id="navbarUserName">👤 Connecté</span>
-                <button class="btn-logout" id="navbarLogoutBtn" title="Se déconnecter">🚪</button>
-            </div>
-            <div class="lang-switcher">
-                <button class="lang-toggle-btn active" id="langFrBtn">🇫🇷 FR</button>
-                <button class="lang-toggle-btn" id="langArBtn">🇵🇸 العربية</button>
-            </div>
-            <!-- Lien 1 : Chat (Accueil) -->
-            <a href="/" class="btn-nav-link" id="navHomeLink">
-                <span>💬</span> <span id="navHomeText">Chat (Accueil)</span>
-            </a>
-            <!-- Lien 2 : Studio / Traducteur -->
-            <a href="/traducteur" class="btn-nav-link" id="navTraducteurLink">
-                <span>🛠️</span> <span id="navTraducteurText">Studio / Traducteur</span>
-            </a>
-            <!-- Lien 3 : Traduction & Sous-titres -->
-            <a href="/traduction" class="btn-nav-link active" id="navTraductionLink">
-                <span>✨</span> <span id="navTraductionText">Traduction & Sous-titres</span>
-            </a>
-            <!-- Lien 4 : Studio TikTok V3 -->
-            <a href="/studio" class="btn-nav-link" id="navStudioLink">
-                <span>🎬</span> <span id="navStudioText">Studio TikTok V3</span>
-            </a>
-            <!-- Lien 5 : Mur Communautaire -->
-            <a href="/communaute" class="btn-nav-link" id="navCommunauteLink">
-                <span>🌍</span> <span id="navCommunauteText">Communauté</span>
-            </a>
-            <!-- Lien 6 : Modération -->
-            <a href="/moderation" class="btn-nav-link" id="navModerationLink" style="opacity: 0.88;">
-                <span>🛡️</span> <span id="navModerationText">Modération</span>
-            </a>
-            <!-- Lien 7 : Mon Profil -->
-            <a href="/profil" class="btn-nav-link" id="navProfilLink">
-                <span>👤</span> <span id="navProfilText">Mon Profil</span>
-            </a>
-            <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">Serveur Actif</span></span>
-        </div>
-    </header>
+    <header class="app-header" id="ayaGlobalNavbar"></header>
 
     <main>
         <div class="page-intro">

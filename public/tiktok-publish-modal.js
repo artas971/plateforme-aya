@@ -54,10 +54,19 @@
             chkStitches: "Collages",
             btnSaveDraft: "💾 Enregistrer en Brouillon",
             draftRestored: "✨ Brouillon local restauré",
+            draftSaved: "💾 Brouillon sauvegardé avec succès !",
             btnCancel: "Annuler",
             btnPublish: "Valider & Publier sur TikTok",
             progressText: "Transmission vers TikTok...",
-            close: "Fermer"
+            close: "Fermer",
+            linked: "✓ Lié",
+            connectAccount: "🔗 Lier mon compte TikTok",
+            statusUnavailable: "⚠️ Statut non disponible",
+            descTooLong: "La description dépasse la limite maximale",
+            publishing: "Publication en cours...",
+            published: "Vidéo Publiée",
+            retryPublish: "Réessayer la Publication",
+            publishSuccess: "Vidéo envoyée avec succès à TikTok !"
         },
         ar: {
             title: "استوديو آية — مراجعة ونشر تيك توك",
@@ -92,10 +101,19 @@
             chkStitches: "دمج",
             btnSaveDraft: "💾 حفظ كمسودة",
             draftRestored: "✨ تم استرجاع المسودة المحلية",
+            draftSaved: "💾 تم حفظ المسودة بنجاح!",
             btnCancel: "إلغاء",
             btnPublish: "اعتماد ونشر على تيك توك",
             progressText: "جاري الإرسال والمعالجة على تيك توك...",
-            close: "إغلاق"
+            close: "إغلاق",
+            linked: "✓ متصل",
+            connectAccount: "🔗 ربط حساب تيك توك",
+            statusUnavailable: "⚠️ الحالة غير متاحة",
+            descTooLong: "الوصف يتجاوز الحد الأقصى المسموح به",
+            publishing: "جاري النشر...",
+            published: "تم النشر بنجاح",
+            retryPublish: "إعادة محاولة النشر",
+            publishSuccess: "تم إرسال الفيديو بنجاح إلى تيك توك!"
         }
     };
 
@@ -407,9 +425,11 @@
                 savedAt: new Date().toISOString()
             };
             localStorage.setItem(storageKey, JSON.stringify(draft));
+            const isAr = isArabic();
+            const d = isAr ? modalDict.ar : modalDict.fr;
             const badge = modal.querySelector('#ttDraftBadge');
             if (badge) {
-                badge.textContent = '💾 Brouillon sauvegardé avec succès !';
+                badge.textContent = d.draftSaved;
                 badge.style.display = 'inline-block';
                 setTimeout(() => { badge.style.display = 'none'; }, 3000);
             }
@@ -437,7 +457,8 @@
         if (!textarea || !counter) return;
 
         const count = textarea.value.length;
-        counter.textContent = `${count.toLocaleString()} / ${MAX_TIKTOK_CHARS} car.`;
+        const isAr = isArabic();
+        counter.textContent = `${count.toLocaleString()} / ${MAX_TIKTOK_CHARS} ${isAr ? 'حرف' : 'car.'}`;
 
         if (count > MAX_TIKTOK_CHARS) {
             counter.className = 'tt-counter-danger';
@@ -459,6 +480,9 @@
         const container = currentModalEl.querySelector('#ttAccountBadgeContainer');
         if (!container) return;
 
+        const isAr = isArabic();
+        const d = isAr ? modalDict.ar : modalDict.fr;
+
         try {
             const res = await fetch('/api/tiktok/auth/status');
             const data = await res.json();
@@ -468,13 +492,13 @@
                     <div class="tt-account-badge">
                         ${data.avatarUrl ? `<img src="${data.avatarUrl}" class="tt-account-avatar" alt="Avatar">` : '<span style="font-size:0.85rem">👤</span>'}
                         <span class="tt-account-name">@${data.displayName || 'TikTok'}</span>
-                        <span class="tt-account-check">✓ Lié</span>
+                        <span class="tt-account-check">${d.linked}</span>
                     </div>
                 `;
             } else {
                 container.innerHTML = `
                     <button type="button" id="ttBtnConnect" class="tt-btn-connect">
-                        🔗 Lier mon compte TikTok
+                        ${d.connectAccount}
                     </button>
                 `;
                 const btnConn = container.querySelector('#ttBtnConnect');
@@ -493,7 +517,7 @@
                 }
             }
         } catch (e) {
-            container.innerHTML = `<span class="tt-badge-loading">⚠️ Statut non disponible</span>`;
+            container.innerHTML = `<span class="tt-badge-loading">${d.statusUnavailable}</span>`;
         }
     }
 
@@ -513,16 +537,19 @@
         const progressBar = modal.querySelector('#ttProgressBar');
         const progressText = modal.querySelector('#ttProgressText');
 
+        const isAr = isArabic();
+        const d = isAr ? modalDict.ar : modalDict.fr;
+
         if (textareaDesc.value.length > MAX_TIKTOK_CHARS) {
-            showFeedback(feedback, 'error', `La description dépasse la limite maximale (${MAX_TIKTOK_CHARS} car.).`);
+            showFeedback(feedback, 'error', `${d.descTooLong} (${MAX_TIKTOK_CHARS} car.).`);
             return;
         }
 
         btnPublish.disabled = true;
-        btnPublish.innerHTML = '<span>⏳</span> Publication en cours...';
+        btnPublish.innerHTML = `<span>⏳</span> ${d.publishing}`;
         progressBox.style.display = 'flex';
         progressBar.style.width = '25%';
-        progressText.textContent = 'Préparation des métadonnées et validation...';
+        progressText.textContent = isAr ? 'إعداد البيانات والتحقق...' : 'Préparation des métadonnées et validation...';
         feedback.style.display = 'none';
 
         const payload = {
@@ -546,7 +573,7 @@
             // INTERCEPTION D'EXPIRATION 401 (SILENT REFRESH VICTOR)
             if (res.status === 401) {
                 console.warn("[TIKTOK MODAL] ⚠️ Réponse 401. Déclenchement du Silent Refresh...");
-                showFeedback(feedback, 'warning', 'Jeton expiré : renouvellement silencieux de la session TikTok en cours...');
+                showFeedback(feedback, 'warning', isAr ? 'انتهت صلاحية الجلسة: جاري تجديد جلسة تيك توك تلقائياً...' : 'Jeton expiré : renouvellement silencieux de la session TikTok en cours...');
                 progressBar.style.width = '65%';
 
                 const refRes = await fetch('/api/tiktok/auth/refresh', {
@@ -557,7 +584,7 @@
 
                 if (refRes.ok && refData.success) {
                     progressBar.style.width = '80%';
-                    progressText.textContent = 'Jeton renouvelé. Seconde tentative de diffusion...';
+                    progressText.textContent = isAr ? 'تم تجديد الجلسة. جاري إعادة المحاولة...' : 'Jeton renouvelé. Seconde tentative de diffusion...';
 
                     // Deuxième tentative transparente
                     res = await fetch('/api/tiktok/publish', {
@@ -566,19 +593,19 @@
                         body: JSON.stringify(payload)
                     });
                 } else {
-                    throw new Error("Votre session TikTok a expiré. Veuillez reconnecter votre compte.");
+                    throw new Error(isAr ? "انتهت جلسة تيك توك. يرجى إعادة ربط الحساب." : "Votre session TikTok a expiré. Veuillez reconnecter votre compte.");
                 }
             }
 
             const data = await res.json();
             if (!res.ok || !data.success) {
-                throw new Error(data.error || data.message || "Échec lors de la transmission à TikTok.");
+                throw new Error(data.error || data.message || (isAr ? "فشل أثناء الإرسال إلى تيك توك." : "Échec lors de la transmission à TikTok."));
             }
 
             progressBar.style.width = '100%';
-            progressText.textContent = 'Publication réussie !';
-            showFeedback(feedback, 'success', `🎉 Vidéo envoyée avec succès à TikTok ! (ID tâche : ${data.publish_id || 'OK'})`);
-            btnPublish.innerHTML = '<span>✅</span> Vidéo Publiée';
+            progressText.textContent = isAr ? 'تم النشر بنجاح!' : 'Publication réussie !';
+            showFeedback(feedback, 'success', `🎉 ${d.publishSuccess} (ID: ${data.publish_id || 'OK'})`);
+            btnPublish.innerHTML = `<span>✅</span> ${d.published}`;
 
             // Nettoyage du brouillon
             const storageKey = `aya_tiktok_draft_${currentMediaData.mp4_filename || 'current'}`;
@@ -592,7 +619,7 @@
             console.error("[TIKTOK PUBLISH ERROR]", err);
             showFeedback(feedback, 'error', err.message);
             btnPublish.disabled = false;
-            btnPublish.innerHTML = '<span>🚀</span> Réessayer la Publication';
+            btnPublish.innerHTML = `<span>🚀</span> ${d.retryPublish}`;
             progressBox.style.display = 'none';
         }
     }

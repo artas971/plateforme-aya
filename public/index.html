@@ -64,20 +64,48 @@
             align-items: center;
         }
         .chat-input-bar input {
-            font-size: 1rem;
+            font-size: 16px !important;
             padding: 12px 16px;
             border-radius: 10px;
+            min-height: 44px;
         }
         .chat-input-bar .mic-chat-btn {
             padding: 12px 18px;
             font-size: 1.15rem;
             border-radius: 10px;
+            min-height: 44px;
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .chat-input-bar #chatSendBtn {
             padding: 12px 22px;
             font-size: 1rem;
             font-weight: 700;
             border-radius: 10px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (max-width: 480px) {
+            .chat-main-container {
+                margin: 10px auto 20px auto;
+                padding: 0 0.5rem;
+            }
+            .chat-card-body {
+                padding: 12px 8px;
+            }
+            .chat-input-bar {
+                gap: 6px;
+            }
+            .chat-input-bar #chatSendBtn {
+                padding: 10px 14px;
+            }
+            .chat-input-bar .mic-chat-btn {
+                padding: 10px 12px;
+            }
         }
     </style>
 </head>
@@ -237,6 +265,7 @@
         </footer>
     </div>
 
+    <script src="/aya-i18n.js"></script>
     <script src="app.js"></script>
     <script src="/feedback-widget.js"></script>
     <!-- Bandeau de Cookies Techniques (RGPD) -->

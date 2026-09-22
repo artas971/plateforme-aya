@@ -35,6 +35,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
 
     <style>
         :root {
@@ -889,6 +890,96 @@
             .hero-title { font-size: 2.2rem; }
             .mockup-grid { grid-template-columns: 1fr; }
             .nav-actions .nav-link { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .landing-header {
+                padding: 10px 14px;
+            }
+            .brand-badge-pill {
+                display: none;
+            }
+            .nav-actions {
+                gap: 8px;
+            }
+            .btn-nav-cta {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+            }
+            .btn-nav-login {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                padding: 8px 10px;
+            }
+            .lang-btn {
+                min-height: 44px;
+                min-width: 44px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .hero-title {
+                font-size: 1.75rem;
+            }
+            .hero-subtitle {
+                font-size: 0.95rem;
+            }
+            .hero-cta-group {
+                flex-direction: column;
+                width: 100%;
+                gap: 12px;
+            }
+            .btn-hero-primary,
+            .btn-hero-secondary {
+                width: 100%;
+                justify-content: center;
+                min-height: 44px;
+                box-sizing: border-box;
+            }
+            .hero-guarantees {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .hero-guarantees span:nth-child(2),
+            .hero-guarantees span:nth-child(4) {
+                display: none;
+            }
+
+            /* Sauvetage Bloc Don PayPal Mobile */
+            .paypal-solidarity-block {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 16px !important;
+                padding: 18px 16px !important;
+            }
+            .btn-paypal-donate {
+                width: 100% !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                justify-content: center !important;
+                min-height: 44px !important;
+                box-sizing: border-box !important;
+            }
+            .features-grid,
+            .pricing-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .price-card {
+                padding: 24px 18px !important;
+            }
+            .btn-price-action {
+                min-height: 44px !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            input, select, textarea {
+                font-size: 16px !important;
+            }
         }
     </style>
 </head>

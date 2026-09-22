@@ -690,3 +690,137 @@
     cursor: not-allowed;
     transform: none;
 }
+
+/* ==========================================================================
+   RESPONSIVE MOBILE & ERGONOMIE (max-width: 768px) - SAUVETAGE ZERO-OVERFLOW
+   ========================================================================== */
+@media screen and (max-width: 768px) {
+    .tt-modal-backdrop {
+        padding: 8px;
+    }
+
+    .tt-modal-card {
+        max-height: 96vh;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .tt-modal-header {
+        padding: 0.85rem 1rem;
+    }
+
+    .tt-modal-body {
+        flex-direction: column !important;
+        gap: 1.25rem;
+        padding: 1rem;
+    }
+
+    .tt-col-left {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .tt-phone-frame {
+        width: 240px;
+        height: 426px;
+        margin: 0 auto;
+    }
+
+    .tt-col-right {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Éradication Auto-Zoom Safari iOS sur les champs TikTok */
+    .tt-modal-card input,
+    .tt-modal-card textarea,
+    .tt-modal-card select,
+    .tt-input,
+    .tt-caption-input,
+    .tt-select {
+        font-size: 16px !important;
+    }
+
+    /* Blindage Tap Targets (>= 44px) */
+    .tt-btn-close {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        padding: 0;
+    }
+
+    .tt-tab-btn,
+    .tt-btn-safezone {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.4rem 0.85rem;
+    }
+
+    .tt-btn-connect,
+    .tt-btn-publish,
+    .tt-btn-cancel,
+    .tt-btn-quick-tag {
+        min-height: 44px;
+    }
+
+    .tt-modal-footer {
+        padding: 0.85rem 1rem;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tt-modal-footer .tt-btn-publish,
+    .tt-modal-footer .tt-btn-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ==========================================================================
+   SUPPORT RTL ARABE (html[dir="rtl"])
+   ========================================================================== */
+html[dir="rtl"] .tt-modal-card {
+    text-align: right;
+    direction: rtl;
+    font-family: var(--font-arabic, 'Cairo', sans-serif);
+}
+
+html[dir="rtl"] .tt-modal-header {
+    direction: rtl;
+}
+
+html[dir="rtl"] .tt-header-left {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .tt-header-right {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .tt-modal-body {
+    direction: rtl;
+}
+
+html[dir="rtl"] .tt-input-group label {
+    text-align: right;
+}
+
+html[dir="rtl"] .tt-caption-actions {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .tt-form-check {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .tt-modal-footer {
+    direction: rtl;
+}
