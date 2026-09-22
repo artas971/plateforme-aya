@@ -644,8 +644,139 @@
         html[dir="rtl"] .kpi-header {
             flex-direction: row;
         }
-        html[dir="rtl"] .panel-title {
-            direction: rtl;
+        /* Admin Tabs System */
+        .admin-tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .admin-tab-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .admin-tab-btn:hover {
+            background: rgba(0, 188, 212, 0.1);
+            color: var(--primary);
+            border-color: var(--border-focus);
+        }
+        .admin-tab-btn.active-tab {
+            background: var(--color-primary-blue);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(11, 83, 148, 0.35);
+        }
+
+        /* Post Card Admin */
+        .admin-post-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 18px;
+            margin-top: 16px;
+        }
+        .admin-post-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color 0.2s;
+        }
+        .admin-post-card.is-pinned {
+            border-color: rgba(0, 188, 212, 0.5);
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.15);
+        }
+        .admin-post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-post-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* Chat Message Admin */
+        .admin-chat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .admin-chat-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .admin-chat-card.private-msg {
+            border-color: rgba(245, 158, 11, 0.4);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        /* Modals */
+        .admin-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .admin-modal-card {
+            background: #0f172a;
+            border: 1px solid var(--border-focus);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .admin-modal-card input, .admin-modal-card textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+        }
+        .admin-modal-card label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
     </style>
 </head>
@@ -670,7 +801,8 @@
                 <button id="refreshBtn" class="btn btn-ghost" onclick="fetchAdminData()">
                     <span id="refreshIcon">🔄</span> Actualiser
                 </button>
-                <a href="/moderation" class="btn btn-ghost">🛡️ Modération</a>
+                <a href="/communaute" class="btn btn-ghost">🌍 Communauté</a>
+                <a href="/chat-en-direct" class="btn btn-ghost">💬 Direct</a>
                 <a href="/profil" class="btn btn-ghost">👤 Mon Profil</a>
                 <a href="/api/auth/logout" class="btn btn-ghost" style="color: #ef4444;">🚪 Quitter</a>
             </div>
@@ -680,195 +812,299 @@
     <!-- Main Dashboard Container -->
     <div class="container">
         
-        <!-- Page Meta & Controls -->
-        <div class="page-meta">
-            <div class="page-title-group">
-                <h1>Tour de Contrôle & Business KPIs</h1>
-                <p>Supervision en temps réel des utilisateurs, des ventes Stripe et de la santé serveur.</p>
-            </div>
-            <div class="refresh-group">
-                <label class="auto-refresh-label">
-                    <input type="checkbox" id="autoRefreshToggle" checked> Auto-refresh (30s)
-                </label>
-                <span>•</span>
-                <span id="lastUpdated">Dernière synchro : --:--:--</span>
-            </div>
+        <!-- Navigation Onglets Admin -->
+        <div class="admin-tab-bar">
+            <button class="admin-tab-btn active-tab" id="tabBtnDashboard" onclick="switchAdminTab('dashboard')">
+                📊 KPIs &amp; Business
+            </button>
+            <button class="admin-tab-btn" id="tabBtnModeration" onclick="switchAdminTab('moderation')">
+                🗞️ Modération Posts <span id="tabPendingBadge" class="pill-badge pill-amber" style="margin-left: 4px; display: none;">0</span>
+            </button>
+            <button class="admin-tab-btn" id="tabBtnChat" onclick="switchAdminTab('chat')">
+                💬 Supervision Chat
+            </button>
         </div>
 
-        <!-- 4 Grand KPI Cards -->
-        <div class="kpi-grid">
-            
-            <!-- KPI 1 : Inscrits -->
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <span class="kpi-label">Communauté & Inscrits</span>
-                    <div class="kpi-icon-wrap icon-emerald">👥</div>
+
+        
+        <!-- ONGLET 1 : KPIs & Business Dashboard -->
+        <div id="tabViewDashboard">
+            <!-- Page Meta & Controls -->
+            <div class="page-meta">
+                <div class="page-title-group">
+                    <h1>Tour de Contrôle &amp; Business KPIs</h1>
+                    <p>Supervision en temps réel des utilisateurs, des ventes Stripe et de la santé serveur.</p>
                 </div>
-                <div class="kpi-value" id="kpiUsers">--</div>
-                <div class="kpi-sub">
-                    <span class="pill-badge pill-green" id="kpiNewUsers24h">+0 en 24h</span>
-                    <span>Comptes enregistrés</span>
+                <div class="refresh-group">
+                    <label class="auto-refresh-label">
+                        <input type="checkbox" id="autoRefreshToggle" checked> Auto-refresh (30s)
+                    </label>
+                    <span>•</span>
+                    <span id="lastUpdated">Dernière synchro : --:--:--</span>
                 </div>
             </div>
 
-            <!-- KPI 2 : Chiffre d'Affaires Brut -->
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <span class="kpi-label">Chiffre d'Affaires Brut</span>
-                    <div class="kpi-icon-wrap icon-amber">💳</div>
-                </div>
-                <div class="kpi-value" id="kpiRevenue">-- €</div>
-                <div class="kpi-sub">
-                    <span class="pill-badge pill-amber" id="kpiCreditsSold">0 crédits</span>
-                    <span>Vendus via Stripe</span>
-                </div>
-            </div>
-
-            <!-- KPI 3 : Vidéos Générées -->
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <span class="kpi-label">Vidéos Générées</span>
-                    <div class="kpi-icon-wrap icon-indigo">🎬</div>
-                </div>
-                <div class="kpi-value" id="kpiVideos">--</div>
-                <div class="kpi-sub">
-                    <span class="pill-badge pill-blue">Format TikTok 9:16</span>
-                    <span>Sous-titrage VOSTFR</span>
-                </div>
-            </div>
-
-            <!-- KPI 4 : Santé & Uptime Serveur -->
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <span class="kpi-label">Santé Serveur & Uptime</span>
-                    <div class="kpi-icon-wrap icon-teal">⚡</div>
-                </div>
-                <div class="kpi-value" id="kpiUptime" style="font-size: 1.75rem;">--</div>
-                <div class="kpi-sub">
-                    <span class="pill-badge pill-green" id="kpiDbStatus">MongoDB</span>
-                    <span id="kpiRam">RAM : -- Mo</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Section Détails (Ventes Stripe & Specs Système) -->
-        <div class="content-grid">
-            
-            <!-- Détails Vente de Packs -->
-            <div class="panel-card">
-                <div class="panel-title">
-                    <span>📦 Répartition des Ventes de Packs Stripe</span>
-                    <a href="https://dashboard.stripe.com/test/payments" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size: 0.75rem; padding: 0.3rem 0.65rem;">
-                        Stripe Dashboard ↗
-                    </a>
-                </div>
-                <div class="packs-breakdown">
-                    
-                    <div class="pack-item">
-                        <div class="pack-info">
-                            <div class="pack-badge pack-1-badge">1</div>
-                            <div>
-                                <div class="pack-name">Pack Solo (1 Crédit)</div>
-                                <div class="pack-price">0,99 € • Idéal découverte</div>
-                            </div>
-                        </div>
-                        <div class="pack-count" id="countPack1">0</div>
-                    </div>
-
-                    <div class="pack-item">
-                        <div class="pack-info">
-                            <div class="pack-badge pack-5-badge">5</div>
-                            <div>
-                                <div class="pack-name">Pack Créateur (5 Crédits)</div>
-                                <div class="pack-price">2,99 € • Pack populaire</div>
-                            </div>
-                        </div>
-                        <div class="pack-count" id="countPack5">0</div>
-                    </div>
-
-                    <div class="pack-item">
-                        <div class="pack-info">
-                            <div class="pack-badge pack-25-badge">25</div>
-                            <div>
-                                <div class="pack-name">Pack Pro (25 Crédits)</div>
-                                <div class="pack-price">9,99 € • Volume & Économie</div>
-                            </div>
-                        </div>
-                        <div class="pack-count" id="countPack25">0</div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Specs Système & Infrastructure Hetzner -->
-            <div class="panel-card">
-                <div class="panel-title">
-                    <span>🖥️ Infrastructure & Profil d'Exécution</span>
-                    <span class="pill-badge pill-green" id="sysEnvBadge">PRODUCTION</span>
-                </div>
+            <!-- 4 Grand KPI Cards -->
+            <div class="kpi-grid">
                 
-                <div class="sys-info-grid">
-                    <div class="sys-info-item">
-                        <div class="sys-info-label">Mode Base de Données</div>
-                        <div class="sys-info-val" id="sysDbMode">--</div>
+                <!-- KPI 1 : Inscrits -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Communauté &amp; Inscrits</span>
+                        <div class="kpi-icon-wrap icon-emerald">👥</div>
+                    </div>
+                    <div class="kpi-value" id="kpiUsers">--</div>
+                    <div class="kpi-sub">
+                        <span class="pill-badge pill-green" id="kpiNewUsers24h">+0 en 24h</span>
+                        <span>Comptes enregistrés</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2 : Chiffre d'Affaires Brut -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Chiffre d'Affaires Brut</span>
+                        <div class="kpi-icon-wrap icon-amber">💳</div>
+                    </div>
+                    <div class="kpi-value" id="kpiRevenue">-- €</div>
+                    <div class="kpi-sub">
+                        <span class="pill-badge pill-amber" id="kpiCreditsSold">0 crédits</span>
+                        <span>Vendus via Stripe</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3 : Vidéos Générées -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Vidéos Générées</span>
+                        <div class="kpi-icon-wrap icon-indigo">🎬</div>
+                    </div>
+                    <div class="kpi-value" id="kpiVideos">--</div>
+                    <div class="kpi-sub">
+                        <span class="pill-badge pill-blue">Format TikTok 9:16</span>
+                        <span>Sous-titrage VOSTFR</span>
+                    </div>
+                </div>
+
+                <!-- KPI 4 : Santé & Uptime Serveur -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Santé Serveur &amp; Uptime</span>
+                        <div class="kpi-icon-wrap icon-teal">⚡</div>
+                    </div>
+                    <div class="kpi-value" id="kpiUptime" style="font-size: 1.75rem;">--</div>
+                    <div class="kpi-sub">
+                        <span class="pill-badge pill-green" id="kpiDbStatus">MongoDB</span>
+                        <span id="kpiRam">RAM : -- Mo</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Section Détails (Ventes Stripe & Specs Système) -->
+            <div class="content-grid">
+                
+                <!-- Détails Vente de Packs -->
+                <div class="panel-card">
+                    <div class="panel-title">
+                        <span>📦 Répartition des Ventes de Packs Stripe</span>
+                        <a href="https://dashboard.stripe.com/test/payments" target="_blank" rel="noopener" class="btn btn-ghost" style="font-size: 0.75rem; padding: 0.3rem 0.65rem;">
+                            Stripe Dashboard ↗
+                        </a>
+                    </div>
+                    <div class="packs-breakdown">
+                        
+                        <div class="pack-item">
+                            <div class="pack-info">
+                                <div class="pack-badge pack-1-badge">1</div>
+                                <div>
+                                    <div class="pack-name">Pack Solo (1 Crédit)</div>
+                                    <div class="pack-price">0,99 € • Idéal découverte</div>
+                                </div>
+                            </div>
+                            <div class="pack-count" id="countPack1">0</div>
+                        </div>
+
+                        <div class="pack-item">
+                            <div class="pack-info">
+                                <div class="pack-badge pack-5-badge">5</div>
+                                <div>
+                                    <div class="pack-name">Pack Créateur (5 Crédits)</div>
+                                    <div class="pack-price">2,99 € • Pack populaire</div>
+                                </div>
+                            </div>
+                            <div class="pack-count" id="countPack5">0</div>
+                        </div>
+
+                        <div class="pack-item">
+                            <div class="pack-info">
+                                <div class="pack-badge pack-25-badge">25</div>
+                                <div>
+                                    <div class="pack-name">Pack Pro (25 Crédits)</div>
+                                    <div class="pack-price">9,99 € • Volume &amp; Économie</div>
+                                </div>
+                            </div>
+                            <div class="pack-count" id="countPack25">0</div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Specs Système & Info Runtime -->
+                <div class="panel-card">
+                    <div class="panel-title">
+                        <span>⚙️ Spécifications du Serveur AYA</span>
+                        <span class="pill-badge pill-green" id="sysEnvBadge">PROD</span>
                     </div>
 
-                    <div class="sys-info-item">
-                        <div class="sys-info-label">Profil d'Exécution AYA</div>
-                        <div class="sys-info-val" id="sysProfile">--</div>
-                    </div>
+                    <div class="sys-info-grid">
+                        <div class="sys-info-item">
+                            <div class="sys-info-label">Mode Base de Données</div>
+                            <div class="sys-info-val" id="sysDbMode">--</div>
+                        </div>
 
-                    <div class="sys-info-item">
-                        <div class="sys-info-label">Moteur Node.js</div>
-                        <div class="sys-info-val" id="sysNode">--</div>
-                    </div>
+                        <div class="sys-info-item">
+                            <div class="sys-info-label">Profil d'Exécution</div>
+                            <div class="sys-info-val" id="sysProfile">--</div>
+                        </div>
 
-                    <div class="sys-info-item">
-                        <div class="sys-info-label">OS / Architecture</div>
-                        <div class="sys-info-val" id="sysPlatform">--</div>
-                    </div>
+                        <div class="sys-info-item">
+                            <div class="sys-info-label">Version Node.js</div>
+                            <div class="sys-info-val" id="sysNode">--</div>
+                        </div>
 
-                    <div class="sys-info-item">
-                        <div class="sys-info-label">Mémoire Heap / RSS</div>
-                        <div class="sys-info-val" id="sysMemFull">-- / -- Mo</div>
-                    </div>
+                        <div class="sys-info-item">
+                            <div class="sys-info-label">Système d'Exploitation</div>
+                            <div class="sys-info-val" id="sysPlatform">--</div>
+                        </div>
 
-                    <div class="sys-info-item">
-                        <div class="sys-info-label">Modération en attente</div>
-                        <div class="sys-info-val" id="sysPendingPosts">0 post(s)</div>
+                        <div class="sys-info-item">
+                            <div class="sys-info-label">Mémoire Heap / RSS</div>
+                            <div class="sys-info-val" id="sysMemFull">-- / -- Mo</div>
+                        </div>
+
+                        <div class="sys-info-item">
+                            <div class="sys-info-label">Modération en attente</div>
+                            <div class="sys-info-val" id="sysPendingPosts">0 post(s)</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Activity Feed (10 Derniers Événements) -->
+            <div class="activity-section">
+                <div class="panel-title">
+                    <span>📋 Journal des 10 Derniers Événements</span>
+                    <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-dim);">Flux chronologique temps réel</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Événement</th>
+                                <th>Détail / Utilisateur</th>
+                                <th>Horodatage</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                                    ⏳ Chargement des activités récentes...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 2 : Modération Posts (Communauté) -->
+        <div id="tabViewModeration" style="display: none;">
+            <div class="page-meta">
+                <div class="page-title-group">
+                    <h1>🗞️ Gestion &amp; Modération des Témoignages</h1>
+                    <p>Approuvez, rejetez, épinglez ou supprimez les témoignages du Mur Communautaire.</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="openCreatePostModal()">
+                        <span>➕</span> Nouveau post direct
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barre de filtres de statut -->
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--bg-card); padding: 14px 18px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="admin-tab-btn active-tab" id="postFilterPending" onclick="filterAdminPosts('pending')">⏳ En attente (<span id="countAdminPending">0</span>)</button>
+                    <button class="admin-tab-btn" id="postFilterApproved" onclick="filterAdminPosts('approved')">✅ Approuvés (<span id="countAdminApproved">0</span>)</button>
+                    <button class="admin-tab-btn" id="postFilterRejected" onclick="filterAdminPosts('rejected')">❌ Rejetés (<span id="countAdminRejected">0</span>)</button>
+                    <button class="admin-tab-btn" id="postFilterPinned" onclick="filterAdminPosts('pinned')">📌 Épinglés (<span id="countAdminPinned">0</span>)</button>
+                    <button class="admin-tab-btn" id="postFilterAll" onclick="filterAdminPosts('all')">🌍 Tous (<span id="countAdminAll">0</span>)</button>
+                </div>
+                <div>
+                    <input type="text" id="adminPostSearch" placeholder="🔍 Rechercher auteur, texte, tag..." style="padding: 8px 14px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 0.88rem; width: 240px;" oninput="renderAdminPosts()">
+                </div>
+            </div>
+
+            <!-- Grille des cartes de posts -->
+            <div id="adminPostGrid" class="admin-post-grid">
+                <!-- Injection dynamique JS -->
+            </div>
+        </div>
+
+        <!-- ONGLET 3 : Supervision Chat Éphémère -->
+        <div id="tabViewChat" style="display: none;">
+            <div class="page-meta">
+                <div class="page-title-group">
+                    <h1>💬 Supervision du Chat Éphémère (24h)</h1>
+                    <p>Contrôle d'urgence, purge glissante, modération des messages et archives d'échanges.</p>
+                </div>
+            </div>
+
+            <!-- Panneau de contrôle du Chat -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 1.2rem; font-weight: 700; color: #fff;">Statut du Chat :</span>
+                        <span id="chatStatusPill" class="pill-badge pill-green" style="font-size: 0.9rem; padding: 4px 12px;">🟢 Actif en écriture</span>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button id="btnToggleChatStatus" class="btn btn-ghost" onclick="toggleChatStatus()">
+                            <span>⛔</span> Désactiver le Chat
+                        </button>
+                        <button class="btn btn-ghost" onclick="triggerArchiveChat()">
+                            <span>📦</span> Archiver le Chat (JSON)
+                        </button>
+                        <button class="btn btn-ghost" style="color: #ef4444; border-color: rgba(239,68,68,0.4);" onclick="triggerResetChat()">
+                            <span>🗑️</span> Purger tout le Chat
+                        </button>
                     </div>
                 </div>
             </div>
 
-        </div>
+            <!-- Section Archives JSON -->
+            <details style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 20px; margin-top: 16px;">
+                <summary style="cursor: pointer; font-weight: 700; color: var(--primary); font-size: 1rem; user-select: none;">
+                    📂 Archives du Chat Téléchargeables (<span id="chatArchiveCount">0</span>)
+                </summary>
+                <div id="chatArchivesList" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                    <!-- Rendu dynamique JS -->
+                </div>
+            </details>
 
-        <!-- Activity Feed (10 Derniers Événements) -->
-        <div class="activity-section">
-            <div class="panel-title">
-                <span>📋 Journal des 10 Derniers Événements</span>
-                <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-dim);">Flux chronologique temps réel</span>
-            </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Événement</th>
-                            <th>Détail / Utilisateur</th>
-                            <th>Horodatage</th>
-                            <th>Statut</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activityTableBody">
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">
-                                ⏳ Chargement des activités récentes...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Flux de messages actifs -->
+            <div style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="font-size: 1.1rem; color: #fff; font-weight: 700;">📜 Messages Actifs (<span id="activeChatCount">0</span>) — Vue Admin Totale</h3>
+                    <button class="btn btn-ghost" style="font-size: 0.8rem; padding: 4px 10px;" onclick="fetchAdminChat()">🔄 Rafraîchir le flux</button>
+                </div>
+                <div id="adminChatList" class="admin-chat-list">
+                    <!-- Injection dynamique JS -->
+                </div>
             </div>
         </div>
 
@@ -880,16 +1116,86 @@
             <div style="font-size: 3rem; margin-bottom: 1rem;">⛔</div>
             <h2 style="color: #ef4444; margin-bottom: 0.75rem;">Accès Réservé (403)</h2>
             <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">
-                Cette tour de contrôle est strictement réservée à l'administrateur configuré (<strong id="deniedEmailMsg">ADMIN_EMAIL</strong>). Votre session actuelle n'est pas habilitée.
+                Cette tour de contrôle est strictly réservée à l'administrateur configuré (<strong id="deniedEmailMsg">ADMIN_EMAIL</strong>). Votre session actuelle n'est pas habilitée.
             </p>
             <a href="/profil" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">← Retour à mon Espace Profil</a>
         </div>
     </div>
 
-    <!-- Script de Récupération & Affichage des Métriques -->
+    <!-- Modal Formulaire : Nouveau Post Direct -->
+    <div id="createPostModal" class="admin-modal-backdrop" style="display: none;">
+        <div class="admin-modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: #fff; font-size: 1.2rem; font-weight: 800;">➕ Nouveau post direct (Approuvé)</h3>
+                <button onclick="closeCreatePostModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="createPostForm" onsubmit="submitDirectPost(event)">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <label>
+                        👤 Auteur / Pseudonyme :
+                        <input type="text" id="directAuthorInput" placeholder="Ex: Équipe Aya Studio, Témoin de Gaza..." required>
+                    </label>
+                    <label>
+                        🏷️ Mots-clés / Hashtags (séparés par des virgules) :
+                        <input type="text" id="directTagsInput" placeholder="Ex: Gaza, Temoignage, Espoir">
+                    </label>
+                    <label>
+                        🎬 URL Média (Vidéo / Audio) :
+                        <input type="text" id="directMediaUrlInput" placeholder="/uploads/posts/demo.mp4 ou URL externe">
+                    </label>
+                    <label>
+                        📝 Description &amp; Témoignage complet :
+                        <textarea id="directContentInput" rows="4" placeholder="Description du témoignage..." required></textarea>
+                    </label>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+                    <button type="button" class="btn btn-ghost" onclick="closeCreatePostModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary">🚀 Publier immédiatement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmation Sécurisée -->
+    <div id="confirmModal" class="admin-modal-backdrop" style="display: none;">
+        <div class="admin-modal-card" style="max-width: 440px;">
+            <h3 id="confirmModalTitle" style="color: #ef4444; font-size: 1.15rem; font-weight: 800;">⚠️ Confirmation requise</h3>
+            <p id="confirmModalText" style="color: #cbd5e1; font-size: 0.92rem; line-height: 1.5;">Voulez-vous vraiment exécuter cette action ?</p>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-ghost" onclick="closeConfirmModal()">Annuler</button>
+                <button id="btnConfirmAction" class="btn" style="background: #ef4444; color: #fff;">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Récupération &amp; Affichage des Métriques et Supervision -->
     <script>
         let autoRefreshTimer = null;
+        let currentAdminPosts = [];
+        let activeAdminPostFilter = 'pending';
+        let activeAdminTab = 'dashboard';
+        let confirmActionCallback = null;
 
+        // ── Gestion des Onglets Admin ──
+        function switchAdminTab(tab) {
+            activeAdminTab = tab;
+            ['Dashboard', 'Moderation', 'Chat'].forEach(t => {
+                const view = document.getElementById(`tabView${t}`);
+                const btn = document.getElementById(`tabBtn${t}`);
+                if (t.toLowerCase() === tab) {
+                    if (view) view.style.display = 'block';
+                    if (btn) btn.classList.add('active-tab');
+                } else {
+                    if (view) view.style.display = 'none';
+                    if (btn) btn.classList.remove('active-tab');
+                }
+            });
+
+            if (tab === 'moderation') fetchAdminPosts();
+            if (tab === 'chat') fetchAdminChat();
+        }
+
+        // ── Formatage Heure ──
         function formatRelativeTime(dateStr) {
             if (!dateStr) return '--';
             const date = new Date(dateStr);
@@ -902,9 +1208,10 @@
             return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
         }
 
+        // ── 1. Onglet Dashboard KPIs ──
         async function fetchAdminData() {
             const refreshIcon = document.getElementById('refreshIcon');
-            refreshIcon.classList.add('spin');
+            if (refreshIcon) refreshIcon.classList.add('spin');
 
             try {
                 const response = await fetch('/api/admin/stats', {
@@ -912,7 +1219,7 @@
                 });
 
                 if (response.status === 401) {
-                    window.location.href = '/login?redirect=/admin';
+                    window.location.href = '/login?redirect=/admin.html';
                     return;
                 }
 
@@ -922,72 +1229,58 @@
                 }
 
                 const data = await response.json();
+                if (!data.success) return;
 
-                if (!data.success) {
-                    console.error('Erreur API Admin :', data.error);
-                    return;
-                }
-
-                // 1. Remplissage des 4 Grandes Cartes KPIs
                 const kpis = data.kpis || {};
                 const sys = data.system || {};
 
                 document.getElementById('kpiUsers').textContent = kpis.totalUsers || 0;
                 document.getElementById('kpiNewUsers24h').textContent = `+${kpis.newUsers24h || 0} en 24h`;
-                
                 document.getElementById('kpiRevenue').textContent = `${(kpis.totalRevenueEur || 0).toFixed(2)} €`;
                 document.getElementById('kpiCreditsSold').textContent = `${kpis.totalCreditsSold || 0} crédits`;
-
                 document.getElementById('kpiVideos').textContent = kpis.totalVideos || 0;
-                
                 document.getElementById('kpiUptime').textContent = sys.uptimeFormatted || '--';
                 document.getElementById('kpiDbStatus').textContent = sys.dbConnected ? 'MongoDB OK' : 'Local JSON';
                 document.getElementById('kpiRam').textContent = `RAM : ${sys.memoryUsageMb ? sys.memoryUsageMb.heapUsed : '--'} Mo`;
 
-                // 2. Détail des Packs Stripe
                 const packs = kpis.packsSold || {};
                 document.getElementById('countPack1').textContent = packs.pack_1 || 0;
                 document.getElementById('countPack5').textContent = packs.pack_5 || 0;
                 document.getElementById('countPack25').textContent = packs.pack_25 || 0;
 
-                // 3. Spécifications Système
                 document.getElementById('sysEnvBadge').textContent = sys.environment || 'DEV';
                 document.getElementById('sysDbMode').textContent = sys.dbMode || '--';
                 document.getElementById('sysProfile').textContent = sys.execProfile || '--';
                 document.getElementById('sysNode').textContent = sys.nodeVersion || '--';
                 document.getElementById('sysPlatform').textContent = `${sys.platform || '--'}`;
-                
                 if (sys.memoryUsageMb) {
                     document.getElementById('sysMemFull').textContent = `${sys.memoryUsageMb.heapUsed} / ${sys.memoryUsageMb.rss} Mo`;
                 }
 
                 if (data.stats) {
-                    document.getElementById('sysPendingPosts').textContent = `${data.stats.pending || 0} post(s)`;
+                    const pendingCount = data.stats.pending || 0;
+                    document.getElementById('sysPendingPosts').textContent = `${pendingCount} post(s)`;
+                    const badge = document.getElementById('tabPendingBadge');
+                    if (badge) {
+                        badge.textContent = pendingCount;
+                        badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+                    }
                 }
 
-                // 4. Journal d'Activité Récent
                 renderActivities(data.recentActivities || []);
-
-                // 5. Mise à jour de l'heure
                 document.getElementById('lastUpdated').textContent = `Dernière synchro : ${new Date().toLocaleTimeString('fr-FR')}`;
 
             } catch (err) {
                 console.error('Erreur communication tour de contrôle :', err);
             } finally {
-                setTimeout(() => refreshIcon.classList.remove('spin'), 400);
+                if (refreshIcon) setTimeout(() => refreshIcon.classList.remove('spin'), 400);
             }
         }
 
         function renderActivities(list) {
             const tbody = document.getElementById('activityTableBody');
             if (!list || list.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">
-                            Aucune activité récente enregistrée.
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">Aucune activité récente.</td></tr>`;
                 return;
             }
 
@@ -995,58 +1288,413 @@
             list.forEach(item => {
                 let badgeClass = 'pill-blue';
                 let badgeText = 'Enregistré';
-
-                if (item.type === 'STRIPE_PURCHASE') {
-                    badgeClass = 'pill-amber';
-                    badgeText = 'Payé (Stripe)';
-                } else if (item.type === 'USER_REGISTRATION') {
-                    badgeClass = 'pill-green';
-                    badgeText = 'Nouveau Compte';
-                } else if (item.type === 'VIDEO_GENERATION') {
-                    badgeClass = 'pill-blue';
-                    badgeText = 'Généré';
-                }
+                if (item.type === 'STRIPE_PURCHASE') { badgeClass = 'pill-amber'; badgeText = 'Payé (Stripe)'; }
+                else if (item.type === 'USER_REGISTRATION') { badgeClass = 'pill-green'; badgeText = 'Nouveau Compte'; }
+                else if (item.type === 'VIDEO_GENERATION') { badgeClass = 'pill-blue'; badgeText = 'Généré'; }
 
                 html += `
                     <tr>
-                        <td style="width: 45px; text-align: center; font-size: 1.25rem;">
-                            ${item.icon || '📌'}
-                        </td>
-                        <td>
-                            <div class="activity-title-cell">
-                                <span>${item.title || 'Action'}</span>
-                            </div>
-                        </td>
+                        <td style="width: 45px; text-align: center; font-size: 1.25rem;">${item.icon || '📌'}</td>
+                        <td><div class="activity-title-cell"><span>${item.title || 'Action'}</span></div></td>
                         <td>${item.detail || '--'}</td>
-                        <td class="activity-date" title="${new Date(item.date || '').toLocaleString('fr-FR')}">
-                            ${formatRelativeTime(item.date)}
-                        </td>
-                        <td>
-                            <span class="pill-badge ${badgeClass}">${badgeText}</span>
-                        </td>
+                        <td class="activity-date" title="${new Date(item.date || '').toLocaleString('fr-FR')}">${formatRelativeTime(item.date)}</td>
+                        <td><span class="pill-badge ${badgeClass}">${badgeText}</span></td>
                     </tr>
                 `;
             });
-
             tbody.innerHTML = html;
         }
 
-        // Auto-refresh logic (30s)
-        function initAutoRefresh() {
-            const toggle = document.getElementById('autoRefreshToggle');
-            
-            function setupTimer() {
-                if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-                if (toggle.checked) {
-                    autoRefreshTimer = setInterval(fetchAdminData, 30000);
+        // ── 2. Onglet Modération Posts ──
+        async function fetchAdminPosts() {
+            try {
+                const res = await fetch('/api/admin/posts/pending');
+                const resPub = await fetch('/api/posts');
+                const dataPending = await res.json();
+                const dataPub = await resPub.json();
+
+                const pendingPosts = (dataPending.success ? dataPending.posts : []) || [];
+                const pubPosts = (dataPub.success ? dataPub.posts : []) || [];
+
+                const map = new Map();
+                pendingPosts.forEach(p => map.set(p._id || p.id, p));
+                pubPosts.forEach(p => map.set(p._id || p.id, p));
+                currentAdminPosts = Array.from(map.values());
+
+                let pendingC = 0, appC = 0, rejC = 0, pinC = 0;
+                currentAdminPosts.forEach(p => {
+                    if (p.moderationStatus === 'pending') pendingC++;
+                    if (p.moderationStatus === 'approved') appC++;
+                    if (p.moderationStatus === 'rejected') rejC++;
+                    if (p.isPinned) pinC++;
+                });
+
+                document.getElementById('countAdminPending').textContent = pendingC;
+                document.getElementById('countAdminApproved').textContent = appC;
+                document.getElementById('countAdminRejected').textContent = rejC;
+                document.getElementById('countAdminPinned').textContent = pinC;
+                document.getElementById('countAdminAll').textContent = currentAdminPosts.length;
+
+                renderAdminPosts();
+            } catch(e) {
+                console.error('Erreur chargement posts admin:', e);
+            }
+        }
+
+        function filterAdminPosts(filter) {
+            activeAdminPostFilter = filter;
+            ['Pending', 'Approved', 'Rejected', 'Pinned', 'All'].forEach(f => {
+                const btn = document.getElementById(`postFilter${f}`);
+                if (btn) {
+                    if (f.toLowerCase() === filter) btn.classList.add('active-tab');
+                    else btn.classList.remove('active-tab');
                 }
+            });
+            renderAdminPosts();
+        }
+
+        function renderAdminPosts() {
+            const grid = document.getElementById('adminPostGrid');
+            const search = (document.getElementById('adminPostSearch').value || '').toLowerCase();
+
+            let filtered = currentAdminPosts.filter(p => {
+                if (activeAdminPostFilter === 'pending' && p.moderationStatus !== 'pending') return false;
+                if (activeAdminPostFilter === 'approved' && p.moderationStatus !== 'approved') return false;
+                if (activeAdminPostFilter === 'rejected' && p.moderationStatus !== 'rejected') return false;
+                if (activeAdminPostFilter === 'pinned' && !p.isPinned) return false;
+
+                if (search) {
+                    const matchAuthor = (p.authorName || '').toLowerCase().includes(search);
+                    const matchContent = (p.originalContent || p.originalText || '').toLowerCase().includes(search);
+                    const matchTag = Array.isArray(p.tags) && p.tags.some(t => t.toLowerCase().includes(search));
+                    return matchAuthor || matchContent || matchTag;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-dim);">Aucun témoignage ne correspond à ce filtre.</div>`;
+                return;
             }
 
-            toggle.addEventListener('change', setupTimer);
+            grid.innerHTML = filtered.map(post => {
+                const id = post._id || post.id;
+                const statusBadge = post.moderationStatus === 'approved' 
+                    ? `<span class="pill-badge pill-green">✅ Approuvé</span>`
+                    : post.moderationStatus === 'rejected'
+                    ? `<span class="pill-badge pill-red" style="background:rgba(239,68,68,0.2);color:#f87171;">❌ Rejeté</span>`
+                    : `<span class="pill-badge pill-amber">⏳ En attente</span>`;
+
+                const pinBadge = post.isPinned ? `<span class="pill-badge pill-blue" style="margin-left:4px;">📌 Épinglé</span>` : '';
+                const contentText = post.originalContent || post.originalText || '';
+
+                let mediaPreview = '';
+                if (post.mediaUrl) {
+                    const cleanMediaUrl = post.mediaUrl.replace(/^https?:\/\/localhost:\d+/i, '');
+                    if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
+                        mediaPreview = `<video src="${cleanMediaUrl}" controls playsinline preload="metadata" style="width:100%; max-height:220px; border-radius:8px; background:#000; margin-top:6px; position:relative; z-index:2;"></video>`;
+                    } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(cleanMediaUrl)) {
+                        mediaPreview = `<audio src="${cleanMediaUrl}" controls preload="metadata" style="width:100%; margin-top:6px; position:relative; z-index:2;"></audio>`;
+                    }
+                }
+
+
+                return `
+                    <div class="admin-post-card ${post.isPinned ? 'is-pinned' : ''}">
+                        <div class="admin-post-header">
+                            <div>
+                                <strong style="color:#fff; font-size:0.95rem;">👤 ${post.authorName || 'Anonyme'}</strong>
+                                <span style="font-size:0.75rem; color:var(--text-dim); margin-left:8px;">${formatRelativeTime(post.createdAt)}</span>
+                            </div>
+                            <div>${statusBadge}${pinBadge}</div>
+                        </div>
+                        <p style="font-size:0.88rem; color:#cbd5e1; line-height:1.5; white-space:pre-wrap;">${contentText.slice(0, 280)}${contentText.length > 280 ? '...' : ''}</p>
+                        ${mediaPreview}
+                        <div class="admin-post-actions">
+                            ${post.moderationStatus !== 'approved' ? `<button class="btn btn-ghost" style="font-size:0.8rem; padding:4px 10px; color:#34d399;" onclick="updatePostStatus('${id}', 'approved')">✅ Approuver</button>` : ''}
+                            ${post.moderationStatus !== 'rejected' ? `<button class="btn btn-ghost" style="font-size:0.8rem; padding:4px 10px; color:#f87171;" onclick="updatePostStatus('${id}', 'rejected')">❌ Rejeter</button>` : ''}
+                            <button class="btn btn-ghost" style="font-size:0.8rem; padding:4px 10px; color:#67e8f9;" onclick="togglePinPost('${id}', ${!post.isPinned})">${post.isPinned ? '📌 Désépingler' : '📌 Épingler'}</button>
+                            <button class="btn btn-ghost" style="font-size:0.8rem; padding:4px 10px; color:#ef4444;" onclick="confirmDeletePost('${id}')">🗑️ Supprimer</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updatePostStatus(id, status) {
+            try {
+                const res = await fetch(`/api/admin/posts/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    fetchAdminPosts();
+                } else {
+                    alert(data.error || "Erreur de modération.");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function togglePinPost(id, isPinned) {
+            try {
+                const res = await fetch(`/api/posts/${id}/pin`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isPinned })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    fetchAdminPosts();
+                } else {
+                    alert(data.error || "Erreur d'épinglage.");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function confirmDeletePost(id) {
+            openConfirmModal("Supprimer ce témoignage ?", "Cette action supprimera définitivement le post de la base et du Mur Communautaire.", async () => {
+                try {
+                    const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (data.success) {
+                        // Suppression instantanée dans l'UI
+                        currentAdminPosts = currentAdminPosts.filter(p => (p._id || p.id) !== id);
+                        renderAdminPosts();
+                        fetchAdminPosts();
+                    } else {
+                        alert("Erreur serveur : " + (data.error || "Impossible de supprimer ce témoignage."));
+                    }
+                } catch(e) {
+                    console.error('Erreur suppression:', e);
+                    alert("Erreur réseau ou permission lors de la suppression : " + e.message);
+                }
+            });
+        }
+
+
+        // ── Modal Création Directe ──
+        function openCreatePostModal() {
+            document.getElementById('createPostModal').style.display = 'flex';
+        }
+        function closeCreatePostModal() {
+            document.getElementById('createPostModal').style.display = 'none';
+        }
+
+        async function submitDirectPost(e) {
+            e.preventDefault();
+            const authorName = document.getElementById('directAuthorInput').value;
+            const tags = document.getElementById('directTagsInput').value;
+            const mediaUrl = document.getElementById('directMediaUrlInput').value;
+            const originalContent = document.getElementById('directContentInput').value;
+
+            try {
+                const formData = new FormData();
+                formData.append('authorName', authorName);
+                formData.append('tags', tags);
+                formData.append('mediaUrl', mediaUrl);
+                formData.append('originalContent', originalContent);
+
+                const res = await fetch('/api/posts', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.success && data.post) {
+                    const createdId = data.post._id || data.post.id;
+                    await updatePostStatus(createdId, 'approved');
+                    closeCreatePostModal();
+                    document.getElementById('createPostForm').reset();
+                    fetchAdminPosts();
+                } else {
+                    alert(data.error || "Erreur de publication.");
+                }
+            } catch(err) {
+                console.error(err);
+            }
+        }
+
+        // ── 3. Onglet Supervision Chat ──
+        async function fetchAdminChat() {
+            try {
+                const res = await fetch('/api/chat/messages');
+                const data = await res.json();
+
+                if (data.success) {
+                    const messages = data.messages || [];
+                    document.getElementById('activeChatCount').textContent = messages.length;
+
+                    const statusPill = document.getElementById('chatStatusPill');
+                    const toggleBtn = document.getElementById('btnToggleChatStatus');
+                    if (data.disabled) {
+                        statusPill.className = 'pill-badge pill-red';
+                        statusPill.style.background = 'rgba(239,68,68,0.2)';
+                        statusPill.style.color = '#f87171';
+                        statusPill.textContent = '⛔ Chat Désactivé';
+                        toggleBtn.innerHTML = '<span>🟢</span> Activer le Chat';
+                    } else {
+                        statusPill.className = 'pill-badge pill-green';
+                        statusPill.style.background = 'rgba(16,185,129,0.2)';
+                        statusPill.style.color = '#34d399';
+                        statusPill.textContent = '🟢 Actif en écriture';
+                        toggleBtn.innerHTML = '<span>⛔</span> Désactiver le Chat';
+                    }
+
+                    renderChatMessages(messages);
+                }
+
+                fetchChatArchives();
+            } catch(e) {
+                console.error('Erreur chargement chat admin:', e);
+            }
+        }
+
+        function renderChatMessages(list) {
+            const container = document.getElementById('adminChatList');
+            if (list.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--text-dim);">Aucun message éphémère actif dans les dernières 24h.</div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(msg => {
+                const isPrivate = msg.recipient && msg.recipient !== 'all';
+                const privateTag = isPrivate ? `<span class="pill-badge pill-amber" style="margin-left:6px;">🔒 PRIVÉ (à ${msg.recipient})</span>` : '';
+                
+                return `
+                    <div class="admin-chat-card ${isPrivate ? 'private-msg' : ''}">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <strong style="color: #67e8f9;">👤 ${msg.sender || 'Anonyme'}</strong>
+                                <span style="font-size: 0.75rem; color: var(--text-dim);">${formatRelativeTime(msg.timestamp)}</span>
+                                ${privateTag}
+                            </div>
+                            <div style="font-size: 0.92rem; color: #fff;">${msg.originalText || ''}</div>
+                            ${msg.translatedText ? `<div style="font-size: 0.85rem; color: #94a3b8; font-style: italic; margin-top: 2px;"> Traduction : ${msg.translatedText}</div>` : ''}
+                        </div>
+                        <button class="btn btn-ghost" style="font-size: 0.8rem; padding: 4px 10px; color: #ef4444;" onclick="confirmDeleteChatMessage('${msg.id}')">🗑️ Supprimer</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleChatStatus() {
+            try {
+                const res = await fetch('/api/chat/toggle-status', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    fetchAdminChat();
+                } else {
+                    alert(data.error || "Erreur lors du changement de statut.");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function triggerArchiveChat() {
+            openConfirmModal("Archiver le Chat ?", "Une sauvegarde JSON horodatée de tous les messages actuels sera enregistrée.", async () => {
+                try {
+                    const res = await fetch('/api/chat/archive', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert("📦 Chat archivé avec succès !");
+                        fetchAdminChat();
+                    } else {
+                        alert(data.error || "Erreur d'archivage.");
+                    }
+                } catch(e) { console.error(e); }
+            });
+        }
+
+        function triggerResetChat() {
+            openConfirmModal("Purger TOUS les messages du Chat ?", "Attention : cette action supprimera définitivement tous les messages et audios du disque !", async () => {
+                try {
+                    const res = await fetch('/api/chat/reset', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert("🗑️ Chat réinitialisé avec succès.");
+                        fetchAdminChat();
+                    } else {
+                        alert(data.error || "Erreur de réinitialisation.");
+                    }
+                } catch(e) { console.error(e); }
+            });
+        }
+
+        function confirmDeleteChatMessage(messageId) {
+            openConfirmModal("Supprimer ce message ?", "Le message sera retiré du chat et son audio disque supprimé.", async () => {
+                try {
+                    const res = await fetch('/api/chat/delete-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messageId })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        fetchAdminChat();
+                    } else {
+                        alert(data.error || "Erreur de suppression.");
+                    }
+                } catch(e) { console.error(e); }
+            });
+        }
+
+        async function fetchChatArchives() {
+            try {
+                const res = await fetch('/api/admin/chat/archives');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.success && Array.isArray(data.archives)) {
+                    document.getElementById('chatArchiveCount').textContent = data.archives.length;
+                    const container = document.getElementById('chatArchivesList');
+                    if (data.archives.length === 0) {
+                        container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-dim);">Aucune archive trouvée.</div>`;
+                        return;
+                    }
+                    container.innerHTML = data.archives.map(arch => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 0.85rem;">
+                            <span>📄 ${arch.file || arch.id} (${Math.round((arch.size || 0)/1024)} Ko)</span>
+                            <a href="${arch.url || '#'}" download class="btn btn-ghost" style="font-size: 0.75rem; padding: 2px 8px;">📥 Télécharger JSON</a>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {}
+        }
+
+        // ── Modale de Confirmation Générique ──
+        function openConfirmModal(title, text, callback) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalText').textContent = text;
+            confirmActionCallback = callback;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            confirmActionCallback = null;
+        }
+
+        document.getElementById('btnConfirmAction').addEventListener('click', () => {
+            const cb = confirmActionCallback;
+            closeConfirmModal();
+            if (cb) cb();
+        });
+
+
+        // ── Auto-refresh logic (30s) ──
+        function initAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            function setupTimer() {
+                if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+                if (toggle && toggle.checked) {
+                    autoRefreshTimer = setInterval(() => {
+                        if (activeAdminTab === 'dashboard') fetchAdminData();
+                        if (activeAdminTab === 'moderation') fetchAdminPosts();
+                        if (activeAdminTab === 'chat') fetchAdminChat();
+                    }, 30000);
+                }
+            }
+            if (toggle) toggle.addEventListener('change', setupTimer);
             setupTimer();
         }
 
-        // Chargement initial
+        // ── Chargement initial ──
         document.addEventListener('DOMContentLoaded', () => {
             fetchAdminData();
             initAutoRefresh();

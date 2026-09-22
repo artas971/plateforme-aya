@@ -158,8 +158,9 @@ router.post('/', upload.single('media'), async (req, res) => {
         }
 
         // Détection du chemin média
-        let mediaUrl = body.mediaUrl || null;
+        let mediaUrl = body.mediaUrl ? body.mediaUrl.replace(/^https?:\/\/localhost:\d+/i, '') : null;
         let mediaType = 'text';
+
 
         if (req.file) {
             mediaUrl = `/uploads/posts/${req.file.filename}`;
@@ -333,4 +334,102 @@ router.post('/:id/like', async (req, res) => {
     }
 });
 
+/**
+ * Helper de vérification des droits administrateur (Harmonisé avec routes/admin.js)
+ */
+function requireAdmin(req, res, next) {
+    if (!req.session || !req.session.user || !req.session.user.authenticated) {
+        return res.status(401).json({
+            success: false,
+            error: "Authentification requise pour effectuer cette action."
+        });
+    }
+
+    const adminEmails = (process.env.ADMIN_EMAIL || 'artas971@gmail.com')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+    const userEmail = (req.session.user.email || '').trim().toLowerCase();
+    const userRole = (req.session.user.role || '').trim().toLowerCase();
+    const userName = (req.session.user.username || req.session.user.name || '').trim().toLowerCase();
+
+    if (adminEmails.includes(userEmail) || userRole === 'admin' || userRole === 'testeur' || userName === 'john' || userName === 'steve' || userName.includes('admin')) {
+        return next();
+    }
+
+    return res.status(403).json({
+        success: false,
+        error: "Accès refusé. Action réservée à l'administrateur."
+    });
+}
+
+/**
+ * DELETE /api/posts/:id
+ * Suppression définitive d'un témoignage (Admin uniquement)
+ */
+router.delete('/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isDbConnected()) {
+            if (id.match(/^[0-9a-fA-F]{24}$/)) {
+                await Post.findByIdAndDelete(id);
+            } else {
+                await Post.findOneAndDelete({ $or: [{ _id: id }, { id: id }] });
+            }
+        }
+
+        // Nettoyage systématique dans le fichier de repli posts.json
+        let fallbackList = readFallbackPosts();
+        fallbackList = fallbackList.filter(p => p._id !== id && p.id !== id);
+        writeFallbackPosts(fallbackList);
+
+        return res.json({ success: true, message: "Témoignage supprimé définitivement." });
+    } catch (err) {
+        console.error('❌ Erreur DELETE /api/posts/:id :', err);
+        return res.status(500).json({ success: false, error: "Erreur lors de la suppression." });
+    }
+});
+
+/**
+ * PATCH /api/posts/:id/pin
+ * Bascule l'état épinglé (isPinned) d'un témoignage (Admin uniquement)
+ */
+router.patch('/:id/pin', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isPinned } = req.body;
+
+        if (isDbConnected()) {
+            let post = null;
+            if (id.match(/^[0-9a-fA-F]{24}$/)) {
+                post = await Post.findById(id);
+            } else {
+                post = await Post.findOne({ $or: [{ _id: id }, { id: id }] });
+            }
+            if (post) {
+                post.isPinned = typeof isPinned === 'boolean' ? isPinned : !post.isPinned;
+                await post.save();
+                return res.json({ success: true, isPinned: post.isPinned, post });
+            }
+        }
+
+        // Mode Fallback (JSON)
+        const fallbackList = readFallbackPosts();
+        const post = fallbackList.find(p => p._id === id || p.id === id);
+        if (!post) {
+            return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+        }
+
+        post.isPinned = typeof isPinned === 'boolean' ? isPinned : !post.isPinned;
+        writeFallbackPosts(fallbackList);
+        return res.json({ success: true, isPinned: post.isPinned, post });
+    } catch (err) {
+        console.error('❌ Erreur PATCH /api/posts/:id/pin :', err);
+        return res.status(500).json({ success: false, error: "Erreur lors de la mise à jour du statut d'épinglage." });
+    }
+});
+
+
 module.exports = router;
+

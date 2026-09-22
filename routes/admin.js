@@ -386,4 +386,51 @@ router.put('/posts/:id/status', requireModerator, async (req, res) => {
     }
 });
 
+/**
+ * GET /api/admin/chat/archives
+ * Liste des fichiers d'archives du chat éphémère avec URLs de téléchargement (Admin uniquement)
+ */
+router.get('/chat/archives', requireAdmin, async (req, res) => {
+    try {
+        const archivesFile = path.join(__dirname, '..', 'chat_archives.json');
+        const archivesDir = path.join(__dirname, '..', 'message pour john');
+        let archives = readJsonFile(archivesFile);
+
+        // Scanner également le dossier 'message pour john' s'il existe
+        if (fs.existsSync(archivesDir)) {
+            const files = fs.readdirSync(archivesDir);
+            files.forEach(file => {
+                if (file.endsWith('.json')) {
+                    const filePath = path.join(archivesDir, file);
+                    const stats = fs.statSync(filePath);
+                    const fileUrl = `/message pour john/${file}`;
+                    if (!archives.some(a => a.file === file || a.url === fileUrl)) {
+                        archives.push({
+                            id: file.replace('.json', ''),
+                            file: file,
+                            url: fileUrl,
+                            size: stats.size,
+                            createdAt: stats.mtime.toISOString()
+                        });
+                    }
+                }
+            });
+        }
+
+        return res.json({
+            success: true,
+            count: archives.length,
+            archives
+        });
+    } catch (err) {
+        console.error('❌ Erreur GET /api/admin/chat/archives :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Erreur lors de la récupération des archives chat.",
+            details: err.message
+        });
+    }
+});
+
 module.exports = router;
+

@@ -1171,7 +1171,52 @@
 
         // Initialisation de la surveillance de présence en direct
         updatePresence();
+
+        // ── Détection Admin & Injection Automatique du lien 🛡️ Administration ──
+        (async function checkAdminStatus() {
+            let isAdmin = false;
+            try {
+                const localUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
+                if (localUser.role === 'admin' || (localUser.email && localUser.email.toLowerCase() === 'artas971@gmail.com') || localUser.username === 'john') {
+                    isAdmin = true;
+                }
+            } catch(e) {}
+
+            try {
+                const res = await fetch('/api/user/profile');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.userProfile) {
+                        const u = data.userProfile;
+                        if (u.role === 'admin' || (u.email && u.email.toLowerCase() === 'artas971@gmail.com') || u.username === 'john') {
+                            isAdmin = true;
+                            try { localStorage.setItem('aya_user', JSON.stringify(u)); } catch(e) {}
+                        }
+                    }
+                }
+            } catch(e) {}
+
+            if (isAdmin) {
+                const navNav = document.querySelector('.navbar-nav');
+                if (navNav && !document.getElementById('navAdminLink')) {
+                    const isAdminPage = window.location.pathname.includes('admin');
+                    const adminLink = document.createElement('a');
+                    adminLink.href = '/admin.html';
+                    adminLink.className = `nav-link-modern ${isAdminPage ? 'active' : ''}`;
+                    adminLink.id = 'navAdminLink';
+                    adminLink.style.cssText = 'background: rgba(0, 188, 212, 0.15); border: 1px solid rgba(0, 188, 212, 0.4); color: #67e8f9;';
+                    adminLink.innerHTML = `<span>🛡️</span> <span>Administration</span>`;
+                    navNav.appendChild(adminLink);
+                }
+
+                const adminProfileBtn = document.getElementById('adminTourBtnContainer');
+                if (adminProfileBtn) {
+                    adminProfileBtn.style.display = 'block';
+                }
+            }
+        })();
     }
+
 
     /**
      * Surveillance et affichage dynamique du nombre d'utilisateurs connectés en direct
