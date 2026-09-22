@@ -373,8 +373,8 @@
         </div>
 
         <div class="form-group">
-            <label for="sub-margin" id="labelSubMargin">💬 Position des Sous-Titres (Marge Basse) : <span id="sub-margin-val">950px</span></label>
-            <input type="range" id="sub-margin" min="500" max="1850" step="10" value="950" oninput="updateMarginVal()">
+            <label for="sub-margin" id="labelSubMargin">💬 Position des Sous-Titres (Marge Basse) : <span id="sub-margin-val">1440px</span></label>
+            <input type="range" id="sub-margin" min="500" max="1850" step="10" value="1440" oninput="updateMarginVal()">
             <div class="field-hint" id="marginHint">Ajustez la hauteur verticale pour respecter la zone de sécurité TikTok (Safe Zone) et éviter les boutons de l'application.</div>
         </div>
 
@@ -396,7 +396,7 @@
             <span id="simRealtime" style="font-size: 0.8rem; color: #10B981; font-weight: 600;">● Aperçu Temps Réel Actif</span>
         </div>
         <div class="canvas-wrapper">
-            <canvas id="tiktokCanvas" width="405" height="720"></canvas>
+            <canvas id="tiktokCanvas" width="810" height="1440" style="width: 100%; height: auto; display: block;"></canvas>
         </div>
     </div>
 </div>
@@ -562,7 +562,7 @@
 
         // 4. Subtitles Bottom
         var subMarginEl = document.getElementById('sub-margin');
-        var subMarginV = subMarginEl ? parseInt(subMarginEl.value) : 950;
+        var subMarginV = subMarginEl ? parseInt(subMarginEl.value) : 1440;
         var subY = (subMarginV / 1920) * canvas.height;
         
         var modeEl = document.getElementById('mode-select');
