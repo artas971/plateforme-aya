@@ -96,10 +96,26 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 24px;
+            position: relative;
+            overflow: hidden;
+            min-height: 140px;
+        }
+
+        /* Motif de points en overlay pour la profondeur */
+        .communaute-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+            background-size: 26px 26px;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .communaute-hero-content {
             max-width: 680px;
+            position: relative;
+            z-index: 1;
         }
 
         .communaute-hero h1 {
@@ -126,6 +142,10 @@
             align-items: center;
             gap: 6px;
             font-weight: 700;
+            min-width: 120px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .communaute-hero-badge .badge-number {
@@ -133,16 +153,104 @@
             color: #ffeb3b;
         }
 
-        /* Formulaire de Publication */
-        .publish-card {
+
+
+        /* ── Formulaire de Publication — Repliable (<details>) ── */
+        .publish-card-collapsible {
             background: #ffffff;
             border-radius: 18px;
             border: 1px solid var(--border-color);
-            padding: 28px;
             box-shadow: var(--card-shadow);
-            transition: all 0.25s ease;
+            transition: box-shadow 0.25s ease;
         }
 
+        .publish-card-collapsible[open] {
+            box-shadow: 0 12px 28px rgba(11, 83, 148, 0.1);
+        }
+
+        .publish-card-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 28px;
+            cursor: pointer;
+            list-style: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--color-primary);
+            gap: 12px;
+            border-radius: 18px;
+            user-select: none;
+            transition: background 0.15s;
+        }
+
+        .publish-card-summary:hover {
+            background: rgba(11, 83, 148, 0.03);
+        }
+
+        /* Masquer la flèche native (Chrome, Firefox, Safari) */
+        .publish-card-summary::-webkit-details-marker { display: none; }
+        .publish-card-summary::marker { display: none; }
+
+        .publish-summary-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .publish-summary-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(0, 188, 212, 0.12);
+            color: var(--color-turquoise-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .publish-summary-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .publish-summary-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .publish-summary-sub {
+            font-size: 0.82rem;
+            color: var(--color-secondary-gray);
+            font-weight: 400;
+        }
+
+        .publish-toggle-icon {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        details[open] .publish-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .publish-card-inner {
+            padding: 0 28px 28px;
+            border-top: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        /* Séparateur intérieur du formulaire */
+        .publish-card-inner .publish-form-inner-pad {
+            padding-top: 20px;
+        }
+
+        /* Formulaire de Publication (anciens styles conservés pour compatibilité) */
         .publish-header {
             display: flex;
             align-items: center;
@@ -151,6 +259,7 @@
             border-bottom: 1px solid rgba(148, 163, 184, 0.15);
             padding-bottom: 16px;
         }
+
 
         .publish-header-icon {
             width: 44px;
@@ -419,16 +528,16 @@
             gap: 22px;
         }
 
+        /* feed-header : hiérarchie verticale explicite */
         .feed-header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 14px;
         }
 
         .feed-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--color-primary);
             display: flex;
@@ -436,6 +545,7 @@
             gap: 10px;
         }
 
+        /* Filtres hashtag sous les filtres type */
         .feed-filters {
             display: flex;
             align-items: center;
@@ -461,37 +571,31 @@
             border-color: var(--color-primary);
         }
 
-        /* Grille des posts */
+
+
+        /* Grille des posts — 3 colonnes franches, progression fluide */
         .feed-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            align-items: start;   /* neutralise l'étirement entre cartes de hauteurs inégales */
         }
 
-        @media (max-width: 480px) {
-            .communaute-container {
-                padding: 16px 10px 40px;
-                gap: 20px;
-            }
-            .communaute-hero {
-                padding: 24px 16px !important;
-                border-radius: 14px;
-            }
-            .communaute-hero h1 {
-                font-size: 1.55rem;
-            }
+        @media (max-width: 1080px) {
             .feed-grid {
-                grid-template-columns: 1fr;
-            }
-            .post-card-footer {
-                padding: 10px 12px;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            input, select, textarea {
-                font-size: 16px !important;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
             }
         }
+
+
+        /* Tablette portrait (641–768px) */
+        @media (max-width: 768px) {
+            .communaute-container { padding: 20px 16px 50px; gap: 24px; }
+            .communaute-hero h1 { font-size: 1.85rem; }
+        }
+
+
 
         /* Carte de Témoignage */
         .post-card {
@@ -565,16 +669,16 @@
             width: 100%;
             background: #000000;
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden;
+            aspect-ratio: 9 / 16;   /* ratio 9:16 strict pour les vidéos verticales */
         }
 
         .post-media-container video {
             width: 100%;
-            max-height: 440px;
+            height: 100%;
             display: block;
             background: #000000;
+            object-fit: cover;   /* recadrage propre si la vidéo n'est pas exactement 9:16 */
         }
 
         .post-media-container audio {
@@ -590,13 +694,45 @@
             flex-grow: 1;
         }
 
+        /* Description tronquée à 3 lignes par défaut */
         .post-text {
             font-size: 0.92rem;
             line-height: 1.6;
             color: #334155;
-            white-space: pre-wrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: normal;
             word-break: break-word;
         }
+
+        /* État déplié après clic sur "Voir plus" */
+        .post-text.expanded {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: unset;
+        }
+
+        /* Bouton "Voir plus / Voir moins" */
+        .post-see-more-btn {
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            cursor: pointer;
+            padding: 0;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            align-self: flex-start;
+            transition: color 0.15s;
+        }
+
+        .post-see-more-btn:hover { color: var(--color-turquoise-dark); }
+
+
 
         .post-tags {
             display: flex;
@@ -764,9 +900,10 @@
             box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 188, 212, 0.2);
         }
 
-        /* Badge distinctif "Échange du Direct" */
+        /* Badge distinctif "Échange du Direct" — pleine largeur */
         .highlight-badge {
-            display: inline-flex;
+            display: flex;          /* remplace inline-flex — pleine largeur */
+            width: 100%;
             align-items: center;
             gap: 6px;
             padding: 6px 14px;
@@ -778,6 +915,7 @@
             letter-spacing: 0.3px;
             text-transform: uppercase;
         }
+
 
         .highlight-badge-dot {
             width: 7px;
@@ -839,19 +977,20 @@
             background: rgba(148, 163, 184, 0.15);
         }
 
-        /* Traduction Française */
+        /* Traduction Française — contraste WCAG AA (ratio ≈5.2:1 sur #0b2340) */
         .highlight-text-fr {
             font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
             font-size: 0.95rem;
             font-weight: 500;
             line-height: 1.65;
-            color: #94a3b8;
+            color: #cbd5e1;         /* amélioration : #94a3b8 → #cbd5e1 */
             font-style: italic;
             direction: ltr;
             text-align: left;
             unicode-bidi: isolate;
             word-break: break-word;
         }
+
 
         /* Lecteur Audio Compact */
         .highlight-audio-player {
@@ -930,8 +1069,8 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 6px 10px;
-            min-height: 34px;
+            padding: 8px 12px;
+            min-height: 40px;   /* tap target : 34px → 40px */
             border-radius: 8px;
             border: none;
             background: rgba(255,255,255,0.06);
@@ -942,6 +1081,7 @@
             cursor: pointer;
             transition: all 0.15s ease;
         }
+
 
         .highlight-action-btn:hover {
             background: rgba(0, 188, 212, 0.15);
@@ -1000,6 +1140,27 @@
                 flex-shrink: 0;
             }
 
+            /* Grille 1 colonne pleine largeur sur mobile */
+            .feed-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            /* Container compact sur mobile */
+            .communaute-container {
+                padding: 16px 12px 40px;
+                gap: 18px;
+            }
+
+            /* Hero badge en rangée centrée sur mobile */
+            .communaute-hero-badge {
+                width: 100%;
+                flex-direction: row;
+                justify-content: center;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+
             .highlight-text-ar {
                 font-size: 0.95rem;
                 padding: 12px 14px;
@@ -1045,8 +1206,16 @@
                 font-size: 1.4rem;
             }
 
-            .publish-card {
-                padding: 16px;
+            .publish-card-summary {
+                padding: 16px 18px;
+            }
+
+            .publish-card-inner {
+                padding: 0 18px 18px;
+            }
+
+            input, select, textarea {
+                font-size: 16px !important;
             }
 
             .feed-filters {
@@ -1067,6 +1236,7 @@
     </style>
 </head>
 
+
 <body>
     <!-- Navbar Partagée Globale (Injectée et hydratée par aya-i18n.js) -->
     <header class="app-header" id="ayaGlobalNavbar"></header>
@@ -1086,83 +1256,92 @@
             </div>
         </section>
 
-        <!-- Formulaire de Publication -->
-        <section class="publish-card">
-            <div class="publish-header">
-                <div class="publish-header-icon">📢</div>
-                <div class="publish-header-titles">
-                    <h2 id="publishCardTitle">Partager un témoignage</h2>
-                    <p id="publishCardSub">Publiez une vidéo ou un audio traduit avec sa Smart Description. Tout contenu est vérifié avant mise en ligne.</p>
+        <!-- Formulaire de Publication — Repliable -->
+        <details class="publish-card-collapsible" id="publishDetails" open>
+            <summary class="publish-card-summary" id="publishSummary">
+                <div class="publish-summary-left">
+                    <div class="publish-summary-icon">📢</div>
+                    <div class="publish-summary-text">
+                        <span class="publish-summary-title" id="publishCardTitle">Partager un témoignage</span>
+                        <span class="publish-summary-sub" id="publishCardSub">Publiez une vidéo ou un audio traduit — vérifié avant mise en ligne</span>
+                    </div>
                 </div>
-            </div>
+                <span class="publish-toggle-icon" aria-hidden="true">▼</span>
+            </summary>
 
-            <form id="publishForm">
-                <div class="form-grid">
-                    <!-- Champ Auteur -->
-                    <div class="form-group">
-                        <label class="form-label" for="authorNameInput" id="labelPublishAuthor">
-                            👤 Votre nom ou pseudonyme :
-                        </label>
-                        <input type="text" id="authorNameInput" class="form-input" placeholder="Ex: Alex, Sarah, Un témoin de Gaza..." maxlength="80">
-                    </div>
+            <div class="publish-card-inner">
+                <div class="publish-form-inner-pad">
+                    <form id="publishForm">
+                        <div class="form-grid">
+                            <!-- Champ Auteur -->
+                            <div class="form-group">
+                                <label class="form-label" for="authorNameInput" id="labelPublishAuthor">
+                                    👤 Votre nom ou pseudonyme :
+                                </label>
+                                <input type="text" id="authorNameInput" class="form-input" placeholder="Ex: Alex, Sarah, Un témoin de Gaza..." maxlength="80">
+                            </div>
 
-                    <!-- Champ Tags / Mots-clés -->
-                    <div class="form-group">
-                        <label class="form-label" for="tagsInput" id="labelPublishTags">
-                            🏷️ Mots-clés / Hashtags :
-                        </label>
-                        <input type="text" id="tagsInput" class="form-input" placeholder="Ex: Gaza, Temoignage, Espoir, Justice">
-                    </div>
+                            <!-- Champ Tags / Mots-clés -->
+                            <div class="form-group">
+                                <label class="form-label" for="tagsInput" id="labelPublishTags">
+                                    🏷️ Mots-clés / Hashtags :
+                                </label>
+                                <input type="text" id="tagsInput" class="form-input" placeholder="Ex: Gaza, Temoignage, Espoir, Justice">
+                            </div>
 
-                    <!-- Zone Dépose Média -->
-                    <div class="form-group full-width">
-                        <label class="form-label" id="labelPublishMedia">
-                            🎬 Fichier média (Vidéo MP4 ou Audio) :
-                        </label>
-                        <div class="media-dropzone" id="mediaDropzone">
-                            <input type="file" id="mediaFileInput" accept="video/*,audio/*" style="display: none;">
-                            <div class="media-dropzone-icon">📁</div>
-                            <div class="media-dropzone-text" id="publishMediaHint">Glissez-déposez une vidéo MP4 ou cliquez pour parcourir vos fichiers</div>
-                            <div class="media-dropzone-sub">Formats acceptés : MP4, MOV, WEBM, MP3, WAV (jusqu'à 500 Mo)</div>
-                        </div>
-
-                        <!-- Prévisualisation Média -->
-                        <div class="media-preview-container" id="mediaPreviewContainer">
-                            <button type="button" class="btn-remove-media" id="btnRemoveMedia" title="Retirer ce fichier">&times;</button>
-                            <video id="videoPreview" controls playsinline style="display: none;"></video>
-                            <audio id="audioPreview" controls style="display: none;"></audio>
-                            <div class="media-preview-bar" id="mediaPreviewBar">
-                                <div id="mediaPreviewInfo" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; overflow: hidden;">
-                                    <span id="mediaPreviewBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: rgba(0, 188, 212, 0.15); color: #00bcd4; border: 1px solid rgba(0, 188, 212, 0.3);">🎬 Vidéo prête</span>
-                                    <span id="mediaPreviewName" style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e2e8f0; font-weight: 500;"></span>
+                            <!-- Zone Dépose Média -->
+                            <div class="form-group full-width">
+                                <label class="form-label" id="labelPublishMedia">
+                                    🎬 Fichier média (Vidéo MP4 ou Audio) :
+                                </label>
+                                <div class="media-dropzone" id="mediaDropzone">
+                                    <input type="file" id="mediaFileInput" accept="video/*,audio/*" style="display: none;">
+                                    <div class="media-dropzone-icon">📁</div>
+                                    <div class="media-dropzone-text" id="publishMediaHint">Glissez-déposez une vidéo MP4 ou cliquez pour parcourir vos fichiers</div>
+                                    <div class="media-dropzone-sub">Formats acceptés : MP4, MOV, WEBM, MP3, WAV (jusqu'à 500 Mo)</div>
                                 </div>
-                                <button type="button" id="btnReplaceMedia" class="btn-replace-media" title="Changer ou réimporter un autre fichier">
-                                    <span>🔄</span>
-                                    <span id="btnReplaceMediaText">Remplacer la vidéo</span>
-                                </button>
+
+                                <!-- Prévisualisation Média -->
+                                <div class="media-preview-container" id="mediaPreviewContainer">
+                                    <button type="button" class="btn-remove-media" id="btnRemoveMedia" title="Retirer ce fichier">&times;</button>
+                                    <video id="videoPreview" controls playsinline style="display: none;"></video>
+                                    <audio id="audioPreview" controls style="display: none;"></audio>
+                                    <div class="media-preview-bar" id="mediaPreviewBar">
+                                        <div id="mediaPreviewInfo" style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; overflow: hidden;">
+                                            <span id="mediaPreviewBadge" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; background: rgba(0, 188, 212, 0.15); color: #00bcd4; border: 1px solid rgba(0, 188, 212, 0.3);">🎬 Vidéo prête</span>
+                                            <span id="mediaPreviewName" style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #e2e8f0; font-weight: 500;"></span>
+                                        </div>
+                                        <button type="button" id="btnReplaceMedia" class="btn-replace-media" title="Changer ou réimporter un autre fichier">
+                                            <span>🔄</span>
+                                            <span id="btnReplaceMediaText">Remplacer la vidéo</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Texte / Smart Description -->
+                            <div class="form-group full-width">
+                                <label class="form-label" for="postContentInput" id="labelPublishText">
+                                    📝 Smart Description &amp; Témoignage (Texte complet) :
+                                </label>
+                                <textarea id="postContentInput" class="form-textarea" placeholder="Collez ici la Smart Description générée ou décrivez la scène, le contexte et les paroles avec précision..." required></textarea>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Texte / Smart Description -->
-                    <div class="form-group full-width">
-                        <label class="form-label" for="postContentInput" id="labelPublishText">
-                            📝 Smart Description & Témoignage (Texte complet) :
-                        </label>
-                        <textarea id="postContentInput" class="form-textarea" placeholder="Collez ici la Smart Description générée ou décrivez la scène, le contexte et les paroles avec précision..." required></textarea>
-                    </div>
+                        <div class="publish-actions">
+                            <button type="submit" class="btn-publish" id="btnPublishPost">
+                                <span>🚀</span> Publier le témoignage
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Feedback de soumission -->
+                    <div id="publishFeedback" style="display: none;"></div>
                 </div>
+            </div>
+        </details>
 
-                <div class="publish-actions">
-                    <button type="submit" class="btn-publish" id="btnPublishPost">
-                        <span>🚀</span> Publier le témoignage
-                    </button>
-                </div>
-            </form>
 
-            <!-- Feedback de soumission -->
-            <div id="publishFeedback" style="display: none;"></div>
-        </section>
 
         <!-- Fil d'Actualité Public -->
         <section class="feed-section">
@@ -1252,10 +1431,19 @@
             const heroPostsCount = document.getElementById('heroPostsCount');
             const feedFilters = document.getElementById('feedFilters');
             const feedTypeFilters = document.getElementById('feedTypeFilters');
+            const publishDetails = document.getElementById('publishDetails');
 
+            // ── Formulaire : replié sur mobile ≤640px par défaut ─────────
+            (function initFormCollapse() {
+                if (!publishDetails) return;
+                if (window.matchMedia('(max-width: 640px)').matches) {
+                    publishDetails.removeAttribute('open');
+                }
+            })();
 
             // 1. Initialisation & Auto-Hydratation (State Passing React Router / sessionStorage / History)
             function initAutoHydration() {
+
                 try {
                     let autoShareData = null;
 
@@ -1341,19 +1529,20 @@
                             }
                         }
 
-                        // 5. Affichage du bandeau de confirmation non intrusif
+                        // 5. Affichage du bandeau de confirmation + ouverture du formulaire
+                        if (publishDetails) publishDetails.setAttribute('open', '');   // ouvre le formulaire même sur mobile si données Studio
                         const existingBanner = document.querySelector('.share-success-banner');
                         if (!existingBanner) {
                             const banner = document.createElement('div');
                             banner.className = 'share-success-banner';
-                            banner.innerHTML = '✨ <b>Données importées !</b> Vous pouvez modifier le texte, le pseudonyme et les hashtags avant de publier.';
-                            const publishCard = document.querySelector('.publish-card');
-                            if (publishCard) {
-                                publishCard.prepend(banner);
-                            } else {
-                                document.body.prepend(banner);
+                            banner.style.cssText = 'padding:12px 20px;background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;border-radius:10px;font-size:0.88rem;font-weight:600;margin-bottom:14px;';
+                            banner.innerHTML = '✨ <b>Données importées !</b> Vérifiez le texte, le pseudonyme et les hashtags avant de publier.';
+                            const publishInner = document.querySelector('.publish-form-inner-pad');
+                            if (publishInner) {
+                                publishInner.prepend(banner);
                             }
                         }
+
 
                         // Purge propre pour ne pas ré-importer au rechargement (F5)
                         localStorage.removeItem('aya_share_to_community');
@@ -1774,18 +1963,19 @@
                 const copyTextLabel = isAr ? "نسخ النص" : "Copier le texte";
                 const shareTextLabel = isAr ? "مشاركة" : "Partager";
 
-                // Média
+                // Média — avec poster (vignette) si disponible
                 let mediaHtml = '';
                 if (post.mediaUrl) {
                     if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
+                        const posterAttr = post.mediaThumbnail ? ` poster="${escapeHtml(post.mediaThumbnail)}"` : '';
                         mediaHtml = `
                             <div class="post-media-container">
-                                <video src="${escapeHtml(post.mediaUrl)}" controls playsinline preload="metadata"></video>
+                                <video src="${escapeHtml(post.mediaUrl)}"${posterAttr} controls playsinline preload="metadata"></video>
                             </div>
                         `;
                     } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
                         mediaHtml = `
-                            <div class="post-media-container">
+                            <div class="post-media-container" style="aspect-ratio: unset; background: #0f172a; padding: 18px;">
                                 <audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>
                             </div>
                         `;
@@ -1802,6 +1992,9 @@
                     `;
                 }
 
+                const seeLessLabel = isAr ? 'أقل' : 'Voir moins';
+                const seeMoreLabel = isAr ? 'أكثر' : 'Voir plus';
+
                 card.innerHTML = `
                     <div class="post-card-header">
                         <div class="post-author-info">
@@ -1815,7 +2008,8 @@
                     </div>
                     ${mediaHtml}
                     <div class="post-card-body">
-                        <p class="post-text">${escapeHtml(post.originalContent)}</p>
+                        <p class="post-text" id="postText_${post._id}">${escapeHtml(post.originalContent)}</p>
+                        <button class="post-see-more-btn" id="seeMoreBtn_${post._id}" data-expanded="false" style="display:none;">${seeMoreLabel} ▾</button>
                         ${tagsHtml}
                     </div>
                     <div class="post-card-footer">
@@ -1830,6 +2024,29 @@
                         </button>
                     </div>
                 `;
+
+                // "Voir plus" : afficher uniquement si le texte est réellement tronqué
+                requestAnimationFrame(() => {
+                    const textEl = card.querySelector(`#postText_${post._id}`);
+                    const seeMoreBtn = card.querySelector(`#seeMoreBtn_${post._id}`);
+                    if (textEl && seeMoreBtn && textEl.scrollHeight > textEl.clientHeight + 2) {
+                        seeMoreBtn.style.display = 'inline';
+                        seeMoreBtn.addEventListener('click', () => {
+                            const expanded = seeMoreBtn.dataset.expanded === 'true';
+                            if (expanded) {
+                                textEl.classList.remove('expanded');
+                                seeMoreBtn.dataset.expanded = 'false';
+                                seeMoreBtn.textContent = `${seeMoreLabel} ▾`;
+                            } else {
+                                textEl.classList.add('expanded');
+                                seeMoreBtn.dataset.expanded = 'true';
+                                seeMoreBtn.textContent = `${seeLessLabel} ▴`;
+                            }
+                        });
+                    }
+                });
+
+
 
                 // Événement Like
                 const likeBtn = card.querySelector('.like-btn');
