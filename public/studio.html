@@ -625,9 +625,9 @@
 
         var modeEl = document.getElementById('mode-select');
         var mode = modeEl ? modeEl.value : 'VOSTFR';
-        var line1 = mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض الترجمة الصوتية";
-        var line2 = mode === 'VOSTFR' ? "en bas de votre vidéo TikTok" : "في أسفل الفيديو";
-        var subLines = [line1, line2];
+        var subLines = [
+            mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض ترجمتك"
+        ];
 
         var hasArSub = /[\u0600-\u06FF]/.test(subLines.join(''));
         ctx.font = hasArSub ? 'bold 18px "Cairo", sans-serif' : 'bold 20px Impact';
