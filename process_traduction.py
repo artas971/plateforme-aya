@@ -1753,46 +1753,62 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
         "gemini-2.5-flash",
         "gemini-flash-lite-latest",
         "gemini-3.1-flash-lite",
-        "gemini-2.5-pro"
+        "gemini-flash-latest"
     ]
 
     context_summary = ""
     if gemini_key and raw_testimony_text:
         title_context = f"Titre sémantique retenu pour la vidéo : \"{semantic_title}\"\n" if semantic_title else ""
-        prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en narration et SEO TikTok pour la Plateforme Aya.
+        prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en stratégie de narration et SEO TikTok pour la Plateforme Aya.
 
 MISSION STRICTE & OBLIGATOIRE :
-Rédige la Smart Description SEO TikTok ({lang_instruction}) pour ce témoignage vidéo.
+Rédige la Smart Description TikTok Hybride ({lang_instruction}) pour ce témoignage vidéo.
 {title_context}{context_directive}
-CONSIGNES STRICTES ANTI-PARESSE ET ANTI-HALLUCINATION :
-- Le texte DOIT être très long et immersif (minimum 400 mots / ~3500 caractères).
-- Tu dois OBLIGATOIREMENT structurer ta réponse en 5 longs paragraphes narratifs détaillés et aérés :
-  1. 🔥 LE HOOK VIRAL : Une accroche viscérale de 2 à 3 lignes qui capte l'attention et stoppe net le scroll.
-  2. 📌 CONTEXTE DÉTAILLÉ DE LA SCÈNE : Raconte la scène avec précision (qui parle, épreuves du quotidien, déroulement chronologique fidèle aux propos rapportés).
-  3. 💬 CITATIONS DIRECTES EXTRAITES DU MÉDIA : Mets en valeur 2 à 4 citations marquantes mot à mot prononcées par la personne entre guillemets.
-  4. 🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE : Développe la leçon de résilience, la dignité et pourquoi ce témoignage est vital pour l'Histoire et l'humanité.
-  5. 👉 APPEL À L'ACTION ENGAGÉ : Incite la communauté à commenter, partager et enregistrer pour briser le mur du silence.
-- DIRECTIVE STRICTE DE SOBRIÉTÉ & ZÉRO FABULATION GÉOGRAPHIQUE : Si aucun lieu précis (ville, camp, quartier) n'est explicitement mentionné dans la transcription finale ou le contexte utilisateur, IL EST STRICTEMENT INTERDIT d'en inventer un (comme Deir al-Balah, Rafah, Khan Younès, etc.). Ne fais aucune supposition géographique. Reste strictement fidèle aux propos et faits avérés.
-- À la toute fin du texte, tu DOIS obligatoirement inclure EXACTEMENT 5 hashtags ultra-ciblés, déduits EXCLUSIVEMENT du sujet réel du témoignage et du contexte (ex: #Témoignage #Vérité #Direct #Mémoire #PourToi, ou adaptés au lieu et thème réels). INTERDICTION ABSOLUE d'inventer un lieu géographique non mentionné dans le texte.
+STRUCTURE HYBRIDE STRICTE EN EXACTEMENT 5 PARTIES :
+Tu dois impérativement respecter l'ordre et le format suivant sans rien omettre :
+
+Partie 1 : 🔥 LE HOOK
+1 phrase percutante et captivante qui stoppe net le scroll.
+
+Partie 2 : 📌 LE CONTEXTE
+Exactement 2 lignes factuelles, humaines et sobres résumant la situation (format "Impact", sans extrapolation).
+
+Partie 3 : 👉 LE CTA
+1 phrase incisive invitant à relayer cette voix, commenter et soutenir la mémoire.
+
+Partie 4 : 📖 L'HISTOIRE COMPLÈTE
+Insère d'abord un séparateur de tirets (---), puis développe un texte narratif, immersif et riche en mots-clés d'environ 300 mots pour nourrir l'algorithme SEO de TikTok sans polluer la lecture immédiate. Raconte la scène fidèlement, la dignité et la réalité vécue.
+
+Partie 5 : 🏷️ LES HASHTAGS
+Une liste de 5 à 7 hashtags pertinents et mixtes (ex: #AyaStudio #Gaza #HistoireVraie #PourToi #Palestine ...).
+
+CONSIGNES STRICTES DE SOBRIÉTÉ & ZÉRO FABULATION :
+- Si aucun lieu précis (ville, camp, quartier) n'est explicitement mentionné dans la transcription finale ou le contexte utilisateur, IL EST STRICTEMENT INTERDIT d'en inventer un (comme Deir al-Balah, Rafah, Khan Younès, etc.). Reste scrupuleusement fidèle aux propos et faits avérés.
+- Veille à ce que chaque phrase soit menée à son terme sans jamais être interrompue ou tronquée.
 
 RÈGLE FORMELLE DE SORTIE :
-Renvoie UNIQUEMENT le texte de la publication rédigée. Pas de JSON, pas de balises markdown ```, pas de préambule.
+Renvoie UNIQUEMENT le texte final rédigé. Pas de JSON, pas de balises markdown ```, pas de préambule d'introduction.
 
 TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
 \"\"\"
 {raw_testimony_text[:5500]}
 \"\"\"
 """
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.3,
-                "maxOutputTokens": 2000
-            }
-        }
-        req_data = json.dumps(payload).encode('utf-8')
 
         for model_name in CASCADE:
+            gen_config = {
+                "temperature": 0.3,
+                "maxOutputTokens": 4000
+            }
+            if "2.5" in model_name:
+                gen_config["thinkingConfig"] = {"thinkingBudget": 0}
+
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": gen_config
+            }
+            req_data = json.dumps(payload).encode('utf-8')
+
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
             try:
                 req = urllib.request.Request(url, data=req_data, headers={'Content-Type': 'application/json'})
