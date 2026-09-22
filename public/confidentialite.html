@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
     <style>
         .legal-page-container {
             max-width: 900px;
@@ -126,19 +127,7 @@
 <body style="background: #f8fafc; min-height: 100vh; display: flex; flex-direction: column;">
 
     <!-- Barre de Navigation Minimaliste -->
-    <header class="global-navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-brand">
-                <span class="brand-badge">PROD</span>
-                <span class="brand-title">Aya Studio</span>
-            </a>
-            <div class="navbar-user-section">
-                <a href="/login" class="btn-nav-link" style="background: var(--color-primary); color: #fff;">
-                    <span>🔑</span> Se connecter
-                </a>
-            </div>
-        </div>
-    </header>
+    <header class="app-header" id="ayaGlobalNavbar"></header>
 
     <main class="legal-page-container">
         <div class="legal-card">
@@ -290,6 +279,7 @@
         </div>
     </footer>
 
+    <script src="/aya-i18n.js"></script>
     <!-- Bandeau de Cookies -->
     <script src="/cookie-banner.js"></script>
 </body>

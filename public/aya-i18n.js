@@ -287,7 +287,69 @@
             rechargeBannerText: 'Chaque pack couvre strictement les coûts serveurs (Hetzner) et les tokens IA (Gemini). Vos crédits n\'expirent jamais et sont utilisables immédiatement.',
             paypalSolidarityTitle: '<span>❤️</span> Dons de Solidarité Palestine',
             paypalSolidarityDesc: 'Soutien direct et 100% bénévole à l\'action humanitaire et aux témoins.',
-            btnPaypalDonation: '<span>🕊️</span> Don PayPal'
+            btnPaypalDonation: '<span>🕊️</span> Don PayPal',
+
+            // Packs de recharge Stripe
+            pack1Title: '1 Crédit Flash',
+            pack1Desc: '1 vidéo TikTok complète : transcription Faster-Whisper + traduction dialectale + encodage 1080x1920.',
+            pack1Unit: '0,99 € / vidéo',
+            pack1Price: '0,99 €',
+            pack1Btn: '<span>💳</span> Acheter',
+            pack5Title: 'Pack 5 Crédits',
+            pack5Badge: 'Populaire',
+            pack5Desc: '5 vidéos complètes avec sous-titres animés et archivage Google Drive.',
+            pack5Unit: '~0,60 € / vidéo (Économisez 40%)',
+            pack5Price: '2,99 €',
+            pack5Btn: '<span>💳</span> Acheter',
+            pack25Title: 'Pack 25 Crédits',
+            pack25Badge: 'Meilleur Tarif',
+            pack25Desc: '25 vidéos complètes. Le pack idéal pour les créateurs de contenu réguliers.',
+            pack25Unit: '~0,40 € / vidéo (Économisez 60%)',
+            pack25Price: '9,99 €',
+            pack25Btn: '<span>💳</span> Acheter',
+
+            // Liens Pied de Page Légal & Solidaire
+            footerCguLink: 'Conditions Générales (CGU/CGV)',
+            footerPrivacyLink: 'Politique de Confidentialité (RGPD)',
+            footerPaypalLink: '❤️ Soutenir l\'équipe (PayPal)',
+            footerCopyright: '© 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.',
+
+            // Studio TikTok V3 (Générique & Pédagogique)
+            studioDocTitle: 'Aya Studio V3 - Studio TikTok 9:16 & Éditeur Sous-Titres',
+            studioHeroTitle: 'Studio TikTok 9:16 & Éditeur Sous-Titres',
+            studioHeroSub: 'Personnalisez votre bandeau d\'accroche, vos titres et générez votre pack vidéo optimisé pour les réseaux sociaux.',
+            sec1Title: '1. Sens de Traduction & Mode',
+            labelModeSelect: 'Protocole & Langue Source :',
+            modeHint: 'Détermine la langue parlée dans le fichier et la langue des sous-titres incrustés.',
+            sec2Title: '2. Médias Source & Image de Fond',
+            labelMediaType: 'Format du Média Source :',
+            sourceMediaHint: 'Formats acceptés : MP3, WAV, OGG, M4A, MP4, MOV, MKV... (jusqu\'à 500 Mo).',
+            labelBgFile: '🖼️ 2. Image de Fond 9:16 (pour Canevas Vidéo) :',
+            bgFileHint: 'Image verticale au format 9:16 (ex: 1080x1920) servant d\'arrière-plan pour les fichiers audio.',
+            sec3Title: '3. Bandeau, Titres & Couleurs',
+            chkShowHeader: '🏷️ Afficher le Bandeau d\'Accroche Supérieur',
+            labelHeaderText: 'Texte du Bandeau d\'En-tête :',
+            placeholderHeaderText: 'Ex: TÉMOIGNAGE DIRECT, ÉDITION SPÉCIALE, ALERTE INFO...',
+            headerTextHint: 'Court texte d\'accroche (1 à 3 mots) affiché dans le bandeau rectangulaire en haut de la vidéo.',
+            labelHeaderColor: 'Couleur du Bandeau d\'En-tête :',
+            labelVideoTitle: 'Titre de la Vidéo :',
+            placeholderVideoTitle: 'Ex: Titre clair et percutant résumant le sujet...',
+            videoTitleHint: 'Titre principal affiché sous le bandeau, pour capter l\'attention dans les 3 premières secondes.',
+            labelTitleColor: '📌 Couleur du Titre (Nuancier 10 teintes) :',
+            labelSubColorStudio: '💬 Couleur des Sous-Titres (Nuancier 10 teintes) :',
+            sec4Title: '4. Positionnement Dynamique & Zone de Sécurité',
+            labelTitleMargin: '📌 Position du Titre (Marge Haute) :',
+            labelSubMargin: '💬 Position des Sous-Titres (Marge Basse) :',
+            marginHint: 'Ajustez la hauteur verticale pour respecter la zone de sécurité TikTok (Safe Zone) et éviter les boutons de l\'application.',
+            sec5Title: '5. Pack Éditorial Post-Vidéo Sélectif',
+            editorialHint: 'Cochez les fichiers à inclure automatiquement dans votre pack de téléchargement.',
+            chkMp4: '🎬 Vidéo .MP4',
+            chkAss: '📄 Sous-titres .ASS',
+            chkTxt: '📝 Description .TXT',
+            chkCover: '🎨 Cover 9:16 .TXT',
+            btnGenerateStudio: '⚡ VALIDER & GÉNÉRER LE PACK V3',
+            simTitle: '📱 Simulateur Visuel TikTok 9:16 (1080x1920)',
+            simRealtime: '● Aperçu Temps Réel Actif'
         },
         ar: {
             dir: 'rtl',
@@ -568,7 +630,69 @@
             rechargeBannerText: 'كل باقة تغطي حصرياً تكاليف السيرفرات والذكاء الاصطناعي. رصيدك صالح دائماً بدون تاريخ انتهاء.',
             paypalSolidarityTitle: '<span>❤️</span> التبرع التضامني المباشر',
             paypalSolidarityDesc: 'دعم مباشر وتطوعي ١٠٠٪ للإغاثة الإنسانية وإيصال صوت الشهود في فلسطين.',
-            btnPaypalDonation: '<span>🕊️</span> تبرع عبر PayPal'
+            btnPaypalDonation: '<span>🕊️</span> تبرع عبر PayPal',
+
+            // Packs de recharge Stripe
+            pack1Title: 'رصيد واحد سريع',
+            pack1Desc: 'فيديو تيك توك كامل: تفريغ صوتي دقيق + ترجمة لهجة شامية + ترميز عالي الدقة 1080x1920.',
+            pack1Unit: '<span class="aya-bidi-num">0,99 €</span> / للفيديو',
+            pack1Price: '<span class="aya-bidi-num">0,99 €</span>',
+            pack1Btn: '<span>💳</span> شراء الآن',
+            pack5Title: 'باقة ٥ أرصدة',
+            pack5Badge: 'الأكثر طلباً',
+            pack5Desc: '٥ فيديوهات كاملة مع شريط ترجمة متحرك وأرشفة على Google Drive.',
+            pack5Unit: '<span class="aya-bidi-num">~0,60 €</span> / للفيديو (وفّر ٤٠٪)',
+            pack5Price: '<span class="aya-bidi-num">2,99 €</span>',
+            pack5Btn: '<span>💳</span> شراء الآن',
+            pack25Title: 'باقة ٢٥ رصيداً',
+            pack25Badge: 'أفضل قيمة',
+            pack25Desc: '٢٥ فيديو كامل ومترجم. الخيار الأمثل لصناع المحتوى والناشطين المنتظمين.',
+            pack25Unit: '<span class="aya-bidi-num">~0,40 €</span> / للفيديو (وفّر ٦٠٪)',
+            pack25Price: '<span class="aya-bidi-num">9,99 €</span>',
+            pack25Btn: '<span>💳</span> شراء الآن',
+
+            // Liens Pied de Page Légal & Solidaire
+            footerCguLink: 'الشروط العامة (CGU/CGV)',
+            footerPrivacyLink: 'سياسة الخصوصية (RGPD)',
+            footerPaypalLink: '❤️ دعم الفريق (PayPal)',
+            footerCopyright: '© 2026 استوديو آية — منصة الترجمة والدبلجة التضامنية. جميع الحقوق محفوظة.',
+
+            // Studio TikTok V3 (Générique & Pédagogique)
+            studioDocTitle: 'استوديو آية V3 - محرر تيك توك 9:16 وصانع الترجمة',
+            studioHeroTitle: 'استوديو تيك توك 9:16 ومحرر الترجمة',
+            studioHeroSub: 'خصص شريط العنوان العلوي والعناوين وأنشئ حزمة الفيديو المحسنة لمنصات التواصل الاجتماعي.',
+            sec1Title: '١. اتجاه الترجمة ونمط المعالجة',
+            labelModeSelect: 'بروتوكول ولغة التسجيل الأصلية:',
+            modeHint: 'يحدد اللغة المنطوقة في التسجيل ولغة الترجمة النصية المرئية.',
+            sec2Title: '٢. وسائط المصدر وصورة الخلفية',
+            labelMediaType: 'صيغة وتنسيق الوسائط المصدر:',
+            sourceMediaHint: 'الصيغ المقبولة: MP3, WAV, OGG, M4A, MP4, MOV, MKV... (حتى 500 ميغابايت).',
+            labelBgFile: '🖼️ ٢. صورة الخلفية 9:16 (لكانفاس الفيديو):',
+            bgFileHint: 'صورة طولية بنسبة 9:16 (مثال: 1080x1920) كخلفية بصرية للتسجيلات الصوتية.',
+            sec3Title: '٣. شريط العنوان والخطوط والألوان',
+            chkShowHeader: '🏷️ إظهار شريط العنوان العلوي',
+            labelHeaderText: 'نص شريط العنوان العلوي:',
+            placeholderHeaderText: 'مثال: شهادة حية، تغطية خاصة، صوت الميدان...',
+            headerTextHint: 'نص بارز وموجز (من كلمة إلى ٣ كلمات) في أعلى الفيديو لجذب الانتباه الفوري.',
+            labelHeaderColor: 'لون خلفية شريط العنوان العلوي:',
+            labelVideoTitle: 'العنوان الرئيسي للفيديو:',
+            placeholderVideoTitle: 'مثال: عنوان واضح ومؤثر يوجز محور الحديث...',
+            videoTitleHint: 'عنوان رئيسي جذاب يظهر في الثواني الأولى لتوضيح الفكرة.',
+            labelTitleColor: '📌 لون العنوان الرئيسي (لوحة ١٠ تدرجات):',
+            labelSubColorStudio: '💬 لون شريط الترجمة (لوحة ١٠ تدرجات):',
+            sec4Title: '٤. تحديد المواضع ومنطقة الأمان',
+            labelTitleMargin: '📌 موضع العنوان (المسافة من الأعلى):',
+            labelSubMargin: '💬 موضع الترجمة (المسافة من الأسفل):',
+            marginHint: 'اضبط الارتفاع لتفادي تداخل النصوص مع أزرار وأيقونات تطبيق تيك توك (Safe Zone).',
+            sec5Title: '٥. حزمة النشر المتكاملة بعد التوليد',
+            editorialHint: 'حدد الملفات المطلوب توليدها وتضمينها في حزمة التنزيل النهائية.',
+            chkMp4: '🎬 فيديو مدمج .MP4',
+            chkAss: '📄 ملف ترجمة دقيق .ASS',
+            chkTxt: '📝 نص النشر والوصف .TXT',
+            chkCover: '🎨 موجه الغلاف 9:16 .TXT',
+            btnGenerateStudio: '⚡ اعتماد وتوليد حزمة V3',
+            simTitle: '📱 محاكي العرض المرئي تيك توك 9:16 (1080x1920)',
+            simRealtime: '● المعاينة الحية نشطة'
         }
     };
 
@@ -804,6 +928,109 @@
             updateElementText('paypalSolidarityTitle', dict.paypalSolidarityTitle, true);
             updateElementText('paypalSolidarityDesc', dict.paypalSolidarityDesc);
             updateElementText('btnPaypalDonation', dict.btnPaypalDonation, true);
+
+            // Traduction des cartes de packs Stripe dans la modale
+            const packsContainer = document.getElementById('stripePacksContainer');
+            if (packsContainer) {
+                const pack1 = packsContainer.querySelector('[data-pack-id="pack_1"]');
+                if (pack1) {
+                    const title = pack1.querySelector('.pack-title');
+                    const desc = pack1.querySelector('.pack-desc');
+                    const unit = pack1.querySelector('.pack-unit-price');
+                    const price = pack1.querySelector('.pack-price');
+                    const btn = pack1.querySelector('.btn-stripe-buy');
+                    if (title) title.textContent = dict.pack1Title;
+                    if (desc) desc.textContent = dict.pack1Desc;
+                    if (unit) unit.innerHTML = dict.pack1Unit;
+                    if (price) price.innerHTML = dict.pack1Price;
+                    if (btn) btn.innerHTML = dict.pack1Btn;
+                }
+                const pack5 = packsContainer.querySelector('[data-pack-id="pack_5"]');
+                if (pack5) {
+                    const title = pack5.querySelector('.pack-title');
+                    const badge = pack5.querySelector('.pack-badge');
+                    const desc = pack5.querySelector('.pack-desc');
+                    const unit = pack5.querySelector('.pack-unit-price');
+                    const price = pack5.querySelector('.pack-price');
+                    const btn = pack5.querySelector('.btn-stripe-buy');
+                    if (title) title.textContent = dict.pack5Title;
+                    if (badge) badge.textContent = dict.pack5Badge;
+                    if (desc) desc.textContent = dict.pack5Desc;
+                    if (unit) unit.innerHTML = dict.pack5Unit;
+                    if (price) price.innerHTML = dict.pack5Price;
+                    if (btn) btn.innerHTML = dict.pack5Btn;
+                }
+                const pack25 = packsContainer.querySelector('[data-pack-id="pack_25"]');
+                if (pack25) {
+                    const title = pack25.querySelector('.pack-title');
+                    const badge = pack25.querySelector('.pack-badge');
+                    const desc = pack25.querySelector('.pack-desc');
+                    const unit = pack25.querySelector('.pack-unit-price');
+                    const price = pack25.querySelector('.pack-price');
+                    const btn = pack25.querySelector('.btn-stripe-buy');
+                    if (title) title.textContent = dict.pack25Title;
+                    if (badge) badge.textContent = dict.pack25Badge;
+                    if (desc) desc.textContent = dict.pack25Desc;
+                    if (unit) unit.innerHTML = dict.pack25Unit;
+                    if (price) price.innerHTML = dict.pack25Price;
+                    if (btn) btn.innerHTML = dict.pack25Btn;
+                }
+            }
+        }
+
+        // Mise à jour de la page Studio TikTok V3
+        if (window.location.pathname.includes('studio')) {
+            if (dict.studioDocTitle) document.title = dict.studioDocTitle;
+            updateElementText('studioHeroTitle', dict.studioHeroTitle);
+            updateElementText('studioHeroSub', dict.studioHeroSub);
+            updateElementText('sec1Title', dict.sec1Title);
+            updateElementText('labelModeSelect', dict.labelModeSelect);
+            updateElementText('modeHint', dict.modeHint);
+            updateElementText('sec2Title', dict.sec2Title);
+            updateElementText('labelMediaType', dict.labelMediaType);
+            updateElementText('sourceMediaHint', dict.sourceMediaHint);
+            updateElementText('labelBgFile', dict.labelBgFile);
+            updateElementText('bgFileHint', dict.bgFileHint);
+            updateElementText('sec3Title', dict.sec3Title);
+            updateElementText('chkShowHeaderLabel', dict.chkShowHeader, true);
+            updateElementText('labelHeaderText', dict.labelHeaderText);
+            updateElementPlaceholder('header-text-input', dict.placeholderHeaderText);
+            updateElementText('headerTextHint', dict.headerTextHint);
+            updateElementText('labelHeaderColor', dict.labelHeaderColor);
+            updateElementText('labelVideoTitle', dict.labelVideoTitle);
+            updateElementPlaceholder('video-title', dict.placeholderVideoTitle);
+            updateElementText('videoTitleHint', dict.videoTitleHint);
+            updateElementText('labelTitleColor', dict.labelTitleColor);
+            updateElementText('labelSubColorStudio', dict.labelSubColorStudio);
+            updateElementText('sec4Title', dict.sec4Title);
+            updateElementText('labelTitleMargin', dict.labelTitleMargin);
+            updateElementText('labelSubMargin', dict.labelSubMargin);
+            updateElementText('marginHint', dict.marginHint);
+            updateElementText('sec5Title', dict.sec5Title);
+            updateElementText('editorialHint', dict.editorialHint);
+            updateElementText('chkMp4Label', dict.chkMp4, true);
+            updateElementText('chkAssLabel', dict.chkAss, true);
+            updateElementText('chkTxtLabel', dict.chkTxt, true);
+            updateElementText('chkCoverLabel', dict.chkCover, true);
+            updateElementText('simTitle', dict.simTitle);
+            updateElementText('simRealtime', dict.simRealtime);
+            const btnSubmit = document.getElementById('btn-submit');
+            if (btnSubmit && !btnSubmit.disabled) {
+                btnSubmit.innerHTML = dict.btnGenerateStudio;
+            }
+        }
+
+        // Mise à jour des liens du pied de page légal & solidaire
+        const legalFooter = document.querySelector('.aya-legal-footer');
+        if (legalFooter) {
+            const cguLink = legalFooter.querySelector('a[href*="cgu"]');
+            if (cguLink) cguLink.textContent = dict.footerCguLink;
+            const privLink = legalFooter.querySelector('a[href*="confidentialite"]');
+            if (privLink) privLink.textContent = dict.footerPrivacyLink;
+            const paypalLink = legalFooter.querySelector('a[href*="paypal"]');
+            if (paypalLink) paypalLink.textContent = dict.footerPaypalLink;
+            const copyright = legalFooter.querySelector('.aya-legal-footer-copyright');
+            if (copyright) copyright.textContent = dict.footerCopyright;
         }
 
         // Déclenchement d'un événement global pour les autres scripts

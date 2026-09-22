@@ -28,7 +28,53 @@ html[dir="rtl"],
 body[dir="rtl"],
 html[dir="rtl"] * {
     font-family: var(--font-arabic) !important;
+}
+
+html[dir="rtl"],
+body[dir="rtl"],
+html[dir="rtl"] p,
+html[dir="rtl"] span,
+html[dir="rtl"] label,
+html[dir="rtl"] div,
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] small,
+html[dir="rtl"] li {
     line-height: 1.7 !important;
+}
+
+html[dir="rtl"] button,
+html[dir="rtl"] .btn,
+html[dir="rtl"] .btn-nav-link,
+html[dir="rtl"] .lang-toggle-btn,
+html[dir="rtl"] .badge-tag,
+html[dir="rtl"] .wallet-badge-role,
+html[dir="rtl"] .summary-badge,
+html[dir="rtl"] .navbar-credits-pill,
+html[dir="rtl"] .btn-save-profile,
+html[dir="rtl"] .btn-action-sm,
+html[dir="rtl"] .btn-stripe-buy,
+html[dir="rtl"] .btn-recharge,
+html[dir="rtl"] .btn-primary,
+html[dir="rtl"] input,
+html[dir="rtl"] select {
+    line-height: normal !important;
+}
+
+/* Isolation bidirectionnelle pour les nombres, prix et pourcentages */
+html[dir="rtl"] .credit-count,
+html[dir="rtl"] .pack-price,
+html[dir="rtl"] .pack-unit-price,
+html[dir="rtl"] .balance-value,
+html[dir="rtl"] .progress-percent,
+html[dir="rtl"] .timestamp,
+html[dir="rtl"] .file-size,
+html[dir="rtl"] .price-amount {
+    direction: ltr !important;
+    unicode-bidi: isolate;
+    display: inline-block;
 }
 
 html[dir="rtl"],
@@ -228,7 +274,8 @@ html[dir="rtl"] .profile-form-group {
 }
 
 html[dir="rtl"] .profile-input-wrapper {
-    flex-direction: row;
+    flex-direction: column !important;
+    width: 100% !important;
 }
 
 html[dir="rtl"] .wallet-balance-row {
@@ -306,4 +353,82 @@ html[dir="rtl"] .pack-info {
 
 html[dir="rtl"] .pack-action {
     align-items: flex-start !important;
+}
+
+/* -------------------------------------------------------------
+   Studio TikTok V3 en RTL
+   ------------------------------------------------------------- */
+html[dir="rtl"] .main-container {
+    direction: rtl;
+}
+
+html[dir="rtl"] .control-panel {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .section-title {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .form-group {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .checkbox-label {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .simulator-header {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .filename-info {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .field-hint {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .studio-page-header {
+    text-align: right;
+    direction: rtl;
+}
+
+/* -------------------------------------------------------------
+   Pages Légales (CGU & Confidentialité) en RTL
+   ------------------------------------------------------------- */
+html[dir="rtl"] .legal-page-container,
+html[dir="rtl"] .legal-card,
+html[dir="rtl"] .legal-section {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .legal-section h2 {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .btn-back-home {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .legal-footer-nav {
+    flex-direction: row-reverse;
+}
+
+/* -------------------------------------------------------------
+   Isolation Bidi — Nombres et prix en contexte RTL
+   Empêche les chiffres et devises de s'inverser en mode RTL
+   ------------------------------------------------------------- */
+.aya-bidi-num {
+    unicode-bidi: isolate;
+    direction: ltr;
+    display: inline-block;
 }

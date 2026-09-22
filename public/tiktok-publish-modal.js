@@ -20,6 +20,89 @@
     let currentTab = 'video';
     const MAX_TIKTOK_CHARS = 2200;
 
+    const modalDict = {
+        fr: {
+            title: "Aya Studio — Pré-Publication TikTok",
+            subtitle: "Revue du rendu 9:16, validation de la description et diffusion directe",
+            verifying: "⏳ Vérification...",
+            tabVideo: "🎬 Vidéo (.ASS)",
+            tabCover: "🖼️ Couverture 9:16",
+            safeZoneActive: "👁️ Safe Zone : Active",
+            safeZoneInactive: "👁️ Safe Zone : Masquée",
+            safeZoneTooltip: "Activer/Désactiver le calque simulant l'interface native TikTok",
+            safeZoneLabel: "Zone Sûre Sous-titres (.ass MarginV)",
+            forYou: "Pour toi",
+            following: "Suivis",
+            home: "Accueil",
+            friends: "Amis",
+            inbox: "Boîte",
+            profile: "Profil",
+            more: "plus",
+            audioTrack: "🎵 Son original - Plateforme Aya Studio",
+            hint: "💡 <b>Repère Safe Zone :</b> Vos sous-titres .ass ne doivent être masqués ni par le texte du bas ni par les boutons de droite.",
+            labelTitle: "🏷️ Titre de la Publication (Accroche Visuelle)",
+            placeholderTitle: "Ex: Témoignage du Terrain",
+            labelDesc: "📝 Smart Description SEO TikTok (Optimisée IA)",
+            placeholderDesc: "Rédigez votre description...",
+            labelPrivacy: "👁️ Confidentialité",
+            privacyPublic: "🌍 Tout le monde (Public)",
+            privacyFriends: "👥 Amis mutuels uniquement",
+            privacyPrivate: "🔒 Privé (Moi uniquement)",
+            labelInteractions: "⚙️ Interactions",
+            chkComments: "Commentaires",
+            chkDuets: "Duos",
+            chkStitches: "Collages",
+            btnSaveDraft: "💾 Enregistrer en Brouillon",
+            draftRestored: "✨ Brouillon local restauré",
+            btnCancel: "Annuler",
+            btnPublish: "Valider & Publier sur TikTok",
+            progressText: "Transmission vers TikTok...",
+            close: "Fermer"
+        },
+        ar: {
+            title: "استوديو آية — مراجعة ونشر تيك توك",
+            subtitle: "معاينة الفيديو الرأسي 9:16، تدقيق نصوص النشر والمشاركة المباشرة",
+            verifying: "⏳ جاري التحقق...",
+            tabVideo: "🎬 الفيديو (.ASS)",
+            tabCover: "🖼️ الغلاف 9:16",
+            safeZoneActive: "👁️ المنطقة الآمنة: مفعلة",
+            safeZoneInactive: "👁️ المنطقة الآمنة: مخفية",
+            safeZoneTooltip: "تفعيل أو إخفاء محاكاة واجهة تطبيق تيك توك الأصلية",
+            safeZoneLabel: "المنطقة الآمنة للترجمة (.ass MarginV)",
+            forYou: "لك",
+            following: "أتابعه",
+            home: "الرئيسية",
+            friends: "الأصدقاء",
+            inbox: "صندوق الوارد",
+            profile: "الملف الشخصي",
+            more: "المزيد",
+            audioTrack: "🎵 صوت أصلي - منصة استوديو آية",
+            hint: "💡 <b>المنطقة الآمنة:</b> تأكد من عدم تغطية الترجمة بشريط المعلومات السفلي أو أزرار التفاعل الجانبية.",
+            labelTitle: "🏷️ عنوان المنشور (العنوان الترويجي)",
+            placeholderTitle: "مثال: شهادة حية من أرض الواقع",
+            labelDesc: "📝 الوصف الذكي المحسّن لتيك توك (SEO)",
+            placeholderDesc: "اكتب وصف الفيديو والوسوم...",
+            labelPrivacy: "👁️ الخصوصية",
+            privacyPublic: "🌍 الجميع (منشور عام)",
+            privacyFriends: "👥 الأصدقاء المشتركون فقط",
+            privacyPrivate: "🔒 خاص (أنا فقط)",
+            labelInteractions: "⚙️ التفاعل والمشاركة",
+            chkComments: "التعليقات",
+            chkDuets: "دويتو",
+            chkStitches: "دمج",
+            btnSaveDraft: "💾 حفظ كمسودة",
+            draftRestored: "✨ تم استرجاع المسودة المحلية",
+            btnCancel: "إلغاء",
+            btnPublish: "اعتماد ونشر على تيك توك",
+            progressText: "جاري الإرسال والمعالجة على تيك توك...",
+            close: "إغلاق"
+        }
+    };
+
+    function isArabic() {
+        return (document.documentElement.getAttribute('dir') === 'rtl' || localStorage.getItem('aya_lang') === 'ar');
+    }
+
     /**
      * Ouvre le modal de pré-publication TikTok avec les données du média.
      */
@@ -27,7 +110,10 @@
         currentMediaData = mediaData || {};
         closeTikTokPublishModal();
 
-        const defaultTitle = currentMediaData.semantic_title || currentMediaData.clean_title || 'Témoignage Exclusif';
+        const isAr = isArabic();
+        const d = isAr ? modalDict.ar : modalDict.fr;
+
+        const defaultTitle = currentMediaData.semantic_title || currentMediaData.clean_title || (isAr ? 'شهادة من الميدان' : 'Témoignage Exclusif');
         const defaultDesc = currentMediaData.context_summary || '';
 
         // Récupération d'un éventuel brouillon sauvegardé
@@ -49,23 +135,24 @@
         const modalOverlay = document.createElement('div');
         modalOverlay.id = 'tiktokPublishModalOverlay';
         modalOverlay.className = 'tt-modal-backdrop';
+        if (isAr) modalOverlay.setAttribute('dir', 'rtl');
 
         modalOverlay.innerHTML = `
-            <div class="tt-modal-card" role="dialog" aria-modal="true">
+            <div class="tt-modal-card" role="dialog" aria-modal="true" style="${isAr ? 'direction: rtl; text-align: right;' : ''}">
                 <!-- En-tête -->
                 <div class="tt-modal-header">
                     <div class="tt-header-left">
                         <span class="tt-logo">📱</span>
                         <div>
-                            <h2 class="tt-title">Aya Studio — Pré-Publication TikTok</h2>
-                            <p class="tt-subtitle">Revue du rendu 9:16, validation de la description et diffusion directe</p>
+                            <h2 class="tt-title">${d.title}</h2>
+                            <p class="tt-subtitle">${d.subtitle}</p>
                         </div>
                     </div>
                     <div class="tt-header-right">
                         <div id="ttAccountBadgeContainer">
-                            <span class="tt-badge-loading">⏳ Vérification...</span>
+                            <span class="tt-badge-loading">${d.verifying}</span>
                         </div>
-                        <button type="button" class="tt-btn-close" id="ttBtnCloseModal" title="Fermer">✕</button>
+                        <button type="button" class="tt-btn-close" id="ttBtnCloseModal" title="${d.close}">✕</button>
                     </div>
                 </div>
 
@@ -75,11 +162,11 @@
                     <div class="tt-col-left">
                         <div class="tt-preview-toolbar">
                             <div class="tt-tab-group">
-                                <button type="button" id="ttTabVideo" class="tt-tab-btn active">🎬 Vidéo (.ASS)</button>
-                                ${currentMediaData.cover_url ? '<button type="button" id="ttTabCover" class="tt-tab-btn">🖼️ Couverture 9:16</button>' : ''}
+                                <button type="button" id="ttTabVideo" class="tt-tab-btn active">${d.tabVideo}</button>
+                                ${currentMediaData.cover_url ? `<button type="button" id="ttTabCover" class="tt-tab-btn">${d.tabCover}</button>` : ''}
                             </div>
-                            <button type="button" id="ttToggleSafeZone" class="tt-btn-safezone active" title="Activer/Désactiver le calque simulant l'interface native TikTok">
-                                👁️ Safe Zone : Active
+                            <button type="button" id="ttToggleSafeZone" class="tt-btn-safezone active" title="${d.safeZoneTooltip}">
+                                ${d.safeZoneActive}
                             </button>
                         </div>
 
@@ -91,14 +178,14 @@
                                 <!-- CALQUE REPERES TIKTOK SAFE ZONE -->
                                 <div id="ttSafeZoneOverlay" class="tt-safezone-overlay">
                                     <div class="tt-ui-top">
-                                        <span>Suivis</span>
-                                        <span style="font-weight:800; border-bottom:2px solid #fff;">Pour toi</span>
+                                        <span>${d.following}</span>
+                                        <span style="font-weight:800; border-bottom:2px solid #fff;">${d.forYou}</span>
                                         <span>🔍</span>
                                     </div>
 
                                     <!-- ZONE SÛRE SOUS-TITRES -->
                                     <div class="tt-safe-area-box">
-                                        <span class="tt-safe-area-label">Zone Sûre Sous-titres (.ass MarginV)</span>
+                                        <span class="tt-safe-area-label">${d.safeZoneLabel}</span>
                                     </div>
 
                                     <!-- Rail Icônes Droite -->
@@ -133,60 +220,60 @@
                                     <!-- Zone Basse (Texte + Auteur) -->
                                     <div class="tt-ui-bottom">
                                         <div class="tt-author">@aya.studio • 1h</div>
-                                        <div id="ttOverlayCaption" class="tt-caption">${escapeHtml(initialTitle)} ... <span style="color:#94a3b8">plus</span></div>
-                                        <div class="tt-audio-track">🎵 Son original - Plateforme Aya Studio</div>
+                                        <div id="ttOverlayCaption" class="tt-caption">${escapeHtml(initialTitle)} ... <span style="color:#94a3b8">${d.more}</span></div>
+                                        <div class="tt-audio-track">${d.audioTrack}</div>
                                     </div>
 
                                     <!-- Barre Navigation Basse -->
                                     <div class="tt-ui-nav">
-                                        <span>Accueil</span>
-                                        <span>Amis</span>
+                                        <span>${d.home}</span>
+                                        <span>${d.friends}</span>
                                         <span class="tt-nav-plus">+</span>
-                                        <span>Boîte</span>
-                                        <span>Profil</span>
+                                        <span>${d.inbox}</span>
+                                        <span>${d.profile}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            ${currentMediaData.cover_url ? `<img id="ttCoverImage" src="${currentMediaData.cover_url}" class="tt-cover-img" style="display:none;" alt="Couverture 9:16">` : ''}
+                            ${currentMediaData.cover_url ? `<img id="ttCoverImage" src="${currentMediaData.cover_url}" class="tt-cover-img" style="display:none;" alt="${d.tabCover}">` : ''}
                         </div>
 
                         <p class="tt-hint">
-                            💡 <b>Repère Safe Zone :</b> Vos sous-titres .ass ne doivent être masqués ni par le texte du bas ni par les boutons de droite.
+                            ${d.hint}
                         </p>
                     </div>
 
                     <!-- Colonne Droite (60%) : Éditeur Métadonnées -->
                     <div class="tt-col-right">
                         <div class="tt-form-group">
-                            <label class="tt-label">🏷️ Titre de la Publication (Accroche Visuelle)</label>
-                            <input type="text" id="ttInputTitle" class="tt-input" value="${escapeHtml(initialTitle)}" maxlength="100" placeholder="Ex: Face à l'Interrogatoire">
+                            <label class="tt-label">${d.labelTitle}</label>
+                            <input type="text" id="ttInputTitle" class="tt-input" value="${escapeHtml(initialTitle)}" maxlength="100" placeholder="${d.placeholderTitle}">
                         </div>
 
                         <div class="tt-form-group">
                             <div class="tt-label-row">
-                                <label class="tt-label">📝 Smart Description SEO TikTok (Optimisée IA)</label>
-                                <span id="ttCharCounter" class="tt-counter-ok">0 / 2 200 car.</span>
+                                <label class="tt-label">${d.labelDesc}</label>
+                                <span id="ttCharCounter" class="tt-counter-ok">0 / 2 200 ${isAr ? 'حرف' : 'car.'}</span>
                             </div>
-                            <textarea id="ttTextareaDesc" class="tt-textarea" rows="12" placeholder="Rédigez votre description...">${escapeHtml(initialDesc)}</textarea>
+                            <textarea id="ttTextareaDesc" class="tt-textarea" rows="12" placeholder="${d.placeholderDesc}">${escapeHtml(initialDesc)}</textarea>
                         </div>
 
                         <!-- Paramètres TikTok -->
                         <div class="tt-settings-grid">
                             <div class="tt-form-group">
-                                <label class="tt-sublabel">👁️ Confidentialité</label>
+                                <label class="tt-sublabel">${d.labelPrivacy}</label>
                                 <select id="ttSelectPrivacy" class="tt-select">
-                                    <option value="PUBLIC_TO_EVERYONE">🌍 Tout le monde (Public)</option>
-                                    <option value="MUTUAL_FOLLOW_FRIENDS">👥 Amis mutuels uniquement</option>
-                                    <option value="SELF_ONLY">🔒 Privé (Moi uniquement)</option>
+                                    <option value="PUBLIC_TO_EVERYONE">${d.privacyPublic}</option>
+                                    <option value="MUTUAL_FOLLOW_FRIENDS">${d.privacyFriends}</option>
+                                    <option value="SELF_ONLY">${d.privacyPrivate}</option>
                                 </select>
                             </div>
                             <div class="tt-form-group">
-                                <label class="tt-sublabel">⚙️ Interactions</label>
+                                <label class="tt-sublabel">${d.labelInteractions}</label>
                                 <div class="tt-checkbox-row">
-                                    <label><input type="checkbox" id="ttCheckComment" checked> Commentaires</label>
-                                    <label><input type="checkbox" id="ttCheckDuet" checked> Duos</label>
-                                    <label><input type="checkbox" id="ttCheckStitch" checked> Collages</label>
+                                    <label><input type="checkbox" id="ttCheckComment" checked> ${d.chkComments}</label>
+                                    <label><input type="checkbox" id="ttCheckDuet" checked> ${d.chkDuets}</label>
+                                    <label><input type="checkbox" id="ttCheckStitch" checked> ${d.chkStitches}</label>
                                 </div>
                             </div>
                         </div>
@@ -199,7 +286,7 @@
                             <div class="tt-progress-track">
                                 <div id="ttProgressBar" class="tt-progress-bar" style="width: 0%;"></div>
                             </div>
-                            <span id="ttProgressText" class="tt-progress-text">Transmission vers TikTok...</span>
+                            <span id="ttProgressText" class="tt-progress-text">${d.progressText}</span>
                         </div>
                     </div>
                 </div>
@@ -207,13 +294,13 @@
                 <!-- Pied de Page -->
                 <div class="tt-modal-footer">
                     <div class="tt-footer-left">
-                        <button type="button" id="ttBtnSaveDraft" class="tt-btn-draft">💾 Enregistrer en Brouillon</button>
-                        <span id="ttDraftBadge" class="tt-draft-badge" style="display:${draftRestored ? 'inline-block' : 'none'};">✨ Brouillon local restauré</span>
+                        <button type="button" id="ttBtnSaveDraft" class="tt-btn-draft">${d.btnSaveDraft}</button>
+                        <span id="ttDraftBadge" class="tt-draft-badge" style="display:${draftRestored ? 'inline-block' : 'none'};">${d.draftRestored}</span>
                     </div>
                     <div class="tt-footer-right">
-                        <button type="button" id="ttBtnCancel" class="tt-btn-cancel">Annuler</button>
+                        <button type="button" id="ttBtnCancel" class="tt-btn-cancel">${d.btnCancel}</button>
                         <button type="button" id="ttBtnPublish" class="tt-btn-publish">
-                            <span>🚀</span> Valider & Publier sur TikTok
+                            <span>🚀</span> ${d.btnPublish}
                         </button>
                     </div>
                 </div>
@@ -224,7 +311,7 @@
         currentModalEl = modalOverlay;
 
         // Attachement des gestionnaires d'événements
-        attachModalEvents(modalOverlay);
+        attachModalEvents(modalOverlay, d);
         refreshTikTokAccountStatus();
         updateCharCounter();
     };
