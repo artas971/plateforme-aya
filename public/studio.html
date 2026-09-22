@@ -233,13 +233,10 @@
             overflow: hidden;
             border: 4px solid #0f172a;
             background: #000000;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            max-height: calc(100vh - 200px);
+            width: 100%;
+            max-width: 340px;
         }
-        canvas { display: block; background: #000000; width: 100%; height: 100%; object-fit: contain; }
+        canvas { display: block; background: #000000; width: 100%; height: auto; }
 
         .filename-info {
             font-size: 0.8rem;
@@ -438,22 +435,36 @@
     var canvas = document.getElementById('tiktokCanvas');
     var ctx = canvas ? canvas.getContext('2d') : null;
 
-    // ─── Dimensions logiques (coordonnées de dessin) ───────────────────────
+    // ─── Dimensions logiques — mises à jour par initCanvasDPR() ─────────────
     var LOGI_W = 405;
     var LOGI_H = 720;
 
-    // ─── Netteté HiDPI (Retina, 125%, 150%...) ────────────────────────────
-    // On upscale le canvas physique par devicePixelRatio, puis on scale le ctx
-    // pour que toutes les coordonnées de dessin restent en pixels logiques.
+    // ─── Calibrage HiDPI — Méthode getBoundingClientRect() ──────────────────
+    // Synchronise la résolution interne du canvas avec sa taille CSS réelle
+    // multipliée par le ratio physique de l'écran (devicePixelRatio).
     function initCanvasDPR() {
-        if (!canvas || !ctx) return;
+        if (!canvas) return;
         var dpr = window.devicePixelRatio || 1;
-        canvas.width  = Math.round(LOGI_W * dpr);
-        canvas.height = Math.round(LOGI_H * dpr);
-        canvas.style.width  = '100%';
-        canvas.style.height = '100%';
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+        var rect = canvas.getBoundingClientRect();
+
+        if (rect.width === 0 || rect.height === 0) return; // pas encore rendu
+
+        // 1. Résolution interne = taille affichée × DPR (pixels physiques réels)
+        canvas.width  = Math.round(rect.width  * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+
+        // 2. Figer la taille CSS (empêche une boucle de relayout)
+        canvas.style.width  = rect.width  + 'px';
+        canvas.style.height = rect.height + 'px';
+
+        // 3. Adapter le contexte 2D — les coordonnées de dessin restent en px CSS
+        ctx = canvas.getContext('2d');
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform avant scale
         ctx.scale(dpr, dpr);
+
+        // 4. Mettre à jour les dimensions logiques pour drawCanvas()
+        LOGI_W = rect.width;
+        LOGI_H = rect.height;
     }
 
     var selectedTitleColor = '#D8D0BE';
@@ -463,13 +474,26 @@
     var isUserImageLoaded = false;
 
     window.onload = function() {
-        initCanvasDPR();
         if (window.location.protocol === 'file:') {
             var warn = document.getElementById('fileProtocolWarning');
             if (warn) warn.style.display = 'block';
         }
-        drawCanvas();
+        // requestAnimationFrame garantit que le layout CSS est complet
+        // avant de mesurer avec getBoundingClientRect()
+        requestAnimationFrame(function() {
+            initCanvasDPR();
+            drawCanvas();
+        });
     };
+
+    // Re-calibrer si la fenêtre est redimensionnée
+    window.addEventListener('resize', function() {
+        requestAnimationFrame(function() {
+            initCanvasDPR();
+            drawCanvas();
+        });
+    });
+
 
     function setTitleColor(el, hex) {
         var items = document.querySelectorAll('#title-color-palette .color-swatch');
@@ -564,10 +588,11 @@
 
         var hasArTitle = /[\u0600-\u06FF]/.test(titleText);
         ctx.font = hasArTitle ? '700 16px "Cairo", sans-serif' : '900 17px "Arial Black", Impact';
-        ctx.fillStyle = selectedTitleColor;
         ctx.textAlign = 'center';
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#000000';
 
         var words = titleText.split(' ');
         var line = '';
@@ -584,12 +609,14 @@
         }
         lines.push(line);
 
+        // Stroke d'abord, fill ensuite — ordre correct pour un contour net
+        for (var i = 0; i < lines.length; i++) {
+            ctx.strokeText(lines[i], LOGI_W / 2, titleY + (i * 22));
+        }
+        ctx.fillStyle = selectedTitleColor;
         for (var i = 0; i < lines.length; i++) {
             ctx.fillText(lines[i], LOGI_W / 2, titleY + (i * 22));
         }
-
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
 
         // 4. Subtitles Bottom
         var subMarginEl = document.getElementById('sub-margin');
@@ -604,12 +631,17 @@
 
         var hasArSub = /[\u0600-\u06FF]/.test(subLines.join(''));
         ctx.font = hasArSub ? 'bold 18px "Cairo", sans-serif' : 'bold 20px Impact';
-        ctx.fillStyle = selectedSubColor;
         ctx.textAlign = 'center';
-        // Aucun stroke, aucun shadow — fillText pur = pixels les plus nets
-        ctx.shadowColor = 'transparent';
-        ctx.shadowBlur = 0;
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#000000';
 
+        // Stroke d'abord, fill ensuite — ordre correct pour un contour net
+        for (var j = 0; j < subLines.length; j++) {
+            ctx.strokeText(subLines[j], LOGI_W / 2, subY + (j * 26));
+        }
+        ctx.fillStyle = selectedSubColor;
         for (var j = 0; j < subLines.length; j++) {
             ctx.fillText(subLines[j], LOGI_W / 2, subY + (j * 26));
         }
