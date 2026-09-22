@@ -405,10 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const durationStr = formatDuration(v.duration);
         const langTag = v.targetLang === 'ar' ? 'VOAR (Arabe)' : 'VOSTFR (Français)';
 
-        // Statut Drive
-        const isDriveUploaded = v.drive && v.drive.status === 'uploaded';
-        const driveLink = v.drive?.folderLink || v.drive?.webViewLink || '';
-
         // Vignette
         const thumbUrl = v.coverUrl || '';
         const thumbHtml = thumbUrl
@@ -431,33 +427,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="video-card-footer">
-                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 8px;">
-                    ${isDriveUploaded 
-                        ? `<span class="drive-status-tag uploaded">☁️ Sauvegardé Drive</span>`
-                        : `<span class="drive-status-tag pending">📦 Archivage local</span>`
-                    }
-                    ${isDriveUploaded && driveLink 
-                        ? `<a href="${driveLink}" target="_blank" class="btn-drive-open" title="Consulter dans Google Drive">
-                                <span>☁️</span> Ouvrir sur Drive
-                           </a>`
-                        : ''
-                    }
-                </div>
-
-                <div class="video-actions-row">
-                    ${v.mp4Url ? `
-                        <button type="button" class="btn-action-sm primary btn-play-video" data-url="${v.mp4Url}" data-title="${title}">
-                            <span>▶️</span> Lire
-                        </button>
-                        <a href="${v.mp4Url}" download class="btn-action-sm" title="Télécharger le fichier MP4 final">
-                            <span>⬇️</span> MP4
-                        </a>
-                    ` : ''}
-                    ${v.assUrl ? `
-                        <a href="${v.assUrl}" download class="btn-action-sm" title="Télécharger les sous-titres .ASS">
-                            <span>📝</span> .ASS
-                        </a>
-                    ` : ''}
+                <div class="video-actions-row" style="display: flex; align-items: center; justify-content: space-between; width: 100%; flex-wrap: wrap; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        ${v.mp4Url ? `
+                            <button type="button" class="btn-action-sm primary btn-play-video" data-url="${v.mp4Url}" data-title="${title}">
+                                <span>▶️</span> Lire
+                            </button>
+                            <a href="${v.mp4Url}" download class="btn-action-sm" title="Télécharger le fichier MP4 final">
+                                <span>⬇️</span> MP4
+                            </a>
+                        ` : ''}
+                        ${v.assUrl ? `
+                            <a href="${v.assUrl}" download class="btn-action-sm" title="Télécharger les sous-titres .ASS">
+                                <span>📝</span> .ASS
+                            </a>
+                        ` : ''}
+                    </div>
+                    <button type="button" class="btn-action-sm btn-delete-video" data-id="${v.id || v._id}" title="Supprimer cette vidéo de votre historique" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); margin-left: auto;">
+                        <span>🗑️</span> Supprimer
+                    </button>
                 </div>
             </div>
         `;
@@ -469,6 +457,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 const url = playBtn.getAttribute('data-url');
                 const t = playBtn.getAttribute('data-title');
                 openVideoModal(url, t);
+            });
+        }
+
+        // Événement suppression vidéo
+        const deleteBtn = card.querySelector('.btn-delete-video');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const videoId = deleteBtn.getAttribute('data-id');
+                if (!videoId) return;
+
+                const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+                const confirmMsg = isRtl 
+                    ? "هل أنت متأكد من رغبتك في حذف هذا الفيديو نهائياً من سجلك؟"
+                    : "Êtes-vous sûr de vouloir supprimer définitivement cette vidéo de votre historique ?";
+
+                if (!confirm(confirmMsg)) return;
+
+                deleteBtn.disabled = true;
+                deleteBtn.innerHTML = '<span>⏳</span> ...';
+
+                try {
+                    const res = await fetch(`/api/user/videos/${encodeURIComponent(videoId)}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await res.json();
+
+                    if (result.success) {
+                        showToast(isRtl ? "تم حذف الفيديو بنجاح." : "Vidéo supprimée de votre historique avec succès.", "success");
+                        // Animation de retrait fluide
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.92)';
+                        setTimeout(() => {
+                            card.remove();
+                            // Mettre à jour le compteur
+                            const remaining = videoHistoryGrid.querySelectorAll('.video-card').length;
+                            if (historyCountBadge) {
+                                historyCountBadge.textContent = `${remaining} vidéo${remaining > 1 ? 's' : ''}`;
+                            }
+                            if (remaining === 0) {
+                                videoHistoryEmpty.style.display = 'flex';
+                                videoHistoryGrid.style.display = 'none';
+                            }
+                        }, 300);
+                    } else {
+                        showToast(result.error || "Impossible de supprimer la vidéo.", "error");
+                        deleteBtn.disabled = false;
+                        deleteBtn.innerHTML = '<span>🗑️</span> Supprimer';
+                    }
+                } catch (err) {
+                    console.error('[DELETE VIDEO ERROR]', err);
+                    showToast("Erreur de connexion lors de la suppression.", "error");
+                    deleteBtn.disabled = false;
+                    deleteBtn.innerHTML = '<span>🗑️</span> Supprimer';
+                }
             });
         }
 

@@ -5,7 +5,7 @@ const path = require('path');
 const User = require('../models/User');
 const { isDbConnected } = require('../config/database');
 const { getUserWallet } = require('../services/walletService');
-const { getUserVideoHistory } = require('../services/videoHistoryService');
+const { getUserVideoHistory, deleteUserVideo } = require('../services/videoHistoryService');
 
 const DATA_DIR = path.join(__dirname, '../data');
 const FALLBACK_USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -140,6 +140,41 @@ router.get('/videos', async (req, res) => {
         });
     } catch (err) {
         console.error('[API USER VIDEOS ERROR]', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * DELETE /api/user/videos/:id : Supprime une vidéo de l'historique personnel
+ */
+router.delete('/videos/:id', async (req, res) => {
+    try {
+        const sessionUser = req.session?.user;
+        if (!sessionUser) {
+            return res.status(401).json({ success: false, error: "Non connecté." });
+        }
+
+        const videoId = req.params.id;
+        if (!videoId) {
+            return res.status(400).json({ success: false, error: "Identifiant de vidéo manquant." });
+        }
+
+        const userIdentifier = sessionUser.id || sessionUser.username;
+        const deleted = await deleteUserVideo(videoId, userIdentifier);
+
+        if (deleted) {
+            return res.json({
+                success: true,
+                message: "Vidéo supprimée de votre historique avec succès."
+            });
+        } else {
+            return res.status(404).json({
+                success: false,
+                error: "Vidéo introuvable ou vous n'avez pas l'autorisation de la supprimer."
+            });
+        }
+    } catch (err) {
+        console.error('[API DELETE VIDEO ERROR]', err);
         return res.status(500).json({ success: false, error: err.message });
     }
 });

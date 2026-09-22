@@ -153,7 +153,7 @@ async function getUserVideoHistory(userIdentifier, { limit = 50, page = 1 } = {}
                 .lean();
 
             return {
-                videos,
+                videos: videos.map(sanitizeVideoForClient),
                 total,
                 page,
                 limit
@@ -195,15 +195,107 @@ async function getUserVideoHistory(userIdentifier, { limit = 50, page = 1 } = {}
     const paginated = userVideos.slice(startIndex, startIndex + limit);
 
     return {
-        videos: paginated,
+        videos: paginated.map(sanitizeVideoForClient),
         total,
         page,
         limit
     };
 }
 
+/**
+ * Masque les informations d'infrastructure interne (Google Drive, IDs techniques distants)
+ * afin que l'utilisateur final ne sache jamais où se trouvent physiquement les fichiers.
+ */
+function sanitizeVideoForClient(video) {
+    if (!video) return video;
+    const v = typeof video.toObject === 'function' ? video.toObject() : { ...video };
+    delete v.drive; // Supprime strictement toute métadonnée ou lien vers Google Drive
+    return v;
+}
+
+/**
+ * Supprime une vidéo de l'historique personnel de l'utilisateur (avec contrôle de propriété strict)
+ */
+async function deleteUserVideo(videoId, userIdentifier) {
+    if (!videoId || !userIdentifier) return false;
+    const vid = String(videoId).trim();
+    const uid = String(userIdentifier).trim().toLowerCase();
+    const cleanUid = uid.replace(/^@/, '');
+
+    // Récupération de tous les alias d'identification de l'utilisateur
+    const matchKeys = new Set([uid, cleanUid, '@' + cleanUid]);
+    try {
+        const usersFile = path.join(DATA_DIR, 'users.json');
+        if (fs.existsSync(usersFile)) {
+            const users = JSON.parse(fs.readFileSync(usersFile, 'utf-8'));
+            const matched = users.find(u => 
+                (u.id && matchKeys.has(u.id.toLowerCase())) || 
+                (u.username && (matchKeys.has(u.username.toLowerCase()) || matchKeys.has(u.username.toLowerCase().replace(/^@/, '')))) ||
+                (u.email && matchKeys.has(u.email.toLowerCase()))
+            );
+            if (matched) {
+                if (matched.id) matchKeys.add(matched.id.toLowerCase());
+                if (matched.username) {
+                    matchKeys.add(matched.username.toLowerCase());
+                    matchKeys.add(matched.username.toLowerCase().replace(/^@/, ''));
+                    matchKeys.add('@' + matched.username.toLowerCase().replace(/^@/, ''));
+                }
+                if (matched.email) matchKeys.add(matched.email.toLowerCase());
+            }
+        }
+    } catch (e) {}
+
+    // 1. Mode MongoDB
+    if (isDbConnected()) {
+        try {
+            const orConditions = [];
+            for (const key of matchKeys) {
+                orConditions.push({ user: key });
+                orConditions.push({ username: key });
+            }
+            const query = {
+                _id: vid,
+                $or: orConditions
+            };
+            const deleted = await Video.findOneAndDelete(query);
+            if (deleted) {
+                console.log(`[VIDEO HISTORY] 🗑️ Vidéo ${vid} supprimée de MongoDB pour ${userIdentifier}`);
+                return true;
+            }
+        } catch (err) {
+            console.warn('[VIDEO HISTORY DELETE ERROR MONGODB]', err.message);
+        }
+    }
+
+    // 2. Mode Autonome JSON
+    const allVideos = readFallbackVideos();
+    const initialLen = allVideos.length;
+    const filtered = allVideos.filter(v => {
+        const isTarget = (String(v.id) === vid || String(v._id) === vid);
+        if (!isTarget) return true; // Conserver les autres vidéos
+        // Si c'est la vidéo cible, vérifier que l'appelant en est bien le propriétaire
+        const vUser = String(v.user || '').toLowerCase();
+        const vUsername = String(v.username || '').toLowerCase();
+        const isOwner = matchKeys.has(vUser) || 
+                        matchKeys.has(vUser.replace(/^@/, '')) ||
+                        matchKeys.has(vUsername) || 
+                        matchKeys.has(vUsername.replace(/^@/, ''));
+        return !isOwner; // Si propriétaire, retirer de la liste (suppression)
+    });
+
+    if (filtered.length < initialLen) {
+        saveFallbackVideos(filtered);
+        console.log(`[VIDEO HISTORY (JSON)] 🗑️ Vidéo ${vid} supprimée de data/videos.json pour ${userIdentifier}`);
+        return true;
+    }
+
+    return false;
+}
+
 module.exports = {
     recordVideoGeneration,
     updateVideoDriveInfo,
-    getUserVideoHistory
+    getUserVideoHistory,
+    deleteUserVideo,
+    sanitizeVideoForClient
 };
