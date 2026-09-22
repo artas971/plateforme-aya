@@ -87,167 +87,327 @@ html, body, html[dir="ltr"], body[dir="ltr"] {
     gap: 24px;
 }
 
-/* Header Navbar Officiel (Bleu Primaire #0b5394) */
+/* ==========================================================================
+   Concept 1 : Navbar Supérieure Flottante (Full-Width Sticky Glass Bar)
+   ========================================================================== */
 .app-header {
-    background: var(--color-primary);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: none;
-    border-bottom: 2px solid rgba(0, 188, 212, 0.4);
-    border-radius: var(--radius-lg);
-    padding: 16px 24px;
+    border-bottom: 1px solid rgba(153, 153, 153, 0.18);
+    border-radius: 0;
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+}
+
+.navbar-container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: var(--color-white);
-    box-shadow: 0 4px 20px rgba(11, 83, 148, 0.22);
+    height: 100%;
+    gap: 16px;
 }
 
+/* 1. Pôle Gauche : Identité & Marque */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.navbar-brand .avatar-badge {
+    position: relative;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-turquoise), #0097a7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--color-white);
+    box-shadow: 0 2px 10px rgba(0, 188, 212, 0.35);
+    flex-shrink: 0;
+}
+
+.brand-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.brand-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--color-white);
+    letter-spacing: -0.01em;
+}
+
+.brand-badge-ai {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-turquoise);
+    background: rgba(0, 188, 212, 0.12);
+    border: 1px solid rgba(0, 188, 212, 0.35);
+    border-radius: 12px;
+    padding: 2px 8px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+/* 2. Pôle Central : Navigation Épurée & Indicateur Actif */
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+}
+
+.nav-link-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    height: 100%;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    position: relative;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.nav-link-modern:hover {
+    color: #ffffff;
+}
+
+.nav-link-modern.active {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Indicateur Actif : Liseré Turquoise Lumineux au bas de la barre */
+.nav-link-modern.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 12px;
+    right: 12px;
+    height: 2.5px;
+    background: var(--color-turquoise);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -2px 10px var(--color-turquoise-glow);
+}
+
+/* 3. Pôle Droit : Utilitaires, Solde & Compte */
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Badge Crédits Flottant */
+.navbar-credits-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 188, 212, 0.12);
+    border: 1px solid rgba(0, 188, 212, 0.35);
+    color: var(--color-turquoise);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-credits-pill:hover {
+    background: rgba(0, 188, 212, 0.22);
+    border-color: var(--color-turquoise);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--color-turquoise-glow);
+}
+
+.navbar-credits-pill .credit-icon {
+    font-size: 0.95rem;
+}
+
+.navbar-credits-pill .credit-count {
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.navbar-credits-pill .credit-unit {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* Sélecteur de Langue Minimaliste */
+.lang-switcher-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 3px 8px;
+    gap: 6px;
+}
+
+.lang-switcher-pill .lang-toggle-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.lang-switcher-pill .lang-toggle-btn.active {
+    color: #ffffff;
+    background: var(--color-turquoise);
+    box-shadow: 0 2px 8px var(--color-turquoise-glow);
+}
+
+.lang-switcher-pill .lang-sep {
+    color: #475569;
+    font-size: 0.75rem;
+}
+
+/* Avatar Utilisateur & Déconnexion */
+.navbar-user-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 3px 8px 3px 4px;
+}
+
+.navbar-avatar-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #ffffff;
+}
+
+.navbar-avatar-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--color-turquoise);
+}
+
+.navbar-username {
+    font-size: 0.84rem;
+    font-weight: 600;
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-logout-minimal {
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.15s;
+    padding: 2px 4px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-logout-minimal:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Rétrocompatibilité sélecteurs existants */
 .brand {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
-.avatar-badge {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-turquoise), #0097a7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.15rem;
-    color: var(--color-white);
-    box-shadow: 0 2px 10px rgba(0, 188, 212, 0.35);
-}
-
 .status-dot {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
     background-color: var(--color-turquoise);
-    border: 2px solid var(--color-primary);
+    border: 2px solid #0f172a;
     border-radius: 50%;
 }
 
-.app-header h1,
-#navbarBrandTitle {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--color-white);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.subtitle,
-#navbarBrandSub {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.88rem;
-}
-
-.badge-tag {
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.15);
-    color: var(--color-white);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    font-weight: 600;
-}
-
-.badge-tag.green {
-    background: rgba(0, 188, 212, 0.22);
-    color: var(--color-white);
-    border-color: var(--color-turquoise);
-}
-
-.live-indicator {
-    font-size: 0.8rem;
-    color: var(--color-white);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.12);
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.pulse {
-    width: 8px;
-    height: 8px;
-    background-color: var(--color-turquoise);
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7);
-    animation: pulse-anim 2s infinite;
-}
-
-@keyframes pulse-anim {
-    0% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0.7); }
-    70% { box-shadow: 0 0 0 8px rgba(0, 188, 212, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 188, 212, 0); }
-}
-
-/* Navbar Navigation Links (Projet Aya) */
 .btn-nav-link {
-    text-decoration: none;
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--color-white);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    transition: all 0.2s ease;
-    cursor: pointer;
+    padding: 0 14px;
+    height: 100%;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    position: relative;
+    transition: color 0.2s ease;
+    background: transparent;
+    border: none;
 }
 
 .btn-nav-link:hover {
-    background: rgba(0, 188, 212, 0.25);
-    border-color: var(--color-turquoise);
-    color: var(--color-white);
-    transform: translateY(-1px);
+    color: #ffffff;
 }
 
 .btn-nav-link.active {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.btn-nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 12px;
+    right: 12px;
+    height: 2.5px;
     background: var(--color-turquoise);
-    color: var(--color-white);
-    border-color: var(--color-turquoise);
-    box-shadow: 0 2px 10px rgba(0, 188, 212, 0.4);
-}
-
-/* Adaptation Header Navbar Spécifique */
-.app-header .user-badge {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: var(--color-white);
-}
-
-.app-header .lang-switcher {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.app-header .lang-toggle-btn {
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.app-header .lang-toggle-btn.active {
-    background: var(--color-turquoise);
-    color: var(--color-white);
-    box-shadow: 0 2px 8px rgba(0, 188, 212, 0.4);
-}
-
-.app-header .lang-toggle-btn:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.18);
-    color: var(--color-white);
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 -2px 10px var(--color-turquoise-glow);
 }
 
 /* Grid Layout */
@@ -1479,18 +1639,39 @@ html[dir="rtl"] .step-content p {
     }
 
     .app-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 14px;
-        padding: 16px;
+        height: auto;
+        min-height: 56px;
+        padding: 8px 16px;
     }
 
-    .header-actions {
-        display: flex;
+    .navbar-container {
         flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
+        row-gap: 8px;
+    }
+
+    .navbar-nav {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 4px;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+
+    .navbar-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-link-modern,
+    .btn-nav-link {
+        padding: 6px 10px;
+        height: 38px;
+        font-size: 0.82rem;
+    }
+
+    .navbar-username {
+        display: none;
     }
 
     .form-row {
@@ -2910,6 +3091,28 @@ html[dir="rtl"] .step-content p {
    Mobile Ergonomics & Responsive Touch Targets (Jour J - 4)
    ========================================================================== */
 @media (max-width: 480px) {
+    .app-header {
+        padding: 6px 12px;
+        min-height: 52px;
+    }
+
+    .brand-title {
+        font-size: 1rem;
+    }
+
+    .brand-badge-ai {
+        display: none;
+    }
+
+    .navbar-credits-pill {
+        padding: 4px 8px;
+        font-size: 0.78rem;
+    }
+
+    .navbar-actions {
+        gap: 6px;
+    }
+
     /* Minimum 44px touch targets on interactive controls */
     button, 
     .btn, 

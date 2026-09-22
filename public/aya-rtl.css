@@ -63,28 +63,34 @@ html[dir="ltr"] code {
     font-family: var(--font-ui) !important;
 }
 
-/* Inversion de la Barre de Navigation */
+/* Inversion de la Barre de Navigation (Concept 1) */
 html[dir="rtl"] .app-header {
-    flex-direction: row;
+    direction: rtl;
+    text-align: right;
 }
 
-html[dir="rtl"] .brand {
-    flex-direction: row;
-    gap: 14px;
+html[dir="rtl"] .navbar-container {
+    direction: rtl;
 }
 
-html[dir="rtl"] .header-actions {
-    flex-direction: row;
-    gap: 10px;
+html[dir="rtl"] .navbar-brand {
+    direction: rtl;
 }
 
-html[dir="rtl"] .nav-links a {
-    margin-left: 0;
-    margin-right: 1.5rem;
+html[dir="rtl"] .brand-link {
+    direction: rtl;
 }
 
-html[dir="rtl"] .user-badge {
-    flex-direction: row;
+html[dir="rtl"] .navbar-nav {
+    direction: rtl;
+}
+
+html[dir="rtl"] .navbar-actions {
+    direction: rtl;
+}
+
+html[dir="rtl"] .navbar-user-wrap {
+    padding: 3px 4px 3px 8px;
     direction: rtl;
 }
 

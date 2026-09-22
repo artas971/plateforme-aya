@@ -616,12 +616,16 @@
         const userObj = getUserSession();
         const userNameSpan = document.getElementById('navbarUserName');
         const avatarImg = document.getElementById('navbarAvatarImg');
+        const creditsSpan = document.getElementById('navbarCreditsCount');
         if (userNameSpan) {
             const name = userObj ? (userObj.name || userObj.username) : dict.userAnonymous;
-            userNameSpan.textContent = `${dict.userConnectedPrefix} ${name}`;
+            userNameSpan.textContent = name;
         }
         if (avatarImg && userObj && userObj.avatar) {
             avatarImg.src = userObj.avatar;
+        }
+        if (creditsSpan && userObj && userObj.credits !== undefined) {
+            creditsSpan.textContent = userObj.credits;
         }
 
         if (!window._ayaUserSyncDone) {
@@ -633,8 +637,10 @@
                         localStorage.setItem('aya_user', JSON.stringify(d.user));
                         const currentAvatar = document.getElementById('navbarAvatarImg');
                         const currentName = document.getElementById('navbarUserName');
+                        const currentCredits = document.getElementById('navbarCreditsCount');
                         if (currentAvatar && d.user.avatar) currentAvatar.src = d.user.avatar;
-                        if (currentName) currentName.textContent = `${dict.userConnectedPrefix} ${d.user.name || d.user.username}`;
+                        if (currentName) currentName.textContent = d.user.name || d.user.username;
+                        if (currentCredits && d.user.credits !== undefined) currentCredits.textContent = d.user.credits;
                     }
                 })
                 .catch(() => {});
@@ -846,59 +852,66 @@
         const dict = translations[currentLang] || translations.fr;
 
         existingHeader.innerHTML = `
-            <div class="brand">
-                <div class="avatar-badge">
-                    <span class="avatar-initials">آية</span>
-                    <span class="status-dot"></span>
-                </div>
-                <div>
-                    <h1 id="navbarBrandTitle">${dict.navbarBrandTitle}</h1>
-                    <p class="subtitle" id="navbarBrandSub">${dict.navbarBrandSub}</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <!-- Statut Utilisateur & Déconnexion -->
-                <div class="user-badge" id="navbarUserBadge">
-                    <a href="/profil" id="navbarUserProfileLink" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:inherit;" title="${dict.navProfilText}">
-                        <img id="navbarAvatarImg" src="/icon.png" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:1.5px solid var(--color-turquoise);" alt="Avatar" onerror="this.src='/icon.png'">
-                        <span id="navbarUserName">👤 متصل</span>
+            <div class="navbar-container">
+                <!-- PÔLE GAUCHE : Identité de Marque -->
+                <div class="navbar-brand">
+                    <a href="/" class="brand-link" title="Aya Studio Accueil">
+                        <div class="avatar-badge">
+                            <span class="avatar-initials">آية</span>
+                            <span class="status-dot"></span>
+                        </div>
+                        <div class="brand-text">
+                            <span class="brand-title" id="navbarBrandTitle">Aya Studio</span>
+                            <span class="brand-badge-ai">Levant IA</span>
+                        </div>
                     </a>
-                    <button class="btn-logout" id="navbarLogoutBtn" title="${dict.logoutBtnTitle}">🚪</button>
                 </div>
-                <!-- Sélecteur de Langue Dynamique -->
-                <div class="lang-switcher">
-                    <button class="lang-toggle-btn ${currentLang === 'fr' ? 'active' : ''}" id="langFrBtn">🇫🇷 FR</button>
-                    <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn">🇵🇸 العربية</button>
+
+                <!-- PÔLE CENTRAL : Navigation Principale Allégée -->
+                <nav class="navbar-nav" aria-label="Navigation principale">
+                    <a href="/traduction" class="nav-link-modern ${isTraduction ? 'active' : ''}" id="navTraductionLink">
+                        <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
+                    </a>
+                    <a href="/studio" class="nav-link-modern ${isStudio ? 'active' : ''}" id="navStudioLink">
+                        <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
+                    </a>
+                    <a href="/communaute" class="nav-link-modern ${isCommunaute ? 'active' : ''}" id="navCommunauteLink">
+                        <span>🌍</span> <span id="navCommunauteText">${dict.navCommunauteText}</span>
+                    </a>
+                    <a href="/profil" class="nav-link-modern ${isProfil ? 'active' : ''}" id="navProfilLink">
+                        <span>👤</span> <span id="navProfilText">${dict.navProfilText}</span>
+                    </a>
+                    ${isModeration ? `
+                    <a href="/moderation" class="nav-link-modern active" id="navModerationLink">
+                        <span>🛡️</span> <span id="navModerationText">${dict.navModerationText}</span>
+                    </a>` : ''}
+                </nav>
+
+                <!-- PÔLE DROIT : Utilitaires, Solde & Compte -->
+                <div class="navbar-actions">
+                    <!-- Badge Solde Crédits -->
+                    <a href="/profil" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض الرصيد والمحفظة' : 'Mon Portefeuille & Crédits'}">
+                        <span class="credit-icon">⚡</span>
+                        <span id="navbarCreditsCount" class="credit-count">--</span>
+                        <span class="credit-unit">${currentLang === 'ar' ? 'رصيد' : 'Cr.'}</span>
+                    </a>
+
+                    <!-- Sélecteur de Langue Minimaliste (FR | عربي) -->
+                    <div class="lang-switcher-pill">
+                        <button class="lang-toggle-btn ${currentLang === 'fr' ? 'active' : ''}" id="langFrBtn" aria-label="Français">FR</button>
+                        <span class="lang-sep">|</span>
+                        <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn" aria-label="العربية">عربي</button>
+                    </div>
+
+                    <!-- Profil Utilisateur & Déconnexion -->
+                    <div class="navbar-user-wrap" id="navbarUserBadge">
+                        <a href="/profil" id="navbarUserProfileLink" class="navbar-avatar-link" title="${dict.navProfilText}">
+                            <img id="navbarAvatarImg" src="/icon.png" class="navbar-avatar-img" alt="Avatar" onerror="this.src='/icon.png'">
+                            <span id="navbarUserName" class="navbar-username">👤</span>
+                        </a>
+                        <button class="btn-logout-minimal" id="navbarLogoutBtn" title="${dict.logoutBtnTitle}" aria-label="${dict.logoutBtnTitle}">🚪</button>
+                    </div>
                 </div>
-                <!-- Lien 1 : Chat (Accueil) -->
-                <a href="/" class="btn-nav-link ${isHome ? 'active' : ''}" id="navHomeLink">
-                    <span>💬</span> <span id="navHomeText">${dict.navHomeText}</span>
-                </a>
-                <!-- Lien 2 : Studio / Traducteur -->
-                <a href="/traducteur" class="btn-nav-link ${isTraducteur ? 'active' : ''}" id="navTraducteurLink">
-                    <span>🛠️</span> <span id="navTraducteurText">${dict.navTraducteurText}</span>
-                </a>
-                <!-- Lien 3 : Traduction & Sous-titres -->
-                <a href="/traduction" class="btn-nav-link ${isTraduction ? 'active' : ''}" id="navTraductionLink">
-                    <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
-                </a>
-                <!-- Lien 4 : Studio TikTok V3 -->
-                <a href="/studio" class="btn-nav-link ${isStudio ? 'active' : ''}" id="navStudioLink">
-                    <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
-                </a>
-                <!-- Lien 5 : Mur Communautaire -->
-                <a href="/communaute" class="btn-nav-link ${isCommunaute ? 'active' : ''}" id="navCommunauteLink">
-                    <span>🌍</span> <span id="navCommunauteText">${dict.navCommunauteText}</span>
-                </a>
-                <!-- Lien 6 : Modération (Discret) -->
-                <a href="/moderation" class="btn-nav-link ${isModeration ? 'active' : ''}" id="navModerationLink" title="${dict.navModerationText}" style="opacity: 0.88;">
-                    <span>🛡️</span> <span id="navModerationText">${dict.navModerationText}</span>
-                </a>
-                <!-- Lien 7 : Mon Profil -->
-                <a href="/profil" class="btn-nav-link ${isProfil ? 'active' : ''}" id="navProfilLink">
-                    <span>👤</span> <span id="navProfilText">${dict.navProfilText}</span>
-                </a>
-                <span class="live-indicator" id="navbarLiveIndicator"><span class="pulse"></span> <span id="navbarLiveText">${dict.navbarLiveText}</span></span>
             </div>
         `;
 
