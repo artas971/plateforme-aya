@@ -469,7 +469,6 @@
                 const refData = await refRes.json();
 
                 if (refRes.ok && refData.success) {
-                    console.log("[TIKTOK MODAL] ✅ Jeton renouvelé avec succès ! Re-tentative de publication...");
                     progressBar.style.width = '80%';
                     progressText.textContent = 'Jeton renouvelé. Seconde tentative de diffusion...';
 
@@ -521,7 +520,6 @@
     // Écoute globale de la popup OAuth TikTok
     window.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'TIKTOK_OAUTH_RESULT') {
-            console.log("[TIKTOK MODAL] Événement OAuth reçu :", event.data);
             refreshTikTokAccountStatus();
         }
     });

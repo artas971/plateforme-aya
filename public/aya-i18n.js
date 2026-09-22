@@ -251,7 +251,43 @@
                     severity: "danger",
                     actionLabel: "🔄 Réessayer"
                 }
-            }
+            },
+
+            // Page Espace Profil & Portefeuille (Issue #19)
+            profileDocTitle: 'Aya Studio | Mon Profil & Portefeuille Solidaire',
+            profileHeaderTitle: '👤 Espace Profil & Portefeuille Solidaire',
+            profileHeaderSub: 'Gérez votre identité, suivez vos crédits de traduction et retrouvez toutes vos vidéos archivées.',
+            profileAdminTourBtn: '<span>👑</span> Tour de Contrôle Admin',
+            profileCardTitle: '<span>✨</span> Mon Identité',
+            profileRoleContributor: 'Contributeur',
+            avatarUploadTitle: 'Cliquer pour changer votre photo de profil',
+            avatarOverlayText: 'Modifier',
+            avatarHintText: 'Formats acceptés : PNG, JPG, WebP (< 2 Mo)<br>Normalisé en WebP carré 256x256',
+            profileUniqueIdLabel: 'Identifiant Unique',
+            btnCopyUsernameTitle: 'Copier le pseudonyme',
+            profileNameLabel: 'Nom d\'affichage libre :',
+            profileNamePlaceholder: 'Ex: Artas Architecte',
+            btnSaveName: '<span>💾</span> Enregistrer',
+            profileEmailLabel: 'Adresse E-mail :',
+            profileEmailStatusConfirmed: '<span>✅</span> Confirmé',
+            walletTitle: '<span>💳</span> Portefeuille Virtuel',
+            walletBadgeText: 'Solidaire V2.1',
+            walletAvailableLabel: 'Disponibles',
+            walletReservedLabel: 'En traitement',
+            btnRechargeWallet: '<span>⚡</span> Recharger mon solde',
+            walletHint: '💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage incrusté 9:16 + archivage Drive).',
+            historyTitle: '<span>🎬</span> Historique de mes Vidéos',
+            btnRefreshHistory: '<span>🔄</span> Actualiser',
+            historyLoadingText: 'Chargement de votre historique personnel...',
+            historyEmptyTitle: 'Aucune vidéo générée pour le moment',
+            historyEmptySub: 'Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.',
+            btnStartFirstTrad: '<span>✨</span> Lancer une première traduction',
+            rechargeModalTitle: '<span>⚡</span> Recharger mes Crédits Aya',
+            rechargeBannerTitle: '<span>🛡️</span> Tarification Autofinancée & Transparente',
+            rechargeBannerText: 'Chaque pack couvre strictement les coûts serveurs (Hetzner) et les tokens IA (Gemini). Vos crédits n\'expirent jamais et sont utilisables immédiatement.',
+            paypalSolidarityTitle: '<span>❤️</span> Dons de Solidarité Palestine',
+            paypalSolidarityDesc: 'Soutien direct et 100% bénévole à l\'action humanitaire et aux témoins.',
+            btnPaypalDonation: '<span>🕊️</span> Don PayPal'
         },
         ar: {
             dir: 'rtl',
@@ -496,7 +532,43 @@
                     severity: "danger",
                     actionLabel: "🔄 إعادة المحاولة"
                 }
-            }
+            },
+
+            // Page Espace Profil & Portefeuille (Issue #19)
+            profileDocTitle: 'منصة آية | الملف الشخصي والمحفظة التضامنية',
+            profileHeaderTitle: '👤 الملف الشخصي والمحفظة التضامنية',
+            profileHeaderSub: 'إدارة الهوية الشخصية، متابعة أرصدة الترجمة وسجل الفيديوهات المحفوظة.',
+            profileAdminTourBtn: '<span>👑</span> لوحة التحكم والإشراف',
+            profileCardTitle: '<span>✨</span> بياناتي الشخصية',
+            profileRoleContributor: 'مساهم تضامني',
+            avatarUploadTitle: 'اضغط لتغيير الصورة الشخصية',
+            avatarOverlayText: 'تعديل',
+            avatarHintText: 'الصيغ المقبولة: PNG, JPG, WebP (&lt; 2 ميغابايت)<br>تُحفظ مربعة بحجم 256x256',
+            profileUniqueIdLabel: 'المعرّف الفريد',
+            btnCopyUsernameTitle: 'نسخ اسم المستخدم',
+            profileNameLabel: 'الاسم الظاهر:',
+            profileNamePlaceholder: 'مثال: أحمد المترجم',
+            btnSaveName: '<span>💾</span> حفظ التعديلات',
+            profileEmailLabel: 'البريد الإلكتروني:',
+            profileEmailStatusConfirmed: '<span>✅</span> موثق',
+            walletTitle: '<span>💳</span> المحفظة الرقمية',
+            walletBadgeText: 'تضامني V2.1',
+            walletAvailableLabel: 'الأرصدة المتاحة',
+            walletReservedLabel: 'قيد المعالجة',
+            btnRechargeWallet: '<span>⚡</span> شحن الرصيد',
+            walletHint: '💡 ١ رصيد = فيديو كامل مترجم ومدبلج ومحفوظ تلقائياً.',
+            historyTitle: '<span>🎬</span> سجل الفيديوهات المترجمة',
+            btnRefreshHistory: '<span>🔄</span> تحديث',
+            historyLoadingText: 'جاري تحميل سجل فيديوهاتك الشخصية...',
+            historyEmptyTitle: 'لا توجد فيديوهات منشأة حتى الآن',
+            historyEmptySub: 'ستظهر جميع الفيديوهات التي تترجمها هنا تلقائياً مع روابط الحفظ والتحميل.',
+            btnStartFirstTrad: '<span>✨</span> ابدأ أول ترجمة الآن',
+            rechargeModalTitle: '<span>⚡</span> شحن أرصدة منصة آية',
+            rechargeBannerTitle: '<span>🛡️</span> تسعير شفاف وتغطية تكلفة',
+            rechargeBannerText: 'كل باقة تغطي حصرياً تكاليف السيرفرات والذكاء الاصطناعي. رصيدك صالح دائماً بدون تاريخ انتهاء.',
+            paypalSolidarityTitle: '<span>❤️</span> التبرع التضامني المباشر',
+            paypalSolidarityDesc: 'دعم مباشر وتطوعي ١٠٠٪ للإغاثة الإنسانية وإيصال صوت الشهود في فلسطين.',
+            btnPaypalDonation: '<span>🕊️</span> تبرع عبر PayPal'
         }
     };
 
@@ -691,6 +763,42 @@
         updateElementText('ayaLabelMsg', dict.fbLabelMsg);
         updateElementPlaceholder('ayaRawMessage', dict.fbPlaceholderMsg);
         updateElementText('ayaSubmitFeedbackBtnText', dict.fbBtnSubmit, true);
+
+        // Mise à jour de l'Espace Profil & Portefeuille (Issue #19)
+        if (window.location.pathname.includes('profil') || document.getElementById('profileHeaderTitle')) {
+            if (dict.profileDocTitle) document.title = dict.profileDocTitle;
+            updateElementText('profileHeaderTitle', dict.profileHeaderTitle);
+            updateElementText('profileHeaderSub', dict.profileHeaderSub);
+            updateElementText('profileAdminTourBtnText', dict.profileAdminTourBtn, true);
+            updateElementText('profileCardTitleText', dict.profileCardTitle, true);
+            updateElementText('profileRoleBadge', dict.profileRoleContributor);
+            updateElementText('profileAvatarOverlayText', dict.avatarOverlayText);
+            updateElementText('profileAvatarHint', dict.avatarHintText, true);
+            updateElementText('profileUniqueIdLabel', dict.profileUniqueIdLabel);
+            updateElementText('profileNameLabel', dict.profileNameLabel);
+            updateElementPlaceholder('profileNameInput', dict.profileNamePlaceholder);
+            updateElementText('btnSaveName', dict.btnSaveName, true);
+            updateElementText('profileEmailLabel', dict.profileEmailLabel);
+            updateElementText('profileEmailStatus', dict.profileEmailStatusConfirmed, true);
+            updateElementText('walletTitleText', dict.walletTitle, true);
+            updateElementText('walletBadgeText', dict.walletBadgeText);
+            updateElementText('walletAvailableLabel', dict.walletAvailableLabel);
+            updateElementText('walletReservedLabel', dict.walletReservedLabel);
+            updateElementText('btnRechargeWallet', dict.btnRechargeWallet, true);
+            updateElementText('walletHint', dict.walletHint);
+            updateElementText('historyTitleText', dict.historyTitle, true);
+            updateElementText('btnRefreshHistory', dict.btnRefreshHistory, true);
+            updateElementText('historyLoadingText', dict.historyLoadingText);
+            updateElementText('historyEmptyTitle', dict.historyEmptyTitle);
+            updateElementText('historyEmptySub', dict.historyEmptySub);
+            updateElementText('btnStartFirstTrad', dict.btnStartFirstTrad, true);
+            updateElementText('rechargeModalTitle', dict.rechargeModalTitle, true);
+            updateElementText('rechargeBannerTitle', dict.rechargeBannerTitle, true);
+            updateElementText('rechargeBannerText', dict.rechargeBannerText);
+            updateElementText('paypalSolidarityTitle', dict.paypalSolidarityTitle, true);
+            updateElementText('paypalSolidarityDesc', dict.paypalSolidarityDesc);
+            updateElementText('btnPaypalDonation', dict.btnPaypalDonation, true);
+        }
 
         // Déclenchement d'un événement global pour les autres scripts
         window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));

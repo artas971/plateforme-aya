@@ -1008,48 +1008,48 @@
             <div class="price-card">
                 <div class="price-header">
                     <h3 class="price-title" id="p1Title">1 Crédit Flash</h3>
-                    <div class="price-amount">0,99 € <span class="price-unit">/ unité</span></div>
+                    <div class="price-amount">0,99 € <span class="price-unit" id="p1Unit">/ unité</span></div>
                     <p class="price-desc" id="p1Desc">Dépannage immédiat pour 1 vidéo TikTok VOSTFR complète.</p>
                 </div>
                 <ul class="price-features">
-                    <li><span>✓</span> 1 transcription audio complète</li>
-                    <li><span>✓</span> Traduction levantine fidèle</li>
-                    <li><span>✓</span> Rendu vidéo HD 1080p en 60s</li>
-                    <li><span>✓</span> Export sans filigrane intrusif</li>
+                    <li><span>✓</span> <span id="p1F1">1 transcription audio complète</span></li>
+                    <li><span>✓</span> <span id="p1F2">Traduction levantine fidèle</span></li>
+                    <li><span>✓</span> <span id="p1F3">Rendu vidéo HD 1080p en 60s</span></li>
+                    <li><span>✓</span> <span id="p1F4">Export sans filigrane intrusif</span></li>
                 </ul>
                 <a href="/login" class="btn-price-action btn-price-secondary" id="btnP1">Acheter ce pack</a>
             </div>
 
             <!-- Pack 5 Crédits (Populaire) -->
             <div class="price-card featured">
-                <span class="price-card-badge">Populaire</span>
+                <span class="price-card-badge" id="p5Badge">Populaire</span>
                 <div class="price-header">
                     <h3 class="price-title" id="p5Title">Pack 5 Crédits</h3>
-                    <div class="price-amount">2,99 € <span class="price-unit">/ pack</span></div>
+                    <div class="price-amount">2,99 € <span class="price-unit" id="p5Unit">/ pack</span></div>
                     <p class="price-desc" id="p5Desc">~0,60 € / vidéo. Idéal pour publier régulièrement sur TikTok.</p>
                 </div>
                 <ul class="price-features">
-                    <li><span>✓</span> 5 vidéos VOSTFR complètes</li>
-                    <li><span>✓</span> Économisez 40% sur le tarif unitaire</li>
-                    <li><span>✓</span> Priorité dans la file d'encodage</li>
-                    <li><span>✓</span> Partage direct Mur Communautaire</li>
+                    <li><span>✓</span> <span id="p5F1">5 vidéos VOSTFR complètes</span></li>
+                    <li><span>✓</span> <span id="p5F2">Économisez 40% sur le tarif unitaire</span></li>
+                    <li><span>✓</span> <span id="p5F3">Priorité dans la file d'encodage</span></li>
+                    <li><span>✓</span> <span id="p5F4">Partage direct Mur Communautaire</span></li>
                 </ul>
                 <a href="/login" class="btn-price-action btn-price-primary" id="btnP5">Choisir ce pack</a>
             </div>
 
             <!-- Pack 25 Crédits (Meilleur Tarif) -->
             <div class="price-card">
-                <span class="price-card-badge" style="background: #f59e0b;">Meilleur Tarif</span>
+                <span class="price-card-badge" id="p25Badge" style="background: #f59e0b;">Meilleur Tarif</span>
                 <div class="price-header">
                     <h3 class="price-title" id="p25Title">Pack 25 Crédits</h3>
-                    <div class="price-amount">9,99 € <span class="price-unit">/ pack</span></div>
+                    <div class="price-amount">9,99 € <span class="price-unit" id="p25Unit">/ pack</span></div>
                     <p class="price-desc" id="p25Desc">~0,40 € / vidéo. Pour les créateurs de contenu intensifs.</p>
                 </div>
                 <ul class="price-features">
-                    <li><span>✓</span> 25 vidéos VOSTFR complètes</li>
-                    <li><span>✓</span> Économisez 60% sur le tarif unitaire</li>
-                    <li><span>✓</span> Support créateur prioritaire</li>
-                    <li><span>✓</span> Crédits valables sans limite de durée</li>
+                    <li><span>✓</span> <span id="p25F1">25 vidéos VOSTFR complètes</span></li>
+                    <li><span>✓</span> <span id="p25F2">Économisez 60% sur le tarif unitaire</span></li>
+                    <li><span>✓</span> <span id="p25F3">Support créateur prioritaire</span></li>
+                    <li><span>✓</span> <span id="p25F4">Crédits valables sans limite de durée</span></li>
                 </ul>
                 <a href="/login" class="btn-price-action btn-price-secondary" id="btnP25">Choisir ce pack</a>
             </div>
@@ -1058,12 +1058,12 @@
         <!-- Bloc Dons de Solidarité Séparé (PayPal) -->
         <div class="paypal-solidarity-block">
             <div class="paypal-text">
-                <h3><span>❤️</span> Soutien Humanitaire Palestine (Totalement Séparé)</h3>
-                <p>
+                <h3 id="paypalTitle"><span>❤️</span> Soutien Humanitaire Palestine (Totalement Séparé)</h3>
+                <p id="paypalDesc">
                     L'achat de crédits techniques ci-dessus finance uniquement l'infrastructure d'hébergement. Si vous désirez soutenir directement l'équipe bénévole et l'aide humanitaire en Palestine, les dons volontaires s'effectuent via un lien PayPal dédié 100% indépendant.
                 </p>
             </div>
-            <a href="https://paypal.me/AyaStudioPalestine" target="_blank" rel="noopener noreferrer" class="btn-paypal-donate" style="margin-left: auto;">
+            <a href="https://paypal.me/AyaStudioPalestine" target="_blank" rel="noopener noreferrer" class="btn-paypal-donate" id="btnPaypal" style="margin-left: auto;">
                 <span>🕊️</span> Faire un don PayPal
             </a>
         </div>
@@ -1114,9 +1114,46 @@
                     pillarsTag: 'Pourquoi Aya Studio ?',
                     pillarsTitle: 'Une technologie de pointe au service de la vérité',
                     pillarsSub: 'Conçu pour les créateurs, journalistes et citoyens engagés souhaitant relayer les réalités du terrain sans friction.',
+                    feat1Title: 'Compréhension Levantine',
+                    feat1Desc: 'Contrairement aux traducteurs génériques, notre IA maîtrise les nuances et expressions du dialecte palestinien pour préserver le sens profond des témoignages.',
+                    feat2Title: 'Sous-titres TikTok Prêts',
+                    feat2Desc: 'Les vidéos générées adoptent les standards visuels des réseaux sociaux : contraste élevé, typographie lisible sur smartphone et synchronisation millimétrique.',
+                    feat3Title: 'Confidentialité & RGPD',
+                    feat3Desc: 'Vos médias sont hébergés sur des serveurs sécurisés en Europe et sont automatiquement détruits sous 24 heures pour garantir votre anonymat.',
+                    feat4Title: 'Mur Communautaire',
+                    feat4Desc: 'Partagez vos vidéos traduites directement avec la communauté Aya pour amplifier leur portée et soutenir la transmission des témoignages.',
                     pricingTag: 'Tarification Claire & Éthique',
                     pricingTitle: 'Packs de Crédits à Prix Coûtant',
                     pricingSub: 'Aucun abonnement récurrent imposé. Vos achats financent strictement les calculs serveurs et les tokens d\'IA.',
+                    p1Title: '1 Crédit Flash',
+                    p1Unit: '/ unité',
+                    p1Desc: 'Dépannage immédiat pour 1 vidéo TikTok VOSTFR complète.',
+                    p1F1: '1 transcription audio complète',
+                    p1F2: 'Traduction levantine fidèle',
+                    p1F3: 'Rendu vidéo HD 1080p en 60s',
+                    p1F4: 'Export sans filigrane intrusif',
+                    btnP1: 'Acheter ce pack',
+                    p5Badge: 'Populaire',
+                    p5Title: 'Pack 5 Crédits',
+                    p5Unit: '/ pack',
+                    p5Desc: '~0,60 € / vidéo. Idéal pour publier régulièrement sur TikTok.',
+                    p5F1: '5 vidéos VOSTFR complètes',
+                    p5F2: 'Économisez 40% sur le tarif unitaire',
+                    p5F3: 'Priorité dans la file d\'encodage',
+                    p5F4: 'Partage direct Mur Communautaire',
+                    btnP5: 'Choisir ce pack',
+                    p25Badge: 'Meilleur Tarif',
+                    p25Title: 'Pack 25 Crédits',
+                    p25Unit: '/ pack',
+                    p25Desc: '~0,40 € / vidéo. Pour les créateurs de contenu intensifs.',
+                    p25F1: '25 vidéos VOSTFR complètes',
+                    p25F2: 'Économisez 60% sur le tarif unitaire',
+                    p25F3: 'Support créateur prioritaire',
+                    p25F4: 'Crédits valables sans limite de durée',
+                    btnP25: 'Choisir ce pack',
+                    paypalTitle: '<span>❤️</span> Soutien Humanitaire Palestine (Totalement Séparé)',
+                    paypalDesc: 'L\'achat de crédits techniques ci-dessus finance uniquement l\'infrastructure d\'hébergement. Si vous désirez soutenir directement l\'équipe bénévole et l\'aide humanitaire en Palestine, les dons volontaires s'effectuent via un lien PayPal dédié 100% indépendant.',
+                    btnPaypal: '<span>🕊️</span> Faire un don PayPal',
                     ctaFinalTitle: 'Faites entendre la voix du terrain',
                     ctaFinalSub: 'Rejoignez notre réseau de créateurs et commencez à traduire vos premières vidéos dès aujourd\'hui.',
                     btnCtaFinal: '🚀 Créer mon compte (5 Crédits offerts)'
@@ -1135,9 +1172,46 @@
                     pillarsTag: 'لماذا استوديو آية؟',
                     pillarsTitle: 'تقنية فائقة في خدمة الحقيقة ونشر الرسالة',
                     pillarsSub: 'مُصمم لصناع المحتوى والصحفيين والناشطين لنقل واقع الميدان بكل سهولة وأمان.',
+                    feat1Title: 'فهم اللهجة الشامية الفلسطينية',
+                    feat1Desc: 'على عكس المترجمات العامة، يتقن نموذجنا أدق تعبيرات ولهجات فلسطين لنقل المعنى الأصيل بصدق.',
+                    feat2Title: 'جاهز للنشر على تيك توك',
+                    feat2Desc: 'فيديوهات بتنسيق مثالي للهواتف: خطوط واضحة، ألوان عالية التباين وتزامن دقيق لكل كلمة.',
+                    feat3Title: 'خصوصية وأمان تام',
+                    feat3Desc: 'تُعالج وسائطك على خوادم آمنة في أوروبا وتُحذف تلقائياً خلال ٢٤ ساعة لضمان أمانك الكامل.',
+                    feat4Title: 'جدار المجتمع التضامني',
+                    feat4Desc: 'انشر فيديوهاتك المترجمة مباشرة على جدار منصة آية لإيصال أصوات الميدان لأكبر عدد ممكن.',
                     pricingTag: 'تسعير واضح وعادل',
                     pricingTitle: 'باقات رصيد بسعر التكلفة الصافي',
                     pricingSub: 'لا توجد اشتراكات شهرية إجبارية. مشترياتك تغطي حصرياً تكاليف معالجة الخوادم وسيرفرات الذكاء الاصطناعي.',
+                    p1Title: 'رصيد واحد سريع',
+                    p1Unit: '/ للوحدة',
+                    p1Desc: 'حل فوري لإنتاج فيديو تيك توك كامل ومترجم.',
+                    p1F1: 'تفريغ صوتي كامل ودقيق',
+                    p1F2: 'ترجمة شامية وفلسطينية أصيلة',
+                    p1F3: 'تصدير فيديو بدقة عالية خلال ٦٠ ثانية',
+                    p1F4: 'بدون أي علامات مائية مزعجة',
+                    btnP1: 'شراء هذه الباقة',
+                    p5Badge: 'الأكثر طلباً',
+                    p5Title: 'باقة ٥ أرصدة',
+                    p5Unit: '/ للباقة',
+                    p5Desc: '~٠٫٦٠ € / فيديو. مثالية للنشر المنتظم على تيك توك.',
+                    p5F1: '٥ فيديوهات كاملة ومترجمة',
+                    p5F2: 'وفّر ٤٠٪ مقارنة بالسعر الفردي',
+                    p5F3: 'أولوية في طابور المعالجة والتصدير',
+                    p5F4: 'مشاركة مباشرة على جدار المجتمع',
+                    btnP5: 'اختيار هذه الباقة',
+                    p25Badge: 'أفضل قيمة',
+                    p25Title: 'باقة ٢٥ رصيداً',
+                    p25Unit: '/ للباقة',
+                    p25Desc: '~٠٫٤٠ € / فيديو. لصناع المحتوى والناشطين المكثفين.',
+                    p25F1: '٢٥ فيديو كامل ومترجم',
+                    p25F2: 'وفّر ٦٠٪ مقارنة بالسعر الفردي',
+                    p25F3: 'دعم مباشر وأولوية فائقة',
+                    p25F4: 'أرصدة صالحة بدون أي حد زمني',
+                    btnP25: 'اختيار هذه الباقة',
+                    paypalTitle: '<span>❤️</span> الدعم الإنساني لفلسطين (منفصل تماماً)',
+                    paypalDesc: 'شراء الأرصدة التقنية أعلاه يغطي حصرياً تكاليف السيرفرات والبنية التحتية. إذا كنت ترغب في دعم الفريق التطوعي والإغاثة الإنسانية في فلسطين مباشرة، فإن التبرعات الطوعية تتم عبر رابط PayPal مستقل ومخصص بالكامل.',
+                    btnPaypal: '<span>🕊️</span> التبرع عبر PayPal',
                     ctaFinalTitle: 'ساهم في إيصال صوت الميدان إلى العالم',
                     ctaFinalSub: 'انضم لشبكة صناع المحتوى وابدأ بترجمة فيديوهاتك الأولى اليوم.',
                     btnCtaFinal: '🚀 إنشاء حسابي (٥ أرصدة مجانية)'
@@ -1145,6 +1219,14 @@
             };
 
             let currentLang = localStorage.getItem('aya_lang') || 'fr';
+
+            function updateTxt(id, val, isHtml = false) {
+                const el = document.getElementById(id);
+                if (el && val !== undefined) {
+                    if (isHtml) el.innerHTML = val;
+                    else el.textContent = val;
+                }
+            }
 
             function setLanguage(lang) {
                 currentLang = lang;
@@ -1154,24 +1236,68 @@
                 document.documentElement.setAttribute('dir', d.dir);
                 document.documentElement.setAttribute('lang', lang);
 
-                document.getElementById('navLinkFeatures').textContent = d.navFeatures;
-                document.getElementById('navLinkPricing').textContent = d.navPricing;
-                document.getElementById('navBtnLogin').textContent = d.navLogin;
-                document.getElementById('navBtnCta').textContent = d.navCta;
-                document.getElementById('heroPill').innerHTML = d.heroPill;
-                document.getElementById('heroTitle').innerHTML = d.heroTitle;
-                document.getElementById('heroSubtitle').textContent = d.heroSubtitle;
-                document.getElementById('btnHeroCta').innerHTML = d.heroCta;
-                document.getElementById('btnHeroDemo').innerHTML = d.heroDemo;
-                document.getElementById('pillarsTag').textContent = d.pillarsTag;
-                document.getElementById('pillarsTitle').textContent = d.pillarsTitle;
-                document.getElementById('pillarsSub').textContent = d.pillarsSub;
-                document.getElementById('pricingTag').textContent = d.pricingTag;
-                document.getElementById('pricingTitle').textContent = d.pricingTitle;
-                document.getElementById('pricingSub').textContent = d.pricingSub;
-                document.getElementById('ctaFinalTitle').textContent = d.ctaFinalTitle;
-                document.getElementById('ctaFinalSub').textContent = d.ctaFinalSub;
-                document.getElementById('btnCtaFinal').innerHTML = d.btnCtaFinal;
+                updateTxt('navLinkFeatures', d.navFeatures);
+                updateTxt('navLinkPricing', d.navPricing);
+                updateTxt('navBtnLogin', d.navLogin);
+                updateTxt('navBtnCta', d.navCta);
+                updateTxt('heroPill', d.heroPill, true);
+                updateTxt('heroTitle', d.heroTitle, true);
+                updateTxt('heroSubtitle', d.heroSubtitle);
+                updateTxt('btnHeroCta', d.heroCta, true);
+                updateTxt('btnHeroDemo', d.heroDemo, true);
+
+                updateTxt('pillarsTag', d.pillarsTag);
+                updateTxt('pillarsTitle', d.pillarsTitle);
+                updateTxt('pillarsSub', d.pillarsSub);
+                updateTxt('feat1Title', d.feat1Title);
+                updateTxt('feat1Desc', d.feat1Desc);
+                updateTxt('feat2Title', d.feat2Title);
+                updateTxt('feat2Desc', d.feat2Desc);
+                updateTxt('feat3Title', d.feat3Title);
+                updateTxt('feat3Desc', d.feat3Desc);
+                updateTxt('feat4Title', d.feat4Title);
+                updateTxt('feat4Desc', d.feat4Desc);
+
+                updateTxt('pricingTag', d.pricingTag);
+                updateTxt('pricingTitle', d.pricingTitle);
+                updateTxt('pricingSub', d.pricingSub);
+
+                updateTxt('p1Title', d.p1Title);
+                updateTxt('p1Unit', d.p1Unit);
+                updateTxt('p1Desc', d.p1Desc);
+                updateTxt('p1F1', d.p1F1);
+                updateTxt('p1F2', d.p1F2);
+                updateTxt('p1F3', d.p1F3);
+                updateTxt('p1F4', d.p1F4);
+                updateTxt('btnP1', d.btnP1);
+
+                updateTxt('p5Badge', d.p5Badge);
+                updateTxt('p5Title', d.p5Title);
+                updateTxt('p5Unit', d.p5Unit);
+                updateTxt('p5Desc', d.p5Desc);
+                updateTxt('p5F1', d.p5F1);
+                updateTxt('p5F2', d.p5F2);
+                updateTxt('p5F3', d.p5F3);
+                updateTxt('p5F4', d.p5F4);
+                updateTxt('btnP5', d.btnP5);
+
+                updateTxt('p25Badge', d.p25Badge);
+                updateTxt('p25Title', d.p25Title);
+                updateTxt('p25Unit', d.p25Unit);
+                updateTxt('p25Desc', d.p25Desc);
+                updateTxt('p25F1', d.p25F1);
+                updateTxt('p25F2', d.p25F2);
+                updateTxt('p25F3', d.p25F3);
+                updateTxt('p25F4', d.p25F4);
+                updateTxt('btnP25', d.btnP25);
+
+                updateTxt('paypalTitle', d.paypalTitle, true);
+                updateTxt('paypalDesc', d.paypalDesc);
+                updateTxt('btnPaypal', d.btnPaypal, true);
+
+                updateTxt('ctaFinalTitle', d.ctaFinalTitle);
+                updateTxt('ctaFinalSub', d.ctaFinalSub);
+                updateTxt('btnCtaFinal', d.btnCtaFinal, true);
 
                 if (lang === 'ar') {
                     document.getElementById('btnLangAr').classList.add('active');

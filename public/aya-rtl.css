@@ -191,3 +191,59 @@ html[dir="rtl"] .progress-log {
     text-align: right;
     direction: rtl;
 }
+
+/* -------------------------------------------------------------
+   Page Profil & Portefeuille Solidaire (Issue #19 - RTL)
+   ------------------------------------------------------------- */
+html[dir="rtl"] .profile-container {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .profile-grid {
+    direction: rtl;
+}
+
+html[dir="rtl"] .profile-card-header,
+html[dir="rtl"] .wallet-header,
+html[dir="rtl"] .history-header {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .profile-card-title,
+html[dir="rtl"] .wallet-title {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .profile-form-group {
+    text-align: right;
+}
+
+html[dir="rtl"] .profile-input-wrapper {
+    flex-direction: row;
+}
+
+html[dir="rtl"] .wallet-balance-row {
+    flex-direction: row;
+    direction: rtl;
+}
+
+html[dir="rtl"] .balance-item {
+    text-align: right;
+}
+
+html[dir="rtl"] .packs-container {
+    direction: rtl;
+}
+
+html[dir="rtl"] .pack-card {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .paypal-solidarity-card {
+    text-align: right;
+    direction: rtl;
+}
+

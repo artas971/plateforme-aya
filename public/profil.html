@@ -25,14 +25,14 @@
     <main class="profile-container">
         <!-- En-tête Page Profil -->
         <div style="text-align: center; margin-bottom: 6px;">
-            <h1 style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); margin-bottom: 6px;">
+            <h1 id="profileHeaderTitle" style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary); margin-bottom: 6px;">
                 👤 Espace Profil & Portefeuille Solidaire
             </h1>
-            <p style="color: var(--text-secondary); font-size: 0.95rem;">
+            <p id="profileHeaderSub" style="color: var(--text-secondary); font-size: 0.95rem;">
                 Gérez votre identité, suivez vos crédits de traduction et retrouvez toutes vos vidéos archivées.
             </p>
             <div id="adminTourBtnContainer" style="display: none; margin-top: 10px;">
-                <a href="/admin" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 999px; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
+                <a href="/admin" id="profileAdminTourBtnText" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); color: #059669; border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 14px; border-radius: 999px; text-decoration: none; font-size: 0.85rem; font-weight: 700;">
                     <span>👑</span> Tour de Contrôle Admin
                 </a>
             </div>
@@ -47,7 +47,7 @@
                 <!-- BLOC 1 : Identité & Avatar (PERF-1) -->
                 <section class="profile-card">
                     <div class="profile-card-header">
-                        <div class="profile-card-title">
+                        <div class="profile-card-title" id="profileCardTitleText">
                             <span>✨</span> Mon Identité
                         </div>
                         <span id="profileRoleBadge" class="wallet-badge-role" style="background: rgba(11, 83, 148, 0.1); color: var(--color-primary); border-color: rgba(11, 83, 148, 0.2);">
@@ -61,7 +61,7 @@
                             <img id="profileAvatarImg" src="/icon.png" alt="Avatar" class="avatar-img" onerror="this.src='/icon.png'">
                             <div class="avatar-overlay">
                                 <span style="font-size: 1.4rem;">📷</span>
-                                <span>Modifier</span>
+                                <span id="profileAvatarOverlayText">Modifier</span>
                             </div>
                             <div class="avatar-spinner" id="avatarSpinner">
                                 <span>⏳</span>
@@ -69,14 +69,14 @@
                         </div>
                         <!-- Input file invisible -->
                         <input type="file" id="avatarFileInput" accept="image/png, image/jpeg, image/webp" style="display: none;">
-                        <small style="color: var(--text-secondary); font-size: 0.76rem; text-align: center;">
+                        <small id="profileAvatarHint" style="color: var(--text-secondary); font-size: 0.76rem; text-align: center;">
                             Formats acceptés : PNG, JPG, WebP (&lt; 2 Mo)<br>Normalisé en WebP carré 256x256
                         </small>
                     </div>
 
                     <!-- Pseudonyme TikTok (Immuable) -->
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 20px;">
-                        <span style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary);">
+                        <span id="profileUniqueIdLabel" style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary);">
                             Identifiant Unique
                         </span>
                         <div class="tiktok-username-badge">
@@ -88,7 +88,7 @@
                     <!-- Formulaire Nom d'affichage -->
                     <form id="profileForm" onsubmit="return false;">
                         <div class="profile-form-group">
-                            <label for="profileNameInput" class="profile-form-label">Nom d'affichage libre :</label>
+                            <label for="profileNameInput" class="profile-form-label" id="profileNameLabel">Nom d'affichage libre :</label>
                             <div class="profile-input-wrapper">
                                 <input type="text" id="profileNameInput" class="profile-input" placeholder="Ex: Artas Architecte" maxlength="50" required>
                                 <button type="button" id="btnSaveName" class="btn-save-profile">
@@ -99,10 +99,10 @@
 
                         <!-- E-mail & Statut de vérification -->
                         <div class="profile-form-group" style="margin-bottom: 0;">
-                            <label class="profile-form-label">Adresse E-mail :</label>
+                            <label class="profile-form-label" id="profileEmailLabel">Adresse E-mail :</label>
                             <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.9rem;">
                                 <span id="profileEmail" style="color: var(--text-primary); font-weight: 600;">...</span>
-                                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #059669; font-weight: 700;">
+                                <span id="profileEmailStatus" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: #059669; font-weight: 700;">
                                     <span>✅</span> Confirmé
                                 </span>
                             </div>
@@ -113,21 +113,21 @@
                 <!-- BLOC 2 : Portefeuille Solidaire (Wallet) -->
                 <section class="wallet-card">
                     <div class="wallet-header">
-                        <div class="wallet-title">
+                        <div class="wallet-title" id="walletTitleText">
                             <span>💳</span> Portefeuille Virtuel
                         </div>
-                        <span style="font-size: 0.75rem; background: rgba(0, 188, 212, 0.25); color: #ffffff; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(0, 188, 212, 0.5);">
+                        <span id="walletBadgeText" style="font-size: 0.75rem; background: rgba(0, 188, 212, 0.25); color: #ffffff; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(0, 188, 212, 0.5);">
                             Solidaire V2.1
                         </span>
                     </div>
 
                     <div class="wallet-balance-row">
                         <div class="balance-item available">
-                            <span class="balance-label">Disponibles</span>
+                            <span class="balance-label" id="walletAvailableLabel">Disponibles</span>
                             <span class="balance-value" id="walletAvailableCredits">--</span>
                         </div>
                         <div class="balance-item reserved">
-                            <span class="balance-label">En traitement</span>
+                            <span class="balance-label" id="walletReservedLabel">En traitement</span>
                             <span class="balance-value" id="walletReservedCredits">--</span>
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                         <button type="button" class="btn-recharge" id="btnRechargeWallet">
                             <span>⚡</span> Recharger mon solde
                         </button>
-                        <p class="wallet-hint">
+                        <p class="wallet-hint" id="walletHint">
                             💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage incrusté 9:16 + archivage Drive).
                         </p>
                     </div>
@@ -149,7 +149,7 @@
                 
                 <section class="profile-card" style="min-height: 520px;">
                     <div class="history-header">
-                        <div class="profile-card-title" style="font-size: 1.25rem;">
+                        <div class="profile-card-title" id="historyTitleText" style="font-size: 1.25rem;">
                             <span>🎬</span> Historique de mes Vidéos
                             <span id="historyCountBadge" style="font-size: 0.8rem; background: rgba(11, 83, 148, 0.1); color: var(--color-primary); padding: 3px 10px; border-radius: 20px; margin-left: 6px;">
                                 0 vidéo
@@ -163,19 +163,19 @@
                     <!-- Loader -->
                     <div id="videoHistoryLoading" style="text-align: center; padding: 40px 20px; color: var(--text-secondary);">
                         <div class="pulse" style="margin: 0 auto 12px auto; width: 12px; height: 12px;"></div>
-                        <span>Chargement de votre historique personnel...</span>
+                        <span id="historyLoadingText">Chargement de votre historique personnel...</span>
                     </div>
 
                     <!-- État Vide -->
                     <div id="videoHistoryEmpty" class="empty-history-box" style="display: none;">
                         <span class="empty-history-icon">🎥</span>
-                        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
+                        <h3 id="historyEmptyTitle" style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
                             Aucune vidéo générée pour le moment
                         </h3>
-                        <p style="color: var(--text-secondary); max-width: 440px; font-size: 0.92rem;">
+                        <p id="historyEmptySub" style="color: var(--text-secondary); max-width: 440px; font-size: 0.92rem;">
                             Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.
                         </p>
-                        <a href="/traduction" class="btn-nav-link" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff;">
+                        <a href="/traduction" class="btn-nav-link" id="btnStartFirstTrad" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff;">
                             <span>✨</span> Lancer une première traduction
                         </a>
                     </div>
@@ -193,7 +193,7 @@
     <div class="aya-modal-backdrop" id="rechargeModal" style="display: none;">
         <div class="aya-modal-content recharge-modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+                <h3 id="rechargeModalTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
                     <span>⚡</span> Recharger mes Crédits Aya
                 </h3>
                 <button type="button" id="btnCloseRechargeModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;" title="Fermer">
@@ -203,10 +203,10 @@
 
             <!-- Bannière Transparence & Sécurité -->
             <div class="recharge-banner">
-                <div class="recharge-banner-title">
+                <div class="recharge-banner-title" id="rechargeBannerTitle">
                     <span>🛡️</span> Tarification Autofinancée & Transparente
                 </div>
-                <div class="recharge-banner-text">
+                <div class="recharge-banner-text" id="rechargeBannerText">
                     Chaque pack couvre strictement les coûts serveurs (Hetzner) et les tokens IA (Gemini). Vos crédits n'expirent jamais et sont utilisables immédiatement.
                 </div>
             </div>
@@ -270,10 +270,10 @@
             <!-- Bloc Séparé : Dons de Solidarité (PayPal) -->
             <div class="paypal-donation-card">
                 <div class="paypal-text-block">
-                    <div class="paypal-title">
+                    <div class="paypal-title" id="paypalSolidarityTitle">
                         <span>❤️</span> Soutenir l'équipe / Don Palestine
                     </div>
-                    <div class="paypal-desc">
+                    <div class="paypal-desc" id="paypalSolidarityDesc">
                         Les dons volontaires sont libres et 100% indépendants des crédits techniques. Ils soutiennent nos bénévoles et l'aide humanitaire.
                     </div>
                 </div>

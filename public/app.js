@@ -666,6 +666,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!files || files.length === 0) return;
 
             const selectedFile = files[0];
+            const MAX_FILE_SIZE = 500 * 1024 * 1024;
+            if (selectedFile.size > MAX_FILE_SIZE) {
+                alert("⚠️ Fichier trop lourd, maximum 500 Mo.");
+                directFileInput.value = '';
+                return;
+            }
+            const isAudio = selectedFile.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selectedFile.name);
+            const isVideo = selectedFile.type.startsWith('video/') || /\.(mp4|mov|mkv|avi|webm)$/i.test(selectedFile.name);
+            if (!isAudio && !isVideo) {
+                alert("⚠️ Format de fichier non supporté (Audio ou Vidéo uniquement).");
+                directFileInput.value = '';
+                return;
+            }
+
             const targetLang = uploadTargetLangSelect ? uploadTargetLangSelect.value : 'fr';
             const dict = i18n[currentLang];
 
@@ -1020,7 +1034,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (buttonEl) buttonEl.innerHTML = originalHTML;
                 return;
             }
-            console.log("Web share failed or canceled:", mobileErr);
         }
 
         // 2. Desktop Action: Download ONLY the MP3 file & launch WhatsApp Desktop Application (whatsapp://send)

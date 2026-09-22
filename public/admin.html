@@ -515,6 +515,97 @@
             text-align: center;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
         }
+
+        /* -------------------------------------------------------------
+           Responsive Mobile (<480px) - Polissage Tour de Contrôle (Issue #21)
+           ------------------------------------------------------------- */
+        @media (max-width: 480px) {
+            header {
+                padding: 0.75rem 1rem;
+            }
+
+            .header-inner {
+                gap: 0.6rem;
+            }
+
+            .brand-title {
+                font-size: 1rem;
+            }
+
+            .badge-supervision {
+                display: none;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+                gap: 0.35rem;
+                overflow-x: auto;
+                padding-bottom: 2px;
+            }
+
+            .header-actions .btn {
+                padding: 0.4rem 0.65rem;
+                font-size: 0.78rem;
+                white-space: nowrap;
+            }
+
+            .container {
+                padding: 1rem 0.85rem;
+            }
+
+            .page-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .page-title-group h1 {
+                font-size: 1.35rem;
+            }
+
+            .page-title-group p {
+                font-size: 0.82rem;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+                gap: 0.85rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .kpi-card {
+                padding: 1.1rem 1.2rem;
+            }
+
+            .kpi-value {
+                font-size: 1.85rem;
+            }
+
+            .panel-card,
+            .activity-section {
+                padding: 1.1rem 1rem;
+                border-radius: 12px;
+            }
+
+            .sys-info-grid {
+                grid-template-columns: 1fr;
+                gap: 0.65rem;
+            }
+
+            .sys-info-item {
+                padding: 0.75rem 0.85rem;
+            }
+
+            .pack-item {
+                padding: 0.75rem 0.85rem;
+            }
+
+            .table-responsive table {
+                min-width: 520px;
+            }
+        }
     </style>
 </head>
 <body>

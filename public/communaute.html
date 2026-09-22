@@ -851,8 +851,6 @@
                     }
 
                     if (autoShareData) {
-                        console.log('⚡ [COMMUNAUTÉ LIONEL] Auto-Hydratation déclenchée avec succès :', autoShareData);
-
                         // 1. Pré-remplissage du texte / Smart Description
                         if (autoShareData.description) {
                             const contentInput = document.getElementById('postContentInput');
@@ -963,7 +961,6 @@
                 audioPreview.style.display = 'none';
                 if (mediaPreviewName) mediaPreviewName.textContent = '';
                 dropzone.style.display = 'block';
-                console.log('🔄 [COMMUNAUTÉ] Média réinitialisé : zone d\'upload standard réactivée.');
             }
 
             if (btnReplaceMedia) {
@@ -979,11 +976,29 @@
             });
 
             function handleFileSelect(file) {
+                if (!file) return;
+
+                // Garde-fou 1 : Taille maximale autorisée (< 500 Mo) - Issue #20
+                const MAX_FILE_SIZE = 500 * 1024 * 1024;
+                if (file.size > MAX_FILE_SIZE) {
+                    showFeedback('error', "⚠️ Fichier trop lourd, maximum 500 Mo.");
+                    fileInput.value = '';
+                    return;
+                }
+
+                // Garde-fou 2 : Format Audio ou Vidéo
+                const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name);
+                const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm|mkv)$/i.test(file.name);
+                if (!isAudio && !isVideo) {
+                    showFeedback('error', "⚠️ Format non supporté. Choisissez un fichier vidéo (MP4, MOV, MKV, WebM) ou audio (MP3, WAV, M4A).");
+                    fileInput.value = '';
+                    return;
+                }
+
                 selectedFile = file;
                 autoShareMediaUrl = null;
                 autoShareThumbnail = null;
                 const fileUrl = URL.createObjectURL(file);
-                const isVideo = file.type.startsWith('video/') || /\.(mp4|mov|webm|mkv)$/i.test(file.name);
 
                 dropzone.style.display = 'none';
                 previewContainer.style.display = 'block';
