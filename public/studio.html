@@ -565,8 +565,9 @@
         var hasArTitle = /[\u0600-\u06FF]/.test(titleText);
         ctx.font = hasArTitle ? '700 16px "Cairo", sans-serif' : '900 17px "Arial Black", Impact';
         ctx.fillStyle = selectedTitleColor;
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
 
         var words = titleText.split(' ');
         var line = '';
@@ -602,8 +603,9 @@
         var hasArSub = /[\u0600-\u06FF]/.test(subLines.join(''));
         ctx.font = hasArSub ? 'bold 18px "Cairo", sans-serif' : 'bold 20px Impact';
         ctx.fillStyle = selectedSubColor;
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
 
         for (var j = 0; j < subLines.length; j++) {
             ctx.strokeText(subLines[j], LOGI_W / 2, subY + (j * 26));
