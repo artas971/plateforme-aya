@@ -1,17 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
-    /* 1. Charte Graphique Officielle Plateforme Aya (Lionel - DA) */
-    --color-primary: #0b5394;        /* Bleu Primaire (Navbar, en-têtes majeurs) */
-    --color-turquoise: #00bcd4;      /* Turquoise (Boutons action principale, hover, feedback) */
-    --color-dark-gray: #434343;      /* Gris Foncé (Texte principal et titres) */
-    --color-secondary-gray: #999999; /* Gris Secondaire (Textes secondaires, placeholders, bordures) */
-    --color-white: #ffffff;          /* Blanc (Fonds de cartes, modales, textes sur fond sombre) */
+    /* 1. Charte Graphique Officielle Plateforme Aya */
+    --color-primary: #0b5394;        /* Bleu Dominant */
+    --color-primary-dark: #073866;   /* Bleu Profond Hover */
+    --color-primary-glow: rgba(11, 83, 148, 0.3);
+    --color-turquoise: #00bcd4;      /* Turquoise Accent / Lueurs / CTA Secondaires */
+    --color-turquoise-dark: #0097a7; /* Turquoise Profond Hover */
+    --color-turquoise-glow: rgba(0, 188, 212, 0.3);
+    --color-dark-gray: #434343;      /* Gris Foncé (Surfaces, Cartes, Conteneurs) */
+    --color-secondary-gray: #999999; /* Gris Clair (Bordures Subtiles, Textes Secondaires) */
+    --color-white: #ffffff;          /* Blanc (Textes Principaux, Contrastes) */
 
     /* Variables sémantiques et rétrocompatibilité */
     --primary-color: var(--color-primary);
     --accent-color: var(--color-turquoise);
-    --accent-hover: #0097a7;
+    --accent-hover: var(--color-turquoise-dark);
     --accent-blue: var(--color-turquoise);
     --accent-emerald: var(--color-turquoise);
     --accent-gold: #f59e0b;
@@ -33,11 +37,13 @@
     --radius-md: 12px;
     --radius-lg: 16px;
 
-    /* Typographie bilingue */
-    --font-arabic: 'Cairo', system-ui, -apple-system, sans-serif;
-    --font-latin: 'Amiri', 'Plus Jakarta Sans', Georgia, serif;
-    --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    /* Typographies officielles selon la langue */
+    --font-arabic: 'Cairo', sans-serif;
+    --font-english: 'Amiri', serif;
+    --font-french: 'Inter', -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif;
+    --font-latin: var(--font-french);
+    --font-ui: var(--font-french);
+    --font-sans: var(--font-french);
 }
 
 * {
@@ -46,43 +52,31 @@
     padding: 0;
 }
 
-/* 2. Règle de police adaptative (Lionel) */
-html, body, html[dir="ltr"], body[dir="ltr"] {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    font-family: var(--font-latin);
-    line-height: 1.6;
-    min-height: 100vh;
-}
-
-body {
-    padding: 24px;
-}
-
-/* Éléments d'interface technique : fallback sans-serif soigné en LTR */
-html[dir="ltr"] button,
-html[dir="ltr"] .btn,
-html[dir="ltr"] .btn-nav-link,
-html[dir="ltr"] .lang-toggle-btn,
-html[dir="ltr"] .badge-tag,
-html[dir="ltr"] .live-indicator,
-html[dir="ltr"] input,
-html[dir="ltr"] select,
-html[dir="ltr"] .custom-select,
-html[dir="ltr"] .user-badge,
-html[dir="ltr"] .timestamp,
-html[dir="ltr"] .progress-percent,
-html[dir="ltr"] .file-size,
-html[dir="ltr"] pre,
-html[dir="ltr"] code {
-    font-family: var(--font-ui) !important;
-}
-
-/* Mode Arabe : Cairo forcé sur tous les éléments */
+/* 2. Typographie selon la langue */
+/* Arabe : Police Cairo avec interligne aéré 1.7 */
+html[lang="ar"],
+body[lang="ar"],
 html[dir="rtl"],
 body[dir="rtl"],
 html[dir="rtl"] * {
     font-family: var(--font-arabic) !important;
+    line-height: 1.7 !important;
+}
+
+/* Anglais : Police Amiri */
+html[lang="en"],
+body[lang="en"] {
+    font-family: var(--font-english) !important;
+    line-height: 1.6;
+}
+
+/* Français (par défaut en LTR) : Police Inter moderne et lisible */
+html, body, html[dir="ltr"], body[dir="ltr"] {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-french);
+    line-height: 1.6;
+    min-height: 100vh;
 }
 
 .app-container {
@@ -526,48 +520,63 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
 }
 
-/* Buttons (Turquoise #00bcd4 pour action principale) */
+/* Buttons (Turquoise #00bcd4 pour action principale & Bleu #0b5394) */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 10px 18px;
+    min-height: 44px;
     border-radius: var(--radius-md);
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
     border: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     text-decoration: none;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.btn:active {
+    transform: translateY(1px) scale(0.98);
 }
 
 .btn-sm {
     padding: 6px 12px;
+    min-height: 38px;
     font-size: 0.8rem;
 }
 
 .btn-primary,
 .btn-accent,
 .btn-submit {
-    background: var(--color-turquoise);
+    background: linear-gradient(135deg, var(--color-turquoise) 0%, var(--color-turquoise-dark) 100%);
     color: var(--color-white);
-    box-shadow: 0 4px 12px rgba(0, 188, 212, 0.25);
+    box-shadow: 0 4px 14px var(--color-turquoise-glow);
 }
 
 .btn-primary:hover,
 .btn-accent:hover,
 .btn-submit:hover:not(:disabled) {
-    background: #0097a7;
+    background: linear-gradient(135deg, #26c6da 0%, #00838f 100%);
     color: var(--color-white);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(0, 188, 212, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px var(--color-turquoise-glow);
 }
 
 .btn-secondary {
     background: #f0f4f8;
     color: var(--color-dark-gray);
     border: 1px solid var(--color-secondary-gray);
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
 }
 
 .btn-secondary:hover {
@@ -2234,32 +2243,41 @@ html[dir="rtl"] .step-content p {
 
 .btn-action-sm {
     flex: 1;
-    padding: 7px 10px;
+    min-height: 38px;
+    padding: 8px 12px;
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 600;
     text-align: center;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
     border: 1px solid var(--border-color);
     background: #ffffff;
     color: var(--text-primary);
-    transition: all 0.15s ease;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
 }
 
 .btn-action-sm:hover {
-    background: #f1f5f9;
-    border-color: #94a3b8;
+    background: #f8fafc;
+    border-color: var(--color-turquoise);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 188, 212, 0.15);
+}
+
+.btn-action-sm:active {
+    transform: translateY(0);
 }
 
 .btn-action-sm.primary {
-    background: rgba(0, 188, 212, 0.1);
-    color: #0891b2;
-    border-color: rgba(0, 188, 212, 0.3);
+    background: rgba(0, 188, 212, 0.12);
+    color: #00838f;
+    border-color: rgba(0, 188, 212, 0.4);
 }
 
 .btn-action-sm.primary:hover {
@@ -2286,29 +2304,133 @@ html[dir="rtl"] .step-content p {
     opacity: 0.7;
 }
 
-/* Toast Notification */
+/* ==========================================================================
+   Toast Notifications Glassmorphic (Issue UX/UI Sprint)
+   ========================================================================== */
 .aya-toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: #0f172a;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     color: #ffffff;
     padding: 14px 22px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    display: flex;
+    border-radius: 14px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border-left: 4px solid var(--color-turquoise);
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.95rem;
+    gap: 12px;
+    font-size: 0.92rem;
     font-weight: 600;
-    z-index: 9999;
-    animation: toastSlideUp 0.3s ease;
+    z-index: 99999;
+    max-width: 440px;
+    animation: toastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.aya-toast.success {
+    border-left-color: var(--color-turquoise);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 188, 212, 0.3);
+}
+
+.aya-toast.error {
+    border-left-color: #ef4444;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.aya-toast.warning {
+    border-left-color: #f59e0b;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(245, 158, 11, 0.3);
+}
+
+.aya-toast.info {
+    border-left-color: var(--color-primary);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(11, 83, 148, 0.3);
 }
 
 @keyframes toastSlideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Toast mobile centering */
+@media (max-width: 480px) {
+    .aya-toast {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        bottom: 16px;
+        width: calc(100% - 32px);
+        box-sizing: border-box;
+        justify-content: center;
+        text-align: center;
+        font-size: 0.88rem;
+        padding: 12px 16px;
+    }
+}
+
+/* ==========================================================================
+   Shimmer Loading Skeletons
+   ========================================================================== */
+.aya-skeleton {
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: ayaShimmer 1.5s infinite linear;
+    border-radius: 8px;
+}
+
+@keyframes ayaShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.aya-skeleton-card {
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.aya-skeleton-thumb {
+    width: 100%;
+    height: 120px;
+    border-radius: 10px;
+}
+
+.aya-skeleton-title {
+    width: 75%;
+    height: 18px;
+    border-radius: 6px;
+}
+
+.aya-skeleton-line {
+    width: 50%;
+    height: 14px;
+    border-radius: 4px;
+}
+
+.aya-skeleton-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.aya-skeleton-btn {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
 }
 
 /* Modal Popup */
@@ -2352,15 +2474,15 @@ html[dir="rtl"] .step-content p {
 }
 
 .recharge-banner {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 188, 212, 0.08) 100%);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: linear-gradient(135deg, rgba(11, 83, 148, 0.08) 0%, rgba(0, 188, 212, 0.08) 100%);
+    border: 1px solid rgba(0, 188, 212, 0.3);
     border-radius: 12px;
     padding: 14px 18px;
     margin-bottom: 20px;
 }
 .recharge-banner-title {
     font-size: 0.92rem;
-    color: #065f46;
+    color: var(--color-primary);
     font-weight: 700;
     margin-bottom: 4px;
     display: flex;
@@ -2393,9 +2515,9 @@ html[dir="rtl"] .step-content p {
 }
 
 .pack-card:hover {
-    border-color: #6366f1;
+    border-color: var(--color-turquoise);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 8px 20px rgba(0, 188, 212, 0.15);
 }
 
 .pack-card.popular {
@@ -2404,8 +2526,8 @@ html[dir="rtl"] .step-content p {
 }
 
 .pack-card.best-value {
-    border-color: #10b981;
-    background: linear-gradient(180deg, #ffffff 0%, rgba(16, 185, 129, 0.03) 100%);
+    border-color: var(--color-primary);
+    background: linear-gradient(180deg, #ffffff 0%, rgba(11, 83, 148, 0.04) 100%);
 }
 
 .pack-info {
@@ -2442,9 +2564,9 @@ html[dir="rtl"] .step-content p {
 }
 
 .pack-badge.best-value {
-    background: rgba(16, 185, 129, 0.15);
-    color: #059669;
-    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(11, 83, 148, 0.12);
+    color: var(--color-primary);
+    border: 1px solid rgba(11, 83, 148, 0.35);
 }
 
 .pack-desc {
@@ -2474,25 +2596,30 @@ html[dir="rtl"] .step-content p {
 }
 
 .btn-stripe-buy {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     color: #ffffff;
     border: none;
     border-radius: 10px;
     padding: 8px 16px;
+    min-height: 40px;
     font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(11, 83, 148, 0.25);
 }
 
 .btn-stripe-buy:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-    transform: scale(1.02);
-    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+    background: linear-gradient(135deg, #0f67b5 0%, #073866 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(11, 83, 148, 0.35);
+}
+
+.btn-stripe-buy:active {
+    transform: translateY(0);
 }
 
 .btn-stripe-buy:disabled {
@@ -2779,11 +2906,72 @@ html[dir="rtl"] .step-content p {
     font-size: 0.8rem;
 }
 
+/* ==========================================================================
+   Mobile Ergonomics & Responsive Touch Targets (Jour J - 4)
+   ========================================================================== */
+@media (max-width: 480px) {
+    /* Minimum 44px touch targets on interactive controls */
+    button, 
+    .btn, 
+    .lang-toggle-btn,
+    .app-header .brand a,
+    .user-badge {
+        min-height: 44px;
+        box-sizing: border-box;
+    }
 
+    .nav-links a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+    }
 
+    /* Small screens: iPhone SE / 375px and below */
+    body {
+        padding: 12px 10px;
+    }
 
+    .app-container,
+    .profile-container {
+        padding: 0;
+    }
 
+    .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 
+    .profile-card,
+    .wallet-card,
+    .history-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+    }
 
+    .packs-container .pack-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
 
+    .pack-action {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-stripe-buy {
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .video-actions-row {
+        flex-wrap: wrap;
+    }
+
+    .btn-action-sm {
+        min-height: 42px;
+    }
+}
 

@@ -38,28 +38,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseVideoModal = document.getElementById('btnCloseVideoModal');
 
     /**
-     * Affiche un toast flottant élégant
+     * Affiche un toast flottant élégant avec color-coding (success, error, warning, info)
      */
     function showToast(message, type = 'info') {
         const existing = document.querySelector('.aya-toast');
         if (existing) existing.remove();
 
         const toast = document.createElement('div');
-        toast.className = 'aya-toast';
+        toast.className = `aya-toast ${type}`;
         
         let icon = 'ℹ️';
         if (type === 'success') icon = '✅';
         if (type === 'error') icon = '❌';
         if (type === 'warning') icon = '⚠️';
 
-        toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span><span>${message}</span>`;
+        toast.innerHTML = `<span style="font-size: 1.2rem; flex-shrink: 0;">${icon}</span><span>${message}</span>`;
         document.body.appendChild(toast);
 
         setTimeout(() => {
-            toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            toast.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
             toast.style.opacity = '0';
             toast.style.transform = 'translateY(15px)';
-            setTimeout(() => toast.remove(), 400);
+            setTimeout(() => toast.remove(), 350);
         }, 3500);
     }
 

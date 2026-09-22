@@ -29,19 +29,19 @@
     <link rel="stylesheet" href="/aya-rtl.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --color-primary: #0b5394;
             --color-primary-dark: #083b6f;
             --color-turquoise: #00bcd4;
             --color-turquoise-dark: #0097a7;
-            --color-accent-green: #10b981;
-            --color-dark-gray: #334155;
-            --color-secondary-gray: #64748b;
+            --color-accent-green: var(--color-turquoise);
+            --color-dark-gray: #434343;
+            --color-secondary-gray: #999999;
             --color-light-bg: #f8fafc;
             --color-white: #ffffff;
-            --border-color: rgba(148, 163, 184, 0.25);
+            --border-color: rgba(153, 153, 153, 0.25);
             --card-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
             --card-hover-shadow: 0 20px 30px -10px rgba(11, 83, 148, 0.15);
         }
@@ -55,10 +55,21 @@
         body {
             background-color: #f1f5f9;
             color: var(--color-dark-gray);
-            font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        html[lang="ar"] body,
+        html[dir="rtl"] body {
+            font-family: 'Cairo', sans-serif !important;
+            line-height: 1.7 !important;
+        }
+
+        html[lang="en"] body {
+            font-family: 'Amiri', serif !important;
+            line-height: 1.6;
         }
 
         /* Navbar Globale */

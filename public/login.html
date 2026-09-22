@@ -12,7 +12,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <style>
         body {
@@ -24,12 +24,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif;
             color: var(--color-dark-gray, #1e293b);
         }
 
+        html[lang="ar"] body,
         html[dir="rtl"] body {
             font-family: 'Cairo', sans-serif !important;
+            line-height: 1.7 !important;
+        }
+
+        html[lang="en"] body {
+            font-family: 'Amiri', serif !important;
+            line-height: 1.6;
         }
 
         .login-wrapper {
@@ -215,6 +222,7 @@
 
         .form-select, .form-input {
             width: 100%;
+            min-height: 44px;
             box-sizing: border-box;
             padding: 0.8rem 1rem;
             border: 1.5px solid rgba(153, 153, 153, 0.35);
@@ -234,8 +242,8 @@
 
         /* Validation UI States */
         .form-input.is-valid {
-            border-color: #10b981 !important;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+            border-color: var(--color-turquoise, #00bcd4) !important;
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.18) !important;
         }
 
         .form-input.is-invalid {
@@ -249,7 +257,7 @@
             min-height: 18px;
         }
 
-        .text-success { color: #059669; }
+        .text-success { color: #00838f; }
         .text-danger { color: #dc2626; }
         .text-muted { color: #64748b; }
 
@@ -293,27 +301,33 @@
         }
 
         .btn-submit-login {
-            background: var(--color-turquoise, #00bcd4);
+            background: linear-gradient(135deg, var(--color-turquoise, #00bcd4) 0%, #0097a7 100%);
             color: #ffffff;
             border: none;
+            min-height: 48px;
             padding: 0.95rem;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.6rem;
             box-shadow: 0 4px 15px rgba(0, 188, 212, 0.35);
             font-family: inherit;
+            box-sizing: border-box;
         }
 
         .btn-submit-login:hover:not(:disabled) {
-            background: #0097a7;
+            background: linear-gradient(135deg, #26c6da 0%, #00838f 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.45);
+            box-shadow: 0 8px 22px rgba(0, 188, 212, 0.45);
+        }
+
+        .btn-submit-login:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .btn-submit-login:disabled {
