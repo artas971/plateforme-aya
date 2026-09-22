@@ -683,8 +683,390 @@
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* ================================================================
+           BARRE DE FILTRES TYPE (Tous / Vidéos 9:16 / Échanges du Direct)
+           ================================================================ */
+        .feed-type-filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            flex-wrap: wrap;
+        }
+
+        .type-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 24px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            min-height: 40px;
+        }
+
+        .type-filter-btn:hover {
+            border-color: var(--color-turquoise);
+            color: var(--color-primary);
+            background: rgba(0, 188, 212, 0.05);
+        }
+
+        .type-filter-btn.active {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(11, 83, 148, 0.22);
+        }
+
+        .type-filter-btn.active.highlight {
+            background: linear-gradient(135deg, #0b5394, #00bcd4);
+            border-color: transparent;
+        }
+
+        .type-filter-count {
+            font-size: 0.75rem;
+            background: rgba(255,255,255,0.25);
+            border-radius: 10px;
+            padding: 1px 7px;
+            font-weight: 700;
+        }
+
+        .type-filter-btn:not(.active) .type-filter-count {
+            background: rgba(11, 83, 148, 0.1);
+            color: var(--color-primary);
+        }
+
+        /* ================================================================
+           CARTE CITATION BILINGUE — type: chat_highlight
+           ================================================================ */
+        .highlight-card {
+            background: linear-gradient(145deg, #0d1b2e 0%, #0b2340 100%);
+            border-radius: 18px;
+            border: 1px solid rgba(0, 188, 212, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 188, 212, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.35s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .highlight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 188, 212, 0.2);
+        }
+
+        /* Badge distinctif "Échange du Direct" */
+        .highlight-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(90deg, rgba(0,188,212,0.18), rgba(11,83,148,0.25));
+            border-bottom: 1px solid rgba(0, 188, 212, 0.2);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #67e8f9;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .highlight-badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #00bcd4;
+            box-shadow: 0 0 6px rgba(0, 188, 212, 0.8);
+            animation: pulse-live 1.6s infinite;
+        }
+
+        @keyframes pulse-live {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+
+        /* Corps de la carte */
+        .highlight-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        /* Texte Arabe (RTL propre avec isolation bidi) */
+        .highlight-text-ar {
+            font-family: 'Cairo', 'Amiri', 'Tahoma', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1.75;
+            color: #e2e8f0;
+            direction: rtl;
+            text-align: right;
+            unicode-bidi: isolate;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            border-inline-end: 3px solid #00bcd4;
+            word-break: break-word;
+        }
+
+        /* Séparateur bilingue */
+        .highlight-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(148, 163, 184, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .highlight-divider::before,
+        .highlight-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(148, 163, 184, 0.15);
+        }
+
+        /* Traduction Française */
+        .highlight-text-fr {
+            font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.65;
+            color: #94a3b8;
+            font-style: italic;
+            direction: ltr;
+            text-align: left;
+            unicode-bidi: isolate;
+            word-break: break-word;
+        }
+
+        /* Lecteur Audio Compact */
+        .highlight-audio-player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(0, 188, 212, 0.08);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 188, 212, 0.18);
+        }
+
+        .highlight-audio-player audio {
+            flex: 1;
+            height: 36px;
+            min-width: 0;
+            accent-color: #00bcd4;
+        }
+
+        /* Pied de carte highlight */
+        .highlight-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+            background: rgba(0, 0, 0, 0.15);
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .highlight-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .highlight-meta-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00bcd4, #0b5394);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .highlight-meta-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .highlight-meta-author {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .highlight-meta-time {
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        .highlight-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .highlight-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            min-height: 34px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.06);
+            color: #94a3b8;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .highlight-action-btn:hover {
+            background: rgba(0, 188, 212, 0.15);
+            color: #67e8f9;
+        }
+
+        .highlight-action-btn.liked {
+            color: #f87171;
+        }
+
+        /* Tags dans highlight */
+        .highlight-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .highlight-tag {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 5px;
+            background: rgba(0, 188, 212, 0.1);
+            color: #67e8f9;
+            border: 1px solid rgba(0, 188, 212, 0.2);
+        }
+
+        /* ================================================================
+           CARTE ÉPINGLÉE — Featured / Pinned
+           ================================================================ */
+        .highlight-card.is-pinned {
+            border-color: rgba(0, 188, 212, 0.5);
+            box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.15), 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ================================================================
+           RESPONSIVE MOBILE (≤ 640px) — Tap targets 44px + zero overflow
+           ================================================================ */
+        @media (max-width: 640px) {
+            .feed-type-filters {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 4px;
+                /* Fondu droit pour indiquer le scroll */
+                -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+                mask-image: linear-gradient(to right, black 80%, transparent 100%);
+            }
+
+            .feed-type-filters::-webkit-scrollbar { display: none; }
+
+            .type-filter-btn {
+                min-height: 44px;
+                padding: 10px 16px;
+                flex-shrink: 0;
+            }
+
+            .highlight-text-ar {
+                font-size: 0.95rem;
+                padding: 12px 14px;
+            }
+
+            .highlight-text-fr {
+                font-size: 0.88rem;
+            }
+
+            .highlight-body {
+                padding: 14px;
+                gap: 12px;
+            }
+
+            .highlight-footer {
+                padding: 10px 14px;
+            }
+
+            .highlight-action-btn {
+                min-height: 44px;
+                padding: 8px 12px;
+            }
+
+            .highlight-audio-player audio {
+                height: 40px;
+            }
+
+            /* Mobile : post-action-btn tap targets */
+            .post-action-btn {
+                min-height: 44px;
+                padding: 8px 12px;
+                touch-action: manipulation;
+            }
+
+            /* Mobile : hero compact */
+            .communaute-hero {
+                padding: 24px 18px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .communaute-hero h1 {
+                font-size: 1.4rem;
+            }
+
+            .publish-card {
+                padding: 16px;
+            }
+
+            .feed-filters {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 2px;
+            }
+
+            .feed-filters::-webkit-scrollbar { display: none; }
+
+            .filter-pill {
+                flex-shrink: 0;
+                min-height: 36px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <!-- Navbar Partagée Globale (Injectée et hydratée par aya-i18n.js) -->
     <header class="app-header" id="ayaGlobalNavbar"></header>
@@ -786,10 +1168,29 @@
         <section class="feed-section">
             <div class="feed-header">
                 <h2 id="feedSectionTitle">✨ Témoignages Publiés</h2>
+
+                <!-- Barre de filtres TYPE -->
+                <div class="feed-type-filters" id="feedTypeFilters">
+                    <button class="type-filter-btn active" data-type="all">
+                        🌍 Tous
+                        <span class="type-filter-count" id="countAll">0</span>
+                    </button>
+                    <button class="type-filter-btn" data-type="video">
+                        🎬 Vidéos 9:16
+                        <span class="type-filter-count" id="countVideo">0</span>
+                    </button>
+                    <button class="type-filter-btn highlight" data-type="chat_highlight">
+                        💬 Échanges du Direct
+                        <span class="type-filter-count" id="countHighlight">0</span>
+                    </button>
+                </div>
+
+                <!-- Filtres par Hashtag (tags) -->
                 <div class="feed-filters" id="feedFilters">
                     <button class="filter-pill active" data-tag="all">Tous les témoignages</button>
                 </div>
             </div>
+
 
             <!-- Grille des Cartes -->
             <div class="feed-grid" id="feedGrid">
@@ -831,6 +1232,8 @@
             let autoShareThumbnail = null;
             let currentPosts = [];
             let activeTagFilter = 'all';
+            let activeTypeFilter = 'all';
+
 
             const dropzone = document.getElementById('mediaDropzone');
             const fileInput = document.getElementById('mediaFileInput');
@@ -848,6 +1251,8 @@
             const emptyFeed = document.getElementById('emptyFeed');
             const heroPostsCount = document.getElementById('heroPostsCount');
             const feedFilters = document.getElementById('feedFilters');
+            const feedTypeFilters = document.getElementById('feedTypeFilters');
+
 
             // 1. Initialisation & Auto-Hydratation (State Passing React Router / sessionStorage / History)
             function initAutoHydration() {
@@ -1147,31 +1552,10 @@
                 publishFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
-            // 4. Chargement des Témoignages Approuvés (GET /api/posts)
-            async function loadPosts() {
-                try {
-                    const res = await fetch('/api/posts');
-                    const data = await res.json();
-
-                    if (!res.ok || !data.success) {
-                        throw new Error(data.error || "Impossible de charger les posts.");
-                    }
-
-                    currentPosts = data.posts || [];
-                    heroPostsCount.textContent = currentPosts.length;
-
-                    extractAndRenderTags(currentPosts);
-                    renderPosts(currentPosts);
-
-                } catch (err) {
-                    console.error('Erreur chargement posts :', err);
-                    emptyFeed.style.display = 'flex';
-                }
-            }
-
             function isArabic() {
                 return (document.documentElement.getAttribute('dir') === 'rtl' || localStorage.getItem('aya_lang') === 'ar');
             }
+
 
             function extractAndRenderTags(posts) {
                 const allTags = new Set();
@@ -1204,14 +1588,48 @@
                 });
             }
 
+            // ── Compteurs et filtres TYPE ─────────────────────────────────
+            function updateTypeCounts(posts) {
+                const cAll = document.getElementById('countAll');
+                const cVideo = document.getElementById('countVideo');
+                const cHighlight = document.getElementById('countHighlight');
+                if (cAll) cAll.textContent = posts.length;
+                if (cVideo) cVideo.textContent = posts.filter(p => p.type !== 'chat_highlight').length;
+                if (cHighlight) cHighlight.textContent = posts.filter(p => p.type === 'chat_highlight').length;
+            }
+
+            function initTypeFilters() {
+                if (!feedTypeFilters) return;
+                feedTypeFilters.querySelectorAll('.type-filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        feedTypeFilters.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        activeTypeFilter = btn.dataset.type;
+                        activeTagFilter = 'all'; // reset hashtag filter when changing type
+                        filterAndRender();
+                    });
+                });
+            }
+
             function filterAndRender() {
                 let filtered = currentPosts;
-                if (activeTagFilter !== 'all') {
-                    filtered = currentPosts.filter(p => p.tags && p.tags.includes(activeTagFilter));
+
+                // 1. Filtre par type
+                if (activeTypeFilter === 'video') {
+                    filtered = filtered.filter(p => p.type !== 'chat_highlight');
+                } else if (activeTypeFilter === 'chat_highlight') {
+                    filtered = filtered.filter(p => p.type === 'chat_highlight');
                 }
+
+                // 2. Filtre par hashtag
+                if (activeTagFilter !== 'all') {
+                    filtered = filtered.filter(p => p.tags && p.tags.includes(activeTagFilter));
+                }
+
                 renderPosts(filtered);
             }
 
+            // ── Rendu principal — dispatcher selon le type ────────────────
             function renderPosts(posts) {
                 feedGrid.innerHTML = '';
 
@@ -1224,117 +1642,237 @@
                 const isAr = isArabic();
 
                 posts.forEach(post => {
-                    const card = document.createElement('article');
-                    card.className = 'post-card';
-
-                    const defaultAuthor = isAr ? "شاهد مجهول" : "Anonyme";
-                    const authorName = post.authorName || defaultAuthor;
-                    const initials = authorName.slice(0, 2).toUpperCase();
-                    const formattedDate = formatDateRelative(post.createdAt);
-                    const verifiedBadge = isAr ? "✅ موثق" : "✅ Vérifié";
-                    const copyTextLabel = isAr ? "نسخ النص" : "Copier le texte";
-                    const shareTextLabel = isAr ? "مشاركة" : "Partager";
-
-                    // Média
-                    let mediaHtml = '';
-                    if (post.mediaUrl) {
-                        if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
-                            mediaHtml = `
-                                <div class="post-media-container">
-                                    <video src="${escapeHtml(post.mediaUrl)}" controls playsinline preload="metadata"></video>
-                                </div>
-                            `;
-                        } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
-                            mediaHtml = `
-                                <div class="post-media-container">
-                                    <audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>
-                                </div>
-                            `;
-                        }
+                    // Dispatcher : chat_highlight → renderHighlightCard, sinon → renderStandardCard
+                    if (post.type === 'chat_highlight') {
+                        feedGrid.appendChild(renderHighlightCard(post, isAr));
+                    } else {
+                        feedGrid.appendChild(renderStandardCard(post, isAr));
                     }
+                });
+            }
 
-                    // Tags
-                    let tagsHtml = '';
-                    if (Array.isArray(post.tags) && post.tags.length > 0) {
-                        tagsHtml = `
-                            <div class="post-tags">
-                                ${post.tags.map(t => `<span class="tag-badge">#${escapeHtml(t)}</span>`).join('')}
+            // ── Carte Citation Bilingue (chat_highlight) ──────────────────
+            function renderHighlightCard(post, isAr) {
+                const card = document.createElement('article');
+                card.className = 'highlight-card' + (post.isPinned ? ' is-pinned' : '');
+
+                const authorName = post.authorName || (isAr ? 'شاهد من المباشر' : 'Témoin du Direct');
+                const initials = authorName.slice(0, 2).toUpperCase();
+                const formattedDate = formatDateRelative(post.createdAt);
+                const badgeLabel = isAr ? '💬 تبادل من البث المباشر' : '💬 Échange du Direct';
+                const likeLabel = isAr ? 'أعجبني' : 'J\'aime';
+                const copyLabel = isAr ? 'نسخ' : 'Copier';
+                const shareLabel = isAr ? 'مشاركة' : 'Partager';
+                const witnessLabel = isAr ? '🎙️ شاهد من البث المباشر' : '🎙️ Témoin du Direct';
+                const translationLabel = isAr ? '🇫🇷 الترجمة' : '🇫🇷 Traduction';
+
+                // Lecteur audio compact (si audioUrl)
+                const audioUrl = post.audioUrl || post.mediaUrl;
+                const audioHtml = (audioUrl && post.mediaType === 'audio') ? `
+                    <div class="highlight-audio-player">
+                        <audio src="${escapeHtml(audioUrl)}" controls preload="metadata"></audio>
+                    </div>
+                ` : '';
+
+                // Tags
+                const tagsHtml = (Array.isArray(post.tags) && post.tags.length > 0) ? `
+                    <div class="highlight-tags">
+                        ${post.tags.map(t => `<span class="highlight-tag">#${escapeHtml(t)}</span>`).join('')}
+                    </div>
+                ` : '';
+
+                card.innerHTML = `
+                    <div class="highlight-badge">
+                        <span class="highlight-badge-dot"></span>
+                        ${badgeLabel}
+                        ${post.isPinned ? '<span style="margin-left:auto;font-size:0.7rem;opacity:0.7;">📌 Épinglé</span>' : ''}
+                    </div>
+                    <div class="highlight-body">
+                        <div class="highlight-text-ar" lang="ar">${escapeHtml(post.originalText || post.originalContent)}</div>
+                        <div class="highlight-divider">${translationLabel}</div>
+                        <div class="highlight-text-fr" lang="fr">${escapeHtml(post.translatedText || '')}</div>
+                        ${audioHtml}
+                        ${tagsHtml}
+                    </div>
+                    <div class="highlight-footer">
+                        <div class="highlight-meta">
+                            <div class="highlight-meta-avatar">${initials}</div>
+                            <div class="highlight-meta-info">
+                                <span class="highlight-meta-author">${escapeHtml(witnessLabel)}</span>
+                                <span class="highlight-meta-time">${formattedDate}</span>
+                            </div>
+                        </div>
+                        <div class="highlight-actions">
+                            <button class="highlight-action-btn like-btn" data-id="${post._id}">
+                                ❤️ <span class="like-count">${post.likesCount || 0}</span>
+                            </button>
+                            <button class="highlight-action-btn copy-btn">
+                                📋 ${copyLabel}
+                            </button>
+                            <button class="highlight-action-btn share-btn">
+                                🔗 ${shareLabel}
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Événement Like
+                const likeBtn = card.querySelector('.like-btn');
+                likeBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.success) {
+                            card.querySelector('.like-count').textContent = data.likesCount;
+                            likeBtn.classList.add('liked');
+                        }
+                    } catch(e) {}
+                });
+
+                // Événement Copier (texte arabe + traduction)
+                const copyBtn = card.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', () => {
+                    const textToCopy = (post.originalText || post.originalContent || '') + '\n\n' + (post.translatedText || '');
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        const oldText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = isAr ? '✅ تم النسخ!' : '✅ Copié !';
+                        setTimeout(() => copyBtn.innerHTML = oldText, 2000);
+                    });
+                });
+
+                // Événement Partager
+                const shareBtn = card.querySelector('.share-btn');
+                shareBtn.addEventListener('click', () => {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: isAr ? 'شهادة من البث المباشر — منصة آية' : 'Échange du Direct — Plateforme Aya',
+                            text: (post.translatedText || post.originalContent || '').slice(0, 120) + '…',
+                            url: window.location.href
+                        }).catch(() => {});
+                    } else {
+                        navigator.clipboard.writeText(window.location.href).then(() => {
+                            const oldText = shareBtn.innerHTML;
+                            shareBtn.innerHTML = isAr ? '✅ تم نسخ الرابط!' : '✅ Lien copié !';
+                            setTimeout(() => shareBtn.innerHTML = oldText, 2000);
+                        });
+                    }
+                });
+
+                return card;
+            }
+
+            // ── Carte Standard (vidéo / texte) ────────────────────────────
+            function renderStandardCard(post, isAr) {
+                const card = document.createElement('article');
+                card.className = 'post-card';
+
+                const defaultAuthor = isAr ? "شاهد مجهول" : "Anonyme";
+                const authorName = post.authorName || defaultAuthor;
+                const initials = authorName.slice(0, 2).toUpperCase();
+                const formattedDate = formatDateRelative(post.createdAt);
+                const verifiedBadge = isAr ? "✅ موثق" : "✅ Vérifié";
+                const copyTextLabel = isAr ? "نسخ النص" : "Copier le texte";
+                const shareTextLabel = isAr ? "مشاركة" : "Partager";
+
+                // Média
+                let mediaHtml = '';
+                if (post.mediaUrl) {
+                    if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
+                        mediaHtml = `
+                            <div class="post-media-container">
+                                <video src="${escapeHtml(post.mediaUrl)}" controls playsinline preload="metadata"></video>
+                            </div>
+                        `;
+                    } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
+                        mediaHtml = `
+                            <div class="post-media-container">
+                                <audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>
                             </div>
                         `;
                     }
+                }
 
-                    card.innerHTML = `
-                        <div class="post-card-header">
-                            <div class="post-author-info">
-                                <div class="post-author-avatar">${initials}</div>
-                                <div>
-                                    <div class="post-author-name">${escapeHtml(authorName)}</div>
-                                    <div class="post-meta-time">${formattedDate}</div>
-                                </div>
-                            </div>
-                            <span class="post-status-badge">${verifiedBadge}</span>
-                        </div>
-                        ${mediaHtml}
-                        <div class="post-card-body">
-                            <p class="post-text">${escapeHtml(post.originalContent)}</p>
-                            ${tagsHtml}
-                        </div>
-                        <div class="post-card-footer">
-                            <button class="post-action-btn like-btn" data-id="${post._id}">
-                                <span>❤️</span> <span class="like-count">${post.likesCount || 0}</span>
-                            </button>
-                            <button class="post-action-btn copy-btn" data-content="${escapeHtml(post.originalContent)}">
-                                <span>📋</span> ${copyTextLabel}
-                            </button>
-                            <button class="post-action-btn share-btn" data-url="${window.location.origin}/communaute">
-                                <span>🔗</span> ${shareTextLabel}
-                            </button>
+                // Tags
+                let tagsHtml = '';
+                if (Array.isArray(post.tags) && post.tags.length > 0) {
+                    tagsHtml = `
+                        <div class="post-tags">
+                            ${post.tags.map(t => `<span class="tag-badge">#${escapeHtml(t)}</span>`).join('')}
                         </div>
                     `;
+                }
 
-                    // Événement Like
-                    const likeBtn = card.querySelector('.like-btn');
-                    likeBtn.addEventListener('click', async () => {
-                        try {
-                            const res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
-                            const data = await res.json();
-                            if (data.success) {
-                                card.querySelector('.like-count').textContent = data.likesCount;
-                                likeBtn.classList.add('liked');
-                            }
-                        } catch(e) {}
-                    });
+                card.innerHTML = `
+                    <div class="post-card-header">
+                        <div class="post-author-info">
+                            <div class="post-author-avatar">${initials}</div>
+                            <div>
+                                <div class="post-author-name">${escapeHtml(authorName)}</div>
+                                <div class="post-meta-time">${formattedDate}</div>
+                            </div>
+                        </div>
+                        <span class="post-status-badge">${verifiedBadge}</span>
+                    </div>
+                    ${mediaHtml}
+                    <div class="post-card-body">
+                        <p class="post-text">${escapeHtml(post.originalContent)}</p>
+                        ${tagsHtml}
+                    </div>
+                    <div class="post-card-footer">
+                        <button class="post-action-btn like-btn" data-id="${post._id}">
+                            <span>❤️</span> <span class="like-count">${post.likesCount || 0}</span>
+                        </button>
+                        <button class="post-action-btn copy-btn" data-content="${escapeHtml(post.originalContent)}">
+                            <span>📋</span> ${copyTextLabel}
+                        </button>
+                        <button class="post-action-btn share-btn" data-url="${window.location.origin}/communaute">
+                            <span>🔗</span> ${shareTextLabel}
+                        </button>
+                    </div>
+                `;
 
-                    // Événement Copier texte
-                    const copyBtn = card.querySelector('.copy-btn');
-                    copyBtn.addEventListener('click', () => {
-                        navigator.clipboard.writeText(post.originalContent).then(() => {
-                            const oldText = copyBtn.innerHTML;
-                            copyBtn.innerHTML = isAr ? `<span>✅</span> تم النسخ!` : `<span>✅</span> Copié !`;
-                            setTimeout(() => copyBtn.innerHTML = oldText, 2000);
-                        });
-                    });
-
-                    // Événement Partager
-                    const shareBtn = card.querySelector('.share-btn');
-                    shareBtn.addEventListener('click', () => {
-                        if (navigator.share) {
-                            navigator.share({
-                                title: isAr ? `شهادة ${authorName} على منصة آية` : `Témoignage de ${authorName} sur Aya`,
-                                text: post.originalContent.slice(0, 100) + '...',
-                                url: window.location.href
-                            }).catch(() => {});
-                        } else {
-                            navigator.clipboard.writeText(window.location.href).then(() => {
-                                const oldText = shareBtn.innerHTML;
-                                shareBtn.innerHTML = isAr ? `<span>✅</span> تم نسخ الرابط!` : `<span>✅</span> Lien copié !`;
-                                setTimeout(() => shareBtn.innerHTML = oldText, 2000);
-                            });
+                // Événement Like
+                const likeBtn = card.querySelector('.like-btn');
+                likeBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.success) {
+                            card.querySelector('.like-count').textContent = data.likesCount;
+                            likeBtn.classList.add('liked');
                         }
-                    });
-
-                    feedGrid.appendChild(card);
+                    } catch(e) {}
                 });
+
+                // Événement Copier texte
+                const copyBtn = card.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(post.originalContent).then(() => {
+                        const oldText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = isAr ? `<span>✅</span> تم النسخ!` : `<span>✅</span> Copié !`;
+                        setTimeout(() => copyBtn.innerHTML = oldText, 2000);
+                    });
+                });
+
+                // Événement Partager
+                const shareBtn = card.querySelector('.share-btn');
+                shareBtn.addEventListener('click', () => {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: isAr ? `شهادة ${authorName} على منصة آية` : `Témoignage de ${authorName} sur Aya`,
+                            text: post.originalContent.slice(0, 100) + '...',
+                            url: window.location.href
+                        }).catch(() => {});
+                    } else {
+                        navigator.clipboard.writeText(window.location.href).then(() => {
+                            const oldText = shareBtn.innerHTML;
+                            shareBtn.innerHTML = isAr ? `<span>✅</span> تم نسخ الرابط!` : `<span>✅</span> Lien copié !`;
+                            setTimeout(() => shareBtn.innerHTML = oldText, 2000);
+                        });
+                    }
+                });
+
+                return card;
             }
 
             function formatDateRelative(dateStr) {
@@ -1364,8 +1902,34 @@
                     .replace(/'/g, "&#039;");
             }
 
+            // ── loadPosts avec compteurs type ─────────────────────────────
+            async function loadPosts() {
+                try {
+                    const res = await fetch('/api/posts');
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || "Impossible de charger les posts.");
+                    }
+
+                    currentPosts = data.posts || [];
+                    heroPostsCount.textContent = currentPosts.length;
+
+                    updateTypeCounts(currentPosts);
+                    extractAndRenderTags(currentPosts);
+                    initTypeFilters();
+                    renderPosts(currentPosts);
+
+                } catch (err) {
+                    console.error('Erreur chargement posts :', err);
+                    emptyFeed.style.display = 'flex';
+                }
+            }
+
             // Chargement initial
             loadPosts();
+
+
 
         })();
     </script>
