@@ -333,4 +333,102 @@ router.post('/:id/like', async (req, res) => {
     }
 });
 
+/**
+
+ * Helper de vérification des droits administrateur
+ */
+function requireAdmin(req, res, next) {
+    if (!req.session || !req.session.user || !req.session.user.authenticated) {
+        return res.status(401).json({
+            success: false,
+            error: "Authentification requise pour effectuer cette action."
+        });
+    }
+
+    const adminEmails = (process.env.ADMIN_EMAIL || 'artas971@gmail.com')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+    const userEmail = (req.session.user.email || '').trim().toLowerCase();
+    const userRole = (req.session.user.role || '').trim().toLowerCase();
+
+    if (adminEmails.includes(userEmail) || userRole === 'admin') {
+        return next();
+    }
+
+    return res.status(403).json({
+        success: false,
+        error: "Accès refusé. Action réservée à l'administrateur."
+    });
+}
+
+/**
+ * DELETE /api/posts/:id
+ * Suppression définitive d'un témoignage (Admin uniquement)
+ */
+router.delete('/:id', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isDbConnected()) {
+            const deleted = await Post.findByIdAndDelete(id);
+            if (!deleted) {
+                return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+            }
+            return res.json({ success: true, message: "Témoignage supprimé définitivement." });
+        }
+
+        // Mode Fallback (JSON)
+        let fallbackList = readFallbackPosts();
+        const initialLen = fallbackList.length;
+        fallbackList = fallbackList.filter(p => p._id !== id && p.id !== id);
+
+        if (fallbackList.length === initialLen) {
+            return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+        }
+
+        writeFallbackPosts(fallbackList);
+        return res.json({ success: true, message: "Témoignage supprimé définitivement." });
+    } catch (err) {
+        console.error('❌ Erreur DELETE /api/posts/:id :', err);
+        return res.status(500).json({ success: false, error: "Erreur lors de la suppression." });
+    }
+});
+
+/**
+ * PATCH /api/posts/:id/pin
+ * Bascule l'état épinglé (isPinned) d'un témoignage (Admin uniquement)
+ */
+router.patch('/:id/pin', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isPinned } = req.body;
+
+        if (isDbConnected()) {
+            const post = await Post.findById(id);
+            if (!post) {
+                return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+            }
+            post.isPinned = typeof isPinned === 'boolean' ? isPinned : !post.isPinned;
+            await post.save();
+            return res.json({ success: true, isPinned: post.isPinned, post });
+        }
+
+        // Mode Fallback (JSON)
+        const fallbackList = readFallbackPosts();
+        const post = fallbackList.find(p => p._id === id || p.id === id);
+        if (!post) {
+            return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+        }
+
+        post.isPinned = typeof isPinned === 'boolean' ? isPinned : !post.isPinned;
+        writeFallbackPosts(fallbackList);
+        return res.json({ success: true, isPinned: post.isPinned, post });
+    } catch (err) {
+        console.error('❌ Erreur PATCH /api/posts/:id/pin :', err);
+        return res.status(500).json({ success: false, error: "Erreur lors de la mise à jour du statut d'épinglage." });
+    }
+});
+
 module.exports = router;
+
