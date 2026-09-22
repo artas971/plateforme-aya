@@ -34,13 +34,17 @@ function saveFallbackUsers(users) {
     fs.writeFileSync(FALLBACK_USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
 }
 
-// Liste officielle des 5 testeurs historiques habilités
+// Liste officielle des testeurs habilités
 const AUTHORIZED_TESTERS = [
     { id: 'anais', name: 'Anaïs' },
     { id: 'aya', name: 'Aya' },
     { id: 'soso', name: 'Soso' },
     { id: 'steve', name: 'Steve' },
-    { id: 'john', name: 'John' }
+    { id: 'john', name: 'John' },
+    { id: 'testeur1', name: 'Testeur 1' },
+    { id: 'testeur2', name: 'Testeur 2' },
+    { id: 'testeur3', name: 'Testeur 3' },
+    { id: 'testeur4', name: 'Testeur 4' }
 ];
 
 const ACCESS_CODE = process.env.AYA_ACCESS_CODE || 'Gaza2026';

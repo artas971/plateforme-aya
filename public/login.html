@@ -524,6 +524,10 @@
                             <option value="soso">Soso</option>
                             <option value="steve">Steve</option>
                             <option value="john">John</option>
+                            <option value="testeur1">Testeur 1</option>
+                            <option value="testeur2">Testeur 2</option>
+                            <option value="testeur3">Testeur 3</option>
+                            <option value="testeur4">Testeur 4</option>
                         </select>
                     </div>
 
@@ -622,7 +626,7 @@
                 tabRegister: '✨ Créer un compte',
                 subAccount: '👤 Mon Compte',
                 subTester: '🛡️ Testeurs Habilités',
-                badge: 'Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve et John.',
+                badge: 'Espace réservé aux testeurs officiels : Anaïs, Aya, Soso, Steve, John et Testeurs 1 à 4.',
                 labelLoginId: 'Pseudonyme ou E-mail',
                 placeholderLoginId: 'ex: artas971 ou nom@exemple.com',
                 labelLoginPass: 'Mot de passe',
@@ -677,7 +681,7 @@
                 tabRegister: '✨ إنشاء حساب جديد',
                 subAccount: '👤 حسابي الشخصي',
                 subTester: '🛡️ الفاحصون المعتمدون',
-                badge: 'منطقة مخصصة حصرياً لفريق الفحص المعتمد: أنس، آية، سوسو، ستيف، جون.',
+                badge: 'منطقة مخصصة حصرياً لفريق الفحص المعتمد: أنس، آية، سوسو، ستيف، جون، والمختبرون 1 إلى 4.',
                 labelLoginId: 'اسم المستخدم أو البريد الإلكتروني',
                 placeholderLoginId: 'مثال: artas971 أو name@example.com',
                 labelLoginPass: 'كلمة المرور',
@@ -1218,7 +1222,7 @@
         try {
             const cachedUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
             const cleanId = (cachedUser.id || '').replace(/^@/, '');
-            if (cleanId && ['anais', 'aya', 'soso', 'steve', 'john'].includes(cleanId)) {
+            if (cleanId && ['anais', 'aya', 'soso', 'steve', 'john', 'testeur1', 'testeur2', 'testeur3', 'testeur4'].includes(cleanId)) {
                 selectTester.value = cleanId;
             }
         } catch(e) {}
