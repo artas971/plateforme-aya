@@ -1726,6 +1726,48 @@ def _generate_sober_context_description(user_context: str = "", semantic_title: 
     return f"{p1}\n\n{p2}\n\n{p3}\n\n🏷️ {tags}"
 
 
+def _sanitize_tiktok_hashtags(text: str) -> str:
+    """
+    Nettoie et bride les hashtags pour le SEO TikTok :
+    - Supprime strictement toute auto-promotion (#AyaStudio, #Aya, #PlateformeAya)
+    - Limite strictement le nombre total de hashtags à 5 maximum
+    - Élimine les mentions promotionnelles éventuelles dans le corps du texte
+    """
+    if not text:
+        return text
+    # Retirer toute auto-promotion dans le corps du texte
+    text = re.sub(r'(?i)\b(sur|par|de)\s+la\s+plateforme\s+aya\b', 'à travers ce témoignage', text)
+    text = re.sub(r'(?i)\bla\s+plateforme\s+aya\b', 'cette archive', text)
+    text = re.sub(r'(?i)\baya\s+studio\b', '', text)
+
+    lines = text.strip().split('\n')
+    last_non_empty_idx = -1
+    for i in range(len(lines) - 1, -1, -1):
+        if lines[i].strip():
+            last_non_empty_idx = i
+            break
+
+    if last_non_empty_idx >= 0 and '#' in lines[last_non_empty_idx]:
+        tag_line = lines[last_non_empty_idx]
+        prefix = "🏷️ " if "🏷️" in tag_line else ""
+        raw_tags = re.findall(r'#[\w\u00C0-\u017F]+', tag_line)
+        cleaned_tags = []
+        for tag in raw_tags:
+            tag_lower = tag.lower()
+            if tag_lower in ["#ayastudio", "#aya", "#plateformeaya"]:
+                continue
+            if tag not in cleaned_tags:
+                cleaned_tags.append(tag)
+
+        # Limiter strictement à 5 hashtags maximum
+        cleaned_tags = cleaned_tags[:5]
+        tag_str = ' '.join(cleaned_tags)
+        lines[last_non_empty_idx] = f"{prefix}{tag_str}".strip()
+        return '\n'.join(lines).strip()
+
+    return text.strip()
+
+
 def generate_tiktok_description(segments: list, semantic_title: str = "", target_lang: str = 'fr', user_context: str = "") -> str:
     """
     Génération Asynchrone de la Smart Description SEO TikTok (Nadine - En tâche de fond pendant FFmpeg).
@@ -1759,7 +1801,7 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
     context_summary = ""
     if gemini_key and raw_testimony_text:
         title_context = f"Titre sémantique retenu pour la vidéo : \"{semantic_title}\"\n" if semantic_title else ""
-        prompt = f"""Tu es Nadine, linguiste, directrice éditoriale et experte en stratégie de narration et SEO TikTok pour la Plateforme Aya.
+        prompt = f"""Tu es Nadine, directrice éditoriale, historienne et experte en narration documentaire et SEO TikTok.
 
 MISSION STRICTE & OBLIGATOIRE :
 Rédige la Smart Description TikTok Hybride ({lang_instruction}) pour ce témoignage vidéo.
@@ -1780,9 +1822,11 @@ Partie 4 : 📖 L'HISTOIRE COMPLÈTE
 Insère d'abord un séparateur de tirets (---), puis développe un texte narratif, immersif et riche en mots-clés d'environ 300 mots pour nourrir l'algorithme SEO de TikTok sans polluer la lecture immédiate. Raconte la scène fidèlement, la dignité et la réalité vécue.
 
 Partie 5 : 🏷️ LES HASHTAGS
-Une liste de 5 à 7 hashtags pertinents et mixtes (ex: #AyaStudio #Gaza #HistoireVraie #PourToi #Palestine ...).
+Une liste de 3 à 5 hashtags pertinents, sobres et ciblés (MAXIMUM 5 HASHTAGS AU TOTAL : ex: #Gaza #HistoireVraie #Témoignage #Résilience #PourToi).
 
-CONSIGNES STRICTES DE SOBRIÉTÉ & ZÉRO FABULATION :
+CONSIGNES STRICTES DE SOBRIÉTÉ, ZÉRO PUBLICITÉ & ZÉRO FABULATION :
+- INTERDICTION FORMELLE D'AUTO-PROMOTION : Ne cite JAMAIS la marque ou le nom du projet (pas de "Plateforme Aya", pas de "Aya Studio"). N'inclus JAMAIS #AyaStudio ou #Aya dans les hashtags. Le contenu doit être 100% authentique et centré sur le témoin et l'Histoire humaine.
+- MAXIMUM 5 HASHTAGS : Ne dépasse JAMAIS 5 hashtags dans la Partie 5.
 - Si aucun lieu précis (ville, camp, quartier) n'est explicitement mentionné dans la transcription finale ou le contexte utilisateur, IL EST STRICTEMENT INTERDIT d'en inventer un (comme Deir al-Balah, Rafah, Khan Younès, etc.). Reste scrupuleusement fidèle aux propos et faits avérés.
 - Veille à ce que chaque phrase soit menée à son terme sans jamais être interrompue ou tronquée.
 
@@ -1850,6 +1894,9 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
     if '#' not in context_summary:
         dyn_tags = _extract_dynamic_hashtags(segments, user_context=user_context)
         context_summary += f"\n\n🏷️ {' '.join(dyn_tags)}"
+
+    # Nettoyage et bridage strict anti-promotion et max 5 hashtags
+    context_summary = _sanitize_tiktok_hashtags(context_summary)
 
     return context_summary.strip()
 
