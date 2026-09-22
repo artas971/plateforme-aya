@@ -1177,7 +1177,7 @@
 
                 if (res.ok && data.success && data.user) {
                     localStorage.setItem('aya_user', JSON.stringify(data.user));
-                    const redirect = urlParams.get('redirect') || '/';
+                    const redirect = urlParams.get('redirect') || '/chat-en-direct';
                     window.location.href = redirect;
                 } else if (data.requireVerification) {
                     // Compte non vérifié : affiche bouton renvoi
@@ -1258,7 +1258,7 @@
 
                 if (data.success && data.user) {
                     localStorage.setItem('aya_user', JSON.stringify(data.user));
-                    const redirect = urlParams.get('redirect') || '/';
+                    const redirect = urlParams.get('redirect') || '/chat-en-direct';
                     window.location.href = redirect;
                 } else {
                     errorBanner.textContent = data.error || "Code d'accès testeur invalide.";

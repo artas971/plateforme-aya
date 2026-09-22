@@ -1074,7 +1074,7 @@
         const isModeration = path.includes('moderation');
         const isTraducteur = path.includes('traducteur');
         const isProfil = path.includes('profil');
-        const isHome = path === '/' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
+        const isChat = path.includes('chat') || path === '/chat-en-direct' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -1082,7 +1082,7 @@
             <div class="navbar-container">
                 <!-- PÔLE GAUCHE : Identité de Marque -->
                 <div class="navbar-brand">
-                    <a href="/" class="brand-link" title="Aya Studio Accueil">
+                    <a href="/chat-en-direct" class="brand-link" title="Aya Studio Accueil">
                         <div class="avatar-badge">
                             <span class="avatar-initials">آية</span>
                             <span class="status-dot"></span>
@@ -1096,7 +1096,7 @@
 
                 <!-- PÔLE CENTRAL : Navigation Principale Allégée -->
                 <nav class="navbar-nav" aria-label="Navigation principale">
-                    <a href="/" class="nav-link-modern ${isHome ? 'active' : ''}" id="navHomeLink">
+                    <a href="/chat-en-direct" class="nav-link-modern ${isChat ? 'active' : ''}" id="navHomeLink">
                         <span class="nav-icon-live">💬</span> <span id="navHomeText">${dict.navHomeText}</span>
                     </a>
                     <a href="/traduction" class="nav-link-modern ${isTraduction ? 'active' : ''}" id="navTraductionLink">
@@ -1119,6 +1119,12 @@
 
                 <!-- PÔLE DROIT : Utilitaires, Solde & Compte -->
                 <div class="navbar-actions">
+                    <!-- Badge Présence / Personnes Connectées -->
+                    <div class="navbar-online-pill" id="navbarOnlineBadge" title="${currentLang === 'ar' ? 'المستخدمون المتصلون حالياً' : 'Personnes connectées en direct'}">
+                        <span class="online-pulse-dot"></span>
+                        <span id="navbarOnlineCount" class="online-count-text">1 en ligne</span>
+                    </div>
+
                     <!-- Badge Solde Crédits -->
                     <a href="/profil" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض الرصيد والمحفظة' : 'Mon Portefeuille & Crédits'}">
                         <span class="credit-icon">⚡</span>
@@ -1162,7 +1168,35 @@
 
         // Application de la langue enregistrée
         setLanguage(currentLang);
+
+        // Initialisation de la surveillance de présence en direct
+        updatePresence();
     }
+
+    /**
+     * Surveillance et affichage dynamique du nombre d'utilisateurs connectés en direct
+     */
+    async function updatePresence() {
+        try {
+            const res = await fetch('/api/presence');
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data && typeof data.count === 'number') {
+                const navBadge = document.getElementById('navbarOnlineCount');
+                const chatBadge = document.getElementById('chatOnlineCount');
+                const isAr = (currentLang === 'ar' || document.documentElement.getAttribute('dir') === 'rtl');
+                const count = Math.max(1, data.count);
+                const text = isAr 
+                    ? `${count} ${count > 1 ? 'متصلين' : 'متصل'}` 
+                    : `${count} en ligne`;
+                if (navBadge) navBadge.textContent = text;
+                if (chatBadge) chatBadge.textContent = text;
+            }
+        } catch (e) {}
+    }
+
+    // Intervalle de rafraîchissement de présence (toutes les 12 secondes)
+    setInterval(updatePresence, 12000);
 
     /**
      * Récupère les informations d'une erreur adaptée au Grand Public selon la langue courante

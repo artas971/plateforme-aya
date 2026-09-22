@@ -451,3 +451,10 @@ html[dir="rtl"] .subcontractor-table td {
     direction: ltr;
     display: inline-block;
 }
+
+html[dir="rtl"] .navbar-online-pill,
+html[dir="rtl"] .chat-online-pill {
+    direction: rtl;
+    text-align: right;
+}
+

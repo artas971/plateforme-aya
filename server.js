@@ -64,13 +64,67 @@ app.use(session({
 // Routeur d'authentification publique (/api/auth/login, /api/auth/session, /logout)
 app.use(authRouter);
 
+// =========================================================================
+// SYSTÈME DE PRÉSENCE & UTILISATEURS CONNECTÉS EN DIRECT
+// =========================================================================
+const activeUsers = new Map(); // key: userId/username, value: { id, username, name, role, lastSeen }
+const PRESENCE_TIMEOUT_MS = 90 * 1000; // 90s d'inactivité
+
+// Middleware de détection de présence pour toute session active
+app.use((req, res, next) => {
+    if (req.session && req.session.user && req.session.user.authenticated) {
+        const u = req.session.user;
+        const key = String(u.id || u.username || 'unknown').toLowerCase();
+        activeUsers.set(key, {
+            id: key,
+            username: u.username || key,
+            name: u.name || u.username || 'Utilisateur',
+            role: u.role || 'testeur',
+            lastSeen: Date.now()
+        });
+    }
+    next();
+});
+
+// Endpoint public/session : Nombre de personnes connectées en temps réel
+app.get('/api/presence', (req, res) => {
+    const now = Date.now();
+    for (const [key, user] of activeUsers.entries()) {
+        if (now - user.lastSeen > PRESENCE_TIMEOUT_MS) {
+            activeUsers.delete(key);
+        }
+    }
+    if (req.session && req.session.user && req.session.user.authenticated) {
+        const u = req.session.user;
+        const key = String(u.id || u.username || 'unknown').toLowerCase();
+        activeUsers.set(key, {
+            id: key,
+            username: u.username || key,
+            name: u.name || u.username || 'Utilisateur',
+            role: u.role || 'testeur',
+            lastSeen: now
+        });
+    }
+    const userList = Array.from(activeUsers.values()).map(u => ({
+        username: u.username,
+        name: u.name,
+        role: u.role
+    }));
+    const count = Math.max(activeUsers.size, req.session?.user?.authenticated ? 1 : 0);
+    return res.json({
+        success: true,
+        count,
+        users: userList
+    });
+});
+
 // Routeur de paiement et webhooks Stripe (/api/payment/packs, /checkout, /webhook)
 app.use(paymentRouter);
 
-// Page de connexion publique (redirection vers / si déjà connecté)
+// Page de connexion publique (redirection vers /chat-en-direct si déjà connecté)
 app.get('/login', (req, res) => {
     if (req.session && req.session.user && req.session.user.authenticated) {
-        return res.redirect('/');
+        return res.redirect('/chat-en-direct');
     }
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -148,6 +202,11 @@ app.get(['/admin', '/admin.html'], requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Redirection canonique de index.html et chat.html vers /chat-en-direct (Interception AVANT express.static)
+app.get(['/index.html', '/chat.html', '/chat-en-direct.html'], (req, res) => {
+    return res.redirect('/chat-en-direct');
+});
+
 // Fichiers Statiques (avec index: false pour que '/' passe obligatoirement par requireAuth)
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));
@@ -165,16 +224,16 @@ app.get('/download/:filename', (req, res) => {
 app.use('/download', express.static(REPONSED_DIR));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Racine / et Landing Page : Vitrine publique si visiteur anonyme, redirection automatique /profil si connecté
+// Racine / et Landing Page : Vitrine publique si visiteur anonyme, redirection automatique vers /chat-en-direct si connecté
 app.get(['/', '/landing', '/landing.html'], (req, res) => {
     if (req.session && req.session.user && req.session.user.authenticated) {
-        return res.redirect('/profil');
+        return res.redirect('/chat-en-direct');
     }
     res.sendFile(path.join(__dirname, 'public', 'landing.html'));
 });
 
-// Route du Chat temps réel protégée (ancien index.html)
-app.get(['/chat', '/chat.html'], requireAuth, (req, res) => {
+// Route canonique du Chat temps réel protégée (/chat-en-direct)
+app.get(['/chat-en-direct', '/chat'], requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

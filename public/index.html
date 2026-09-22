@@ -135,7 +135,7 @@
                     <button class="lang-toggle-btn active" id="langArBtn">🇵🇸 العربية</button>
                 </div>
                 <!-- Lien Chat Accueil -->
-                <a href="/" class="btn-nav-link active" id="navHomeLink">
+                <a href="/chat-en-direct" class="btn-nav-link active" id="navHomeLink">
                     <span>💬</span> <span id="navHomeText">المحادثة (الرئيسية)</span>
                 </a>
                 <!-- Lien Hub Traducteur -->
@@ -169,12 +169,18 @@
         <!-- Main Container: Ephemeral 24h Chat Section (Élément Central & Unique) -->
         <main class="chat-main-container">
             <section class="card chat-ephemere-card full-chat-layout">
-                <div class="card-header chat-header-accent">
+                <div class="card-header chat-header-accent" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                     <div class="card-title">
                         <span class="icon">💬</span>
                         <h2 id="titleChatHeader">المحادثة المباشرة المؤقتة المترجمة (رسائل وأصوات)</h2>
                     </div>
-                    <span class="chat-timer-badge" id="badgeChatTimer">🕒 الحذف التلقائي للرسائل بعد 24 ساعة</span>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div class="chat-online-pill" id="chatOnlineBadge" title="Personnes connectées">
+                            <span class="online-pulse-dot"></span>
+                            <span id="chatOnlineCount">1 en ligne</span>
+                        </div>
+                        <span class="chat-timer-badge" id="badgeChatTimer">🕒 الحذف التلقائي للرسائل بعد 24 ساعة</span>
+                    </div>
                 </div>
 
                 <div class="card-body chat-card-body">
