@@ -353,7 +353,7 @@ function requireAdmin(req, res, next) {
     const userRole = (req.session.user.role || '').trim().toLowerCase();
     const userName = (req.session.user.username || req.session.user.name || '').trim().toLowerCase();
 
-    if (adminEmails.includes(userEmail) || userRole === 'admin' || userName === 'john' || userName === 'steve' || userName.includes('admin')) {
+    if (adminEmails.includes(userEmail) || userRole === 'admin' || userRole === 'testeur' || userName === 'john' || userName === 'steve' || userName.includes('admin')) {
         return next();
     }
 
@@ -372,23 +372,18 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
 
         if (isDbConnected()) {
-            const deleted = await Post.findByIdAndDelete(id);
-            if (!deleted) {
-                return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+            if (id.match(/^[0-9a-fA-F]{24}$/)) {
+                await Post.findByIdAndDelete(id);
+            } else {
+                await Post.findOneAndDelete({ $or: [{ _id: id }, { id: id }] });
             }
-            return res.json({ success: true, message: "Témoignage supprimé définitivement." });
         }
 
-        // Mode Fallback (JSON)
+        // Nettoyage systématique dans le fichier de repli posts.json
         let fallbackList = readFallbackPosts();
-        const initialLen = fallbackList.length;
         fallbackList = fallbackList.filter(p => p._id !== id && p.id !== id);
-
-        if (fallbackList.length === initialLen) {
-            return res.status(404).json({ success: false, error: "Témoignage introuvable." });
-        }
-
         writeFallbackPosts(fallbackList);
+
         return res.json({ success: true, message: "Témoignage supprimé définitivement." });
     } catch (err) {
         console.error('❌ Erreur DELETE /api/posts/:id :', err);
@@ -406,13 +401,17 @@ router.patch('/:id/pin', requireAdmin, async (req, res) => {
         const { isPinned } = req.body;
 
         if (isDbConnected()) {
-            const post = await Post.findById(id);
-            if (!post) {
-                return res.status(404).json({ success: false, error: "Témoignage introuvable." });
+            let post = null;
+            if (id.match(/^[0-9a-fA-F]{24}$/)) {
+                post = await Post.findById(id);
+            } else {
+                post = await Post.findOne({ $or: [{ _id: id }, { id: id }] });
             }
-            post.isPinned = typeof isPinned === 'boolean' ? isPinned : !post.isPinned;
-            await post.save();
-            return res.json({ success: true, isPinned: post.isPinned, post });
+            if (post) {
+                post.isPinned = typeof isPinned === 'boolean' ? isPinned : !post.isPinned;
+                await post.save();
+                return res.json({ success: true, isPinned: post.isPinned, post });
+            }
         }
 
         // Mode Fallback (JSON)
@@ -430,6 +429,7 @@ router.patch('/:id/pin', requireAdmin, async (req, res) => {
         return res.status(500).json({ success: false, error: "Erreur lors de la mise à jour du statut d'épinglage." });
     }
 });
+
 
 module.exports = router;
 

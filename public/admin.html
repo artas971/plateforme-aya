@@ -1459,13 +1459,20 @@
                     const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
                     const data = await res.json();
                     if (data.success) {
+                        // Suppression instantanée dans l'UI
+                        currentAdminPosts = currentAdminPosts.filter(p => (p._id || p.id) !== id);
+                        renderAdminPosts();
                         fetchAdminPosts();
                     } else {
-                        alert(data.error || "Erreur de suppression.");
+                        alert("Erreur serveur : " + (data.error || "Impossible de supprimer ce témoignage."));
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) {
+                    console.error('Erreur suppression:', e);
+                    alert("Erreur réseau ou permission lors de la suppression : " + e.message);
+                }
             });
         }
+
 
         // ── Modal Création Directe ──
         function openCreatePostModal() {
@@ -1664,9 +1671,11 @@
         }
 
         document.getElementById('btnConfirmAction').addEventListener('click', () => {
-            if (confirmActionCallback) confirmActionCallback();
+            const cb = confirmActionCallback;
             closeConfirmModal();
+            if (cb) cb();
         });
+
 
         // ── Auto-refresh logic (30s) ──
         function initAutoRefresh() {
