@@ -515,9 +515,14 @@
 
                 <!-- 3. Niveau de difficulté (Commun aux 2 modes) -->
                 <div style="margin-bottom: 16px;">
-                    <label class="profile-form-label" style="display: block; margin-bottom: 4px;">
-                        Niveau de difficulté pédagogique :
-                    </label>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                        <label class="profile-form-label" style="margin-bottom: 0;">
+                            Niveau de difficulté pédagogique :
+                        </label>
+                        <span id="levelBadgeRoleHint" style="font-size: 0.74rem; color: #00838f; font-weight: 600;">
+                            🏷️ Imprimé sur l'affiche 9:16
+                        </span>
+                    </div>
                     <div class="level-chips-container" id="levelChipsContainer">
                         <div class="level-chip active" data-level="debutant">
                             <span style="display: block; font-size: 1rem;">🟢</span>
@@ -534,6 +539,11 @@
                             <span>Avancé</span>
                             <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Vocabulaire poétique & nuancé</small>
                         </div>
+                    </div>
+                    <!-- Mention explicative contextuelle dynamique -->
+                    <div id="levelHelpContextBox" style="margin-top: 8px; font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; background: rgba(0, 188, 212, 0.07); border: 1px solid rgba(0, 188, 212, 0.22); border-radius: 8px; padding: 7px 12px; line-height: 1.4;">
+                        <span style="font-size: 1rem; flex-shrink: 0;">💡</span>
+                        <span id="levelHelpText">Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre poster 9:16.</span>
                     </div>
                 </div>
 

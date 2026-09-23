@@ -755,6 +755,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const panelModeCustom = document.getElementById('panelModeCustom');
     const btnClearCustomWords = document.getElementById('btnClearCustomWords');
 
+    /**
+     * Met à jour dynamiquement la mention explicative du niveau de difficulté
+     */
+    function updateLevelHelpText() {
+        const helpSpan = document.getElementById('levelHelpText');
+        const badgeHint = document.getElementById('levelBadgeRoleHint');
+        if (!helpSpan) return;
+
+        if (currentVocabMode === 'theme') {
+            helpSpan.textContent = "Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre poster 9:16.";
+            if (badgeHint) badgeHint.textContent = "🏷️ Imprimé sur l'affiche 9:16";
+        } else {
+            let count = 0;
+            for (let i = 1; i <= 5; i++) {
+                const inp = document.getElementById(`customWordInput${i}`);
+                if (inp && inp.value.trim()) count++;
+            }
+
+            if (count === 5) {
+                helpSpan.textContent = "Définit le badge sur votre affiche 9:16 et affine le registre de traduction Shami (courant vs soutenu).";
+                if (badgeHint) badgeHint.textContent = "🏷️ Badge Affiche & Registre Shami";
+            } else if (count > 0) {
+                const missing = 5 - count;
+                helpSpan.textContent = `Calibre les ${missing} mot(s) complémentaires ajoutés par l'IA et le registre de traduction Shami.`;
+                if (badgeHint) badgeHint.textContent = `🤖 Complétion de ${missing} mot(s) par l'IA`;
+            } else {
+                helpSpan.textContent = "Sert de badge sur votre affiche 9:16 et calibre le niveau si vous laissez des cases vides.";
+                if (badgeHint) badgeHint.textContent = "🏷️ Imprimé sur l'affiche 9:16";
+            }
+        }
+    }
+
     if (btnModeTheme && btnModeCustom) {
         btnModeTheme.addEventListener('click', () => {
             currentVocabMode = 'theme';
@@ -762,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnModeCustom.classList.remove('active');
             if (panelModeTheme) panelModeTheme.style.display = 'block';
             if (panelModeCustom) panelModeCustom.style.display = 'none';
+            updateLevelHelpText();
         });
 
         btnModeCustom.addEventListener('click', () => {
@@ -772,7 +805,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (panelModeCustom) panelModeCustom.style.display = 'block';
             const firstInput = document.getElementById('customWordInput1');
             if (firstInput) firstInput.focus();
+            updateLevelHelpText();
         });
+    }
+
+    // Écoute en temps réel de la saisie sur les 5 champs pour adapter l'aide
+    for (let i = 1; i <= 5; i++) {
+        const inp = document.getElementById(`customWordInput${i}`);
+        if (inp) {
+            inp.addEventListener('input', updateLevelHelpText);
+        }
     }
 
     if (btnClearCustomWords) {
@@ -785,6 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (customTitleInp) customTitleInp.value = '';
             const firstInput = document.getElementById('customWordInput1');
             if (firstInput) firstInput.focus();
+            updateLevelHelpText();
         });
     }
 
