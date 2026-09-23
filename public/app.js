@@ -2335,7 +2335,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             if (data.success) {
                 cancelReply();
-                if (chatRecipientSelect) chatRecipientSelect.value = 'all';
+                // Ne pas réinitialiser le destinataire vers 'all' pour préserver le ciblage privé lors d'envois vocaux successifs
                 await loadChatMessages();
             } else {
                 alert(dict.alertChatVoiceError + " : " + (data.error || ""));

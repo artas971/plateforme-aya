@@ -372,12 +372,14 @@ router.get('/messages', (req, res) => {
         const status = getChatStatus();
         const allMessages = purge24hEphemeralChat();
 
-        // Récupération de l'utilisateur en session ou query fallback
+        // Sécurité absolue : Session serveur obligatoire pour accéder aux messages privés (suppression du fallback query string)
         const sessionUser = req.session?.user;
-        const currentName = (sessionUser?.name || sessionUser?.username || req.query.user || '').trim().toLowerCase();
+        const currentName = (sessionUser && sessionUser.authenticated)
+            ? String(sessionUser.name || sessionUser.username || '').trim().toLowerCase()
+            : null;
         const isAdmin = isUserAdmin(req);
 
-        // Filtrage sécurisé : on ne renvoie un message privé que si l'utilisateur est concerné (expéditeur ou destinataire) ou admin
+        // Filtrage strict : si l'utilisateur n'est pas authentifié en session, aucun message privé n'est renvoyé
         const visibleMessages = allMessages.filter(msg => {
             if (!msg.recipient || msg.recipient === 'all') return true;
             if (isAdmin) return true;
@@ -410,10 +412,16 @@ router.post('/send', async (req, res) => {
         const isAr = containsArabic(originalText);
         const quickDetectedLang = isAr ? 'ar' : (userLang === 'ar' ? 'ar' : 'fr');
 
+        // Priorité stricte à l'identité authentifiée en session pour éviter toute usurpation d'expéditeur
+        const sessionUser = req.session?.user;
+        const authenticatedSender = (sessionUser && sessionUser.authenticated)
+            ? String(sessionUser.name || sessionUser.username || '').trim()
+            : null;
+
         const defaultSender = quickDetectedLang === 'fr' ? 'John' : 'Aya';
-        const finalSender = (sender && sender.trim() && sender !== 'Utilisateur' && sender !== 'آية') 
+        const finalSender = authenticatedSender || ((sender && sender.trim() && sender !== 'Utilisateur' && sender !== 'آية') 
             ? sender.trim() 
-            : defaultSender;
+            : defaultSender);
 
         const targetRecipient = (recipient && recipient !== 'all') ? recipient.trim() : 'all';
 
@@ -566,7 +574,11 @@ router.post('/send-audio', upload.single('audio'), async (req, res) => {
 
         const audioFilePath = req.file.path;
         const userLang = req.body.userLang || 'ar';
-        const sender = req.body.sender || (userLang === 'fr' ? 'John' : 'Aya');
+        const sessionUser = req.session?.user;
+        const authenticatedSender = (sessionUser && sessionUser.authenticated)
+            ? String(sessionUser.name || sessionUser.username || '').trim()
+            : null;
+        const sender = authenticatedSender || req.body.sender || (userLang === 'fr' ? 'John' : 'Aya');
         const isFrenchSender = (userLang === 'fr');
         const targetLang = isFrenchSender ? 'ar' : 'fr';
 
@@ -587,7 +599,14 @@ router.post('/send-audio', upload.single('audio'), async (req, res) => {
         }
         const recipient = (req.body.recipient && req.body.recipient !== 'all') ? req.body.recipient.trim() : 'all';
 
-        await runPython(`py process_single_file.py "${audioFilePath}" "${targetLang}"`);
+        try {
+            await runPython(`process_single_file.py "${audioFilePath}" "${targetLang}"`);
+        } finally {
+            // Nettoyage immédiat du fichier audio temporaire téléversé par Multer (protection anti-saturation disque)
+            try {
+                if (fs.existsSync(audioFilePath)) fs.unlinkSync(audioFilePath);
+            } catch (e) {}
+        }
 
         const outPath = path.join(ROOT_DIR, 'single_process_out.json');
         if (fs.existsSync(outPath)) {

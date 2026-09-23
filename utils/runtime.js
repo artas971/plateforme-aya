@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
-
+const { exec, spawn, execFile } = require('child_process');
 const ROOT_DIR = path.resolve(__dirname, '..');
 
 /**
@@ -72,7 +71,6 @@ function killProcessTree(pid, contextTag = 'PROCESS_KILL') {
                 // Sous Linux / POSIX :
                 // 1. On termine d'abord gracieusement puis par la force les processus fils (pkill -P)
                 // 2. On neutralise le processus parent lui-même (kill -9)
-                // Le || true empêche une sortie d'erreur shell si un sous-processus s'est déjà arrêté
                 const cmd = `pkill -TERM -P ${targetPid} 2>/dev/null || true; sleep 0.1; pkill -KILL -P ${targetPid} 2>/dev/null || true; kill -9 ${targetPid} 2>/dev/null || true`;
                 exec(cmd, (err) => {
                     if (err) {
@@ -91,22 +89,72 @@ function killProcessTree(pid, contextTag = 'PROCESS_KILL') {
 }
 
 /**
+ * Lance un processus fils avec priorité CPU abaissée ('nice -n 15' sous Linux/POSIX)
+ * pour immuniser la boucle d'événements Node.js et les services système contre la famine CPU.
+ * Sous Windows, exécute un spawn standard de manière transparente.
+ *
+ * @param {string} command - Commande ou binaire à exécuter
+ * @param {Array<string>} [args=[]] - Arguments
+ * @param {object} [options={}] - Options child_process.spawn
+ * @returns {ChildProcess}
+ */
+function spawnNice(command, args = [], options = {}) {
+    if (process.platform !== 'win32') {
+        const niceLevel = process.env.AYA_NICE_PRIORITY || '15';
+        return spawn('nice', ['-n', String(niceLevel), command, ...args], options);
+    }
+    return spawn(command, args, options);
+}
+
+/**
+ * Exécute un binaire avec priorité CPU abaissée ('nice -n 15' sous Linux/POSIX).
+ * Sous Windows, exécute un execFile standard de manière transparente.
+ *
+ * @param {string} file - Chemin du binaire
+ * @param {Array<string>} args - Arguments
+ * @param {object} [options] - Options
+ * @param {function} callback - Callback d'exécution
+ * @returns {ChildProcess}
+ */
+function execFileNice(file, args, options, callback) {
+    if (typeof options === 'function') {
+        callback = options;
+        options = {};
+    }
+    if (process.platform !== 'win32') {
+        const niceLevel = process.env.AYA_NICE_PRIORITY || '15';
+        return execFile('nice', ['-n', String(niceLevel), file, ...args], options, callback);
+    }
+    return execFile(file, args, options, callback);
+}
+
+/**
  * Adapte une commande textuelle contenant un appel Python ('py script.py ...' ou 'python script.py ...')
- * pour substituer le binaire dynamique ('python3', 'py', ou chemin venv).
+ * pour substituer le binaire dynamique ('python3', 'py', ou chemin venv),
+ * et injecter 'nice -n 15' sous Linux/POSIX pour les calculs lourds.
  *
  * @param {string} command - Ex: "py open_explorer.py 'path'"
- * @returns {string} - Ex: "python3 open_explorer.py 'path'" ou "./venv/bin/python3 open_explorer.py 'path'"
+ * @param {boolean} [useNice=true] - Applique nice -n 15 sous POSIX si activé
+ * @returns {string} - Ex: "nice -n 15 /path/to/venv/bin/python3 open_explorer.py 'path'"
  */
-function formatPythonCommand(command) {
+function formatPythonCommand(command, useNice = true) {
     if (!command || typeof command !== 'string') return command;
     const bin = getPythonBin();
     const formattedBin = bin.includes(' ') ? `"${bin}"` : bin;
-    return command.replace(/^(py|python)\s+/, `${formattedBin} `);
+    let formatted = command.replace(/^(py|python)\s+/, `${formattedBin} `);
+    if (useNice && process.platform !== 'win32' && !formatted.startsWith('nice ')) {
+        const niceLevel = process.env.AYA_NICE_PRIORITY || '15';
+        formatted = `nice -n ${niceLevel} ${formatted}`;
+    }
+    return formatted;
 }
 
 module.exports = {
     getPythonBin,
     killProcessTree,
     formatPythonCommand,
+    spawnNice,
+    execFileNice,
     ROOT_DIR
 };
+

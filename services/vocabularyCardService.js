@@ -15,6 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn, execFile } = require('child_process');
 const puppeteer = require('puppeteer-core');
+const { getPythonBin, spawnNice, execFileNice } = require('../utils/runtime');
 
 // Chemins de stockage
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -419,7 +420,7 @@ async function renderCardImage(htmlContent, outputPath) {
         browser = await puppeteer.launch({
             executablePath: browserPath,
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu'],
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
             defaultViewport: { width: 1080, height: 1920, deviceScaleFactor: 2.25 }
         });
 
@@ -465,6 +466,7 @@ async function renderCardImage(htmlContent, outputPath) {
 
 /**
  * 4. Synthèse vocale unitaire via generate_tts_quick.py
+ * Encapsulée avec getPythonBin() et spawnNice (nice -n 15 sous POSIX)
  */
 function synthesizeTtsAudio(text, voice, outputPath) {
     return new Promise((resolve, reject) => {
@@ -475,7 +477,8 @@ function synthesizeTtsAudio(text, voice, outputPath) {
             output_path: outputPath
         }), 'utf8');
 
-        const pyProc = spawn('py', [TTS_SCRIPT_PATH, payloadFile]);
+        const pythonBin = getPythonBin();
+        const pyProc = spawnNice(pythonBin, [TTS_SCRIPT_PATH, payloadFile]);
 
         let stdoutData = '';
         let stderrData = '';
@@ -488,15 +491,7 @@ function synthesizeTtsAudio(text, voice, outputPath) {
             if (code === 0 && fs.existsSync(outputPath)) {
                 resolve(outputPath);
             } else {
-                // Fallback avec 'python' si 'py' n'est pas trouvé
-                const pyProc2 = spawn('python', [TTS_SCRIPT_PATH, payloadFile]);
-                pyProc2.on('close', code2 => {
-                    if (code2 === 0 && fs.existsSync(outputPath)) {
-                        resolve(outputPath);
-                    } else {
-                        reject(new Error(`Erreur TTS (code ${code}/${code2}): ${stderrData || stdoutData}`));
-                    }
-                });
+                reject(new Error(`Erreur TTS (code ${code}): ${stderrData || stdoutData}`));
             }
         });
     });
@@ -504,6 +499,7 @@ function synthesizeTtsAudio(text, voice, outputPath) {
 
 /**
  * 5. Création d'un silence MP3 via FFmpeg
+ * Encapsulée avec execFileNice (nice -n 15 sous POSIX)
  */
 function createSilenceMp3(durationSeconds, outputPath) {
     return new Promise((resolve, reject) => {
@@ -517,7 +513,7 @@ function createSilenceMp3(durationSeconds, outputPath) {
             outputPath
         ];
 
-        execFile('ffmpeg', args, (err) => {
+        execFileNice('ffmpeg', args, (err) => {
             if (err) reject(err);
             else resolve(outputPath);
         });
@@ -526,6 +522,7 @@ function createSilenceMp3(durationSeconds, outputPath) {
 
 /**
  * 6. Concaténation séquentielle avec FFmpeg
+ * Encapsulée avec execFileNice (nice -n 15 sous POSIX)
  */
 function concatAudioFiles(fileList, outputFinalPath) {
     return new Promise((resolve, reject) => {
@@ -543,7 +540,7 @@ function concatAudioFiles(fileList, outputFinalPath) {
             outputFinalPath
         ];
 
-        execFile('ffmpeg', args, (err) => {
+        execFileNice('ffmpeg', args, (err) => {
             if (fs.existsSync(listFile)) fs.unlinkSync(listFile);
             if (err) reject(err);
             else resolve(outputFinalPath);
