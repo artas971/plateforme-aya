@@ -275,26 +275,31 @@ html, body, html[dir="ltr"], body[dir="ltr"], html[dir="rtl"], body[dir="rtl"] {
     opacity: 0.85;
 }
 
-/* Sélecteur de Langue Minimaliste */
+/* Sélecteur de Langue Minimaliste (TICKET-15 WCAG 44x44px) */
 .lang-switcher-pill {
     display: inline-flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 20px;
-    padding: 3px 8px;
-    gap: 6px;
+    border-radius: 24px;
+    padding: 2px 4px;
+    gap: 4px;
 }
 
 .lang-switcher-pill .lang-toggle-btn {
     background: none;
     border: none;
     color: #94a3b8;
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
-    padding: 3px 6px;
-    border-radius: 12px;
+    padding: 8px 12px;
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
     transition: all 0.2s ease;
 }
 
@@ -1968,40 +1973,51 @@ html[dir="rtl"] .step-content p {
     background: linear-gradient(135deg, #6d28d9, #5b21b6);
 }
 
-/* Bouton Répondre sur bulle */
+/* Bouton Répondre sur bulle (TICKET-15 WCAG 44x44px) */
 .chat-reply-btn {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     color: inherit;
-    opacity: 0.65;
-    padding: 2px 6px;
-    border-radius: 4px;
+    opacity: 0.75;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
     transition: all 0.2s ease;
 }
 .chat-reply-btn:hover {
     opacity: 1;
-    transform: scale(1.1);
+    background: rgba(255, 255, 255, 0.12);
+    transform: scale(1.08);
 }
 
-/* Bouton Supprimer un message (Modération Admin) */
+/* Bouton Supprimer un message (Modération Admin - TICKET-15 WCAG 44x44px) */
 .chat-delete-btn {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: inherit;
-    opacity: 0.65;
-    padding: 2px 6px;
-    border-radius: 4px;
+    opacity: 0.75;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
     transition: all 0.2s ease;
 }
 .chat-delete-btn:hover {
     opacity: 1;
     color: #ef4444 !important;
-    background: rgba(239, 68, 68, 0.15);
-    transform: scale(1.15);
+    background: rgba(239, 68, 68, 0.18);
+    transform: scale(1.08);
 }
 
 /* Barre d'outils de modération Chat (Admin Only) */
