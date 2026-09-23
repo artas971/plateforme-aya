@@ -455,9 +455,23 @@ router.post('/rate', async (req, res) => {
 
         console.log(`[FEEDBACK RATE] ⭐ Note enregistrée : ${numRating}/5 par @${username} (Service: ${ratingData.serviceType})`);
 
+        // 3. Hook Analyse IA Agent Alexandre pour les notes <= 3 étoiles
+        if (numRating <= 3) {
+            try {
+                const { analyzeRating } = require('../services/ratingAnalyzer');
+                const analyzed = await analyzeRating(ratingData);
+                if (analyzed && analyzed.refundStatus) {
+                    ratingData.refundStatus = analyzed.refundStatus;
+                }
+            } catch (aiErr) {
+                console.warn('[FEEDBACK RATE] ⚠️ Erreur analyse IA note :', aiErr.message);
+            }
+        }
+
         return res.json({
             success: true,
             ratingId: ratingData.id,
+            refundStatus: ratingData.refundStatus || 'none',
             message: "Votre évaluation a bien été enregistrée. Merci pour votre retour !"
         });
 

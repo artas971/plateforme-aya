@@ -12,14 +12,17 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 
-const { User, Post, Video, isDbConnected } = require('../models');
+const { User, Post, Video, FeedbackRating, FailureReport, isDbConnected } = require('../models');
 const { getFinancialKPIs, getTransactions } = require('../services/transactionService');
+const { addCredits } = require('../services/walletService');
 
 // Fichiers de repli (Mode Autonome sans MongoDB)
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const FALLBACK_POSTS_FILE = path.join(DATA_DIR, 'posts.json');
 const FALLBACK_USERS_FILE = path.join(DATA_DIR, 'users.json');
 const FALLBACK_VIDEOS_FILE = path.join(DATA_DIR, 'videos.json');
+const FALLBACK_FAILURES_FILE = path.join(DATA_DIR, 'failure_reports.json');
+const FALLBACK_RATINGS_FILE = path.join(DATA_DIR, 'ratings.json');
 
 function readJsonFile(filePath) {
     try {
@@ -427,6 +430,311 @@ router.get('/chat/archives', requireAdmin, async (req, res) => {
         return res.status(500).json({
             success: false,
             error: "Erreur lors de la récupération des archives chat.",
+            details: err.message
+        });
+    }
+});
+
+// ── 4. Gestion des Échecs & Auto-Diagnostics IA (Phase 2) ───────────────────
+
+/**
+ * GET /api/admin/failures
+ * Récupère la liste des incidents de pipeline avec analyse de l'Agent Alexandre.
+ */
+router.get('/failures', requireAdmin, async (req, res) => {
+    try {
+        const { status } = req.query;
+        let failures = [];
+
+        if (isDbConnected()) {
+            try {
+                const query = status ? { status } : {};
+                failures = await FailureReport.find(query).sort({ createdAt: -1 }).lean();
+            } catch (mongoErr) {
+                console.warn('[ADMIN FAILURES] ⚠️ Erreur MongoDB, bascule JSON :', mongoErr.message);
+            }
+        }
+
+        if (failures.length === 0) {
+            const localFailures = readJsonFile(FALLBACK_FAILURES_FILE);
+            failures = status ? localFailures.filter(f => f.status === status) : localFailures;
+        }
+
+        return res.json({
+            success: true,
+            count: failures.length,
+            failures
+        });
+    } catch (err) {
+        console.error('❌ Erreur GET /api/admin/failures :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Erreur lors de la récupération des rapports d'échec.",
+            details: err.message
+        });
+    }
+});
+
+/**
+ * POST /api/admin/failures/:id/action
+ * Approuve la relance avec la solution IA ou archive un échec de pipeline.
+ */
+router.post('/failures/:id/action', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action, notes } = req.body; // action: 'retry' | 'archive' | 'dismiss'
+
+        if (!['retry', 'archive', 'dismiss'].includes(action)) {
+            return res.status(400).json({
+                success: false,
+                error: "Action invalide. Actions autorisées : 'retry', 'archive', 'dismiss'."
+            });
+        }
+
+        const adminIdentifier = req.session?.user?.email || req.session?.user?.username || 'admin';
+        const newStatus = action === 'retry' ? 'approved_and_retried' : 'rejected_archived';
+        const now = new Date();
+
+        let updated = null;
+
+        // 1. Mise à jour MongoDB si connecté
+        if (isDbConnected()) {
+            try {
+                const isObjectId = mongoose.Types.ObjectId.isValid(id);
+                const query = isObjectId ? { _id: id } : { $or: [{ id }, { jobId: id }] };
+
+                updated = await FailureReport.findOneAndUpdate(
+                    query,
+                    {
+                        $set: {
+                            status: newStatus,
+                            reviewedBy: adminIdentifier,
+                            reviewedAt: now
+                        }
+                    },
+                    { new: true }
+                ).lean();
+            } catch (mErr) {
+                console.warn('[ADMIN FAILURE ACTION] ⚠️ Erreur Mongo :', mErr.message);
+            }
+        }
+
+        // 2. Mise à jour fichier local de repli
+        const localFailures = readJsonFile(FALLBACK_FAILURES_FILE);
+        const idx = localFailures.findIndex(f => f.id === id || f._id === id || f.jobId === id);
+        if (idx !== -1) {
+            localFailures[idx].status = newStatus;
+            localFailures[idx].reviewedBy = adminIdentifier;
+            localFailures[idx].reviewedAt = now.toISOString();
+            if (notes) localFailures[idx].adminNotes = notes;
+            writeJsonFile(FALLBACK_FAILURES_FILE, localFailures);
+            if (!updated) updated = localFailures[idx];
+        }
+
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                error: "Rapport d'échec introuvable."
+            });
+        }
+
+        console.log(`[ADMIN ACTION] 🚨 Échec ${id} traité par ${adminIdentifier} -> ${newStatus}`);
+
+        return res.json({
+            success: true,
+            status: newStatus,
+            message: action === 'retry' 
+                ? "Incident approuvé pour relance avec les paramètres IA d'Alexandre." 
+                : "Incident archivé avec succès.",
+            failure: updated
+        });
+    } catch (err) {
+        console.error('❌ Erreur POST /api/admin/failures/:id/action :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Erreur lors du traitement de l'action sur l'échec.",
+            details: err.message
+        });
+    }
+});
+
+
+// ── 5. Gestion des Remboursements & Retours Utilisateurs (Phase 2) ───────────
+
+/**
+ * GET /api/admin/refunds
+ * Récupère les évaluations nécessitant une supervision (pending_approval, approved, rejected, ou notes <= 3).
+ */
+router.get('/refunds', requireAdmin, async (req, res) => {
+    try {
+        const { status } = req.query;
+        let refunds = [];
+
+        if (isDbConnected()) {
+            try {
+                let query = {};
+                if (status) {
+                    query = { refundStatus: status };
+                } else {
+                    query = {
+                        $or: [
+                            { refundStatus: { $in: ['pending_approval', 'approved', 'rejected'] } },
+                            { rating: { $lte: 3 } }
+                        ]
+                    };
+                }
+                refunds = await FeedbackRating.find(query).sort({ createdAt: -1 }).lean();
+            } catch (mongoErr) {
+                console.warn('[ADMIN REFUNDS] ⚠️ Erreur MongoDB, repli JSON :', mongoErr.message);
+            }
+        }
+
+        if (refunds.length === 0) {
+            const localRatings = readJsonFile(FALLBACK_RATINGS_FILE);
+            refunds = status
+                ? localRatings.filter(r => r.refundStatus === status)
+                : localRatings.filter(r => (r.refundStatus && r.refundStatus !== 'none') || (r.rating && r.rating <= 3));
+        }
+
+        return res.json({
+            success: true,
+            count: refunds.length,
+            refunds
+        });
+    } catch (err) {
+        console.error('❌ Erreur GET /api/admin/refunds :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Erreur lors de la récupération des demandes de remboursement.",
+            details: err.message
+        });
+    }
+});
+
+/**
+ * POST /api/admin/refunds/:id/action
+ * Approuve (re-crédite le compte utilisateur via walletService) ou refuse un remboursement.
+ * Sécurité stricte : Nécessite requireAdmin et le clic de l'administrateur.
+ */
+router.post('/refunds/:id/action', requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action, credits, reason } = req.body; // action: 'approve' | 'reject'
+
+        if (!['approve', 'reject'].includes(action)) {
+            return res.status(400).json({
+                success: false,
+                error: "Action invalide. Actions autorisées : 'approve', 'reject'."
+            });
+        }
+
+        const adminIdentifier = req.session?.user?.email || req.session?.user?.username || 'admin';
+        const now = new Date();
+
+        // 1. Recherche du feedback à traiter
+        let rating = null;
+        if (isDbConnected()) {
+            try {
+                const isObjectId = mongoose.Types.ObjectId.isValid(id);
+                const query = isObjectId ? { _id: id } : { $or: [{ id }, { jobId: id }] };
+                rating = await FeedbackRating.findOne(query);
+            } catch (e) {}
+        }
+
+        const localRatings = readJsonFile(FALLBACK_RATINGS_FILE);
+        const localIdx = localRatings.findIndex(r => r.id === id || r._id === id || r.jobId === id);
+        if (!rating && localIdx !== -1) {
+            rating = localRatings[localIdx];
+        }
+
+        if (!rating) {
+            return res.status(404).json({
+                success: false,
+                error: "Évaluation / Demande de remboursement introuvable."
+            });
+        }
+
+        // Sécurité double remboursement
+        if (action === 'approve' && rating.refundStatus === 'approved') {
+            return res.status(400).json({
+                success: false,
+                error: "Cette demande a déjà été approuvée et remboursée."
+            });
+        }
+
+        let creditsAdded = 0;
+        let walletResult = null;
+        const newRefundStatus = action === 'approve' ? 'approved' : 'rejected';
+
+        // 2. Action financière stricte si approuvé
+        if (action === 'approve') {
+            creditsAdded = Math.max(1, parseInt(credits, 10) || rating.aiAnalysis?.suggestedCredits || 1);
+            const userTarget = rating.user || rating.username || rating.userEmail;
+
+            if (!userTarget) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Impossible d'identifier l'utilisateur à re-créditer."
+                });
+            }
+
+            console.log(`[ADMIN REFUND] 💚 Approbation de remboursement par ${adminIdentifier} : +${creditsAdded} crédit(s) pour ${userTarget}...`);
+            walletResult = await addCredits(userTarget, creditsAdded, `admin_feedback_refund_${id}`);
+
+            if (!walletResult || !walletResult.success) {
+                // Essai avec username ou email si l'ID d'origine n'a pas matché
+                if (rating.username && String(rating.username) !== String(userTarget)) {
+                    walletResult = await addCredits(rating.username, creditsAdded, `admin_feedback_refund_${id}`);
+                }
+                if ((!walletResult || !walletResult.success) && rating.userEmail && String(rating.userEmail) !== String(userTarget)) {
+                    walletResult = await addCredits(rating.userEmail, creditsAdded, `admin_feedback_refund_${id}`);
+                }
+            }
+
+            if (!walletResult || !walletResult.success) {
+                return res.status(500).json({
+                    success: false,
+                    error: `Échec du crédit du portefeuille : ${walletResult?.reason || 'Erreur walletService'}`
+                });
+            }
+        }
+
+        // 3. Mise à jour de l'enregistrement en base
+        if (isDbConnected() && rating.save) {
+            rating.refundStatus = newRefundStatus;
+            rating.refundedBy = adminIdentifier;
+            rating.refundedAt = now;
+            await rating.save();
+        }
+
+        // 4. Mise à jour fichier JSON local
+        if (localIdx !== -1) {
+            localRatings[localIdx].refundStatus = newRefundStatus;
+            localRatings[localIdx].refundedBy = adminIdentifier;
+            localRatings[localIdx].refundedAt = now.toISOString();
+            if (action === 'approve') {
+                localRatings[localIdx].creditsRefunded = creditsAdded;
+            }
+            writeJsonFile(FALLBACK_RATINGS_FILE, localRatings);
+        }
+
+        console.log(`[ADMIN REFUND] ✅ Statut remboursement mis à jour : ${newRefundStatus} (Par ${adminIdentifier})`);
+
+        return res.json({
+            success: true,
+            refundStatus: newRefundStatus,
+            creditsAdded: action === 'approve' ? creditsAdded : 0,
+            newCredits: walletResult?.credits !== undefined ? walletResult.credits : null,
+            message: action === 'approve'
+                ? `Remboursement approuvé avec succès ! +${creditsAdded} crédit(s) ajoutés au compte.`
+                : "Demande de remboursement refusée."
+        });
+
+    } catch (err) {
+        console.error('❌ Erreur POST /api/admin/refunds/:id/action :', err);
+        return res.status(500).json({
+            success: false,
+            error: "Erreur lors de l'exécution de l'action de remboursement.",
             details: err.message
         });
     }
