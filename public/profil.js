@@ -562,41 +562,557 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnRefreshHistory) {
-        btnRefreshHistory.addEventListener('click', () => {
+    // =========================================================================
+    // SPRINT EXPRESS JOUR 3 : FICHES VOCABULAIRE & AUDIO 9:16 (FRONTEND)
+    // =========================================================================
+
+    // Éléments du DOM Onglets
+    const tabBtnVideos = document.getElementById('tabBtnVideos');
+    const tabBtnCards = document.getElementById('tabBtnCards');
+    const tabContentVideos = document.getElementById('tabContentVideos');
+    const tabContentCards = document.getElementById('tabContentCards');
+    const cardsCountBadge = document.getElementById('cardsCountBadge');
+
+    // Éléments Galerie Fiches
+    const btnRefreshCards = document.getElementById('btnRefreshCards');
+    const btnOpenVocabModal = document.getElementById('btnOpenVocabModal');
+    const btnEmptyCreateCard = document.getElementById('btnEmptyCreateCard');
+    const cardsHistoryLoading = document.getElementById('cardsHistoryLoading');
+    const cardsHistoryEmpty = document.getElementById('cardsHistoryEmpty');
+    const cardsHistoryGrid = document.getElementById('cardsHistoryGrid');
+
+    // Éléments Modal Création
+    const vocabCreateModal = document.getElementById('vocabCreateModal');
+    const btnCloseVocabCreateModal = document.getElementById('btnCloseVocabCreateModal');
+    const btnCancelVocabCreate = document.getElementById('btnCancelVocabCreate');
+    const vocabModalUserCredits = document.getElementById('vocabModalUserCredits');
+    const vocabZeroCreditAlert = document.getElementById('vocabZeroCreditAlert');
+    const btnVocabRechargeFast = document.getElementById('btnVocabRechargeFast');
+    const btnVocabRechargeAlert = document.getElementById('btnVocabRechargeAlert');
+    const vocabGenerateForm = document.getElementById('vocabGenerateForm');
+    const vocabThemeInput = document.getElementById('vocabThemeInput');
+    const vocabCustomWordsInput = document.getElementById('vocabCustomWordsInput');
+    const btnSubmitVocabGenerate = document.getElementById('btnSubmitVocabGenerate');
+    const btnSubmitVocabText = document.getElementById('btnSubmitVocabText');
+
+    // Écran de Progression
+    const vocabProgressScreen = document.getElementById('vocabProgressScreen');
+    const vocabProgressStep = document.getElementById('vocabProgressStep');
+    const vocabProgressBar = document.getElementById('vocabProgressBar');
+
+    // Écran de Résultat
+    const vocabResultScreen = document.getElementById('vocabResultScreen');
+    const vocabResultImg = document.getElementById('vocabResultImg');
+    const vocabResultImgWrap = document.getElementById('vocabResultImgWrap');
+    const vocabResultAudio = document.getElementById('vocabResultAudio');
+    const vocabResultTitleFr = document.getElementById('vocabResultTitleFr');
+    const vocabResultTitleAr = document.getElementById('vocabResultTitleAr');
+    const vocabResultLevelBadge = document.getElementById('vocabResultLevelBadge');
+    const vocabResultWordsList = document.getElementById('vocabResultWordsList');
+    const btnDownloadCardJpg = document.getElementById('btnDownloadCardJpg');
+    const btnDownloadCardMp3 = document.getElementById('btnDownloadCardMp3');
+    const btnVocabCreateAnother = document.getElementById('btnVocabCreateAnother');
+
+    // Éléments Modal Détail Fiche
+    const vocabDetailModal = document.getElementById('vocabDetailModal');
+    const btnCloseVocabDetailModal = document.getElementById('btnCloseVocabDetailModal');
+    const detailCardTitleFr = document.getElementById('detailCardTitleFr');
+    const detailCardTitleAr = document.getElementById('detailCardTitleAr');
+    const detailCardImg = document.getElementById('detailCardImg');
+    const detailCardAudio = document.getElementById('detailCardAudio');
+    const detailCardLevelBadge = document.getElementById('detailCardLevelBadge');
+    const detailCardDate = document.getElementById('detailCardDate');
+    const detailCardWordsList = document.getElementById('detailCardWordsList');
+    const btnDetailDownloadJpg = document.getElementById('btnDetailDownloadJpg');
+    const btnDetailDownloadMp3 = document.getElementById('btnDetailDownloadMp3');
+
+    // Éléments Modal Suppression Fiche
+    const vocabDeleteModal = document.getElementById('vocabDeleteModal');
+    const btnCancelDeleteCard = document.getElementById('btnCancelDeleteCard');
+    const btnConfirmDeleteCard = document.getElementById('btnConfirmDeleteCard');
+    let cardIdPendingDelete = null;
+
+    let selectedDifficultyLevel = 'debutant';
+
+    /**
+     * Bascule entre l'onglet Vidéos et l'onglet Fiches Vocabulaire
+     */
+    function switchTab(target) {
+        if (target === 'cards') {
+            tabBtnCards.classList.add('active');
+            tabBtnCards.setAttribute('aria-selected', 'true');
+            tabBtnVideos.classList.remove('active');
+            tabBtnVideos.setAttribute('aria-selected', 'false');
+            tabContentCards.style.display = 'block';
+            tabContentVideos.style.display = 'none';
+            loadCardsHistory();
+        } else {
+            tabBtnVideos.classList.add('active');
+            tabBtnVideos.setAttribute('aria-selected', 'true');
+            tabBtnCards.classList.remove('active');
+            tabBtnCards.setAttribute('aria-selected', 'false');
+            tabContentVideos.style.display = 'block';
+            tabContentCards.style.display = 'none';
             loadVideoHistory();
-            loadUserProfile();
-            showToast(isRtl() ? "تم تحديث السجل بنجاح." : "Historique actualisé.", "info");
+        }
+    }
+
+    if (tabBtnVideos) tabBtnVideos.addEventListener('click', () => switchTab('videos'));
+    if (tabBtnCards) tabBtnCards.addEventListener('click', () => switchTab('cards'));
+
+    /**
+     * Ouvre le modal de création d'une fiche
+     */
+    function openVocabCreateModal() {
+        if (!vocabCreateModal) return;
+
+        // Réinitialiser les écrans
+        vocabGenerateForm.style.display = 'block';
+        vocabProgressScreen.style.display = 'none';
+        vocabResultScreen.style.display = 'none';
+
+        // Synchroniser le solde de crédits
+        const availableCreditsText = walletAvailableCredits ? walletAvailableCredits.textContent : '--';
+        const numCredits = parseInt(availableCreditsText, 10);
+        if (vocabModalUserCredits) vocabModalUserCredits.textContent = availableCreditsText;
+
+        if (!isNaN(numCredits) && numCredits <= 0) {
+            if (vocabZeroCreditAlert) vocabZeroCreditAlert.style.display = 'flex';
+            if (btnSubmitVocabGenerate) {
+                btnSubmitVocabGenerate.disabled = true;
+                btnSubmitVocabGenerate.style.opacity = '0.6';
+                btnSubmitVocabGenerate.style.cursor = 'not-allowed';
+            }
+        } else {
+            if (vocabZeroCreditAlert) vocabZeroCreditAlert.style.display = 'none';
+            if (btnSubmitVocabGenerate) {
+                btnSubmitVocabGenerate.disabled = false;
+                btnSubmitVocabGenerate.style.opacity = '1';
+                btnSubmitVocabGenerate.style.cursor = 'pointer';
+            }
+        }
+
+        vocabCreateModal.style.display = 'flex';
+    }
+
+    function closeVocabCreateModal() {
+        if (!vocabCreateModal) return;
+        if (vocabResultAudio) vocabResultAudio.pause();
+        vocabCreateModal.style.display = 'none';
+    }
+
+    if (btnOpenVocabModal) btnOpenVocabModal.addEventListener('click', openVocabCreateModal);
+    if (btnEmptyCreateCard) btnEmptyCreateCard.addEventListener('click', openVocabCreateModal);
+    if (btnCloseVocabCreateModal) btnCloseVocabCreateModal.addEventListener('click', closeVocabCreateModal);
+    if (btnCancelVocabCreate) btnCancelVocabCreate.addEventListener('click', closeVocabCreateModal);
+    if (btnVocabCreateAnother) {
+        btnVocabCreateAnother.addEventListener('click', () => {
+            vocabGenerateForm.style.display = 'block';
+            vocabProgressScreen.style.display = 'none';
+            vocabResultScreen.style.display = 'none';
         });
     }
 
-    // Réagir immédiatement au changement de langue via la Navbar
-    window.addEventListener('aya:languageChanged', () => {
-        loadVideoHistory();
+    if (btnVocabRechargeFast) {
+        btnVocabRechargeFast.addEventListener('click', () => {
+            closeVocabCreateModal();
+            openRechargeModal();
+        });
+    }
+    if (btnVocabRechargeAlert) {
+        btnVocabRechargeAlert.addEventListener('click', () => {
+            closeVocabCreateModal();
+            openRechargeModal();
+        });
+    }
+
+    // Gestion des puces thématiques (Theme Chips)
+    const themeChips = document.querySelectorAll('.theme-chip');
+    themeChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            themeChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            const theme = chip.getAttribute('data-theme');
+            if (vocabThemeInput) vocabThemeInput.value = theme;
+        });
     });
 
-    // Fermeture des modales avec Échap
+    // Gestion du niveau de difficulté
+    const levelChips = document.querySelectorAll('.level-chip');
+    levelChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            levelChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedDifficultyLevel = chip.getAttribute('data-level') || 'debutant';
+        });
+    });
+
+    // Gestion de la soumission du formulaire de génération
+    if (vocabGenerateForm) {
+        vocabGenerateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const theme = (vocabThemeInput?.value || '').trim() || 'Solidarité & Espoir';
+            const rawWords = (vocabCustomWordsInput?.value || '').trim();
+            const customWords = rawWords
+                ? rawWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean)
+                : null;
+
+            // Masquer le formulaire et afficher l'écran de progression
+            vocabGenerateForm.style.display = 'none';
+            vocabProgressScreen.style.display = 'block';
+            vocabProgressBar.style.width = '20%';
+
+            // Simulation d'étapes de progression pédagogique
+            const stepTimer1 = setTimeout(() => {
+                if (vocabProgressStep) vocabProgressStep.textContent = "Étape 2/3 : Rendu visuel 1080×1920 (Puppeteer Headless & Safe Zones)...";
+                if (vocabProgressBar) vocabProgressBar.style.width = '55%';
+            }, 3500);
+
+            const stepTimer2 = setTimeout(() => {
+                if (vocabProgressStep) vocabProgressStep.textContent = "Étape 3/3 : Synthèse vocale double voix (Henri + Sana) & silences pédagogiques...";
+                if (vocabProgressBar) vocabProgressBar.style.width = '85%';
+            }, 8500);
+
+            try {
+                const response = await fetch('/api/premium/vocabulary-card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        theme,
+                        level: selectedDifficultyLevel,
+                        customWords
+                    })
+                });
+
+                clearTimeout(stepTimer1);
+                clearTimeout(stepTimer2);
+
+                const data = await response.json();
+
+                if (response.status === 402 || data.reason === 'INSUFFICIENT_CREDITS') {
+                    vocabProgressScreen.style.display = 'none';
+                    vocabGenerateForm.style.display = 'block';
+                    showToast(data.error || "Solde insuffisant.", "error");
+                    closeVocabCreateModal();
+                    openRechargeModal();
+                    return;
+                }
+
+                if (!response.ok || !data.success || !data.card) {
+                    throw new Error(data.error || data.message || "Erreur lors de la génération de la fiche.");
+                }
+
+                // Génération réussie !
+                vocabProgressBar.style.width = '100%';
+                const card = data.card;
+
+                // Mettre à jour l'écran de résultat
+                if (vocabResultImg) vocabResultImg.src = card.imageUrl;
+                if (vocabResultAudio) {
+                    vocabResultAudio.src = card.audioUrl;
+                    vocabResultAudio.load();
+                }
+                if (vocabResultTitleFr) vocabResultTitleFr.textContent = card.titleFr || theme.toUpperCase();
+                if (vocabResultTitleAr) vocabResultTitleAr.textContent = card.titleAr || '';
+                if (vocabResultLevelBadge) {
+                    vocabResultLevelBadge.textContent = (card.level || selectedDifficultyLevel).toUpperCase();
+                }
+
+                // Affichage des 5 mots générés
+                if (vocabResultWordsList && Array.isArray(card.words)) {
+                    vocabResultWordsList.innerHTML = card.words.map(w => `
+                        <div class="vocab-word-preview-row">
+                            <span class="vocab-word-fr">${w.icon || '✨'} ${w.french}</span>
+                            <span style="color: #64748b; font-size: 0.78rem;">[${w.phoneticFr || ''}]</span>
+                            <span class="vocab-word-ar">${w.arabic}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Liens de téléchargement directs
+                if (btnDownloadCardJpg) {
+                    btnDownloadCardJpg.href = card.imageUrl;
+                    btnDownloadCardJpg.setAttribute('download', `${card.cardId || 'fiche_vocabulaire'}.jpg`);
+                }
+                if (btnDownloadCardMp3) {
+                    btnDownloadCardMp3.href = card.audioUrl;
+                    btnDownloadCardMp3.setAttribute('download', `${card.cardId || 'audio_vocabulaire'}.mp3`);
+                }
+
+                // Afficher l'écran de résultat
+                setTimeout(() => {
+                    vocabProgressScreen.style.display = 'none';
+                    vocabResultScreen.style.display = 'block';
+                }, 400);
+
+                showToast("🎉 Fiche générée avec succès ! 1 crédit débité.", "success");
+
+                // Actualiser immédiatement le solde et la galerie
+                loadUserProfile();
+                loadCardsHistory();
+
+            } catch (err) {
+                clearTimeout(stepTimer1);
+                clearTimeout(stepTimer2);
+                console.error('[VOCAB CARD GENERATION ERROR]', err);
+                vocabProgressScreen.style.display = 'none';
+                vocabGenerateForm.style.display = 'block';
+                showToast(err.message || "Erreur de génération. Votre crédit a été restitué.", "error");
+                loadUserProfile(); // Pour vérifier le solde intact
+            }
+        });
+    }
+
+    /**
+     * Charge l'historique des fiches de vocabulaire (GET /api/user/cards)
+     */
+    async function loadCardsHistory() {
+        if (!cardsHistoryGrid) return;
+
+        cardsHistoryLoading.style.display = 'block';
+        cardsHistoryEmpty.style.display = 'none';
+        cardsHistoryGrid.style.display = 'none';
+        cardsHistoryGrid.innerHTML = '';
+
+        try {
+            const res = await fetch('/api/user/cards?page=1&limit=50', {
+                headers: { 'Accept': 'application/json' }
+            });
+            const data = await res.json();
+
+            cardsHistoryLoading.style.display = 'none';
+
+            if (data.success && Array.isArray(data.cards) && data.cards.length > 0) {
+                const rtl = isRtl();
+                const total = data.total || data.cards.length;
+                if (cardsCountBadge) {
+                    cardsCountBadge.textContent = rtl ? `${total} بطاقة` : `${total} fiche${total > 1 ? 's' : ''}`;
+                }
+
+                data.cards.forEach(card => {
+                    const cardEl = createVocabCardElement(card);
+                    cardsHistoryGrid.appendChild(cardEl);
+                });
+
+                cardsHistoryGrid.style.display = 'grid';
+            } else {
+                if (cardsCountBadge) cardsCountBadge.textContent = isRtl() ? '٠ بطاقة' : '0 fiche';
+                cardsHistoryEmpty.style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('[CARDS HISTORY ERROR]', err);
+            cardsHistoryLoading.style.display = 'none';
+            cardsHistoryEmpty.style.display = 'flex';
+        }
+    }
+
+    /**
+     * Crée le composant DOM d'une fiche de vocabulaire dans la galerie
+     */
+    function createVocabCardElement(c) {
+        const el = document.createElement('div');
+        el.className = 'vocab-card';
+
+        const rtl = isRtl();
+        const dateStr = formatDate(c.createdAt);
+        const cardId = c.id || c._id || c.cardId;
+        const levelText = (c.level || 'debutant').toUpperCase();
+
+        el.innerHTML = `
+            <div class="vocab-card-thumb" data-id="${cardId}" title="Cliquer pour voir et écouter">
+                <img src="${c.imageUrl}" alt="${c.titleFr}" loading="lazy">
+                <div class="vocab-card-overlay">
+                    <div class="vocab-play-icon">▶️</div>
+                    <span>Écouter & Visualiser</span>
+                </div>
+            </div>
+            <div class="vocab-card-body">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="vocab-tag-pill">${levelText}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary);">📅 ${dateStr}</span>
+                </div>
+                <h4 class="vocab-card-title-fr">${c.titleFr || c.theme}</h4>
+                <p class="vocab-card-title-ar">${c.titleAr || ''}</p>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                    Thème : <strong>${c.theme || 'Général'}</strong> • 5 mots bilingues
+                </div>
+            </div>
+            <div class="vocab-card-footer">
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    <button type="button" class="btn-action-sm primary btn-view-card" data-id="${cardId}" title="Aperçu et lecture audio">
+                        <span>▶️</span> Écouter
+                    </button>
+                    <a href="${c.imageUrl}" download="${cardId}.jpg" class="btn-action-sm" title="Télécharger la fiche HD 1080x1920">
+                        <span>⬇️</span> JPG
+                    </a>
+                    <a href="${c.audioUrl}" download="${cardId}.mp3" class="btn-action-sm" title="Télécharger l'audio combiné">
+                        <span>🎵</span> MP3
+                    </a>
+                </div>
+                <button type="button" class="btn-action-sm btn-delete-card" data-id="${cardId}" title="Supprimer la fiche" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); margin-left: auto;">
+                    <span>🗑️</span>
+                </button>
+            </div>
+        `;
+
+        // Événement clic pour voir/écouter
+        const openDetail = () => openCardDetailModal(c);
+        el.querySelector('.vocab-card-thumb').addEventListener('click', openDetail);
+        el.querySelector('.btn-view-card').addEventListener('click', openDetail);
+
+        // Événement suppression
+        el.querySelector('.btn-delete-card').addEventListener('click', (e) => {
+            e.stopPropagation();
+            cardIdPendingDelete = cardId;
+            if (vocabDeleteModal) vocabDeleteModal.style.display = 'flex';
+        });
+
+        return el;
+    }
+
+    /**
+     * Ouvre le modal de prévisualisation détaillée d'une carte avec son lecteur audio
+     */
+    function openCardDetailModal(c) {
+        if (!vocabDetailModal) return;
+
+        if (detailCardTitleFr) detailCardTitleFr.textContent = c.titleFr || c.theme || 'Fiche Vocabulaire';
+        if (detailCardTitleAr) detailCardTitleAr.textContent = c.titleAr || '';
+        if (detailCardImg) detailCardImg.src = c.imageUrl;
+        if (detailCardLevelBadge) detailCardLevelBadge.textContent = (c.level || 'debutant').toUpperCase();
+        if (detailCardDate) detailCardDate.textContent = `📅 Créée le ${formatDate(c.createdAt)} • Thème : ${c.theme || 'Général'}`;
+
+        if (detailCardAudio) {
+            detailCardAudio.src = c.audioUrl;
+            detailCardAudio.load();
+        }
+
+        if (detailCardWordsList && Array.isArray(c.words)) {
+            detailCardWordsList.innerHTML = c.words.map(w => `
+                <div class="vocab-word-preview-row">
+                    <span class="vocab-word-fr">${w.icon || '✨'} ${w.french}</span>
+                    <span style="color: #64748b; font-size: 0.78rem;">[${w.phoneticFr || ''}]</span>
+                    <span class="vocab-word-ar">${w.arabic}</span>
+                </div>
+            `).join('');
+        }
+
+        if (btnDetailDownloadJpg) {
+            btnDetailDownloadJpg.href = c.imageUrl;
+            btnDetailDownloadJpg.setAttribute('download', `${c.id || 'fiche'}.jpg`);
+        }
+        if (btnDetailDownloadMp3) {
+            btnDetailDownloadMp3.href = c.audioUrl;
+            btnDetailDownloadMp3.setAttribute('download', `${c.id || 'audio'}.mp3`);
+        }
+
+        vocabDetailModal.style.display = 'flex';
+    }
+
+    function closeVocabDetailModal() {
+        if (!vocabDetailModal) return;
+        if (detailCardAudio) detailCardAudio.pause();
+        vocabDetailModal.style.display = 'none';
+    }
+
+    if (btnCloseVocabDetailModal) btnCloseVocabDetailModal.addEventListener('click', closeVocabDetailModal);
+
+    // Modal Confirmation Suppression Fiche
+    if (btnCancelDeleteCard) {
+        btnCancelDeleteCard.addEventListener('click', () => {
+            cardIdPendingDelete = null;
+            if (vocabDeleteModal) vocabDeleteModal.style.display = 'none';
+        });
+    }
+
+    if (btnConfirmDeleteCard) {
+        btnConfirmDeleteCard.addEventListener('click', async () => {
+            if (!cardIdPendingDelete) return;
+
+            const cid = cardIdPendingDelete;
+            btnConfirmDeleteCard.disabled = true;
+            btnConfirmDeleteCard.textContent = "Suppression en cours...";
+
+            try {
+                const res = await fetch(`/api/user/cards/${encodeURIComponent(cid)}`, {
+                    method: 'DELETE',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showToast("Fiche supprimée avec succès.", "success");
+                    if (vocabDeleteModal) vocabDeleteModal.style.display = 'none';
+                    if (vocabDetailModal && vocabDetailModal.style.display === 'flex') {
+                        closeVocabDetailModal();
+                    }
+                    loadCardsHistory();
+                } else {
+                    showToast(data.error || "Impossible de supprimer la fiche.", "error");
+                }
+            } catch (err) {
+                console.error('[DELETE CARD ERROR]', err);
+                showToast("Erreur lors de la suppression.", "error");
+            } finally {
+                btnConfirmDeleteCard.disabled = false;
+                btnConfirmDeleteCard.textContent = "Confirmer la suppression";
+                cardIdPendingDelete = null;
+            }
+        });
+    }
+
+    if (btnRefreshCards) {
+        btnRefreshCards.addEventListener('click', () => {
+            loadCardsHistory();
+            loadUserProfile();
+            showToast("Historique des fiches actualisé.", "info");
+        });
+    }
+
+    // Fermeture avec clic extérieur sur les nouveaux modaux
+    [vocabCreateModal, vocabDetailModal, vocabDeleteModal].forEach(m => {
+        if (m) {
+            m.addEventListener('click', (e) => {
+                if (e.target === m) {
+                    if (m === vocabCreateModal) closeVocabCreateModal();
+                    if (m === vocabDetailModal) closeVocabDetailModal();
+                    if (m === vocabDeleteModal) {
+                        cardIdPendingDelete = null;
+                        m.style.display = 'none';
+                    }
+                }
+            });
+        }
+    });
+
+    // Fermeture Échap sur tous les modaux
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (rechargeModal && rechargeModal.style.display === 'flex') {
-                rechargeModal.style.display = 'none';
-            }
-            if (videoPreviewModal && videoPreviewModal.style.display === 'flex') {
-                closeVideoModal();
+            if (rechargeModal && rechargeModal.style.display === 'flex') rechargeModal.style.display = 'none';
+            if (videoPreviewModal && videoPreviewModal.style.display === 'flex') closeVideoModal();
+            if (vocabCreateModal && vocabCreateModal.style.display === 'flex') closeVocabCreateModal();
+            if (vocabDetailModal && vocabDetailModal.style.display === 'flex') closeVocabDetailModal();
+            if (vocabDeleteModal && vocabDeleteModal.style.display === 'flex') {
+                cardIdPendingDelete = null;
+                vocabDeleteModal.style.display = 'none';
             }
         }
     });
 
-    // Gestion des retours de paiement Stripe (?payment=success ou ?payment=cancelled)
+    // Deep-linking d'onglets (?tab=cards ou #cards ou action=create)
     try {
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('payment') === 'success') {
-            showToast("🎉 Paiement validé avec succès ! Vos crédits ont été ajoutés à votre portefeuille.", "success");
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(() => loadUserProfile(), 500);
-        } else if (urlParams.get('payment') === 'cancelled') {
-            showToast("Le paiement a été annulé. Aucun débit n'a été effectué.", "info");
-            window.history.replaceState({}, document.title, window.location.pathname);
+        const hash = window.location.hash;
+        if (urlParams.get('tab') === 'cards' || hash === '#cards') {
+            switchTab('cards');
+        }
+        if (urlParams.get('action') === 'create' || hash === '#create-card') {
+            switchTab('cards');
+            setTimeout(openVocabCreateModal, 300);
         }
     } catch (e) {}
 
@@ -604,3 +1120,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserProfile();
     loadVideoHistory();
 });
+

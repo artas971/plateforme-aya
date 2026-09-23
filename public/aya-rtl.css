@@ -307,6 +307,31 @@ html[dir="rtl"] .paypal-solidarity-card {
     direction: rtl;
 }
 
+html[dir="rtl"] .profile-tabs-nav {
+    direction: rtl;
+}
+
+html[dir="rtl"] .vocab-grid {
+    direction: rtl;
+}
+
+html[dir="rtl"] .vocab-card-body {
+    text-align: right;
+    direction: rtl;
+}
+
+html[dir="rtl"] .vocab-card-footer {
+    direction: rtl;
+}
+
+html[dir="rtl"] .vocab-word-preview-row {
+    direction: rtl;
+}
+
+html[dir="rtl"] .vocab-render-preview {
+    direction: rtl;
+}
+
 /* Toasts en RTL (Ancrage et bordure logique) */
 html[dir="rtl"] .aya-toast {
     right: auto !important;
