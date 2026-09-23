@@ -4,6 +4,7 @@ const Post = require('./Post');
 const Transaction = require('./Transaction');
 const TikTokAccount = require('./TikTokAccount');
 const Video = require('./Video');
+const Card = require('./Card');
 
 module.exports = {
     connectDB,
@@ -13,5 +14,6 @@ module.exports = {
     Post,
     Transaction,
     TikTokAccount,
-    Video
+    Video,
+    Card
 };

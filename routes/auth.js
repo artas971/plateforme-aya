@@ -108,7 +108,14 @@ function requireAuth(req, res, next) {
 
     // 4. Si non connecté :
     // Appel API ➔ Code 401 JSON
-    if (req.path.startsWith('/api/')) {
+    const isApiRequest = 
+        (req.originalUrl && req.originalUrl.startsWith('/api/')) ||
+        (req.baseUrl && req.baseUrl.startsWith('/api/')) ||
+        req.path.startsWith('/api/') ||
+        req.xhr ||
+        Boolean(req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (isApiRequest) {
         return res.status(401).json({
             success: false,
             error: "Accès restreint aux utilisateurs connectés. Veuillez vous connecter.",

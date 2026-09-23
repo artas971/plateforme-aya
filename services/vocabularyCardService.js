@@ -82,7 +82,7 @@ const vocabCardQueue = new SequentialQueue();
 /**
  * 1. Génération sémantique des 5 mots bilingues via Gemini Flash (ou customWords)
  */
-async function generateVocabularyData(theme, customWords = null) {
+async function generateVocabularyData(theme, customWords = null, level = 'debutant') {
     const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!geminiKey) {
         throw new Error("Clé API Gemini (GEMINI_API_KEY) manquante.");
@@ -115,9 +115,10 @@ Réponds STRICTEMENT au format JSON suivant :
   ]
 }`;
 
+    const levelText = level === 'avance' ? 'avancé' : level === 'intermediaire' ? 'intermédiaire' : 'débutant';
     const userPrompt = customWords && Array.isArray(customWords) && customWords.length > 0
-        ? `Génère la fiche éducative pour ces 5 mots précis : ${customWords.slice(0, 5).join(', ')}.`
-        : `Génère 5 mots essentiels et poignants sur le thème : "${theme || 'solidarite_et_espoir'}".`;
+        ? `Génère la fiche éducative pour ces 5 mots précis : ${customWords.slice(0, 5).join(', ')}. Niveau adapté : ${levelText}.`
+        : `Génère 5 mots essentiels et poignants sur le thème : "${theme || 'solidarite_et_espoir'}". Niveau de difficulté adapté : ${levelText}.`;
 
     const models = [
         'gemini-2.5-flash',
@@ -602,16 +603,16 @@ async function generateCombinedAudio(vocabData, outputFinalMp3) {
  * 🚀 MÉTHODE PUBLIQUE PRINCIPALE : Génération Complète d'une Fiche Vocabulaire Premium
  * Encadrée par la file d'attente séquentielle (concurrency = 1)
  */
-async function generateFullVocabularyCard({ theme, customWords = null, outputId = null }) {
+async function generateFullVocabularyCard({ theme, level = 'debutant', customWords = null, outputId = null }) {
     return vocabCardQueue.enqueue(async () => {
         const id = outputId || `vcard_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
         const outputJpg = path.join(UPLOADS_CARDS_DIR, `${id}.jpg`);
         const outputMp3 = path.join(UPLOADS_CARDS_DIR, `${id}.mp3`);
 
-        console.log(`[VOCAB SERVICE] 🚀 Démarrage génération fiche ${id} (Thème: "${theme || 'général'}")`);
+        console.log(`[VOCAB SERVICE] 🚀 Démarrage génération fiche ${id} (Thème: "${theme || 'général'}", Niveau: ${level})`);
 
         // 1. Sémantique Gemini Flash
-        const vocabData = await generateVocabularyData(theme, customWords);
+        const vocabData = await generateVocabularyData(theme, customWords, level);
         console.log(`[VOCAB SERVICE] ✅ Sémantique validée (5 mots : ${vocabData.words.map(w => w.french).join(', ')})`);
 
         // 2. Rendu Graphique Puppeteer
@@ -626,13 +627,16 @@ async function generateFullVocabularyCard({ theme, customWords = null, outputId 
         return {
             success: true,
             cardId: id,
-            theme: vocabData.theme,
+            theme: vocabData.theme || theme,
+            level: level,
             titleFr: vocabData.titleFr,
             titleAr: vocabData.titleAr,
             imagePath: outputJpg,
             imageUrl: `/uploads/cards/${id}.jpg`,
+            imageFilename: `${id}.jpg`,
             audioPath: outputMp3,
             audioUrl: `/uploads/cards/${id}.mp3`,
+            audioFilename: `${id}.mp3`,
             words: vocabData.words,
             createdAt: new Date().toISOString()
         };
