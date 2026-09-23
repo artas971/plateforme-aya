@@ -1966,17 +1966,23 @@
                 // Média — avec poster (vignette) si disponible
                 let mediaHtml = '';
                 if (post.mediaUrl) {
-                    if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
-                        const posterAttr = post.mediaThumbnail ? ` poster="${escapeHtml(post.mediaThumbnail)}"` : '';
+                    const cleanMediaUrl = post.mediaUrl
+                        .replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '')
+                        .replace(/^https?:\/\/localhost:\d+/i, '');
+                    const cleanThumbnail = post.mediaThumbnail
+                        ? post.mediaThumbnail.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '').replace(/^https?:\/\/localhost:\d+/i, '')
+                        : '';
+                    if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
+                        const posterAttr = cleanThumbnail ? ` poster="${escapeHtml(cleanThumbnail)}"` : '';
                         mediaHtml = `
                             <div class="post-media-container">
-                                <video src="${escapeHtml(post.mediaUrl)}"${posterAttr} controls playsinline preload="metadata"></video>
+                                <video src="${escapeHtml(cleanMediaUrl)}"${posterAttr} controls playsinline preload="metadata"></video>
                             </div>
                         `;
-                    } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
+                    } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(cleanMediaUrl)) {
                         mediaHtml = `
                             <div class="post-media-container" style="aspect-ratio: unset; background: #0f172a; padding: 18px;">
-                                <audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>
+                                <audio src="${escapeHtml(cleanMediaUrl)}" controls preload="metadata"></audio>
                             </div>
                         `;
                     }

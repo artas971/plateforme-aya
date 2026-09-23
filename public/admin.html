@@ -1649,7 +1649,9 @@
 
                 let mediaPreview = '';
                 if (post.mediaUrl) {
-                    const cleanMediaUrl = post.mediaUrl.replace(/^https?:\/\/localhost:\d+/i, '');
+                    const cleanMediaUrl = post.mediaUrl
+                        .replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '')
+                        .replace(/^https?:\/\/localhost:\d+/i, '');
                     if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
                         mediaPreview = `<video src="${cleanMediaUrl}" controls playsinline preload="metadata" style="width:100%; max-height:220px; border-radius:8px; background:#000; margin-top:6px; position:relative; z-index:2;"></video>`;
                     } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(cleanMediaUrl)) {

@@ -2959,7 +2959,10 @@ ${safeText}
                 btnShareComm.addEventListener('click', (e) => {
                     try {
                         const videoNode = document.querySelector('.aya-video-player');
-                        const videoUrl = videoNode ? videoNode.src : (finalData.mp4_url || '');
+                        const rawVideoUrl = videoNode ? (videoNode.getAttribute('src') || videoNode.src) : (finalData.mp4_url || '');
+                        const videoUrl = rawVideoUrl.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '');
+                        const rawCoverUrl = finalData.cover_url || '';
+                        const coverUrl = rawCoverUrl.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '');
                         const descriptionText = finalData.context_summary || (document.getElementById('videoContextText') ? document.getElementById('videoContextText').innerText.trim() : '');
 
                         // Extraction des 5 hashtags / mots-clés
@@ -2986,7 +2989,7 @@ ${safeText}
                             title: finalData.clean_title || finalData.semantic_title || '',
                             hashtags: hashtags,
                             pseudo: pseudo,
-                            coverUrl: finalData.cover_url || '',
+                            coverUrl: coverUrl,
                             timestamp: Date.now()
                         };
 

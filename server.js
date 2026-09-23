@@ -212,14 +212,17 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));
 app.use('/audio_a_traiter', express.static(AUDIO_A_TRAITER_DIR));
 app.use('/fichiers_reponse_a_envoyer', express.static(REPONSED_DIR));
-app.get('/download/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(REPONSED_DIR, filename);
-    if (fs.existsSync(filePath)) {
-        res.download(filePath, filename);
-    } else {
-        res.status(404).send('Fichier introuvable');
+app.get('/download/:filename', (req, res, next) => {
+    if (req.query.download === '1' || req.query.download === 'true') {
+        const filename = req.params.filename;
+        const filePath = path.join(REPONSED_DIR, filename);
+        if (fs.existsSync(filePath)) {
+            return res.download(filePath, filename);
+        } else {
+            return res.status(404).send('Fichier introuvable');
+        }
     }
+    next();
 });
 app.use('/download', express.static(REPONSED_DIR));
 app.use('/uploads', express.static(UPLOADS_DIR));

@@ -617,10 +617,13 @@
                     // Rendu Média
                     let mediaHtml = '';
                     if (post.mediaUrl) {
-                        if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(post.mediaUrl)) {
-                            mediaHtml = `<video src="${escapeHtml(post.mediaUrl)}" controls playsinline preload="metadata"></video>`;
-                        } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(post.mediaUrl)) {
-                            mediaHtml = `<audio src="${escapeHtml(post.mediaUrl)}" controls preload="metadata"></audio>`;
+                        const cleanMediaUrl = post.mediaUrl
+                            .replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '')
+                            .replace(/^https?:\/\/localhost:\d+/i, '');
+                        if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
+                            mediaHtml = `<video src="${escapeHtml(cleanMediaUrl)}" controls playsinline preload="metadata"></video>`;
+                        } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(cleanMediaUrl)) {
+                            mediaHtml = `<audio src="${escapeHtml(cleanMediaUrl)}" controls preload="metadata"></audio>`;
                         }
                     } else {
                         mediaHtml = `

@@ -483,3 +483,42 @@ html[dir="rtl"] .chat-online-pill {
     text-align: right;
 }
 
+/* -------------------------------------------------------------
+   Navigation Unifiée (Dropdowns Desktop, Bottom Nav & Action Sheet) RTL
+   ------------------------------------------------------------- */
+html[dir="rtl"] .nav-dropdown-menu {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+html[dir="rtl"] #dropdownAccountWrapper .nav-dropdown-menu {
+    left: 0;
+    right: auto;
+}
+
+html[dir="rtl"] .dropdown-item {
+    text-align: right;
+}
+
+html[dir="rtl"] .dropdown-item:hover {
+    transform: translateX(-2px);
+}
+
+html[dir="rtl"] .aya-bottom-nav {
+    direction: rtl;
+}
+
+html[dir="rtl"] .sheet-header {
+    direction: rtl;
+}
+
+html[dir="rtl"] .sheet-card {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .sheet-card-arrow {
+    transform: scaleX(-1);
+}
+

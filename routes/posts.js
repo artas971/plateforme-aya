@@ -157,8 +157,12 @@ router.post('/', upload.single('media'), async (req, res) => {
             });
         }
 
-        // Détection du chemin média
-        let mediaUrl = body.mediaUrl ? body.mediaUrl.replace(/^https?:\/\/localhost:\d+/i, '') : null;
+        // Détection et assainissement du chemin média (suppression de tout domaine absolu externe ou tunnel)
+        let mediaUrl = body.mediaUrl 
+            ? body.mediaUrl
+                .replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '')
+                .replace(/^https?:\/\/localhost:\d+/i, '')
+            : null;
         let mediaType = 'text';
 
 
@@ -204,7 +208,11 @@ router.post('/', upload.single('media'), async (req, res) => {
         }
 
         // Persistance optionnelle de la miniature transmise
-        let mediaThumbnail = body.mediaThumbnail || null;
+        let mediaThumbnail = body.mediaThumbnail 
+            ? body.mediaThumbnail
+                .replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '')
+                .replace(/^https?:\/\/localhost:\d+/i, '')
+            : null;
         if (mediaThumbnail) {
             try {
                 let thumbFromUrl = '';

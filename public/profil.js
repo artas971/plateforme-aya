@@ -1169,18 +1169,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Deep-linking d'onglets (?tab=cards ou #cards ou action=create)
-    try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const hash = window.location.hash;
-        if (urlParams.get('tab') === 'cards' || hash === '#cards') {
-            switchTab('cards');
+    // Deep-linking d'onglets et de modaux (?tab=cards, #cards, #fiches, #videos, #packs, #wallet, #create-card)
+    function handleRouteHash() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const hash = (window.location.hash || '').toLowerCase();
+            const tabParam = (urlParams.get('tab') || '').toLowerCase();
+            const actionParam = (urlParams.get('action') || '').toLowerCase();
+
+            if (tabParam === 'cards' || hash === '#cards' || hash === '#fiches') {
+                switchTab('cards');
+            } else if (tabParam === 'videos' || hash === '#videos' || hash === '#historique') {
+                switchTab('videos');
+            } else if (hash === '#packs' || hash === '#wallet' || hash === '#recharge') {
+                openRechargeModal();
+            }
+
+            if (actionParam === 'create' || hash === '#create-card') {
+                switchTab('cards');
+                setTimeout(openVocabCreateModal, 300);
+            }
+        } catch (e) {
+            console.warn('[ROUTING] Erreur hash:', e);
         }
-        if (urlParams.get('action') === 'create' || hash === '#create-card') {
-            switchTab('cards');
-            setTimeout(openVocabCreateModal, 300);
-        }
-    } catch (e) {}
+    }
+
+    handleRouteHash();
+    window.addEventListener('hashchange', handleRouteHash);
 
     // Initialisation
     loadUserProfile();

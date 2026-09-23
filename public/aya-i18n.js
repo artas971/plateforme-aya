@@ -24,6 +24,27 @@
             navModerationText: 'Modération',
             navProfilText: 'Profil',
             navbarLiveText: 'Actif',
+            // Nouveaux termes vulgarisés Grand Public
+            navExchangeText: 'Salon d\'Échange',
+            navCreationText: 'Outils de Création',
+            navCreationSub: 'Traductions, vidéos et fiches éducatives',
+            navTranslationText: 'Traducteur Shami',
+            navTranslationSub: 'Traduction instantanée texte et audio',
+            navVideoText: 'Création Vidéo',
+            navVideoSub: 'Doublage et sous-titrage automatique',
+            navCardsText: 'Fiches Éducatives',
+            navCardsSub: 'Affiches 9:16 bilingues & audio TikTok',
+            navCommunityText: 'Galerie Communautaire',
+            navCommunitySub: 'Témoignages et partages collectifs',
+            navAccountText: 'Mon Compte',
+            navProfileText: 'Mon Profil',
+            navWalletText: 'Mon Portefeuille & Crédits',
+            navCreationsText: 'Mes Créations & Historique',
+            navAdminText: 'Tour de Contrôle',
+            navLogoutText: 'Déconnexion',
+            navOnlineText: 'en ligne',
+            navCreateActionText: 'Créer',
+            navCloseSheetText: 'Fermer',
 
             // Page Modération Back-Office (Phase 2.5)
             moderationDocTitle: 'AYA Back-Office | Modération des Témoignages',
@@ -386,6 +407,27 @@
             navModerationText: 'الإشراف',
             navProfilText: 'الملف',
             navbarLiveText: 'متصل',
+            // Nouveaux termes vulgarisés Grand Public (Arabe Shami Levantin)
+            navExchangeText: 'غرفة الدردشة',
+            navCreationText: 'أدوات الإنشاء',
+            navCreationSub: 'الترجمة والفيديوهات والبطاقات التعليمية',
+            navTranslationText: 'المترجم الشامي',
+            navTranslationSub: 'ترجمة فورية للنصوص والتسجيلات',
+            navVideoText: 'صانع الفيديوهات',
+            navVideoSub: 'دبلجة وتوليد ترجمة مرئية متزامنة',
+            navCardsText: 'البطاقات التعليمية',
+            navCardsSub: 'بطاقات بلقطات صوتية مزدوجة للتيك توك',
+            navCommunityText: 'جدار المجتمع',
+            navCommunitySub: 'الشهادات والتجارب الحية المشتركة',
+            navAccountText: 'حسابي ورصيدي',
+            navProfileText: 'الملف الشخصي',
+            navWalletText: 'المحفظة والرصيد',
+            navCreationsText: 'أعمالي وسجل الإنتاج',
+            navAdminText: 'لوحة التحكم والإدارة',
+            navLogoutText: 'تسجيل الخروج',
+            navOnlineText: 'متصل',
+            navCreateActionText: 'إنشاء',
+            navCloseSheetText: 'إغلاق',
 
             // Page Modération Back-Office (Phase 2.5)
             moderationDocTitle: 'منصة آية - لوحة الإشراف والمراجعة',
@@ -775,6 +817,37 @@
         updateElementText('navProfilText', dict.navProfilText);
         updateElementText('navbarLiveText', dict.navbarLiveText);
 
+        // Nouveaux libellés Desktop & Mobile
+        updateElementText('navExchangeText', dict.navExchangeText);
+        updateElementText('navCreationText', dict.navCreationText);
+        updateElementText('navTranslationText', dict.navTranslationText);
+        updateElementText('navTranslationSub', dict.navTranslationSub);
+        updateElementText('navVideoText', dict.navVideoText);
+        updateElementText('navVideoSub', dict.navVideoSub);
+        updateElementText('navCardsText', dict.navCardsText);
+        updateElementText('navCardsSub', dict.navCardsSub);
+        updateElementText('navCommunityText', dict.navCommunityText);
+        updateElementText('navCommunitySub', dict.navCommunitySub);
+        updateElementText('navAccountText', dict.navAccountText);
+        updateElementText('navProfileText', dict.navProfileText);
+        updateElementText('navWalletText', dict.navWalletText);
+        updateElementText('navCreationsText', dict.navCreationsText);
+        updateElementText('navAdminText', dict.navAdminText);
+        updateElementText('navLogoutText', dict.navLogoutText);
+        updateElementText('bottomNavExchangeText', dict.navExchangeText);
+        updateElementText('bottomNavCreateText', dict.navCreateActionText);
+        updateElementText('bottomNavAccountText', dict.navAccountText);
+        updateElementText('bottomNavAdminText', dict.navAdminText);
+        updateElementText('sheetCreationTitle', dict.navCreationText);
+        updateElementText('sheetTransTitle', dict.navTranslationText);
+        updateElementText('sheetTransSub', dict.navTranslationSub);
+        updateElementText('sheetVideoTitle', dict.navVideoText);
+        updateElementText('sheetVideoSub', dict.navVideoSub);
+        updateElementText('sheetCardsTitle', dict.navCardsText);
+        updateElementText('sheetCardsSub', dict.navCardsSub);
+        updateElementText('sheetCommTitle', dict.navCommunityText);
+        updateElementText('sheetCommSub', dict.navCommunitySub);
+
         const userObj = getUserSession();
         const userNameSpan = document.getElementById('navbarUserName');
         const avatarImg = document.getElementById('navbarAvatarImg');
@@ -1126,7 +1199,7 @@
         }
     }
 
-    // 3. Construction de la Navbar Partagée Homogène
+    // 3. Construction de la Navbar Partagée Homogène & Navigation Moderne
     function initSharedNavbar() {
         const existingHeader = document.querySelector('header');
         if (!existingHeader) return;
@@ -1143,6 +1216,7 @@
         const isTraducteur = path.includes('traducteur');
         const isProfil = path.includes('profil');
         const isChat = path.includes('chat') || path === '/chat-en-direct' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
+        const isCreationActive = isTraduction || isStudio || isCommunaute || isTraducteur;
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -1162,30 +1236,99 @@
                     </a>
                 </div>
 
-                <!-- PÔLE CENTRAL : Navigation Principale Allégée -->
-                <nav class="navbar-nav" aria-label="Navigation principale">
-                    <a href="/chat-en-direct" class="nav-link-modern ${isChat ? 'active' : ''}" id="navHomeLink">
-                        <span class="nav-icon-live">💬</span> <span id="navHomeText">${dict.navHomeText}</span>
+                <!-- PÔLE CENTRAL : Navigation Épurée avec Menus Déroulants (Desktop) -->
+                <nav class="navbar-nav" aria-label="Navigation principale" role="menubar">
+                    <!-- 1. Salon d'Échange -->
+                    <a href="/chat-en-direct" class="nav-link-modern ${isChat ? 'active' : ''}" id="navExchangeLink" role="menuitem">
+                        <span class="nav-icon-live">💬</span>
+                        <span id="navExchangeText">${dict.navExchangeText}</span>
                     </a>
-                    <a href="/traduction" class="nav-link-modern ${isTraduction ? 'active' : ''}" id="navTraductionLink">
-                        <span>✨</span> <span id="navTraductionText">${dict.navTraductionText}</span>
-                    </a>
-                    <a href="/studio" class="nav-link-modern ${isStudio ? 'active' : ''}" id="navStudioLink">
-                        <span>🎬</span> <span id="navStudioText">${dict.navStudioText}</span>
-                    </a>
-                    <a href="/communaute" class="nav-link-modern ${isCommunaute ? 'active' : ''}" id="navCommunauteLink">
-                        <span>🌍</span> <span id="navCommunauteText">${dict.navCommunauteText}</span>
-                    </a>
-                    <a href="/profil" class="nav-link-modern ${isProfil ? 'active' : ''}" id="navProfilLink">
-                        <span>👤</span> <span id="navProfilText">${dict.navProfilText}</span>
-                    </a>
+
+                    <!-- 2. Outils de Création (Menu Déroulant Glassmorphism) -->
+                    <div class="nav-dropdown-wrapper" id="dropdownCreationWrapper">
+                        <button type="button" class="nav-dropdown-btn ${isCreationActive ? 'active' : ''}" id="btnDropdownCreation" aria-haspopup="true" aria-expanded="false" role="menuitem">
+                            <span>🎨</span>
+                            <span id="navCreationText">${dict.navCreationText}</span>
+                            <span class="dropdown-chevron">▾</span>
+                        </button>
+                        <div class="nav-dropdown-menu" id="menuDropdownCreation" role="menu" aria-label="${dict.navCreationText}">
+                            <a href="/traduction" class="dropdown-item ${isTraduction ? 'active' : ''}" role="menuitem">
+                                <span class="dropdown-item-icon">✨</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navTranslationText">${dict.navTranslationText}</span>
+                                    <span class="dropdown-item-desc" id="navTranslationSub">${dict.navTranslationSub}</span>
+                                </div>
+                            </a>
+                            <a href="/studio" class="dropdown-item ${isStudio ? 'active' : ''}" role="menuitem">
+                                <span class="dropdown-item-icon">🎬</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navVideoText">${dict.navVideoText}</span>
+                                    <span class="dropdown-item-desc" id="navVideoSub">${dict.navVideoSub}</span>
+                                </div>
+                            </a>
+                            <a href="/profil#cards" class="dropdown-item" role="menuitem">
+                                <span class="dropdown-item-icon">🎴</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navCardsText">${dict.navCardsText}</span>
+                                    <span class="dropdown-item-desc" id="navCardsSub">${dict.navCardsSub}</span>
+                                </div>
+                            </a>
+                            <a href="/communaute" class="dropdown-item ${isCommunaute ? 'active' : ''}" role="menuitem">
+                                <span class="dropdown-item-icon">🌍</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navCommunityText">${dict.navCommunityText}</span>
+                                    <span class="dropdown-item-desc" id="navCommunitySub">${dict.navCommunitySub}</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 3. Mon Compte (Menu Déroulant Glassmorphism) -->
+                    <div class="nav-dropdown-wrapper" id="dropdownAccountWrapper">
+                        <button type="button" class="nav-dropdown-btn ${isProfil ? 'active' : ''}" id="btnDropdownAccount" aria-haspopup="true" aria-expanded="false" role="menuitem">
+                            <span>👤</span>
+                            <span id="navAccountText">${dict.navAccountText}</span>
+                            <span class="dropdown-chevron">▾</span>
+                        </button>
+                        <div class="nav-dropdown-menu" id="menuDropdownAccount" role="menu" aria-label="${dict.navAccountText}">
+                            <a href="/profil" class="dropdown-item ${isProfil ? 'active' : ''}" role="menuitem">
+                                <span class="dropdown-item-icon">👤</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navProfileText">${dict.navProfileText}</span>
+                                    <span class="dropdown-item-desc" id="dropdownUserName">--</span>
+                                </div>
+                            </a>
+                            <a href="/profil#packs" class="dropdown-item" role="menuitem">
+                                <span class="dropdown-item-icon">⚡</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navWalletText">${dict.navWalletText}</span>
+                                    <span class="dropdown-item-desc"><strong id="dropdownCreditsCount">--</strong> crédits restants</span>
+                                </div>
+                            </a>
+                            <a href="/profil#videos" class="dropdown-item" role="menuitem">
+                                <span class="dropdown-item-icon">📜</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navCreationsText">${dict.navCreationsText}</span>
+                                    <span class="dropdown-item-desc">Vidéos et fiches sauvegardées</span>
+                                </div>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item danger" id="dropdownLogoutBtn" role="menuitem">
+                                <span class="dropdown-item-icon">🚪</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navLogoutText">${dict.navLogoutText}</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+
                     ${isModeration ? `
                     <a href="/moderation" class="nav-link-modern active" id="navModerationLink">
                         <span>🛡️</span> <span id="navModerationText">${dict.navModerationText}</span>
                     </a>` : ''}
                 </nav>
 
-                <!-- PÔLE DROIT : Utilitaires, Solde & Compte -->
+                <!-- PÔLE DROIT : Utilitaires, Solde & Langue -->
                 <div class="navbar-actions">
                     <!-- Badge Présence / Personnes Connectées -->
                     <div class="navbar-online-pill" id="navbarOnlineBadge" title="${currentLang === 'ar' ? 'المستخدمون المتصلون حالياً' : 'Personnes connectées en direct'}">
@@ -1194,7 +1337,7 @@
                     </div>
 
                     <!-- Badge Solde Crédits -->
-                    <a href="/profil" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض الرصيد والمحفظة' : 'Mon Portefeuille & Crédits'}">
+                    <a href="/profil#packs" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض الرصيد والمحفظة' : 'Mon Portefeuille & Crédits'}">
                         <span class="credit-icon">⚡</span>
                         <span id="navbarCreditsCount" class="credit-count">--</span>
                         <span class="credit-unit">${currentLang === 'ar' ? 'رصيد' : 'Cr.'}</span>
@@ -1206,18 +1349,194 @@
                         <span class="lang-sep">|</span>
                         <button class="lang-toggle-btn ${currentLang === 'ar' ? 'active' : ''}" id="langArBtn" aria-label="العربية">عربي</button>
                     </div>
-
-                    <!-- Profil Utilisateur & Déconnexion -->
-                    <div class="navbar-user-wrap" id="navbarUserBadge">
-                        <a href="/profil" id="navbarUserProfileLink" class="navbar-avatar-link" title="${dict.navProfilText}">
-                            <img id="navbarAvatarImg" src="/icon.png" class="navbar-avatar-img" alt="Avatar" onerror="this.src='/icon.png'">
-                            <span id="navbarUserName" class="navbar-username">👤</span>
-                        </a>
-                        <button class="btn-logout-minimal" id="navbarLogoutBtn" title="${dict.logoutBtnTitle}" aria-label="${dict.logoutBtnTitle}">🚪</button>
-                    </div>
                 </div>
             </div>
         `;
+
+        // ── Injection de la Bottom Navigation Mobile ──
+        let bottomNav = document.getElementById('ayaBottomNav');
+        if (!bottomNav) {
+            bottomNav = document.createElement('nav');
+            bottomNav.className = 'aya-bottom-nav';
+            bottomNav.id = 'ayaBottomNav';
+            bottomNav.setAttribute('aria-label', 'Navigation mobile');
+            document.body.appendChild(bottomNav);
+        }
+
+        bottomNav.innerHTML = `
+            <a href="/chat-en-direct" class="bottom-nav-item ${isChat ? 'active' : ''}" id="bottomNavExchange">
+                <span class="bottom-nav-icon">💬</span>
+                <span class="bottom-nav-label" id="bottomNavExchangeText">${dict.navExchangeText}</span>
+            </a>
+            <button type="button" class="bottom-nav-item-fab" id="bottomNavCreateFab" aria-label="${dict.navCreateActionText}">
+                <span class="fab-circle">
+                    <span class="fab-icon">➕</span>
+                </span>
+                <span class="bottom-nav-label" id="bottomNavCreateText">${dict.navCreateActionText}</span>
+            </button>
+            <a href="/profil" class="bottom-nav-item ${isProfil ? 'active' : ''}" id="bottomNavAccount">
+                <span class="bottom-nav-icon">👤</span>
+                <span class="bottom-nav-label" id="bottomNavAccountText">${dict.navAccountText}</span>
+            </a>
+            <div id="bottomNavAdminContainer" style="display: none; height: 100%;"></div>
+        `;
+
+        // ── Injection de la Bottom Sheet Mobile (Tiroir d'actions coulissant) ──
+        let sheetBackdrop = document.getElementById('ayaActionSheetBackdrop');
+        if (!sheetBackdrop) {
+            sheetBackdrop = document.createElement('div');
+            sheetBackdrop.className = 'aya-action-sheet-backdrop';
+            sheetBackdrop.id = 'ayaActionSheetBackdrop';
+            sheetBackdrop.style.display = 'none';
+            document.body.appendChild(sheetBackdrop);
+        }
+
+        let actionSheet = document.getElementById('ayaActionSheet');
+        if (!actionSheet) {
+            actionSheet = document.createElement('div');
+            actionSheet.className = 'aya-action-sheet';
+            actionSheet.id = 'ayaActionSheet';
+            actionSheet.style.display = 'none';
+            actionSheet.setAttribute('role', 'dialog');
+            actionSheet.setAttribute('aria-modal', 'true');
+            actionSheet.setAttribute('aria-label', dict.navCreationText);
+            document.body.appendChild(actionSheet);
+        }
+
+        actionSheet.innerHTML = `
+            <div class="sheet-drag-handle"></div>
+            <div class="sheet-header">
+                <div class="sheet-title-wrap">
+                    <span style="font-size: 1.3rem;">🎨</span>
+                    <h3 class="sheet-title" id="sheetCreationTitle">${dict.navCreationText}</h3>
+                </div>
+                <button type="button" class="sheet-close-btn" id="btnSheetClose" aria-label="${dict.navCloseSheetText}">✕</button>
+            </div>
+            <div class="sheet-grid">
+                <a href="/traduction" class="sheet-card ${isTraduction ? 'active' : ''}">
+                    <div class="sheet-card-icon">✨</div>
+                    <div class="sheet-card-info">
+                        <strong id="sheetTransTitle">${dict.navTranslationText}</strong>
+                        <small id="sheetTransSub">${dict.navTranslationSub}</small>
+                    </div>
+                    <span class="sheet-card-arrow">➔</span>
+                </a>
+                <a href="/studio" class="sheet-card ${isStudio ? 'active' : ''}">
+                    <div class="sheet-card-icon">🎬</div>
+                    <div class="sheet-card-info">
+                        <strong id="sheetVideoTitle">${dict.navVideoText}</strong>
+                        <small id="sheetVideoSub">${dict.navVideoSub}</small>
+                    </div>
+                    <span class="sheet-card-arrow">➔</span>
+                </a>
+                <a href="/profil#cards" class="sheet-card">
+                    <div class="sheet-card-icon">🎴</div>
+                    <div class="sheet-card-info">
+                        <strong id="sheetCardsTitle">${dict.navCardsText}</strong>
+                        <small id="sheetCardsSub">${dict.navCardsSub}</small>
+                    </div>
+                    <span class="sheet-card-arrow">➔</span>
+                </a>
+                <a href="/communaute" class="sheet-card ${isCommunaute ? 'active' : ''}">
+                    <div class="sheet-card-icon">🌍</div>
+                    <div class="sheet-card-info">
+                        <strong id="sheetCommTitle">${dict.navCommunityText}</strong>
+                        <small id="sheetCommSub">${dict.navCommunitySub}</small>
+                    </div>
+                    <span class="sheet-card-arrow">➔</span>
+                </a>
+            </div>
+        `;
+
+        // ── Gestion des Menus Déroulants Desktop ──
+        const creationWrapper = document.getElementById('dropdownCreationWrapper');
+        const btnCreation = document.getElementById('btnDropdownCreation');
+        const accountWrapper = document.getElementById('dropdownAccountWrapper');
+        const btnAccount = document.getElementById('btnDropdownAccount');
+
+        function closeAllDropdowns() {
+            if (creationWrapper) {
+                creationWrapper.classList.remove('open');
+                if (btnCreation) btnCreation.setAttribute('aria-expanded', 'false');
+            }
+            if (accountWrapper) {
+                accountWrapper.classList.remove('open');
+                if (btnAccount) btnAccount.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        if (btnCreation) {
+            btnCreation.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = creationWrapper.classList.contains('open');
+                closeAllDropdowns();
+                if (!isOpen) {
+                    creationWrapper.classList.add('open');
+                    btnCreation.setAttribute('aria-expanded', 'true');
+                }
+            });
+        }
+
+        if (btnAccount) {
+            btnAccount.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = accountWrapper.classList.contains('open');
+                closeAllDropdowns();
+                if (!isOpen) {
+                    accountWrapper.classList.add('open');
+                    btnAccount.setAttribute('aria-expanded', 'true');
+                }
+            });
+        }
+
+        // ── Gestion de la Bottom Sheet Mobile ──
+        const btnFab = document.getElementById('bottomNavCreateFab');
+        const btnCloseSheet = document.getElementById('btnSheetClose');
+
+        function openActionSheet() {
+            closeAllDropdowns();
+            if (sheetBackdrop) sheetBackdrop.style.display = 'block';
+            if (actionSheet) {
+                actionSheet.style.display = 'block';
+                requestAnimationFrame(() => actionSheet.classList.add('open'));
+            }
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeActionSheet() {
+            if (actionSheet) {
+                actionSheet.classList.remove('open');
+                setTimeout(() => {
+                    actionSheet.style.display = 'none';
+                    if (sheetBackdrop) sheetBackdrop.style.display = 'none';
+                }, 280);
+            } else if (sheetBackdrop) {
+                sheetBackdrop.style.display = 'none';
+            }
+            document.body.style.overflow = '';
+        }
+
+        if (btnFab) btnFab.addEventListener('click', openActionSheet);
+        if (btnCloseSheet) btnCloseSheet.addEventListener('click', closeActionSheet);
+        if (sheetBackdrop) sheetBackdrop.addEventListener('click', closeActionSheet);
+
+        actionSheet.querySelectorAll('a').forEach(a => {
+            a.addEventListener('click', closeActionSheet);
+        });
+
+        // ── Accessibilité WCAG : Clic extérieur & Touche Échap ──
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-dropdown-wrapper')) {
+                closeAllDropdowns();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                closeAllDropdowns();
+                closeActionSheet();
+            }
+        });
 
         // Événements du switcher
         const btnFr = document.getElementById('langFrBtn');
@@ -1226,7 +1545,7 @@
         if (btnAr) btnAr.addEventListener('click', () => setLanguage('ar'));
 
         // Événement de déconnexion
-        const logoutBtn = document.getElementById('navbarLogoutBtn');
+        const logoutBtn = document.getElementById('dropdownLogoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('aya_user');
@@ -1240,7 +1559,7 @@
         // Initialisation de la surveillance de présence en direct
         updatePresence();
 
-        // ── Détection Admin & Injection Automatique du lien 🛡️ Administration ──
+        // ── Détection Admin & Injection Sécurisée du lien Tour de Contrôle ──
         (async function checkAdminStatus() {
             let isAdmin = false;
             try {
@@ -1265,6 +1584,7 @@
             } catch(e) {}
 
             if (isAdmin) {
+                // Desktop
                 const navNav = document.querySelector('.navbar-nav');
                 if (navNav && !document.getElementById('navAdminLink')) {
                     const isAdminPage = window.location.pathname.includes('admin');
@@ -1273,8 +1593,20 @@
                     adminLink.className = `nav-link-modern ${isAdminPage ? 'active' : ''}`;
                     adminLink.id = 'navAdminLink';
                     adminLink.style.cssText = 'background: rgba(0, 188, 212, 0.15); border: 1px solid rgba(0, 188, 212, 0.4); color: #67e8f9;';
-                    adminLink.innerHTML = `<span>🛡️</span> <span>Administration</span>`;
+                    adminLink.innerHTML = `<span>🛡️</span> <span id="navAdminText">${dict.navAdminText || 'Tour de Contrôle'}</span>`;
                     navNav.appendChild(adminLink);
+                }
+
+                // Mobile
+                const bottomAdminContainer = document.getElementById('bottomNavAdminContainer');
+                if (bottomAdminContainer) {
+                    bottomAdminContainer.style.display = 'block';
+                    bottomAdminContainer.innerHTML = `
+                        <a href="/admin.html" class="bottom-nav-item ${window.location.pathname.includes('admin') ? 'active' : ''}" id="bottomNavAdmin">
+                            <span class="bottom-nav-icon">🛡️</span>
+                            <span class="bottom-nav-label" id="bottomNavAdminText">${dict.navAdminText || 'Admin'}</span>
+                        </a>
+                    `;
                 }
 
                 const adminProfileBtn = document.getElementById('adminTourBtnContainer');
