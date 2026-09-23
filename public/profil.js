@@ -595,6 +595,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSubmitVocabGenerate = document.getElementById('btnSubmitVocabGenerate');
     const btnSubmitVocabText = document.getElementById('btnSubmitVocabText');
 
+    // Écran de Prévisualisation & Arbitrage (Étape 2 Gratuite)
+    const vocabPreviewScreen = document.getElementById('vocabPreviewScreen');
+    const vocabPreviewTitleFr = document.getElementById('vocabPreviewTitleFr');
+    const vocabPreviewTitleAr = document.getElementById('vocabPreviewTitleAr');
+    const vocabPreviewWordsList = document.getElementById('vocabPreviewWordsList');
+    const btnVocabRollAnother = document.getElementById('btnVocabRollAnother');
+    const btnVocabConfirmGenerate = document.getElementById('btnVocabConfirmGenerate');
+    const btnVocabBackToForm = document.getElementById('btnVocabBackToForm');
+    const rollSpinner = document.getElementById('rollSpinner');
+
+    let currentPreviewVocabData = null;
+    let seenWordsList = [];
+
     // Écran de Progression
     const vocabProgressScreen = document.getElementById('vocabProgressScreen');
     const vocabProgressStep = document.getElementById('vocabProgressStep');
@@ -661,6 +674,67 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tabBtnCards) tabBtnCards.addEventListener('click', () => switchTab('cards'));
 
     /**
+     * Charge dynamiquement les thèmes administrables depuis le serveur
+     */
+    async function loadVocabThemes() {
+        const themeChipsContainer = document.getElementById('themeChipsContainer');
+        if (!themeChipsContainer) return;
+
+        try {
+            const res = await fetch('/api/premium/vocab-themes');
+            const data = await res.json();
+            if (data.success && Array.isArray(data.themes) && data.themes.length > 0) {
+                themeChipsContainer.innerHTML = data.themes.map((t, idx) => `
+                    <span class="theme-chip ${idx === 0 ? 'active' : ''}" data-theme="${t.titleFr}">
+                        ${t.emoji || '✨'} ${t.titleFr}
+                    </span>
+                `).join('');
+
+                // Ré-attacher les écouteurs de clics
+                const chips = themeChipsContainer.querySelectorAll('.theme-chip');
+                chips.forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        chips.forEach(c => c.classList.remove('active'));
+                        chip.classList.add('active');
+                        const theme = chip.getAttribute('data-theme');
+                        if (vocabThemeInput) vocabThemeInput.value = theme;
+                    });
+                });
+
+                if (vocabThemeInput && data.themes[0]) {
+                    vocabThemeInput.value = data.themes[0].titleFr;
+                }
+            }
+        } catch (e) {
+            console.warn('[VOCAB THEMES] Chargement fallback des thèmes par défaut');
+        }
+    }
+
+    /**
+     * Rendu des 5 mots dans l'écran de prévisualisation (Dual Compartment)
+     */
+    function renderVocabPreviewList(words) {
+        if (!vocabPreviewWordsList || !Array.isArray(words)) return;
+        vocabPreviewWordsList.innerHTML = words.map(item => `
+            <div class="vocab-preview-item-bilingual">
+                <div class="preview-comp-fr">
+                    <span class="preview-badge-tag preview-badge-fr">FRANÇAIS</span>
+                    <div class="preview-word-fr">${item.french}</div>
+                    <div class="preview-sub-fr">🗣️ ${item.phoneticFr || ''}</div>
+                </div>
+                <div class="preview-comp-divider">
+                    <span>${item.icon || '✨'}</span>
+                </div>
+                <div class="preview-comp-ar">
+                    <span class="preview-badge-tag preview-badge-ar">عَرَبِيٌّ شَامِيٌّ</span>
+                    <div class="preview-word-ar">${item.arabic}</div>
+                    <div class="preview-sub-ar">نُطْق: ${item.phoneticAr || ''}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
      * Ouvre le modal de création d'une fiche
      */
     function openVocabCreateModal() {
@@ -668,8 +742,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Réinitialiser les écrans
         vocabGenerateForm.style.display = 'block';
+        if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'none';
         vocabProgressScreen.style.display = 'none';
         vocabResultScreen.style.display = 'none';
+        currentPreviewVocabData = null;
+        seenWordsList = [];
+
+        // Charger les thèmes à jour
+        loadVocabThemes();
 
         // Synchroniser le solde de crédits
         const availableCreditsText = walletAvailableCredits ? walletAvailableCredits.textContent : '--';
@@ -831,58 +911,162 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Gestion de la soumission du formulaire de génération
-    if (vocabGenerateForm) {
-        vocabGenerateForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    // ── Étape 1 : Prévisualisation Gratuite (0 Crédit) ──
+    async function requestWordsPreview(isRollAnother = false) {
+        let theme = 'Solidarité & Espoir';
+        let customWords = null;
 
-            let theme = 'Solidarité & Espoir';
-            let customWords = null;
-
-            if (currentVocabMode === 'custom') {
-                const wordsCollected = [];
-                for (let i = 1; i <= 5; i++) {
-                    const val = (document.getElementById(`customWordInput${i}`)?.value || '').trim();
-                    if (val) wordsCollected.push(val);
-                }
-
-                if (wordsCollected.length === 0) {
-                    showToast("Veuillez saisir au moins 1 mot ou choisir le mode thématique automatique.", "warning");
-                    return;
-                }
-
-                customWords = wordsCollected;
-                const customTitle = (document.getElementById('vocabCustomTitleInput')?.value || '').trim();
-                theme = customTitle || customWords.slice(0, 2).join(' & ') || 'Mots Choisis';
-            } else {
-                theme = (vocabThemeInput?.value || '').trim() || 'Solidarité & Espoir';
-                customWords = null;
+        if (currentVocabMode === 'custom') {
+            const wordsCollected = [];
+            for (let i = 1; i <= 5; i++) {
+                const val = (document.getElementById(`customWordInput${i}`)?.value || '').trim();
+                if (val) wordsCollected.push(val);
             }
 
-            // Masquer le formulaire et afficher l'écran de progression
+            if (wordsCollected.length === 0) {
+                showToast("Veuillez saisir au moins 1 mot ou choisir le mode par thème.", "warning");
+                return;
+            }
+
+            customWords = wordsCollected;
+            const customTitle = (document.getElementById('vocabCustomTitleInput')?.value || '').trim();
+            theme = customTitle || customWords.slice(0, 2).join(' & ') || 'Mots Choisis';
+        } else {
+            theme = (vocabThemeInput?.value || '').trim() || 'Solidarité & Espoir';
+            customWords = null;
+        }
+
+        // Gestion de l'état des boutons pendant le chargement
+        if (isRollAnother) {
+            if (btnVocabRollAnother) {
+                btnVocabRollAnother.disabled = true;
+                btnVocabRollAnother.style.opacity = '0.7';
+            }
+            if (rollSpinner) rollSpinner.style.display = 'inline';
+        } else {
+            if (btnSubmitVocabGenerate) {
+                btnSubmitVocabGenerate.disabled = true;
+                btnSubmitVocabGenerate.style.opacity = '0.7';
+            }
+            if (btnSubmitVocabText) btnSubmitVocabText.textContent = "Recherche des mots en cours...";
+        }
+
+        try {
+            const response = await fetch('/api/premium/vocabulary-words-preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    theme,
+                    level: selectedDifficultyLevel,
+                    customWords,
+                    excludeWords: seenWordsList
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success || !Array.isArray(data.words) || data.words.length === 0) {
+                throw new Error(data.error || "Impossible de prévisualiser les mots.");
+            }
+
+            currentPreviewVocabData = data;
+
+            // Enregistrer les mots vus pour exclure les doublons lors des prochains rolls
+            data.words.forEach(w => {
+                if (w.french && !seenWordsList.includes(w.french)) {
+                    seenWordsList.push(w.french);
+                }
+            });
+
+            // Afficher dans l'écran d'arbitrage
+            if (vocabPreviewTitleFr) vocabPreviewTitleFr.textContent = data.titleFr || theme.toUpperCase();
+            if (vocabPreviewTitleAr) vocabPreviewTitleAr.textContent = data.titleAr || '';
+            renderVocabPreviewList(data.words);
+
             vocabGenerateForm.style.display = 'none';
+            if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'block';
+
+        } catch (err) {
+            console.error('[VOCAB PREVIEW] ❌ Erreur :', err);
+            showToast(err.message || "Erreur lors de la prévisualisation des mots.", "error");
+        } finally {
+            if (btnSubmitVocabGenerate) {
+                btnSubmitVocabGenerate.disabled = false;
+                btnSubmitVocabGenerate.style.opacity = '1';
+            }
+            if (btnSubmitVocabText) btnSubmitVocabText.textContent = "Prévisualiser les 5 mots (Gratuit)";
+            if (btnVocabRollAnother) {
+                btnVocabRollAnother.disabled = false;
+                btnVocabRollAnother.style.opacity = '1';
+            }
+            if (rollSpinner) rollSpinner.style.display = 'none';
+        }
+    }
+
+    // Soumission du formulaire (déclenche l'arbitrage gratuit)
+    if (vocabGenerateForm) {
+        vocabGenerateForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            requestWordsPreview(false);
+        });
+    }
+
+    // Bouton « 🔄 Proposer 5 autres mots »
+    if (btnVocabRollAnother) {
+        btnVocabRollAnother.addEventListener('click', () => {
+            requestWordsPreview(true);
+        });
+    }
+
+    // Bouton « ✏️ Modifier critères » (retour formulaire)
+    if (btnVocabBackToForm) {
+        btnVocabBackToForm.addEventListener('click', () => {
+            if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'none';
+            vocabGenerateForm.style.display = 'block';
+        });
+    }
+
+    // ── Étape 2 : Validation Définitive et Lancement de la Fabrication (1 Crédit) ──
+    if (btnVocabConfirmGenerate) {
+        btnVocabConfirmGenerate.addEventListener('click', async () => {
+            if (!currentPreviewVocabData) {
+                showToast("Aucune sélection de mots à valider.", "warning");
+                return;
+            }
+
+            // Vérification solde crédits
+            const availableCreditsText = walletAvailableCredits ? walletAvailableCredits.textContent : '0';
+            const numCredits = parseInt(availableCreditsText, 10);
+            if (!isNaN(numCredits) && numCredits <= 0) {
+                showToast("Solde insuffisant (0 crédit). Veuillez recharger votre compte.", "error");
+                closeVocabCreateModal();
+                openRechargeModal();
+                return;
+            }
+
+            // Masquer l'écran de prévisualisation et afficher l'écran de progression
+            if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'none';
             vocabProgressScreen.style.display = 'block';
             vocabProgressBar.style.width = '15%';
-            if (vocabProgressStep) vocabProgressStep.textContent = "Étape 1/4 : Analyse sémantique & phonétique par Gemini Flash...";
+            if (vocabProgressStep) vocabProgressStep.textContent = "Étape 1/3 : Rendu graphique HD 1080×1920 (Puppeteer Headless)...";
 
-            // Échelonnement réaliste de la progression sur les 20 à 25 secondes du pipeline
+            // Échelonnement réaliste de la progression
             const stepTimers = [
                 setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 2/4 : Rendu graphique HD 1080×1920 (Puppeteer Headless)...";
-                    if (vocabProgressBar) vocabProgressBar.style.width = '40%';
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 2/3 : Synthèse neuronale bilingue native (voix Henri + Sana)...";
+                    if (vocabProgressBar) vocabProgressBar.style.width = '55%';
                 }, 3500),
                 setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 3/4 : Synthèse neuronale bilingue (voix Henri + Sana)...";
-                    if (vocabProgressBar) vocabProgressBar.style.width = '65%';
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 3/3 : Assemblage audio séquentiel et pauses pédagogiques...";
+                    if (vocabProgressBar) vocabProgressBar.style.width = '80%';
                 }, 8500),
                 setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 4/4 : Assemblage des 10 segments audio avec silences pédagogiques...";
-                    if (vocabProgressBar) vocabProgressBar.style.width = '85%';
-                }, 15000),
-                setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Finalisation de la fiche et enregistrement haute définition...";
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Finalisation de l'affiche et enregistrement haute définition...";
                     if (vocabProgressBar) vocabProgressBar.style.width = '95%';
-                }, 20000)
+                }, 14000)
             ];
 
             try {
@@ -893,9 +1077,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        theme,
-                        level: selectedDifficultyLevel,
-                        customWords
+                        theme: currentPreviewVocabData.theme,
+                        level: currentPreviewVocabData.level || selectedDifficultyLevel,
+                        validatedVocabData: currentPreviewVocabData
                     })
                 });
 
@@ -905,7 +1089,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.status === 402 || data.reason === 'INSUFFICIENT_CREDITS') {
                     vocabProgressScreen.style.display = 'none';
-                    vocabGenerateForm.style.display = 'block';
+                    if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'block';
                     showToast(data.error || "Solde insuffisant.", "error");
                     closeVocabCreateModal();
                     openRechargeModal();
@@ -916,9 +1100,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.error || data.message || "Erreur lors de la génération de la fiche.");
                 }
 
-                // Génération réussie !
+                // Fabrication terminée !
                 vocabProgressBar.style.width = '100%';
                 const card = data.card;
+
+                // Mettre à jour le solde utilisateur
+                if (data.remainingCredits !== undefined && walletAvailableCredits) {
+                    walletAvailableCredits.textContent = data.remainingCredits;
+                } else if (typeof refreshWalletCredits === 'function') {
+                    refreshWalletCredits();
+                }
 
                 // Mettre à jour l'écran de résultat
                 if (vocabResultImg) vocabResultImg.src = card.imageUrl;
@@ -926,13 +1117,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     vocabResultAudio.src = card.audioUrl;
                     vocabResultAudio.load();
                 }
-                if (vocabResultTitleFr) vocabResultTitleFr.textContent = card.titleFr || theme.toUpperCase();
+                if (vocabResultTitleFr) vocabResultTitleFr.textContent = card.titleFr || currentPreviewVocabData.theme.toUpperCase();
                 if (vocabResultTitleAr) vocabResultTitleAr.textContent = card.titleAr || '';
                 if (vocabResultLevelBadge) {
                     vocabResultLevelBadge.textContent = (card.level || selectedDifficultyLevel).toUpperCase();
                 }
 
-                // Affichage des 5 mots générés
+                // Affichage des 5 mots générés (avec double phonétique)
                 if (vocabResultWordsList && Array.isArray(card.words)) {
                     vocabResultWordsList.innerHTML = card.words.map(w => `
                         <div class="vocab-word-preview-row">
@@ -958,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnDownloadCardMp3.setAttribute('download', `${card.cardId || 'audio_vocabulaire'}.mp3`);
                 }
 
-                // Afficher l'écran de résultat
+                // Basculer vers l'écran de résultat
                 setTimeout(() => {
                     vocabProgressScreen.style.display = 'none';
                     vocabResultScreen.style.display = 'block';
@@ -967,16 +1158,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast("🎉 Fiche générée avec succès ! 1 crédit débité.", "success");
 
                 // Actualiser immédiatement le solde et la galerie
-                loadUserProfile();
+                if (typeof loadUserProfile === 'function') loadUserProfile();
                 loadCardsHistory();
 
             } catch (err) {
                 stepTimers.forEach(t => clearTimeout(t));
-                console.error('[VOCAB CARD GENERATION ERROR]', err);
+                console.error('[VOCAB CARD] ❌ Erreur fabrication :', err);
                 vocabProgressScreen.style.display = 'none';
-                vocabGenerateForm.style.display = 'block';
-                showToast(err.message || "Erreur de génération. Votre crédit a été restitué.", "error");
-                loadUserProfile(); // Pour vérifier le solde intact
+                if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'block';
+                showToast(err.message || "Erreur inattendue lors de la fabrication.", "error");
             }
         });
     }

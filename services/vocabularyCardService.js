@@ -83,7 +83,7 @@ const vocabCardQueue = new SequentialQueue();
 /**
  * 1. Génération sémantique des 5 mots bilingues via Gemini Flash (ou customWords)
  */
-async function generateVocabularyData(theme, customWords = null, level = 'debutant') {
+async function generateVocabularyData(theme, customWords = null, level = 'debutant', excludeWords = []) {
     const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!geminiKey) {
         throw new Error("Clé API Gemini (GEMINI_API_KEY) manquante.");
@@ -128,6 +128,14 @@ Réponds STRICTEMENT au format JSON suivant :
         }
     }
 
+    // Normalisation des mots exclus (pour renouveler la sélection sans doublons)
+    let cleanExcludeWords = [];
+    if (Array.isArray(excludeWords)) {
+        cleanExcludeWords = excludeWords.map(w => (typeof w === 'string' ? w.trim() : '')).filter(Boolean);
+    } else if (typeof excludeWords === 'string' && excludeWords.trim()) {
+        cleanExcludeWords = excludeWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
+    }
+
     let userPrompt;
     if (cleanCustomWords && cleanCustomWords.length > 0) {
         if (cleanCustomWords.length >= 5) {
@@ -141,6 +149,10 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
         }
     } else {
         userPrompt = `Génère 5 mots essentiels et poignants sur le thème : "${theme || 'solidarite_et_espoir'}". Niveau de difficulté adapté : ${levelText}.`;
+    }
+
+    if (cleanExcludeWords.length > 0) {
+        userPrompt += `\nCONSIGNE D'EXCLUSION STRICTE : L'utilisateur a déjà vu ou appris ces mots : [${cleanExcludeWords.join(', ')}]. Tu ne dois ABSOLUMENT PAS inclure ces termes ni leurs variantes directes. Propose une sélection de 5 mots 100% renouvelée et différente.`;
     }
 
     const models = [
@@ -197,22 +209,41 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
 }
 
 /**
- * 2. Gabarit HTML Glassmorphism 9:16
+ * 2. Gabarit HTML Dual-Compartiment Bilingue 9:16 (Charte Aya Studio)
+ * - Pôle Francophone (Bleu Aya / 'Inter')
+ * - Séparateur Central (Émoji du mot)
+ * - Pôle Arabophone (Turquoise Aya / 'Cairo')
  */
 function buildHtmlTemplate(vocabData) {
     const cardsHtml = vocabData.words.slice(0, 5).map(item => `
-      <div class="card-item-all-in-one">
-        <div class="left-badge">${item.icon || '✨'}</div>
-        <div class="middle-content">
-          <div class="fr-title">${escapeHtml(item.french)}</div>
-          <div class="ar-translation">${escapeHtml(item.arabic)}</div>
-          <div class="phonetic-for-french">
-            <span class="phon-tag">🇵🇸 Shami:</span> ${escapeHtml(item.phoneticFr)}
+      <div class="card-item-bilingual">
+        <!-- Compartiment Francophone (Apprendre le Shami) -->
+        <div class="comp-box comp-fr">
+          <div class="comp-header">
+            <span class="comp-flag">FRANÇAIS</span>
+          </div>
+          <div class="comp-word-fr">${escapeHtml(item.french)}</div>
+          <div class="comp-phon-fr" title="Comment le dire en arabe Shami">
+            <span class="phon-tag-fr">En Shami :</span>
+            <span class="phon-val">${escapeHtml(item.phoneticFr)}</span>
           </div>
         </div>
-        <div class="right-pill">
-          <span class="pill-label">نُطْقُ الْفَرَنْسِيِّ 🇫🇷</span>
-          <span class="pill-word">${escapeHtml(item.phoneticAr)}</span>
+
+        <!-- Séparateur Central : Émoji du Mot -->
+        <div class="comp-divider">
+          <div class="comp-icon-circle">${item.icon || '✨'}</div>
+        </div>
+
+        <!-- Compartiment Arabophone (Apprendre le Français) -->
+        <div class="comp-box comp-ar">
+          <div class="comp-header">
+            <span class="comp-flag">عَرَبِيٌّ شَامِيٌّ</span>
+          </div>
+          <div class="comp-word-ar">${escapeHtml(item.arabic)}</div>
+          <div class="comp-phon-ar" title="نُطْقُ الْفَرَنْسِيِّ بِالْعَرَبِيِّ">
+            <span class="phon-tag-ar">نُطْقُ الْفَرَنْسِيِّ :</span>
+            <span class="phon-val-ar">${escapeHtml(item.phoneticAr)}</span>
+          </div>
         </div>
       </div>
     `).join('\n');
@@ -225,16 +256,17 @@ function buildHtmlTemplate(vocabData) {
   <title>${escapeHtml(vocabData.titleFr || 'Fiche Vocabulaire')}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800;900&family=Inter:wght@600;800;900&family=Noto+Sans+Arabic:wght@700;900&family=Outfit:wght@600;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient: linear-gradient(160deg, #061214 0%, #0a2022 45%, #040d0e 100%);
-      --card-bg: rgba(255, 255, 255, 0.08);
-      --card-border: rgba(255, 255, 255, 0.18);
-      --accent-ar: #fef08a;
-      --accent-phon-fr: #38bdf8;
-      --accent-pill-bg: rgba(20, 184, 166, 0.35);
-      --accent-pill-border: #2dd4bf;
+      /* Palette officielle Aya Studio */
+      --color-primary: #0b5394;
+      --color-turquoise: #00bcd4;
+      --bg-gradient: linear-gradient(165deg, #040d1a 0%, #071927 45%, #030b14 100%);
+      --fr-bg: linear-gradient(135deg, rgba(11, 83, 148, 0.42) 0%, rgba(15, 23, 42, 0.8) 100%);
+      --fr-border: rgba(56, 189, 248, 0.42);
+      --ar-bg: linear-gradient(135deg, rgba(0, 188, 212, 0.28) 0%, rgba(13, 148, 136, 0.55) 100%);
+      --ar-border: rgba(45, 212, 191, 0.48);
     }
 
     * {
@@ -245,7 +277,7 @@ function buildHtmlTemplate(vocabData) {
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #030708;
+      background: #020617;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -258,25 +290,26 @@ function buildHtmlTemplate(vocabData) {
       height: 853px;
       background: var(--bg-gradient);
       border-radius: 28px;
-      padding: 28px 18px 24px 18px;
+      padding: 24px 16px 20px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
       border: 1px solid rgba(255, 255, 255, 0.12);
       position: relative;
       overflow: hidden;
     }
 
+    /* Entête Titre */
     .header {
       text-align: center;
       z-index: 2;
-      padding-top: 4px;
+      padding-top: 2px;
     }
 
     .header h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.45rem;
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(1.2rem, 3.2vw, 1.4rem);
       font-weight: 900;
       color: #ffffff;
       letter-spacing: 0.8px;
@@ -285,142 +318,206 @@ function buildHtmlTemplate(vocabData) {
     }
 
     .header p {
-      font-family: 'Noto Sans Arabic', 'Cairo', sans-serif;
-      color: #5eead4;
-      font-size: 1.3rem;
-      font-weight: 900;
-      margin-top: 3px;
+      font-family: 'Cairo', sans-serif;
+      color: #00bcd4;
+      font-size: clamp(1.15rem, 3.2vw, 1.35rem);
+      font-weight: 800;
+      margin-top: 2px;
+      line-height: 1.2;
     }
 
+    .header-sub-bar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 3px 12px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-top: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .header-sub-bar .tag-fr {
+      color: #7dd3fc;
+    }
+
+    .header-sub-bar .tag-ar {
+      color: #5eead4;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    /* Liste des 5 Cartes */
     .card-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
       z-index: 2;
       margin: auto 0;
     }
 
-    .card-item-all-in-one {
-      background: var(--card-bg);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      padding: 8px 12px;
+    /* Ligne Bilingue à Double Compartiment */
+    .card-item-bilingual {
       display: flex;
-      align-items: center;
+      align-items: stretch;
       justify-content: space-between;
-      gap: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.22);
+      gap: 6px;
+      position: relative;
     }
 
-    .left-badge {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      font-weight: 900;
-      color: #ffffff;
-      flex-shrink: 0;
-    }
-
-    .middle-content {
+    .comp-box {
       flex: 1;
-      min-width: 0;
+      border-radius: 14px;
+      padding: 7px 10px;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      gap: 2px;
+      justify-content: space-between;
+      min-width: 0;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      position: relative;
     }
 
-    .fr-title {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.82rem;
+    /* Compartiment Francophone */
+    .comp-fr {
+      background: var(--fr-bg);
+      border: 1.5px solid var(--fr-border);
+      text-align: left;
+    }
+
+    /* Compartiment Arabophone */
+    .comp-ar {
+      background: var(--ar-bg);
+      border: 1.5px solid var(--ar-border);
+      direction: rtl;
+      text-align: right;
+    }
+
+    .comp-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+
+    .comp-flag {
+      font-size: 0.62rem;
       font-weight: 800;
-      color: #94a3b8;
-      line-height: 1.15;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      word-break: break-word;
+      letter-spacing: 0.4px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.25);
     }
 
-    .ar-translation {
-      font-family: 'Noto Sans Arabic', 'Cairo', sans-serif;
-      font-size: 1.08rem;
+    .comp-fr .comp-flag {
+      color: #bae6fd;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .comp-ar .comp-flag {
+      color: #a7f3d0;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .comp-word-fr {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.82rem, 2.2vw, 1rem);
       font-weight: 900;
-      color: var(--accent-ar);
-      line-height: 1.2;
+      color: #ffffff;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      line-height: 1.15;
       word-break: break-word;
+      margin-top: 1px;
     }
 
-    .phonetic-for-french {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 800;
-      letter-spacing: 0.2px;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.2);
-      padding: 3px 8px;
-      border-radius: 8px;
-      border: 1.5px solid #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
-      word-break: break-word;
+    .comp-word-ar {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(1.02rem, 2.9vw, 1.25rem);
+      font-weight: 900;
+      color: #fef08a;
       line-height: 1.2;
+      word-break: break-word;
+      margin-top: 1px;
+    }
+
+    .comp-phon-fr {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.7rem, 1.8vw, 0.82rem);
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-top: 4px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       max-width: 100%;
+      word-break: break-word;
+      line-height: 1.2;
     }
 
-    .phon-tag {
-      font-size: 0.72rem;
+    .phon-tag-fr {
       color: #bae6fd;
-      font-weight: 700;
-      opacity: 0.9;
+      font-size: 0.65rem;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    .right-pill {
-      font-family: 'Noto Sans Arabic', 'Cairo', sans-serif;
+    .comp-phon-ar {
+      font-family: 'Cairo', sans-serif;
+      font-size: clamp(0.7rem, 1.8vw, 0.82rem);
+      font-weight: 700;
       color: #ffffff;
-      background: var(--accent-pill-bg);
-      border: 2px solid var(--accent-pill-border);
-      padding: 5px 12px;
-      border-radius: 14px;
-      box-shadow: 0 0 14px rgba(45, 212, 191, 0.35);
-      white-space: normal;
-      text-align: center;
-      flex-shrink: 0;
-      min-width: 125px;
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid rgba(45, 212, 191, 0.4);
+      padding: 2px 6px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 100%;
+      word-break: break-word;
+      line-height: 1.2;
+    }
+
+    .phon-tag-ar {
+      color: #5eead4;
+      font-size: 0.65rem;
+      font-weight: 800;
+    }
+
+    /* Séparateur Central avec Émoji */
+    .comp-divider {
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1px;
+      flex-shrink: 0;
+      width: 34px;
+      z-index: 3;
     }
 
-    .pill-label {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: #a7f3d0;
-      letter-spacing: 0.2px;
-      line-height: 1.1;
-      display: block;
-      opacity: 0.95;
+    .comp-icon-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #09131f;
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
     }
 
-    .pill-word {
-      font-size: 1.18rem;
-      font-weight: 900;
-      color: #ffffff;
-      line-height: 1.25;
-      display: block;
-    }
-
+    /* Pied de page */
     .footer {
       text-align: center;
       z-index: 2;
@@ -429,9 +526,10 @@ function buildHtmlTemplate(vocabData) {
     }
 
     .footer p {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       color: #94a3b8;
       font-weight: 700;
+      letter-spacing: 0.3px;
     }
   </style>
 </head>
@@ -440,6 +538,11 @@ function buildHtmlTemplate(vocabData) {
     <div class="header">
       <h1>${escapeHtml(vocabData.titleFr || 'VOCABULAIRE ESSENTIEL')}</h1>
       <p>${escapeHtml(vocabData.titleAr || 'كَلِمَاتٌ أَسَاسِيَّةٌ لِلْيَوْمِ')}</p>
+      <div class="header-sub-bar">
+        <span class="tag-fr">POUR LES FRANCOPHONES</span>
+        <span>•</span>
+        <span class="tag-ar">لِلنَّاطِقِينَ بِالْعَرَبِيَّةِ</span>
+      </div>
     </div>
 
     <div class="card-list">
@@ -447,7 +550,7 @@ function buildHtmlTemplate(vocabData) {
     </div>
 
     <div class="footer">
-      <p>Aya Studio • نَتَعَلَّمُ مَعًا فِي الْبَثِّ المُبَاشِرِ 🇫🇷 🇵🇸</p>
+      <p>Aya Studio • تَعَلَّمْ مَعَنَا فِي كُلِّ مَكَانٍ</p>
     </div>
   </div>
 </body>
@@ -657,7 +760,7 @@ async function generateCombinedAudio(vocabData, outputFinalMp3) {
  * 🚀 MÉTHODE PUBLIQUE PRINCIPALE : Génération Complète d'une Fiche Vocabulaire Premium
  * Encadrée par la file d'attente séquentielle (concurrency = 1)
  */
-async function generateFullVocabularyCard({ theme, level = 'debutant', customWords = null, outputId = null }) {
+async function generateFullVocabularyCard({ theme, level = 'debutant', customWords = null, outputId = null, validatedVocabData = null }) {
     return vocabCardQueue.enqueue(async () => {
         const id = outputId || `vcard_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
         const outputJpg = path.join(UPLOADS_CARDS_DIR, `${id}.jpg`);
@@ -665,9 +768,15 @@ async function generateFullVocabularyCard({ theme, level = 'debutant', customWor
 
         console.log(`[VOCAB SERVICE] 🚀 Démarrage génération fiche ${id} (Thème: "${theme || 'général'}", Niveau: ${level})`);
 
-        // 1. Sémantique Gemini Flash
-        const vocabData = await generateVocabularyData(theme, customWords, level);
-        console.log(`[VOCAB SERVICE] ✅ Sémantique validée (5 mots : ${vocabData.words.map(w => w.french).join(', ')})`);
+        // 1. Sémantique Gemini Flash (ou données pré-validées dans l'écran d'arbitrage)
+        let vocabData;
+        if (validatedVocabData && Array.isArray(validatedVocabData.words) && validatedVocabData.words.length >= 5) {
+            vocabData = validatedVocabData;
+            console.log(`[VOCAB SERVICE] 🎯 Utilisation des 5 mots pré-validés par l'utilisateur : ${vocabData.words.map(w => w.french).join(', ')}`);
+        } else {
+            vocabData = await generateVocabularyData(theme, customWords, level);
+            console.log(`[VOCAB SERVICE] ✅ Sémantique générée via Gemini (5 mots : ${vocabData.words.map(w => w.french).join(', ')})`);
+        }
 
         // 2. Rendu Graphique Puppeteer
         const htmlContent = buildHtmlTemplate(vocabData);

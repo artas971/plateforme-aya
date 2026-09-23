@@ -991,6 +991,9 @@
             <button class="admin-tab-btn" id="tabBtnRefunds" onclick="switchAdminTab('refunds')">
                 ⭐ Remboursements <span id="tabRefundsBadge" class="pill-badge pill-green" style="background: rgba(16, 185, 129, 0.25); color: #6ee7b7; margin-left: 4px; display: none;">0</span>
             </button>
+            <button class="admin-tab-btn" id="tabBtnThemes" onclick="switchAdminTab('themes')">
+                📚 Thèmes Fiches <span id="tabThemesBadge" class="pill-badge pill-blue" style="background: rgba(0, 188, 212, 0.25); color: #67e8f9; margin-left: 4px; display: none;">0</span>
+            </button>
         </div>
 
 
@@ -1336,6 +1339,80 @@
             </div>
         </div>
 
+        <!-- ONGLET 6 : Gestion des Thèmes de Fiches Vocabulaire -->
+        <div id="tabViewThemes" style="display: none;">
+            <div class="page-meta">
+                <div class="page-title-group">
+                    <h1>📚 Gestion des Thèmes de Fiches Vocabulaire</h1>
+                    <p>Configurez et enrichissez la bibliothèque des thèmes proposés aux utilisateurs pour la génération de fiches bilingues.</p>
+                </div>
+                <div class="refresh-group">
+                    <button class="btn btn-ghost" onclick="fetchAdminThemes()">🔄 Actualiser les thèmes</button>
+                </div>
+            </div>
+
+            <!-- Grille : Formulaire d'ajout + Tableau des Thèmes -->
+            <div style="display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start;">
+                <!-- Formulaire d'ajout rapide -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px;">
+                    <h3 style="color: #fff; font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                        <span>➕</span> Ajouter un Thème
+                    </h3>
+                    <form id="addThemeForm" onsubmit="submitAdminTheme(event)">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                Titre en Français * :
+                                <input type="text" id="newThemeTitleFr" placeholder="Ex: Métiers & Artisanat" required style="width: 100%; padding: 8px 12px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 8px; color: #fff;">
+                            </label>
+                            <label style="font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                Titre en Arabe Shami (avec tashkeel) :
+                                <input type="text" id="newThemeTitleAr" placeholder="Ex: المِهَنُ وَالحِرَفُ" style="width: 100%; padding: 8px 12px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-family: var(--font-arabic);">
+                            </label>
+                            <div style="display: grid; grid-template-columns: 80px 1fr; gap: 10px;">
+                                <label style="font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                    Émoji :
+                                    <input type="text" id="newThemeEmoji" placeholder="🏺" value="✨" maxlength="4" style="width: 100%; padding: 8px 12px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 8px; color: #fff; text-align: center; font-size: 1.1rem;">
+                                </label>
+                                <label style="font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                    Catégorie :
+                                    <input type="text" id="newThemeCategory" placeholder="Ex: Culture, Société..." value="Général" style="width: 100%; padding: 8px 12px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 8px; color: #fff;">
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 6px; width: 100%; justify-content: center;">
+                                <span>➕</span> Enregistrer le Thème
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tableau des thèmes existants -->
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                        <h3 style="color: #fff; font-size: 1.05rem; font-weight: 700;">
+                            📋 Thèmes Configurés (<span id="adminThemesCount">0</span>)
+                        </h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); text-align: left; color: var(--text-muted);">
+                                    <th style="padding: 8px 10px; width: 50px;">Émoji</th>
+                                    <th style="padding: 8px 10px;">Titre Français</th>
+                                    <th style="padding: 8px 10px;">Titre Arabe</th>
+                                    <th style="padding: 8px 10px;">Catégorie</th>
+                                    <th style="padding: 8px 10px; text-align: center; width: 80px;">Statut</th>
+                                    <th style="padding: 8px 10px; text-align: right; width: 110px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminThemesTableBody">
+                                <!-- Injection dynamique JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Modal d'erreur 403 / Non Autorisé -->
@@ -1411,7 +1488,7 @@
         // ── Gestion des Onglets Admin ──
         function switchAdminTab(tab) {
             activeAdminTab = tab;
-            ['Dashboard', 'Moderation', 'Chat', 'Failures', 'Refunds'].forEach(t => {
+            ['Dashboard', 'Moderation', 'Chat', 'Failures', 'Refunds', 'Themes'].forEach(t => {
                 const view = document.getElementById(`tabView${t}`);
                 const btn = document.getElementById(`tabBtn${t}`);
                 if (t.toLowerCase() === tab) {
@@ -1427,6 +1504,7 @@
             if (tab === 'chat') fetchAdminChat();
             if (tab === 'failures') fetchAdminFailures();
             if (tab === 'refunds') fetchAdminRefunds();
+            if (tab === 'themes') fetchAdminThemes();
         }
 
         // ── Formatage Heure ──
@@ -2257,6 +2335,127 @@
             );
         }
 
+        // ── 6. Onglet Thèmes de Vocabulaire ──
+        let currentAdminThemes = [];
+
+        async function fetchAdminThemes() {
+            try {
+                const res = await fetch('/api/admin/vocab-themes');
+                if (res.status === 401) {
+                    window.location.href = '/login?redirect=/admin.html';
+                    return;
+                }
+                const data = await res.json();
+                if (data.success && Array.isArray(data.themes)) {
+                    currentAdminThemes = data.themes;
+                    renderAdminThemes(currentAdminThemes);
+                    const badge = document.getElementById('tabThemesBadge');
+                    if (badge) badge.textContent = currentAdminThemes.length;
+                    const countSpan = document.getElementById('adminThemesCount');
+                    if (countSpan) countSpan.textContent = currentAdminThemes.length;
+                }
+            } catch (err) {
+                console.error('[ADMIN THEMES ERROR]', err);
+            }
+        }
+
+        function renderAdminThemes(themes) {
+            const tbody = document.getElementById('adminThemesTableBody');
+            if (!tbody) return;
+
+            if (themes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">Aucun thème configuré. Ajoutez-en un via le formulaire.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = themes.map(t => {
+                const statusBadge = t.active !== false
+                    ? `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;">Actif</span>`
+                    : `<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;">Inactif</span>`;
+
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                        <td style="padding: 10px; font-size: 1.25rem; text-align: center;">${t.emoji || '✨'}</td>
+                        <td style="padding: 10px; font-weight: 700; color: #fff;">${t.titleFr}</td>
+                        <td style="padding: 10px; font-family: var(--font-arabic, 'Cairo'); color: #00bcd4; font-size: 1rem;">${t.titleAr || '--'}</td>
+                        <td style="padding: 10px; color: var(--text-muted);">${t.category || 'Général'}</td>
+                        <td style="padding: 10px; text-align: center;">${statusBadge}</td>
+                        <td style="padding: 10px; text-align: right;">
+                            <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 0.78rem;" onclick="handleToggleTheme('${t.id}')" title="Activer / Désactiver">
+                                🔄
+                            </button>
+                            <button class="btn btn-ghost" style="padding: 4px 8px; font-size: 0.78rem; color: #ef4444;" onclick="handleDeleteTheme('${t.id}', '${escapeHtml(t.titleFr)}')" title="Supprimer">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function submitAdminTheme(e) {
+            e.preventDefault();
+            const titleFr = document.getElementById('newThemeTitleFr')?.value || '';
+            const titleAr = document.getElementById('newThemeTitleAr')?.value || '';
+            const emoji = document.getElementById('newThemeEmoji')?.value || '✨';
+            const category = document.getElementById('newThemeCategory')?.value || 'Général';
+
+            if (!titleFr.trim()) {
+                alert("Le titre en français est obligatoire.");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/admin/vocab-themes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titleFr, titleAr, emoji, category })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('newThemeTitleFr').value = '';
+                    document.getElementById('newThemeTitleAr').value = '';
+                    fetchAdminThemes();
+                } else {
+                    alert(data.error || "Erreur lors de l'ajout du thème.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de connexion.");
+            }
+        }
+
+        async function handleToggleTheme(id) {
+            try {
+                const res = await fetch(`/api/admin/vocab-themes/${id}/toggle`, { method: 'PUT' });
+                const data = await res.json();
+                if (data.success) fetchAdminThemes();
+                else alert(data.error || "Erreur lors du changement de statut.");
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de connexion.");
+            }
+        }
+
+        async function handleDeleteTheme(id, titleFr) {
+            openConfirmModal(
+                `🗑️ Supprimer le thème "${titleFr}" ?`,
+                "Ce thème ne sera plus proposé aux créateurs de fiches de vocabulaire.",
+                async () => {
+                    try {
+                        const res = await fetch(`/api/admin/vocab-themes/${id}`, { method: 'DELETE' });
+                        const data = await res.json();
+                        if (data.success) fetchAdminThemes();
+                        else alert(data.error || "Erreur lors de la suppression.");
+                    } catch (err) {
+                        console.error(err);
+                        alert("Erreur de connexion.");
+                    }
+                }
+            );
+        }
+
         // ── Auto-refresh logic (30s) ──
         function initAutoRefresh() {
             const toggle = document.getElementById('autoRefreshToggle');
@@ -2269,6 +2468,7 @@
                         if (activeAdminTab === 'chat') fetchAdminChat();
                         if (activeAdminTab === 'failures') fetchAdminFailures();
                         if (activeAdminTab === 'refunds') fetchAdminRefunds();
+                        if (activeAdminTab === 'themes') fetchAdminThemes();
                     }, 30000);
                 }
             }

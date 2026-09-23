@@ -434,8 +434,8 @@
                     </label>
                     <div class="vocab-mode-toggle" id="vocabModeToggle">
                         <button type="button" class="vocab-mode-btn active" id="btnModeTheme" data-mode="theme">
-                            <span class="mode-icon">🤖</span>
-                            <span class="mode-text">Génération par Thème (Auto IA)</span>
+                            <span class="mode-icon">🎯</span>
+                            <span class="mode-text">Génération par Thème</span>
                         </button>
                         <button type="button" class="vocab-mode-btn" id="btnModeCustom" data-mode="custom">
                             <span class="mode-icon">✍️</span>
@@ -547,16 +547,53 @@
                     </div>
                 </div>
 
-                <!-- Bouton d'Action Principal -->
+                <!-- Bouton d'Action Principal : Prévisualisation Gratuite -->
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
                     <button type="button" id="btnCancelVocabCreate" class="btn-action-sm" style="padding: 12px 20px;">
                         Annuler
                     </button>
                     <button type="submit" id="btnSubmitVocabGenerate" class="btn-primary" style="padding: 12px 26px; border-radius: 12px; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                        <span>⚡</span> <span id="btnSubmitVocabText">Générer ma Fiche Vocabulaire (1 Crédit)</span>
+                        <span>🔍</span> <span id="btnSubmitVocabText">Prévisualiser les 5 mots (Gratuit)</span>
                     </button>
                 </div>
             </form>
+
+            <!-- Écran d'Arbitrage des Mots (Étape 2 Gratuite : Prévisualiser & Choisir) -->
+            <div id="vocabPreviewScreen" style="display: none; margin-top: 10px;">
+                <div style="text-align: center; margin-bottom: 14px;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 999px; font-size: 0.76rem; font-weight: 700; color: #059669; margin-bottom: 6px;">
+                        <span>🎁</span> Prévisualisation Gratuite • 0 Crédit Débité
+                    </div>
+                    <h4 id="vocabPreviewTitleFr" style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin: 2px 0;">--</h4>
+                    <p id="vocabPreviewTitleAr" style="font-family: var(--font-arabic); font-size: 1.2rem; font-weight: 800; color: #00838f; margin: 0;">--</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+                        Vérifiez les 5 mots proposés. Si vous les connaissez déjà ou souhaitez en voir d'autres, régénérez en 1 clic !
+                    </p>
+                </div>
+
+                <!-- Liste des 5 mots sous forme de cartes bilingues -->
+                <div id="vocabPreviewWordsList" class="vocab-preview-cards-container">
+                    <!-- Injection dynamique JS -->
+                </div>
+
+                <!-- Actions d'Arbitrage -->
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" id="btnVocabBackToForm" class="btn-action-sm" style="padding: 10px 16px;">
+                            <span>✏️</span> Modifier critères
+                        </button>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" id="btnVocabRollAnother" class="btn-action-sm secondary" style="padding: 10px 16px; font-weight: 700;">
+                                <span id="rollSpinner" style="display: none;">⏳</span> <span>🔄</span> Proposer 5 autres mots
+                            </button>
+                            <button type="button" id="btnVocabConfirmGenerate" class="btn-primary" style="padding: 10px 22px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                                <span>✨</span> Valider & Fabriquer l'Affiche (1 Crédit)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Écran de Progression en direct (Pendant la génération) -->
             <div id="vocabProgressScreen" style="display: none; padding: 30px 10px; text-align: center;">

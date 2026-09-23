@@ -4,9 +4,78 @@ const path = require('path');
 const { requireAuth } = require('./auth');
 const { reserveCredit, commitCredit, rollbackCredit, getUserWallet } = require('../services/walletService');
 const vocabCardService = require('../services/vocabularyCardService');
+const vocabThemeService = require('../services/vocabThemeService');
 const { recordCardGeneration, getUserCards, getCardById, deleteUserCard } = require('../services/cardHistoryService');
 
 const VALID_LEVELS = ['debutant', 'intermediaire', 'avance'];
+
+/**
+ * GET /api/premium/vocab-themes
+ * Renvoie la liste des thèmes configurés pour les fiches de vocabulaire
+ */
+router.get('/vocab-themes', (req, res) => {
+    try {
+        const themes = vocabThemeService.getAllThemes(true);
+        return res.json({ success: true, themes });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * POST /api/premium/vocabulary-words-preview
+ * Génère instantanément une proposition de 5 mots bilingues via Gemini Flash (0 crédit)
+ * Gère excludeWords pour proposer une autre liste sans doublons.
+ */
+router.post('/vocabulary-words-preview', requireAuth, async (req, res) => {
+    const sessionUser = req.session?.user;
+    if (!sessionUser || !sessionUser.authenticated) {
+        return res.status(401).json({
+            success: false,
+            error: "Connexion requise pour prévisualiser les mots.",
+            requireAuth: true
+        });
+    }
+
+    let { theme, level, customWords, excludeWords } = req.body || {};
+
+    const safeTheme = typeof theme === 'string' && theme.trim() ? theme.trim().slice(0, 100) : 'Vocabulaire du quotidien';
+    const safeLevel = VALID_LEVELS.includes(String(level).toLowerCase()) ? String(level).toLowerCase() : 'debutant';
+
+    let safeCustomWords = null;
+    if (Array.isArray(customWords)) {
+        safeCustomWords = customWords.map(w => (typeof w === 'string' ? w.trim() : '')).filter(Boolean).slice(0, 5);
+        if (safeCustomWords.length === 0) safeCustomWords = null;
+    } else if (typeof customWords === 'string' && customWords.trim()) {
+        safeCustomWords = customWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean).slice(0, 5);
+        if (safeCustomWords.length === 0) safeCustomWords = null;
+    }
+
+    let safeExcludeWords = [];
+    if (Array.isArray(excludeWords)) {
+        safeExcludeWords = excludeWords.map(w => (typeof w === 'string' ? w.trim() : '')).filter(Boolean);
+    } else if (typeof excludeWords === 'string' && excludeWords.trim()) {
+        safeExcludeWords = excludeWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
+    }
+
+    try {
+        const vocabData = await vocabCardService.generateVocabularyData(safeTheme, safeCustomWords, safeLevel, safeExcludeWords);
+        return res.json({
+            success: true,
+            theme: vocabData.theme || safeTheme,
+            level: safeLevel,
+            titleFr: vocabData.titleFr,
+            titleAr: vocabData.titleAr,
+            words: vocabData.words
+        });
+    } catch (err) {
+        console.error('[API VOCAB PREVIEW] ❌ Erreur prévisualisation mots :', err.message);
+        return res.status(500).json({
+            success: false,
+            error: "Impossible de générer la prévisualisation des mots. Veuillez réessayer."
+        });
+    }
+});
 
 /**
  * POST /api/premium/vocabulary-card
@@ -27,7 +96,7 @@ router.post('/vocabulary-card', requireAuth, async (req, res) => {
     const username = sessionUser.username || sessionUser.name || 'Utilisateur';
 
     // 1. Validation et assainissement des entrées
-    let { theme, level, customWords } = req.body || {};
+    let { theme, level, customWords, validatedVocabData } = req.body || {};
 
     const safeTheme = typeof theme === 'string' && theme.trim() ? theme.trim().slice(0, 100) : 'Vocabulaire du quotidien';
     const safeLevel = VALID_LEVELS.includes(String(level).toLowerCase()) ? String(level).toLowerCase() : 'debutant';
@@ -76,7 +145,8 @@ router.post('/vocabulary-card', requireAuth, async (req, res) => {
         const cardResult = await vocabCardService.generateFullVocabularyCard({
             theme: safeTheme,
             level: safeLevel,
-            customWords: safeCustomWords
+            customWords: safeCustomWords,
+            validatedVocabData: validatedVocabData && Array.isArray(validatedVocabData.words) && validatedVocabData.words.length >= 5 ? validatedVocabData : null
         });
 
         // 4A. Validation Définitive du Débit (Commit Phase 2A)

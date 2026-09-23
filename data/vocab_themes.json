@@ -1,0 +1,66 @@
+[
+  {
+    "id": "theme_solidarite",
+    "titleFr": "Solidarité & Espoir",
+    "titleAr": "التَّضَامُنُ وَالأَمَلُ",
+    "emoji": "🕊️",
+    "category": "Valeurs",
+    "active": true
+  },
+  {
+    "id": "theme_palestine",
+    "titleFr": "Palestine & Liberté",
+    "titleAr": "فِلَسْطِينُ وَالحُرِّيَّةُ",
+    "emoji": "🍉",
+    "category": "Identité",
+    "active": true
+  },
+  {
+    "id": "theme_hospitalite",
+    "titleFr": "Hospitalité & Quotidien",
+    "titleAr": "الضِّيَافَةُ وَالحَيَاةُ اليَوْمِيَّةُ",
+    "emoji": "☕",
+    "category": "Culture",
+    "active": true
+  },
+  {
+    "id": "theme_fraternite",
+    "titleFr": "Fraternité & Partage",
+    "titleAr": "الأُخُوَّةُ وَالمُشَارَكَةُ",
+    "emoji": "🤝",
+    "category": "Valeurs",
+    "active": true
+  },
+  {
+    "id": "theme_nature",
+    "titleFr": "Nature & Oliviers",
+    "titleAr": "الطَّبِيعَةُ وَأَشْجَارُ الزَّيْتُونِ",
+    "emoji": "🌿",
+    "category": "Terre",
+    "active": true
+  },
+  {
+    "id": "theme_courage",
+    "titleFr": "Courage & Patience",
+    "titleAr": "الشَّجَاعَةُ وَالصَّبْرُ",
+    "emoji": "💪",
+    "category": "Valeurs",
+    "active": true
+  },
+  {
+    "id": "theme_famille",
+    "titleFr": "Famille & Maison",
+    "titleAr": "العَائِلَةُ وَالبَيْتُ",
+    "emoji": "🏡",
+    "category": "Quotidien",
+    "active": true
+  },
+  {
+    "id": "theme_marche",
+    "titleFr": "Souk & Commerce",
+    "titleAr": "السُّوقُ وَالتِّجَارَةُ",
+    "emoji": "🏺",
+    "category": "Société",
+    "active": true
+  }
+]

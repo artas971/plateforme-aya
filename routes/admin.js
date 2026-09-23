@@ -740,5 +740,66 @@ router.post('/refunds/:id/action', requireAdmin, async (req, res) => {
     }
 });
 
+const vocabThemeService = require('../services/vocabThemeService');
+
+/**
+ * GET /api/admin/vocab-themes
+ * Liste complète de tous les thèmes de vocabulaire configurés
+ */
+router.get('/vocab-themes', requireAdmin, (req, res) => {
+    try {
+        const themes = vocabThemeService.getAllThemes(false);
+        return res.json({ success: true, themes });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * POST /api/admin/vocab-themes
+ * Ajout d'un nouveau thème par un administrateur
+ */
+router.post('/vocab-themes', requireAdmin, (req, res) => {
+    try {
+        const { titleFr, titleAr, emoji, category } = req.body || {};
+        const created = vocabThemeService.addTheme({ titleFr, titleAr, emoji, category });
+        return res.json({ success: true, theme: created });
+    } catch (e) {
+        return res.status(400).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * DELETE /api/admin/vocab-themes/:id
+ * Suppression d'un thème par un administrateur
+ */
+router.delete('/vocab-themes/:id', requireAdmin, (req, res) => {
+    try {
+        const success = vocabThemeService.deleteTheme(req.params.id);
+        if (!success) {
+            return res.status(404).json({ success: false, error: "Thème non trouvé." });
+        }
+        return res.json({ success: true, message: "Thème supprimé avec succès." });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * PUT /api/admin/vocab-themes/:id/toggle
+ * Active / Désactive un thème
+ */
+router.put('/vocab-themes/:id/toggle', requireAdmin, (req, res) => {
+    try {
+        const theme = vocabThemeService.toggleTheme(req.params.id);
+        if (!theme) {
+            return res.status(404).json({ success: false, error: "Thème non trouvé." });
+        }
+        return res.json({ success: true, theme });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 module.exports = router;
 
