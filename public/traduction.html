@@ -2553,7 +2553,15 @@
                             stickyBottomBar.classList.remove('active', 'success');
                         }
                     }, 5000);
-                    renderTranslationResult(finalData);
+                    try {
+                        renderTranslationResult(finalData);
+                    } catch (renderErr) {
+                        console.error('Erreur affichage résultat:', renderErr);
+                        renderUiErrorCard({
+                            code: 'PROCESSING_ERROR',
+                            rawMessage: "La vidéo a été générée avec succès sur le serveur mais l'affichage a rencontré un incident d'interface. Retrouvez votre vidéo dans votre historique."
+                        });
+                    }
                 } else {
                     const rawMsg = (finalData && (finalData.message || finalData.error)) || "Une erreur est survenue lors du traitement.";
                     const errCode = (finalData && finalData.code) || '';
@@ -2581,7 +2589,10 @@
                         if (stickyBottomBar) stickyBottomBar.classList.remove('active');
                     }, 1200);
                 } else {
-                    renderUiErrorCard({ code: 'NETWORK_ERROR', rawMessage: err.message });
+                    renderUiErrorCard({ 
+                        code: 'NETWORK_ERROR', 
+                        rawMessage: "La connexion avec le serveur a été interrompue pendant le transfert. Si le traitement était déjà avancé, votre vidéo a peut-être été finalisée sur le serveur : consultez votre historique vidéo ou réessayez."
+                    });
                     updateProgress(100, `Erreur réseau : ${err.message}`);
                     setTimeout(() => {
                         if (stickyBottomBar) stickyBottomBar.classList.remove('active');
@@ -2808,6 +2819,23 @@ ${safeText}
 
             videoPreviewContainer.innerHTML = previewHtml;
 
+            // Widget de Notation 5 Étoiles (Phase 1)
+            if (window.AyaRatingWidget) {
+                let ratingContainer = document.getElementById('traductionRatingContainer');
+                if (!ratingContainer) {
+                    ratingContainer = document.createElement('div');
+                    ratingContainer.id = 'traductionRatingContainer';
+                    videoPreviewContainer.appendChild(ratingContainer);
+                }
+                ratingContainer.innerHTML = '';
+                window.AyaRatingWidget.show({
+                    serviceType: 'traduction',
+                    jobId: finalData.jobId || finalData.video_url || finalData.mp4_filename,
+                    mediaFilename: finalData.mp4_filename || 'video_traduite.mp4',
+                    targetContainer: ratingContainer
+                });
+            }
+
             // Modale de publication TikTok
             const btnTikTokPublish = document.getElementById('btnOpenTikTokPublish');
             if (btnTikTokPublish) {
@@ -2953,5 +2981,6 @@ ${safeText}
     <script src="/tiktok-publish-modal.js"></script>
     <script src="/aya-i18n.js"></script>
     <script src="/feedback-widget.js"></script>
+    <script src="/service-rating-widget.js"></script>
 </body>
 </html>

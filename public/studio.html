@@ -853,7 +853,24 @@
                         pContainer.style.display = 'block';
                     }
                 }
-                if (modalActions) modalActions.style.display = 'block';
+                if (modalActions) {
+                    modalActions.style.display = 'block';
+                    if (window.AyaRatingWidget) {
+                        var studioRatingContainer = document.getElementById('studioRatingContainer');
+                        if (!studioRatingContainer) {
+                            studioRatingContainer = document.createElement('div');
+                            studioRatingContainer.id = 'studioRatingContainer';
+                            modalActions.appendChild(studioRatingContainer);
+                        }
+                        studioRatingContainer.innerHTML = '';
+                        window.AyaRatingWidget.show({
+                            serviceType: 'studio_916',
+                            jobId: result.jobId || result.mp4_filename || result.mp4_url,
+                            mediaFilename: result.mp4_filename || 'video_tiktok_studio_v3.mp4',
+                            targetContainer: studioRatingContainer
+                        });
+                    }
+                }
             } else {
                 var errDetail = result.message || (result.errors && result.errors[0] ? result.errors[0].user_message : "Échec du pipeline de traitement.");
                 throw new Error(errDetail);
@@ -918,7 +935,7 @@
                 <span class="aya-legal-footer-sep">•</span>
                 <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
                 <span class="aya-legal-footer-sep">•</span>
-                <a href="https://www.paypal.com/sosoxm2026@gmail.com" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+                <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
             <p class="aya-legal-footer-copyright">
                 © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
@@ -928,5 +945,6 @@
 
     <script src="/aya-i18n.js"></script>
     <script src="/feedback-widget.js"></script>
+    <script src="/service-rating-widget.js"></script>
 </body>
 </html>
