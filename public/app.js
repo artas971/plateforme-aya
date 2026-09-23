@@ -132,6 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatEmojiPicker = document.getElementById('chatEmojiPicker');
     let currentReplyTo = null;
 
+    // Chat Filter Tabs (TICKET-16)
+    const tabChatAll = document.getElementById('tabChatAll');
+    const tabChatDms = document.getElementById('tabChatDms');
+    let activeChatFilter = 'all'; // 'all' (Salon Général) ou 'dms' (Mes DMs)
+
     // Admin Chat Toolbar Elements
     const adminChatToolbar = document.getElementById('adminChatToolbar');
     const adminToggleChatBtn = document.getElementById('adminToggleChatBtn');
@@ -253,6 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sendAudioToJohnBtn: '📥 Envoyer cet audio dans le dossier "Message pour John"',
             purgeAudioBtn: '🗑️ Purger cet audio du disque',
             titleChatHeader: 'Chat Éphémère Traduit (Messages & Audios)',
+            tabChatAll: '🌍 Salon Général',
+            tabChatDms: '🔒 Mes DMs',
             badgeChatTimer: '🕒 Suppression automatique après 24h',
             subChatInfo: 'Vos messages texte et vocaux sont automatiquement traduits et vocalisés selon la langue de votre compte. Chaque message est conservé exactement 24h puis définitivement purgé du disque.',
             chatMicBtnTitle: 'Enregistrer une note vocale',
@@ -405,6 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sendAudioToJohnBtn: '📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"',
             purgeAudioBtn: '🗑️ حذف التسجيل الصوتي من القرص',
             titleChatHeader: 'المحادثة المباشرة المؤقتة المترجمة (رسائل وأصوات)',
+            tabChatAll: '🌍 Salon Général',
+            tabChatDms: '🔒 Mes DMs',
             badgeChatTimer: '🕒 الحذف التلقائي للرسائل بعد 24 ساعة',
             subChatInfo: 'تترجم رسائلك النصية والصوتية تلقائياً حسب لغة حسابك. تُحفظ كل رسالة لمدة 24 ساعة ثم تُحذف تلقائياً من القرص.',
             chatMicBtnTitle: 'تسجيل ملاحظة صوتية',
@@ -627,6 +636,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Chat Ephemeral Translations
         setInnerHTML('titleChatHeader', dict.titleChatHeader);
+        if (tabChatAll) tabChatAll.textContent = dict.tabChatAll || '🌍 Salon Général';
+        if (tabChatDms) tabChatDms.textContent = dict.tabChatDms || '🔒 Mes DMs';
         setInnerHTML('badgeChatTimer', dict.badgeChatTimer);
         setInnerHTML('subChatInfo', dict.subChatInfo);
         if (chatMicBtn && !isChatRecording) chatMicBtn.setAttribute('title', dict.chatMicBtnTitle);
@@ -1762,6 +1773,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const bubble = document.createElement('div');
         bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'} ${isPrivate ? 'private' : ''} ${statusClass}`;
         bubble.id = `chat-msg-${msg.id}`;
+        bubble.dataset.isPrivate = isPrivate ? 'true' : 'false';
 
         const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const audioControlsHtml = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
@@ -1957,6 +1969,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Filtrage dynamique du Chat (TICKET-16 : Salon Général / Mes DMs)
+    function applyChatFilter() {
+        if (!chatHistoryBox) return;
+        const bubbles = chatHistoryBox.querySelectorAll('.chat-bubble');
+        let visibleCount = 0;
+
+        bubbles.forEach(bubble => {
+            const isPrivate = bubble.classList.contains('private') || bubble.dataset.isPrivate === 'true';
+            if (activeChatFilter === 'dms') {
+                if (isPrivate) {
+                    bubble.style.display = '';
+                    visibleCount++;
+                } else {
+                    bubble.style.display = 'none';
+                }
+            } else {
+                // Salon Général : afficher uniquement les messages publics
+                if (!isPrivate) {
+                    bubble.style.display = '';
+                    visibleCount++;
+                } else {
+                    bubble.style.display = 'none';
+                }
+            }
+        });
+
+        // Placeholder si aucun message dans la vue active
+        let emptyFilterNotice = document.getElementById('chatEmptyFilterNotice');
+        if (visibleCount === 0 && bubbles.length > 0) {
+            if (!emptyFilterNotice) {
+                emptyFilterNotice = document.createElement('div');
+                emptyFilterNotice.id = 'chatEmptyFilterNotice';
+                emptyFilterNotice.className = 'chat-empty-filter-notice';
+                chatHistoryBox.appendChild(emptyFilterNotice);
+            }
+            emptyFilterNotice.style.display = 'block';
+            if (activeChatFilter === 'dms') {
+                emptyFilterNotice.textContent = currentLang === 'ar' ? '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.' : '🔒 Aucun message privé (DM) pour le moment.';
+            } else {
+                emptyFilterNotice.textContent = currentLang === 'ar' ? '🌍 لا توجد رسائل عامة حتى الآن.' : '🌍 Aucun message public dans le salon général.';
+            }
+        } else if (emptyFilterNotice) {
+            emptyFilterNotice.style.display = 'none';
+        }
+    }
+
+    function setChatFilter(filter) {
+        activeChatFilter = filter;
+        if (tabChatAll && tabChatDms) {
+            if (filter === 'dms') {
+                tabChatDms.classList.add('active');
+                tabChatDms.setAttribute('aria-selected', 'true');
+                tabChatAll.classList.remove('active');
+                tabChatAll.setAttribute('aria-selected', 'false');
+            } else {
+                tabChatAll.classList.add('active');
+                tabChatAll.setAttribute('aria-selected', 'true');
+                tabChatDms.classList.remove('active');
+                tabChatDms.setAttribute('aria-selected', 'false');
+            }
+        }
+        applyChatFilter();
+        if (chatHistoryBox) {
+            chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+        }
+    }
+
     async function loadChatMessages() {
         if (!chatHistoryBox) return;
         const dict = i18n[currentLang];
@@ -2073,6 +2152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         fetchChatAudioTts(msg.id);
                     }
                 });
+                applyChatFilter();
                 chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
             } else {
                 // Synchronisation incrémentale : n'ajouter que les nouveaux messages sans couper l'audio actif
@@ -2115,6 +2195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (hasNew) {
+                    applyChatFilter();
                     chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
                 }
             }
@@ -2192,6 +2273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const optimisticBubble = createBubbleElement(optimisticMsg, dict);
             chatHistoryBox.appendChild(optimisticBubble);
             renderedChatMessageIds.add(tempId);
+            applyChatFilter();
             chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
         }
 
@@ -2403,6 +2485,14 @@ document.addEventListener('DOMContentLoaded', () => {
         closeReplyBtn.addEventListener('click', () => {
             cancelReply();
         });
+    }
+
+    // Gestionnaires d'onglets de filtrage Chat (TICKET-16)
+    if (tabChatAll) {
+        tabChatAll.addEventListener('click', () => setChatFilter('all'));
+    }
+    if (tabChatDms) {
+        tabChatDms.addEventListener('click', () => setChatFilter('dms'));
     }
 
     // Admin Chat Toolbar Action Handlers

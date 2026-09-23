@@ -2020,6 +2020,61 @@ html[dir="rtl"] .step-content p {
     transform: scale(1.08);
 }
 
+/* ============================================================
+   BARRE D'ONGLETS FILTRES DU CHAT (Issue #34 : Salon Général / Mes DMs)
+   ============================================================ */
+.chat-filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: center;
+}
+
+.chat-tab-btn {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    color: #94a3b8;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    outline: none;
+    user-select: none;
+}
+
+.chat-tab-btn:hover {
+    color: #ffffff;
+    background: rgba(51, 65, 85, 0.8);
+    border-color: rgba(56, 189, 248, 0.5);
+}
+
+.chat-tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #0f766e);
+    color: #ffffff;
+    border-color: #38bdf8;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35);
+}
+
+.chat-empty-filter-notice {
+    text-align: center;
+    color: #94a3b8;
+    padding: 24px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 10px;
+    border: 1px dashed rgba(148, 163, 184, 0.25);
+    margin: 12px 0;
+}
+
 /* Barre d'outils de modération Chat (Admin Only) */
 .admin-chat-toolbar {
     display: flex;

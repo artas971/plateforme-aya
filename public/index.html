@@ -153,6 +153,16 @@
                         تترجم رسائلك النصية والصوتية تلقائياً حسب لغة حسابك. تُحفظ كل رسالة لمدة 24 ساعة ثم تُحذف تلقائياً من القرص.
                     </p>
 
+                    <!-- Chat Filter Tabs Bar (TICKET-16 / Issue #34) -->
+                    <div class="chat-filter-tabs" id="chatFilterTabs" role="tablist" aria-label="Filtres de discussion">
+                        <button type="button" class="chat-tab-btn active" id="tabChatAll" data-filter="all" role="tab" aria-selected="true">
+                            🌍 Salon Général
+                        </button>
+                        <button type="button" class="chat-tab-btn" id="tabChatDms" data-filter="dms" role="tab" aria-selected="false">
+                            🔒 Mes DMs
+                        </button>
+                    </div>
+
                     <!-- Chat Messages History Container -->
                     <div class="chat-history-box" id="chatHistoryBox">
                         <!-- Rendered dynamically -->
