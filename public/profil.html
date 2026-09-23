@@ -139,7 +139,7 @@
                             <span>⚡</span> Recharger mon solde
                         </button>
                         <p class="wallet-hint" id="walletHint">
-                            💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage incrusté 9:16 + archivage Drive).
+                            💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage incrusté TikTok + archivage Drive).
                         </p>
                     </div>
                 </section>
@@ -156,7 +156,7 @@
                         <span class="tab-badge" id="historyCountBadge">0 vidéo</span>
                     </button>
                     <button type="button" class="profile-tab-btn" id="tabBtnCards" role="tab" aria-selected="false">
-                        <span>🎴</span> <span>Fiches Vocabulaire 9:16</span>
+                        <span>🎴</span> <span>Fiches Vocabulaire</span>
                         <span class="tab-badge" id="cardsCountBadge">0 fiche</span>
                         <span class="tab-badge-new">✨ Nouveau</span>
                     </button>
@@ -226,19 +226,19 @@
                     <section class="profile-card" style="min-height: 520px;">
                         <div class="history-header">
                             <div>
-                                <div class="profile-card-title" style="font-size: 1.25rem;">
-                                    <span>🎴</span> Fiches Vocabulaire & Audio 9:16
-                                </div>
-                                <p style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px;">
-                                    Fiches éducatives bilingues (FR / Arabe Shami) prêtes à publier sur TikTok & Réels.
-                                </p>
+                                 <div class="profile-card-title" style="font-size: 1.25rem;">
+                                     <span>🎴</span> Fiches de Vocabulaire & Audio
+                                 </div>
+                                 <p style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px;">
+                                     Fiches éducatives bilingues (FR / Arabe Shami) prêtes à publier sur TikTok & Réels.
+                                 </p>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <button type="button" id="btnRefreshCards" class="btn-action-sm" style="max-width: 130px;">
                                     <span>🔄</span> Actualiser
                                 </button>
                                 <button type="button" id="btnOpenVocabModal" class="btn-primary" style="padding: 9px 18px; font-size: 0.9rem; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                    <span>➕</span> Nouvelle Fiche 9:16
+                                    <span>➕</span> Nouvelle Fiche Vocabulaire
                                 </button>
                             </div>
                         </div>
@@ -265,7 +265,7 @@
                                 Aucune fiche de vocabulaire générée
                             </h3>
                             <p style="color: var(--text-secondary); max-width: 460px; font-size: 0.92rem;">
-                                Créez instantanément des fiches 9:16 avec translittération bilatérale (arabe/français) et audio double voix natif avec silences pédagogiques.
+                                Créez instantanément des fiches de vocabulaire illustrées avec translittération bilatérale (arabe/français) et audio double voix natif avec silences pédagogiques.
                             </p>
                             <button type="button" id="btnEmptyCreateCard" class="btn-nav-link" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff; cursor: pointer;">
                                 <span>✨</span> Créer ma première fiche (1 Crédit)
@@ -377,17 +377,17 @@
         </div>
     </div>
 
-    <!-- Modal Créateur Fiches Vocabulaire 9:16 (Premium Sprint J3) -->
+    <!-- Modal Créateur Fiches Vocabulaire (Premium Sprint J3) -->
     <div class="aya-modal-backdrop" id="vocabCreateModal" style="display: none;">
         <div class="aya-modal-content vocab-modal-content">
             <!-- Entête Modal -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
                 <div>
                     <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
-                        <span>✨</span> Créateur de Fiches Vocabulaire 9:16
+                        <span>✨</span> Créateur de Fiches Vocabulaire
                     </h3>
                     <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">
-                        Format TikTok & Réels avec prononciation double voix native (FR + Arabe Shami).
+                        Format vertical pour TikTok & Réels avec prononciation double voix native (FR + Arabe Shami).
                     </p>
                 </div>
                 <button type="button" id="btnCloseVocabCreateModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;" title="Fermer">
@@ -481,7 +481,7 @@
                         </button>
                     </div>
                     <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">
-                        Saisissez les mots à traduire. Si vous en indiquez entre 1 et 4, l'IA complétera harmonieusement pour atteindre le format 9:16 complet (5 mots).
+                        Saisissez les mots à traduire. Si vous en indiquez entre 1 et 4, l'IA complétera harmonieusement pour atteindre le format complet de l'affiche (5 mots).
                     </p>
 
                     <!-- Titre facultatif de la fiche manuelle -->
@@ -520,7 +520,7 @@
                             Niveau de difficulté pédagogique :
                         </label>
                         <span id="levelBadgeRoleHint" style="font-size: 0.74rem; color: #00838f; font-weight: 600;">
-                            🏷️ Imprimé sur l'affiche 9:16
+                            🏷️ Imprimé sur votre affiche
                         </span>
                     </div>
                     <div class="level-chips-container" id="levelChipsContainer">
@@ -543,7 +543,7 @@
                     <!-- Mention explicative contextuelle dynamique -->
                     <div id="levelHelpContextBox" style="margin-top: 8px; font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; background: rgba(0, 188, 212, 0.07); border: 1px solid rgba(0, 188, 212, 0.22); border-radius: 8px; padding: 7px 12px; line-height: 1.4;">
                         <span style="font-size: 1rem; flex-shrink: 0;">💡</span>
-                        <span id="levelHelpText">Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre poster 9:16.</span>
+                        <span id="levelHelpText">Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre affiche.</span>
                     </div>
                 </div>
 
@@ -553,7 +553,7 @@
                         Annuler
                     </button>
                     <button type="submit" id="btnSubmitVocabGenerate" class="btn-primary" style="padding: 12px 26px; border-radius: 12px; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                        <span>⚡</span> <span id="btnSubmitVocabText">Générer ma Fiche 9:16 (1 Crédit)</span>
+                        <span>⚡</span> <span id="btnSubmitVocabText">Générer ma Fiche Vocabulaire (1 Crédit)</span>
                     </button>
                 </div>
             </form>
@@ -564,7 +564,7 @@
                     🎨
                 </div>
                 <h4 id="vocabProgressTitle" style="font-size: 1.2rem; font-weight: 800; color: var(--color-primary); margin-bottom: 8px;">
-                    Création de votre Fiche Vocabulaire 9:16 en cours...
+                    Création de votre Fiche Vocabulaire en cours...
                 </h4>
                 <p id="vocabProgressStep" style="color: var(--text-secondary); font-size: 0.95rem; max-width: 440px; margin: 0 auto 20px auto;">
                     Étape 1/3 : Analyse sémantique & phonétique bilingue par Gemini Flash...
@@ -573,7 +573,7 @@
                     <div id="vocabProgressBar" style="width: 25%; height: 100%; background: linear-gradient(90deg, #0b5394, #00bcd4); border-radius: 10px; transition: width 0.4s ease;"></div>
                 </div>
                 <small style="display: block; color: #94a3b8; margin-top: 14px; font-size: 0.78rem;">
-                    💡 Puppeteer génère le rendu visuel HD 1080×1920 tandis qu'Edge-TTS assemble la piste bilingue.
+                    💡 Rendu visuel haute qualité et enregistrement audio double voix native en cours.
                 </small>
             </div>
 
@@ -585,15 +585,15 @@
                         Fiche Vocabulaire Prête !
                     </h4>
                     <p style="font-size: 0.88rem; color: var(--text-secondary);">
-                        Votre livrable HD 1080×1920 et la piste audio ont été générés avec succès.
+                        Votre livrable visuel et la piste audio ont été générés avec succès.
                     </p>
                 </div>
 
-                <!-- Aperçu 9:16 + Lecteur Audio + Actions -->
+                <!-- Aperçu Affiche + Lecteur Audio + Actions -->
                 <div class="vocab-render-preview">
-                    <!-- Vignette 9:16 responsive cliquable -->
+                    <!-- Vignette Affiche responsive cliquable -->
                     <div class="vocab-preview-img-wrap" id="vocabResultImgWrap" title="Cliquer pour afficher en plein écran" style="cursor: pointer;">
-                        <img id="vocabResultImg" src="" alt="Fiche Vocabulaire 9:16">
+                        <img id="vocabResultImg" src="" alt="Fiche Vocabulaire">
                     </div>
 
                     <!-- Pôle Audio, Mots & Téléchargement -->

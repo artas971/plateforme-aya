@@ -764,8 +764,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!helpSpan) return;
 
         if (currentVocabMode === 'theme') {
-            helpSpan.textContent = "Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre poster 9:16.";
-            if (badgeHint) badgeHint.textContent = "🏷️ Imprimé sur l'affiche 9:16";
+            helpSpan.textContent = "Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre affiche.";
+            if (badgeHint) badgeHint.textContent = "🏷️ Imprimé sur votre affiche";
         } else {
             let count = 0;
             for (let i = 1; i <= 5; i++) {
@@ -774,15 +774,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (count === 5) {
-                helpSpan.textContent = "Définit le badge sur votre affiche 9:16 et affine le registre de traduction Shami (courant vs soutenu).";
+                helpSpan.textContent = "Définit le badge sur votre affiche et affine le registre de traduction Shami (courant vs soutenu).";
                 if (badgeHint) badgeHint.textContent = "🏷️ Badge Affiche & Registre Shami";
             } else if (count > 0) {
                 const missing = 5 - count;
                 helpSpan.textContent = `Calibre les ${missing} mot(s) complémentaires ajoutés par l'IA et le registre de traduction Shami.`;
                 if (badgeHint) badgeHint.textContent = `🤖 Complétion de ${missing} mot(s) par l'IA`;
             } else {
-                helpSpan.textContent = "Sert de badge sur votre affiche 9:16 et calibre le niveau si vous laissez des cases vides.";
-                if (badgeHint) badgeHint.textContent = "🏷️ Imprimé sur l'affiche 9:16";
+                helpSpan.textContent = "Sert de badge sur votre affiche et calibre le niveau si vous laissez des cases vides.";
+                if (badgeHint) badgeHint.textContent = "🏷️ Imprimé sur votre affiche";
             }
         }
     }

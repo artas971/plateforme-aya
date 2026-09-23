@@ -19,7 +19,7 @@
             navHomeText: 'Direct',
             navTraducteurText: 'Traducteur',
             navTraductionText: 'Traduction',
-            navStudioText: 'Studio 9:16',
+            navStudioText: 'Studio Vidéo',
             navCommunauteText: 'Communauté',
             navModerationText: 'Modération',
             navProfilText: 'Profil',
@@ -33,7 +33,7 @@
             navVideoText: 'Création Vidéo',
             navVideoSub: 'Doublage et sous-titrage automatique',
             navCardsText: 'Fiches Éducatives',
-            navCardsSub: 'Affiches 9:16 bilingues & audio TikTok',
+            navCardsSub: 'Affiches bilingues & audio TikTok',
             navCommunityText: 'Galerie Communautaire',
             navCommunitySub: 'Témoignages et partages collectifs',
             navAccountText: 'Mon Compte',
@@ -106,7 +106,7 @@
             // Mode de traitement (Module 1 vs Module 2)
             labelProcessingMode: '0. Mode de traitement',
             modeVideoTitle: '🎬 Vidéo Complète',
-            modeVideoSub: 'Incrustation sous-titres 9:16 & encodage FFmpeg',
+            modeVideoSub: 'Incrustation des sous-titres & encodage FFmpeg',
             modeExpressTitle: '⚡ Mode Express (Texte Uniquement)',
             modeExpressSub: 'Traduction directe en texte Markdown (< 5s)',
 
@@ -157,7 +157,7 @@
 
             // Choix du Visuel pour Audios
             labelBgTheme: '5. Choix du visuel (Notes vocales & Audios purs uniquement)',
-            audioNoticeBadge: '✨ Vidéo 9:16 automatique pour audios purs',
+            audioNoticeBadge: '✨ Vidéo verticale automatique pour audios',
             bgPalestineTitle: '🇵🇸 Palestine Résilience',
             bgPalestineSub: 'Noir, Blanc, Vert, Rouge abstrait',
             bgDarkTitle: '🌑 Noir Profond',
@@ -171,8 +171,8 @@
             btnSubmitDefault: '<span>⚡</span> Lancer le traitement & le sous-titrage',
             btnSubmitLoading: '<span>⏳</span> Traitement du média en cours...',
             chkForceReprocess: '🔄 Forcer le retraitement (Ignorer le cache)',
-            chkTiktokPackText: 'Générer le Pack TikTok (Couverture 9:16 & Copywriting)',
-            chkTiktokPackSub: 'Optionnel : Couverture 9:16 abstraite & Rédaction optimisée SEO',
+            chkTiktokPackText: 'Générer le Pack TikTok (Vignette & Textes)',
+            chkTiktokPackSub: 'Optionnel : Vignette de couverture & Rédaction optimisée SEO',
 
             // Progression
             statusInit: 'Initialisation du pipeline...',
@@ -185,9 +185,9 @@
             btnDownloadVideoMain: '⬇️ Télécharger la Vidéo',
             btnDownloadSubtitlesMain: '📄 Télécharger les sous-titres',
             btnDownloadMp4Video: '⬇️ Télécharger la Vidéo MP4 (Format original)',
-            btnDownloadMp4Audio: '⬇️ Télécharger la Vidéo MP4 (Format 9:16)',
+            btnDownloadMp4Audio: '⬇️ Télécharger la Vidéo MP4 (Format Téléphone)',
             btnDownloadAss: '📄 Télécharger le fichier .ASS',
-            btnDownloadCover: '🖼️ Télécharger la Couverture 9:16',
+            btnDownloadCover: '🖼️ Télécharger la Vignette Vidéo',
             btnDownloadDesc: '📝 Télécharger la Smart Description SEO',
             btnDriveBackup: 'Sauvegarder sur Google Drive',
             labelVideoContext: '📝 Contexte de la vidéo',
@@ -307,7 +307,7 @@
             walletAvailableLabel: 'Disponibles',
             walletReservedLabel: 'En traitement',
             btnRechargeWallet: '<span>⚡</span> Recharger mon solde',
-            walletHint: '💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage incrusté 9:16 + archivage Drive).',
+            walletHint: '💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage TikTok + archivage Drive).',
             historyTitle: '<span>🎬</span> Historique de mes Vidéos',
             btnRefreshHistory: '<span>🔄</span> Actualiser',
             historyLoadingText: 'Chargement de votre historique personnel...',
@@ -347,8 +347,8 @@
             footerCopyright: '© 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.',
 
             // Studio TikTok V3 (Générique & Pédagogique)
-            studioDocTitle: 'Aya Studio V3 - Studio TikTok 9:16 & Éditeur Sous-Titres',
-            studioHeroTitle: 'Studio TikTok 9:16 & Éditeur Sous-Titres',
+            studioDocTitle: 'Aya Studio V3 - Studio Vidéo TikTok & Éditeur Sous-Titres',
+            studioHeroTitle: 'Studio Vidéo TikTok & Éditeur Sous-Titres',
             studioHeroSub: 'Personnalisez votre bandeau d\'accroche, vos titres et générez votre pack vidéo optimisé pour les réseaux sociaux.',
             sec1Title: '1. Sens de Traduction & Mode',
             labelModeSelect: 'Protocole & Langue Source :',
@@ -356,8 +356,8 @@
             sec2Title: '2. Médias Source & Image de Fond',
             labelMediaType: 'Format du Média Source :',
             sourceMediaHint: 'Formats acceptés : MP3, WAV, OGG, M4A, MP4, MOV, MKV... (jusqu\'à 500 Mo).',
-            labelBgFile: '🖼️ 2. Image de Fond 9:16 (pour Canevas Vidéo) :',
-            bgFileHint: 'Image verticale au format 9:16 (ex: 1080x1920) servant d\'arrière-plan pour les fichiers audio.',
+            labelBgFile: '🖼️ 2. Image de Fond Verticale (pour Canevas Vidéo) :',
+            bgFileHint: 'Image verticale (format smartphone) servant d\'arrière-plan pour les fichiers audio.',
             sec3Title: '3. Bandeau, Titres & Couleurs',
             chkShowHeader: '🏷️ Afficher le Bandeau d\'Accroche Supérieur',
             labelHeaderText: 'Texte du Bandeau d\'En-tête :',
@@ -378,9 +378,9 @@
             chkMp4: '🎬 Vidéo .MP4',
             chkAss: '📄 Sous-titres .ASS',
             chkTxt: '📝 Description .TXT',
-            chkCover: '🎨 Cover 9:16 .TXT',
+            chkCover: '🎨 Vignette TikTok .TXT',
             btnGenerateStudio: '⚡ VALIDER & GÉNÉRER LE PACK V3',
-            simTitle: '📱 Simulateur Visuel TikTok 9:16 (1080x1920)',
+            simTitle: '📱 Aperçu Visuel Format Téléphone (TikTok)',
             simRealtime: '● Aperçu Temps Réel Actif',
             optModeVostfr: '🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)',
             optModeVoar: '🇫🇷 Français ➔ 🇵🇸 Arabe Palestinien (Gaza Ammiya) (VOAR)',
@@ -389,7 +389,7 @@
             sourceMediaAudioLabel: '📁 1. Fichier Audio Source :',
             sourceMediaVideoLabel: '📁 1. Fichier Vidéo Source :',
             placeholderAudioFile: '📁 Choisissez votre fichier audio ou vidéo (.mpeg, .mp3, .ogg, .mp4...)...',
-            placeholderBgFile: '🖼️ Cliquez pour choisir votre image de fond 9:16...'
+            placeholderBgFile: '🖼️ Cliquez pour choisir votre image de fond verticale...'
         },
         ar: {
             dir: 'rtl',
@@ -402,7 +402,7 @@
             navHomeText: 'المحادثة',
             navTraducteurText: 'المترجم',
             navTraductionText: 'الترجمة',
-            navStudioText: 'استوديو 9:16',
+            navStudioText: 'استوديو الفيديو',
             navCommunauteText: 'المجتمع',
             navModerationText: 'الإشراف',
             navProfilText: 'الملف',
@@ -540,7 +540,7 @@
 
             // Choix du Visuel pour Audios
             labelBgTheme: '٥. اختيار الخلفية المرئية (خاص بالتسجيلات الصوتية فقط)',
-            audioNoticeBadge: '✨ فيديو 9:16 تلقائي للملفات الصوتية فقط',
+            audioNoticeBadge: '✨ فيديو طولي تلقائي للملفات الصوتية',
             bgPalestineTitle: '🇵🇸 صمود فلسطين',
             bgPalestineSub: 'ألوان العلم الفلسطيني بنمط تجريدي',
             bgDarkTitle: '🌑 أسود ملكي داكن',
@@ -554,8 +554,8 @@
             btnSubmitDefault: '<span>⚡</span> بدء المعالجة والتوليد الفوري',
             btnSubmitLoading: '<span>⏳</span> جاري معالجة الفيديو والترجمة...',
             chkForceReprocess: '🔄 إعادة المعالجة الإجبارية (تجاوز الذاكرة المؤقتة)',
-            chkTiktokPackText: 'إنشاء حزمة تيك توك (غلاف 9:16 ونصوص النشر)',
-            chkTiktokPackSub: 'اختياري: غلاف تجريدي 9:16 ونصوص ترويجية محسنة (SEO)',
+            chkTiktokPackText: 'إنشاء حزمة تيك توك (غلاف ونصوص النشر)',
+            chkTiktokPackSub: 'اختياري: غلاف طولي ونصوص ترويجية محسنة (SEO)',
 
             // Progression
             statusInit: 'جاري تشغيل خط الإنتاج...',
@@ -568,9 +568,9 @@
             btnDownloadVideoMain: '⬇️ تحميل الفيديو',
             btnDownloadSubtitlesMain: '📄 تحميل ملف الترجمة',
             btnDownloadMp4Video: '⬇️ تحميل الفيديو النهائي (MP4)',
-            btnDownloadMp4Audio: '⬇️ تحميل الفيديو النهائي بصيغة 9:16',
+            btnDownloadMp4Audio: '⬇️ تحميل الفيديو النهائي (بصيغة طولية)',
             btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
-            btnDownloadCover: '🖼️ تحميل غلاف تيك توك 9:16',
+            btnDownloadCover: '🖼️ تحميل غلاف تيك توك',
             btnDownloadDesc: '📝 تحميل نصوص النشر والوصف الذكي',
             btnDriveBackup: 'حفظ على Google Drive',
             labelVideoContext: '📝 سياق الفيديو',
@@ -730,8 +730,8 @@
             footerCopyright: '© 2026 استوديو آية — منصة الترجمة والدبلجة التضامنية. جميع الحقوق محفوظة.',
 
             // Studio TikTok V3 (Générique & Pédagogique)
-            studioDocTitle: 'استوديو آية V3 - محرر تيك توك 9:16 وصانع الترجمة',
-            studioHeroTitle: 'استوديو تيك توك 9:16 ومحرر الترجمة',
+            studioDocTitle: 'استوديو آية V3 - محرر تيك توك وصانع الترجمة',
+            studioHeroTitle: 'استوديو تيك توك ومحرر الترجمة',
             studioHeroSub: 'خصص شريط العنوان العلوي والعناوين وأنشئ حزمة الفيديو المحسنة لمنصات التواصل الاجتماعي.',
             sec1Title: '١. اتجاه الترجمة ونمط المعالجة',
             labelModeSelect: 'بروتوكول ولغة التسجيل الأصلية:',
@@ -739,8 +739,8 @@
             sec2Title: '٢. وسائط المصدر وصورة الخلفية',
             labelMediaType: 'صيغة وتنسيق الوسائط المصدر:',
             sourceMediaHint: 'الصيغ المقبولة: MP3, WAV, OGG, M4A, MP4, MOV, MKV... (حتى 500 ميغابايت).',
-            labelBgFile: '🖼️ ٢. صورة الخلفية 9:16 (لكانفاس الفيديو):',
-            bgFileHint: 'صورة طولية بنسبة 9:16 (مثال: 1080x1920) كخلفية بصرية للتسجيلات الصوتية.',
+            labelBgFile: '🖼️ ٢. صورة الخلفية الطولية (لكانفاس الفيديو):',
+            bgFileHint: 'صورة طولية مناسبة للهاتف كخلفية بصرية للتسجيلات الصوتية.',
             sec3Title: '٣. شريط العنوان والخطوط والألوان',
             chkShowHeader: '🏷️ إظهار شريط العنوان العلوي',
             labelHeaderText: 'نص شريط العنوان العلوي:',
@@ -761,9 +761,9 @@
             chkMp4: '🎬 فيديو مدمج .MP4',
             chkAss: '📄 ملف ترجمة دقيق .ASS',
             chkTxt: '📝 نص النشر والوصف .TXT',
-            chkCover: '🎨 موجه الغلاف 9:16 .TXT',
+            chkCover: '🎨 موجه غلاف تيك توك .TXT',
             btnGenerateStudio: '⚡ اعتماد وتوليد حزمة V3',
-            simTitle: '📱 محاكي العرض المرئي تيك توك 9:16 (1080x1920)',
+            simTitle: '📱 معاينة العرض المرئي للهاتف (تيك توك)',
             simRealtime: '● المعاينة الحية نشطة',
             optModeVostfr: '🇵🇸 عربي فلسطيني (غزة) ➔ 🇫🇷 فرنسي (VOSTFR)',
             optModeVoar: '🇫🇷 فرنسي ➔ 🇵🇸 عربي فلسطيني (عامية غزة) (VOAR)',
@@ -772,7 +772,7 @@
             sourceMediaAudioLabel: '📁 ١. ملف الصوت المصدر:',
             sourceMediaVideoLabel: '📁 ١. ملف الفيديو المصدر:',
             placeholderAudioFile: '📁 اختر ملف الصوت أو الفيديو المصدر (.mp3, .wav, .mp4...)...',
-            placeholderBgFile: '🖼️ اضغط لاختيار صورة الخلفية 9:16...'
+            placeholderBgFile: '🖼️ اضغط لاختيار صورة الخلفية الطولية...'
         }
     };
 
