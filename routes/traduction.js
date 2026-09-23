@@ -254,7 +254,7 @@ router.get('/traduction', (req, res) => {
 });
 
 const { spawn } = require('child_process');
-const { getPythonBin, killProcessTree } = require('../utils/runtime');
+const { getPythonBin, killProcessTree, spawnNice } = require('../utils/runtime');
 const { downloadTelegramMedia } = require('../services/telegramDownloader');
 const {
     acquireUserLock,
@@ -430,7 +430,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
         const tPySpawn = performance.now();
         const initDurationS = Number(((tPySpawn - tReqStart) / 1000).toFixed(2));
 
-        const pyProcess = spawn(getPythonBin(), pyArgs, {
+        const pyProcess = spawnNice(getPythonBin(), pyArgs, {
             cwd: ROOT_DIR,
             env: {
                 ...process.env,
