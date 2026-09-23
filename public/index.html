@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" id="htmlTag">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>وكيل التَّرْجَمَة آيَة | المحادثة المباشرة المؤقتة</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#10b981">
@@ -32,11 +32,13 @@
             display: flex;
             flex-direction: column;
             min-height: calc(100vh - 220px);
+            min-height: calc(100dvh - 220px);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
             border-radius: 16px;
             border: 1px solid rgba(56, 189, 248, 0.25);
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(12px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         .chat-card-body {
             display: flex;
@@ -48,6 +50,7 @@
             flex: 1;
             min-height: 420px;
             max-height: calc(100vh - 380px);
+            max-height: calc(100dvh - 380px);
             overflow-y: auto;
             padding: 16px;
             background: rgba(15, 23, 42, 0.65);
@@ -109,7 +112,7 @@
         }
     </style>
 </head>
-<<body>
+<body>
     <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
     <header class="app-header" id="ayaGlobalNavbar"></header>
 
