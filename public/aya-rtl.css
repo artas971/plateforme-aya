@@ -30,18 +30,12 @@ html[dir="rtl"] * {
     font-family: var(--font-arabic) !important;
 }
 
-html[dir="rtl"],
-body[dir="rtl"],
+/* Interligne aéré spécifique pour la lisibilité des textes arabes (TICKET-18) */
 html[dir="rtl"] p,
-html[dir="rtl"] span,
-html[dir="rtl"] label,
-html[dir="rtl"] div,
-html[dir="rtl"] h1,
-html[dir="rtl"] h2,
-html[dir="rtl"] h3,
-html[dir="rtl"] h4,
-html[dir="rtl"] small,
-html[dir="rtl"] li {
+html[dir="rtl"] .chat-text-original,
+html[dir="rtl"] .chat-text-translated,
+html[dir="rtl"] .message-content,
+html[dir="rtl"] article {
     line-height: 1.7 !important;
 }
 
