@@ -260,6 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
             titleChatHeader: 'Chat Éphémère Traduit (Messages & Audios)',
             tabChatAll: '🌍 Salon Général',
             tabChatDms: '🔒 Mes DMs',
+            chatRecipientAll: '🌍 Tout le monde',
+            chatEmptyGeneral: '🌍 Aucun message public dans le salon général.',
+            chatEmptyDms: '🔒 Aucun message privé (DM) pour l\'instant.',
             badgeChatTimer: '🕒 Suppression automatique après 24h',
             subChatInfo: 'Vos messages texte et vocaux sont automatiquement traduits et vocalisés selon la langue de votre compte. Chaque message est conservé exactement 24h puis définitivement purgé du disque.',
             chatMicBtnTitle: 'Enregistrer une note vocale',
@@ -289,6 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alertDeleteMsgSuccess: '✅ Message supprimé avec succès.',
             adminDeleteMsgTitle: 'Supprimer ce message (Modération Admin)',
             footerText: 'Agent Traducteur Aya &bull; Interface Web & Serveur Local (localhost:3000)',
+            footerCgu: 'Conditions Générales (CGU/CGV)',
+            footerPrivacy: 'Politique de Confidentialité (RGPD)',
+            footerSupport: '❤️ Soutenir l\'équipe (PayPal)',
             // WhatsApp Guidance Modal Translations
             waGuidanceTitle: '✅ Note Vocale MP3 Téléchargée !',
             waGuidanceSub: 'Le fichier audio <strong id="waGuidanceFileName" class="filename-badge">note_vocale.mp3</strong> est maintenant dans vos Téléchargements.',
@@ -412,8 +418,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sendAudioToJohnBtn: '📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"',
             purgeAudioBtn: '🗑️ حذف التسجيل الصوتي من القرص',
             titleChatHeader: 'المحادثة المباشرة المؤقتة المترجمة (رسائل وأصوات)',
-            tabChatAll: '🌍 Salon Général',
-            tabChatDms: '🔒 Mes DMs',
+            tabChatAll: '🌍 المحادثة العامة',
+            tabChatDms: '🔒 رسائلي الخاصة',
+            chatRecipientAll: '🌍 الجميع',
+            chatEmptyGeneral: '🌍 لا توجد رسائل عامة حالياً.',
+            chatEmptyDms: '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.',
             badgeChatTimer: '🕒 الحذف التلقائي للرسائل بعد 24 ساعة',
             subChatInfo: 'تترجم رسائلك النصية والصوتية تلقائياً حسب لغة حسابك. تُحفظ كل رسالة لمدة 24 ساعة ثم تُحذف تلقائياً من القرص.',
             chatMicBtnTitle: 'تسجيل ملاحظة صوتية',
@@ -442,7 +451,10 @@ document.addEventListener('DOMContentLoaded', () => {
             alertDeleteMsgConfirm: 'هل أنت متأكد من حذف هذه الرسالة لجميع المستخدمين؟',
             alertDeleteMsgSuccess: '✅ تم حذف الرسالة بنجاح.',
             adminDeleteMsgTitle: 'حذف هذه الرسالة (إشراف المسؤول)',
-            footerText: 'وكيل الترجمة آية &bull; واجهة الويب والخادم المحلي (localhost:3000)',
+            footerText: 'وكيل الترجمة آية &bull; المحادثة المباشرة والمراسلة الفورية (localhost:3000)',
+            footerCgu: 'الشروط العامة (CGU/CGV)',
+            footerPrivacy: 'سياسة الخصوصية (RGPD)',
+            footerSupport: '❤️ دعم الفريق (PayPal)',
             // WhatsApp Guidance Modal Translations
             waGuidanceTitle: '✅ تم تحميل الملاحظة الصوتية MP3 بنجاح!',
             waGuidanceSub: 'تم حفظ الملف الصوتي <strong id="waGuidanceFileName" class="filename-badge">note_vocale.mp3</strong> في مجلد التحميلات (Downloads) على جهازك.',
@@ -505,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el && val !== undefined) el.setAttribute('placeholder', val);
     }
 
-    function applyLanguage(lang) {
+    function applyLanguage(lang, skipDispatch = false) {
         currentLang = lang;
         localStorage.setItem('aya_lang', lang);
 
@@ -636,8 +648,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Chat Ephemeral Translations
         setInnerHTML('titleChatHeader', dict.titleChatHeader);
-        if (tabChatAll) tabChatAll.textContent = dict.tabChatAll || '🌍 Salon Général';
-        if (tabChatDms) tabChatDms.textContent = dict.tabChatDms || '🔒 Mes DMs';
+        if (tabChatAll) tabChatAll.textContent = dict.tabChatAll || (lang === 'ar' ? '🌍 المحادثة العامة' : '🌍 Salon Général');
+        if (tabChatDms) tabChatDms.textContent = dict.tabChatDms || (lang === 'ar' ? '🔒 رسائلي الخاصة' : '🔒 Mes DMs');
         setInnerHTML('badgeChatTimer', dict.badgeChatTimer);
         setInnerHTML('subChatInfo', dict.subChatInfo);
         if (chatMicBtn && !isChatRecording) chatMicBtn.setAttribute('title', dict.chatMicBtnTitle);
@@ -646,7 +658,19 @@ document.addEventListener('DOMContentLoaded', () => {
         setInnerHTML('adminArchiveChatBtn', dict.adminArchiveChatBtn);
         setInnerHTML('adminResetChatBtn', dict.adminResetChatBtn);
 
+        // Localisation de l'option "Tous" dans le sélecteur de destinataire
+        if (chatRecipientSelect) {
+            const optAll = chatRecipientSelect.querySelector('option[value="all"]');
+            if (optAll) {
+                optAll.textContent = dict.chatRecipientAll || (lang === 'ar' ? '🌍 الجميع' : '🌍 Tout le monde');
+            }
+        }
+
+        // Localisation du pied de page et des mentions légales
         setInnerHTML('footerText', dict.footerText);
+        setInnerHTML('footerCguLink', dict.footerCgu || (lang === 'ar' ? 'الشروط العامة (CGU/CGV)' : 'Conditions Générales (CGU/CGV)'));
+        setInnerHTML('footerPrivacyLink', dict.footerPrivacy || (lang === 'ar' ? 'سياسة الخصوصية (RGPD)' : 'Politique de Confidentialité (RGPD)'));
+        setInnerHTML('footerSupportLink', dict.footerSupport || (lang === 'ar' ? '❤️ دعم الفريق (PayPal)' : '❤️ Soutenir l\'équipe (PayPal)'));
 
         // Pre-select opposite target language by default for existing audio selector
         if (selectAudioTargetLang) {
@@ -663,7 +687,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedItem) displaySelectedAudio(selectedItem);
         }
         loadChatMessages();
-        window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
+        if (!skipDispatch) {
+            window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
+        }
     }
 
     // Language Toggle Listeners
@@ -2005,10 +2031,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatHistoryBox.appendChild(emptyFilterNotice);
             }
             emptyFilterNotice.style.display = 'block';
+            const filterDict = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : {};
             if (activeChatFilter === 'dms') {
-                emptyFilterNotice.textContent = currentLang === 'ar' ? '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.' : '🔒 Aucun message privé (DM) pour le moment.';
+                emptyFilterNotice.textContent = filterDict.chatEmptyDms || (currentLang === 'ar' ? '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.' : '🔒 Aucun message privé (DM) pour l\'instant.');
             } else {
-                emptyFilterNotice.textContent = currentLang === 'ar' ? '🌍 لا توجد رسائل عامة حتى الآن.' : '🌍 Aucun message public dans le salon général.';
+                emptyFilterNotice.textContent = filterDict.chatEmptyGeneral || (currentLang === 'ar' ? '🌍 لا توجد رسائل عامة حالياً.' : '🌍 Aucun message public dans le salon général.');
             }
         } else if (emptyFilterNotice) {
             emptyFilterNotice.style.display = 'none';
@@ -2643,4 +2670,14 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(currentLang);
     checkLoginStatus();
     loadChatMessages();
+
+    // Écouteur global pour bilinguisme instantané partagé avec la Navbar (Lot 2)
+    window.addEventListener('aya:languageChanged', (e) => {
+        if (e && e.detail && e.detail.lang) {
+            if (e.detail.lang !== currentLang) {
+                applyLanguage(e.detail.lang, true);
+            }
+            applyChatFilter();
+        }
+    });
 });
