@@ -322,6 +322,15 @@ html[dir="rtl"] .vocab-word-preview-row {
     direction: rtl;
 }
 
+html[dir="rtl"] .vocab-col-fr {
+    align-items: flex-end;
+}
+
+html[dir="rtl"] .vocab-col-ar {
+    align-items: flex-start;
+    text-align: left;
+}
+
 html[dir="rtl"] .vocab-render-preview {
     direction: rtl;
 }

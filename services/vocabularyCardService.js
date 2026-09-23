@@ -206,9 +206,14 @@ function buildHtmlTemplate(vocabData) {
         <div class="middle-content">
           <div class="fr-title">${escapeHtml(item.french)}</div>
           <div class="ar-translation">${escapeHtml(item.arabic)}</div>
-          <div class="phonetic-for-french">${escapeHtml(item.phoneticFr)}</div>
+          <div class="phonetic-for-french">
+            <span class="phon-tag">🇵🇸 Shami:</span> ${escapeHtml(item.phoneticFr)}
+          </div>
         </div>
-        <div class="right-pill">${escapeHtml(item.phoneticAr)}</div>
+        <div class="right-pill">
+          <span class="pill-label">نُطْقُ الْفَرَنْسِيِّ 🇫🇷</span>
+          <span class="pill-word">${escapeHtml(item.phoneticAr)}</span>
+        </div>
       </div>
     `).join('\n');
 
@@ -355,35 +360,65 @@ function buildHtmlTemplate(vocabData) {
 
     .phonetic-for-french {
       font-family: 'Inter', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 900;
-      letter-spacing: 0.3px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
       color: #38bdf8;
-      background: rgba(56, 189, 248, 0.22);
-      padding: 2px 8px;
+      background: rgba(56, 189, 248, 0.2);
+      padding: 3px 8px;
       border-radius: 8px;
-      border: 2px solid #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+      border: 1.5px solid #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
       word-break: break-word;
       line-height: 1.2;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       max-width: 100%;
+    }
+
+    .phon-tag {
+      font-size: 0.72rem;
+      color: #bae6fd;
+      font-weight: 700;
+      opacity: 0.9;
     }
 
     .right-pill {
       font-family: 'Noto Sans Arabic', 'Cairo', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 900;
       color: #ffffff;
       background: var(--accent-pill-bg);
       border: 2px solid var(--accent-pill-border);
-      padding: 6px 14px;
-      border-radius: 16px;
-      box-shadow: 0 0 16px rgba(45, 212, 191, 0.35);
+      padding: 5px 12px;
+      border-radius: 14px;
+      box-shadow: 0 0 14px rgba(45, 212, 191, 0.35);
       white-space: normal;
       text-align: center;
       flex-shrink: 0;
-      min-width: 110px;
+      min-width: 125px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+    }
+
+    .pill-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #a7f3d0;
+      letter-spacing: 0.2px;
+      line-height: 1.1;
+      display: block;
+      opacity: 0.95;
+    }
+
+    .pill-word {
+      font-size: 1.18rem;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.25;
+      display: block;
     }
 
     .footer {

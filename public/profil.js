@@ -936,9 +936,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (vocabResultWordsList && Array.isArray(card.words)) {
                     vocabResultWordsList.innerHTML = card.words.map(w => `
                         <div class="vocab-word-preview-row">
-                            <span class="vocab-word-fr">${w.icon || '✨'} ${w.french}</span>
-                            <span style="color: #64748b; font-size: 0.78rem;">[${w.phoneticFr || ''}]</span>
-                            <span class="vocab-word-ar">${w.arabic}</span>
+                            <div class="vocab-col-fr">
+                                <span class="vocab-word-fr">${w.icon || '✨'} ${w.french}</span>
+                                ${w.phoneticAr ? `<span class="vocab-badge-ar-phon" title="Prononciation du français pour arabophones">نُطْقُ الْفَرَنْسِيِّ: ${w.phoneticAr}</span>` : ''}
+                            </div>
+                            <div class="vocab-col-ar">
+                                <span class="vocab-word-ar">${w.arabic}</span>
+                                ${w.phoneticFr ? `<span class="vocab-badge-fr-phon" title="Prononciation de l'arabe chami">[${w.phoneticFr}]</span>` : ''}
+                            </div>
                         </div>
                     `).join('');
                 }
@@ -1103,9 +1108,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (detailCardWordsList && Array.isArray(c.words)) {
             detailCardWordsList.innerHTML = c.words.map(w => `
                 <div class="vocab-word-preview-row">
-                    <span class="vocab-word-fr">${w.icon || '✨'} ${w.french}</span>
-                    <span style="color: #64748b; font-size: 0.78rem;">[${w.phoneticFr || ''}]</span>
-                    <span class="vocab-word-ar">${w.arabic}</span>
+                    <div class="vocab-col-fr">
+                        <span class="vocab-word-fr">${w.icon || '✨'} ${w.french}</span>
+                        ${w.phoneticAr ? `<span class="vocab-badge-ar-phon" title="Prononciation du français pour arabophones">نُطْقُ الْفَرَنْسِيِّ: ${w.phoneticAr}</span>` : ''}
+                    </div>
+                    <div class="vocab-col-ar">
+                        <span class="vocab-word-ar">${w.arabic}</span>
+                        ${w.phoneticFr ? `<span class="vocab-badge-fr-phon" title="Prononciation de l'arabe chami">[${w.phoneticFr}]</span>` : ''}
+                    </div>
                 </div>
             `).join('');
         }

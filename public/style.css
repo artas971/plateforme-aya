@@ -4246,7 +4246,42 @@ html[dir="rtl"] .step-content p {
     font-family: var(--font-arabic);
     font-weight: 800;
     color: #00838f;
-    font-size: 1rem;
+    font-size: 1.05rem;
+}
+
+.vocab-col-fr {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+}
+
+.vocab-col-ar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    text-align: right;
+}
+
+.vocab-badge-ar-phon {
+    font-family: var(--font-arabic, 'Cairo', sans-serif);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0d9488;
+    background: rgba(13, 148, 136, 0.12);
+    border: 1px solid rgba(13, 148, 136, 0.25);
+    padding: 2px 7px;
+    border-radius: 6px;
+    line-height: 1.2;
+}
+
+.vocab-badge-fr-phon {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #0284c7;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
 }
 
 /* Boutons d'action Fiches */
