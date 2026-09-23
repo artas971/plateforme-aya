@@ -362,4 +362,126 @@ router.post('/', async (req, res) => {
     }
 });
 
+const { FeedbackRating, isDbConnected, mongoose } = require('../models');
+const RATINGS_FILE = path.join(ROOT_DIR, 'data', 'ratings.json');
+
+function readRatingsFile() {
+    try {
+        if (!fs.existsSync(RATINGS_FILE)) return [];
+        const data = fs.readFileSync(RATINGS_FILE, 'utf-8');
+        return JSON.parse(data || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function writeRatingsFile(data) {
+    try {
+        const dataDir = path.dirname(RATINGS_FILE);
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+        fs.writeFileSync(RATINGS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (e) {
+        console.error('[FEEDBACK RATE] Erreur écriture ratings.json :', e.message);
+    }
+}
+
+/**
+ * POST /api/feedback/rate : Enregistre la note 1-5 étoiles attribuée par l'utilisateur
+ */
+router.post('/rate', async (req, res) => {
+    try {
+        const { rating, comment, serviceType, jobId, mediaFilename } = req.body;
+        const numRating = parseInt(rating, 10);
+
+        if (!numRating || numRating < 1 || numRating > 5) {
+            return res.status(400).json({
+                success: false,
+                error: "La note doit être un entier compris entre 1 et 5."
+            });
+        }
+
+        const sessionUser = (req.session && req.session.user) ? req.session.user : null;
+        const userId = sessionUser ? (sessionUser.id || sessionUser._id || null) : null;
+        const username = sessionUser ? (sessionUser.username || sessionUser.name || 'Anonyme') : 'Anonyme';
+        const userEmail = sessionUser ? (sessionUser.email || null) : null;
+
+        const ratingData = {
+            id: `rate_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            user: userId,
+            username,
+            userEmail,
+            serviceType: serviceType || 'traduction',
+            jobId: jobId || null,
+            mediaFilename: mediaFilename || null,
+            rating: numRating,
+            comment: comment ? String(comment).trim() : '',
+            aiAnalysis: {
+                analyzed: false,
+                faultType: 'UNKNOWN',
+                diagnosis: '',
+                refundRecommended: false,
+                suggestedCredits: 1
+            },
+            refundStatus: 'none',
+            createdAt: new Date().toISOString()
+        };
+
+        // 1. Sauvegarde Mongo si disponible
+        if (isDbConnected()) {
+            try {
+                const doc = new FeedbackRating({
+                    user: userId && mongoose.Types.ObjectId.isValid(userId) ? userId : null,
+                    username,
+                    userEmail,
+                    serviceType: ratingData.serviceType,
+                    jobId: ratingData.jobId,
+                    mediaFilename: ratingData.mediaFilename,
+                    rating: numRating,
+                    comment: ratingData.comment,
+                    aiAnalysis: ratingData.aiAnalysis,
+                    refundStatus: 'none'
+                });
+                const saved = await doc.save();
+                ratingData.id = saved._id.toString();
+            } catch (mongoErr) {
+                console.warn('[FEEDBACK RATE] Erreur Mongo, bascule JSON :', mongoErr.message);
+            }
+        }
+
+        // 2. Sauvegarde JSON local (Double garantie persistance)
+        const localRatings = readRatingsFile();
+        localRatings.unshift(ratingData);
+        writeRatingsFile(localRatings);
+
+        console.log(`[FEEDBACK RATE] ⭐ Note enregistrée : ${numRating}/5 par @${username} (Service: ${ratingData.serviceType})`);
+
+        // 3. Hook Analyse IA Agent Alexandre pour les notes <= 3 étoiles
+        if (numRating <= 3) {
+            try {
+                const { analyzeRating } = require('../services/ratingAnalyzer');
+                const analyzed = await analyzeRating(ratingData);
+                if (analyzed && analyzed.refundStatus) {
+                    ratingData.refundStatus = analyzed.refundStatus;
+                }
+            } catch (aiErr) {
+                console.warn('[FEEDBACK RATE] ⚠️ Erreur analyse IA note :', aiErr.message);
+            }
+        }
+
+        return res.json({
+            success: true,
+            ratingId: ratingData.id,
+            refundStatus: ratingData.refundStatus || 'none',
+            message: "Votre évaluation a bien été enregistrée. Merci pour votre retour !"
+        });
+
+    } catch (err) {
+        console.error('[FEEDBACK RATE ERROR]', err);
+        return res.status(500).json({
+            success: false,
+            error: `Erreur serveur lors de l'enregistrement de la note : ${err.message}`
+        });
+    }
+});
+
 module.exports = router;

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "fail_1790194065547_rwk57",
+    "jobId": "job_ffmpeg_crash_99",
+    "user": "user_tester_42",
+    "username": "jean_testeur",
+    "userEmail": "jean@example.com",
+    "serviceType": "traduction",
+    "component": "FFmpeg",
+    "mediaUrl": "/uploads/input_corrupted.mp4",
+    "inputParams": {},
+    "errorMessage": "ffmpeg exited with code 1: [h264 @ 0x55] no frame!",
+    "errorStack": "ffmpeg -i input_corrupted.mp4 -vf subtitles=test.ass output.mp4\nError decoding audio/video stream",
+    "aiDiagnosis": {
+      "analyzed": true,
+      "cause": "Incompatibilité de codec ou conteneur multimédia corrompu (FFmpeg)",
+      "technicalExplanation": "FFmpeg a rencontré une erreur lors du démultiplexage ou du transcodage du flux source. Le conteneur peut être incomplet ou utiliser un profil non supporté.",
+      "proposedFix": "Transcoder la source en H.264 / AAC 48kHz standard avant passage dans les filtres ASS.",
+      "suggestedAction": "RETRY_WITH_TRANSCODE"
+    },
+    "status": "approved_and_retried",
+    "reviewedBy": "artas971@gmail.com",
+    "reviewedAt": "2026-09-23T20:07:45.661Z",
+    "createdAt": "2026-09-23T20:07:45.547Z",
+    "adminNotes": "Relance approuvée après transcodage AAC"
+  },
+  {
+    "id": "fail_1790194032478_idzsx",
+    "jobId": "job_ffmpeg_crash_99",
+    "user": "user_tester_42",
+    "username": "jean_testeur",
+    "userEmail": "jean@example.com",
+    "serviceType": "traduction",
+    "component": "FFmpeg",
+    "mediaUrl": "/uploads/input_corrupted.mp4",
+    "inputParams": {},
+    "errorMessage": "ffmpeg exited with code 1: [h264 @ 0x55] no frame!",
+    "errorStack": "ffmpeg -i input_corrupted.mp4 -vf subtitles=test.ass output.mp4\nError decoding audio/video stream",
+    "aiDiagnosis": {
+      "analyzed": true,
+      "cause": "Incompatibilité de codec ou conteneur multimédia corrompu (FFmpeg)",
+      "technicalExplanation": "FFmpeg a rencontré une erreur lors du démultiplexage ou du transcodage du flux source. Le conteneur peut être incomplet ou utiliser un profil non supporté.",
+      "proposedFix": "Transcoder la source en H.264 / AAC 48kHz standard avant passage dans les filtres ASS.",
+      "suggestedAction": "RETRY_WITH_TRANSCODE"
+    },
+    "status": "pending_admin_review",
+    "reviewedBy": null,
+    "reviewedAt": null,
+    "createdAt": "2026-09-23T20:07:12.478Z"
+  }
+]

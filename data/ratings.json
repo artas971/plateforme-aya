@@ -1,0 +1,65 @@
+[
+  {
+    "id": "rate_1790194065611_yx2z0",
+    "user": "user_sarah_123",
+    "username": "sarah_gaza",
+    "userEmail": "sarah@example.com",
+    "serviceType": "traduction",
+    "jobId": "job_sarah_sub_77",
+    "mediaFilename": "temoignage_gaza_01.mp4",
+    "rating": 2,
+    "comment": "Les sous-titres étaient décalés de 4 secondes et la vidéo a coupé au milieu, c'est buggé !",
+    "aiAnalysis": {
+      "analyzed": true,
+      "faultType": "APPLICATION_ERROR",
+      "diagnosis": "Dégradation technique signalée dans le rendu vidéo ou la synchronisation des sous-titres.",
+      "refundRecommended": true,
+      "suggestedCredits": 1
+    },
+    "refundStatus": "approved",
+    "createdAt": "2026-09-23T20:07:45.611Z",
+    "refundedBy": "artas971@gmail.com",
+    "refundedAt": "2026-09-23T20:07:45.651Z",
+    "creditsRefunded": 1
+  },
+  {
+    "id": "rate_1790194032734_5e0xz",
+    "user": "test_admin_id",
+    "username": "artas_admin",
+    "userEmail": "artas971@gmail.com",
+    "serviceType": "traduction",
+    "jobId": "job_sarah_sub_77",
+    "mediaFilename": "temoignage_gaza_01.mp4",
+    "rating": 2,
+    "comment": "Les sous-titres étaient décalés de 4 secondes et la vidéo a coupé au milieu, c'est buggé !",
+    "aiAnalysis": {
+      "analyzed": true,
+      "faultType": "APPLICATION_ERROR",
+      "diagnosis": "Dégradation technique signalée dans le rendu vidéo ou la synchronisation des sous-titres.",
+      "refundRecommended": true,
+      "suggestedCredits": 1
+    },
+    "refundStatus": "pending_approval",
+    "createdAt": "2026-09-23T20:07:12.734Z"
+  },
+  {
+    "id": "rate_1790171793936_14vq1",
+    "user": null,
+    "username": "Anonyme",
+    "userEmail": null,
+    "serviceType": "traduction",
+    "jobId": "test_job_123",
+    "mediaFilename": "video_test.mp4",
+    "rating": 5,
+    "comment": "Super service ! Traduction très fluide.",
+    "aiAnalysis": {
+      "analyzed": false,
+      "faultType": "UNKNOWN",
+      "diagnosis": "",
+      "refundRecommended": false,
+      "suggestedCredits": 1
+    },
+    "refundStatus": "none",
+    "createdAt": "2026-09-23T13:56:33.936Z"
+  }
+]

@@ -411,10 +411,15 @@
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 4;
         
+        var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
         var modeEl = document.getElementById('mode-select');
         var mode = modeEl ? modeEl.value : 'VOSTFR';
-        var line1 = mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض الترجمة الصوتية";
-        var line2 = mode === 'VOSTFR' ? "en bas de votre vidéo TikTok" : "في أسفل الفيديو";
+        var line1 = isArabicUI 
+            ? (mode === 'VOSTFR' ? "هنا ستظهر الترجمة التوضيحية" : "هنا سيتم عرض الترجمة الصوتية")
+            : (mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض الترجمة الصوتية");
+        var line2 = isArabicUI
+            ? (mode === 'VOSTFR' ? "في أسفل فيديو تيك توك الخاص بك" : "في أسفل الفيديو")
+            : (mode === 'VOSTFR' ? "en bas de votre vidéo TikTok" : "في أسفل الفيديو");
 
         var subLines = [line1, line2];
         for (var j = 0; j < subLines.length; j++) {

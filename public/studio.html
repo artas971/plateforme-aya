@@ -297,8 +297,8 @@
         <div class="form-group">
             <label for="mode-select" id="labelModeSelect">Protocole & Langue Source :</label>
             <select id="mode-select" onchange="drawCanvas()">
-                <option value="VOSTFR" selected>🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)</option>
-                <option value="VOAR">🇫🇷 Français ➔ 🇵🇸 Arabe Palestinien (Gaza Ammiya) (VOAR)</option>
+                <option value="VOSTFR" id="optModeVostfr" selected>🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)</option>
+                <option value="VOAR" id="optModeVoar">🇫🇷 Français ➔ 🇵🇸 Arabe Palestinien (Gaza Ammiya) (VOAR)</option>
             </select>
             <div class="field-hint" id="modeHint">Détermine la langue parlée dans le fichier et la langue des sous-titres incrustés.</div>
         </div>
@@ -307,8 +307,8 @@
         <div class="form-group">
             <label for="media-type" id="labelMediaType">Format du Média Source :</label>
             <select id="media-type" onchange="toggleMediaType()">
-                <option value="AUDIO" selected>🎙️ Fichier Audio (.mpeg / .mp3 / .wav / .ogg / .m4a / .opus / .aac / .flac) + Image de Fond</option>
-                <option value="VIDEO">🎬 Fichier Vidéo (.mpeg / .mpg / .mp4 / .mov / .mkv / .webm / .ts)</option>
+                <option value="AUDIO" id="optMediaAudio" selected>🎙️ Fichier Audio (.mpeg / .mp3 / .wav / .ogg / .m4a / .opus / .aac / .flac) + Image de Fond</option>
+                <option value="VIDEO" id="optMediaVideo">🎬 Fichier Vidéo (.mpeg / .mpg / .mp4 / .mov / .mkv / .webm / .ts)</option>
             </select>
         </div>
 
@@ -642,10 +642,13 @@
         var subMarginV = subMarginEl ? parseInt(subMarginEl.value) : 1440;
         var subY = (subMarginV / 1920) * LOGI_H;
 
+        var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
         var modeEl = document.getElementById('mode-select');
         var mode = modeEl ? modeEl.value : 'VOSTFR';
         var subLines = [
-            mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض ترجمتك"
+            isArabicUI
+                ? (mode === 'VOSTFR' ? "هنا ستظهر الترجمة التوضيحية" : "هنا سيتم عرض ترجمتك الصوتية")
+                : (mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض ترجمتك")
         ];
 
         var hasArSub = /[\u0600-\u06FF]/.test(subLines.join(''));
@@ -671,13 +674,14 @@
         var type = typeEl ? typeEl.value : 'AUDIO';
         var label = document.getElementById('source-media-label');
         var mediaInput = document.getElementById('source-media-file');
+        var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
         
         if (type === 'AUDIO') {
-            if (label) label.innerText = '📁 1. Fichier Audio Source :';
+            if (label) label.innerText = isArabicUI ? '📁 ١. ملف الصوت المصدر:' : '📁 1. Fichier Audio Source :';
             if (mediaInput) mediaInput.setAttribute('accept', 'audio/*,video/*,.mpeg,.mpg,.mpe,.mp3,.wav,.ogg,.opus,.m4a,.aac,.flac');
             document.getElementById('bg-image-group').style.display = 'flex';
         } else {
-            if (label) label.innerText = '📁 1. Fichier Vidéo Source :';
+            if (label) label.innerText = isArabicUI ? '📁 ١. ملف الفيديو المصدر:' : '📁 1. Fichier Vidéo Source :';
             if (mediaInput) mediaInput.setAttribute('accept', 'video/*,audio/*,.mpeg,.mpg,.mpe,.mp4,.mov,.mkv,.webm,.ts,.avi');
             document.getElementById('bg-image-group').style.display = 'none';
         }
@@ -849,7 +853,24 @@
                         pContainer.style.display = 'block';
                     }
                 }
-                if (modalActions) modalActions.style.display = 'block';
+                if (modalActions) {
+                    modalActions.style.display = 'block';
+                    if (window.AyaRatingWidget) {
+                        var studioRatingContainer = document.getElementById('studioRatingContainer');
+                        if (!studioRatingContainer) {
+                            studioRatingContainer = document.createElement('div');
+                            studioRatingContainer.id = 'studioRatingContainer';
+                            modalActions.appendChild(studioRatingContainer);
+                        }
+                        studioRatingContainer.innerHTML = '';
+                        window.AyaRatingWidget.show({
+                            serviceType: 'studio_916',
+                            jobId: result.jobId || result.mp4_filename || result.mp4_url,
+                            mediaFilename: result.mp4_filename || 'video_tiktok_studio_v3.mp4',
+                            targetContainer: studioRatingContainer
+                        });
+                    }
+                }
             } else {
                 var errDetail = result.message || (result.errors && result.errors[0] ? result.errors[0].user_message : "Échec du pipeline de traitement.");
                 throw new Error(errDetail);
@@ -901,6 +922,7 @@
             if (titleInput && (titleInput.value === 'PAROLES ET TÉMOIGNAGES DU TERRAIN' || titleInput.value.includes('DRAME') || titleInput.value === 'أصوات ورسائل موثقة من الميدان')) {
                 titleInput.value = (lang === 'ar') ? 'أصوات ورسائل موثقة من الميدان' : 'PAROLES ET TÉMOIGNAGES DU TERRAIN';
             }
+            toggleMediaType();
             drawCanvas();
         });
     </script>
@@ -913,7 +935,7 @@
                 <span class="aya-legal-footer-sep">•</span>
                 <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
                 <span class="aya-legal-footer-sep">•</span>
-                <a href="https://www.paypal.com/sosoxm2026@gmail.com" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+                <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
             <p class="aya-legal-footer-copyright">
                 © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
@@ -923,5 +945,6 @@
 
     <script src="/aya-i18n.js"></script>
     <script src="/feedback-widget.js"></script>
+    <script src="/service-rating-widget.js"></script>
 </body>
 </html>

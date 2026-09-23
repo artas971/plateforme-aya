@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl" id="htmlTag">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>وكيل التَّرْجَمَة آيَة | المحادثة المباشرة المؤقتة</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#10b981">
@@ -32,11 +32,13 @@
             display: flex;
             flex-direction: column;
             min-height: calc(100vh - 220px);
+            min-height: calc(100dvh - 220px);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
             border-radius: 16px;
             border: 1px solid rgba(56, 189, 248, 0.25);
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(12px);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
         .chat-card-body {
             display: flex;
@@ -48,6 +50,7 @@
             flex: 1;
             min-height: 420px;
             max-height: calc(100vh - 380px);
+            max-height: calc(100dvh - 380px);
             overflow-y: auto;
             padding: 16px;
             background: rgba(15, 23, 42, 0.65);
@@ -90,26 +93,55 @@
             justify-content: center;
         }
         @media (max-width: 480px) {
+            .full-chat-layout .chat-history-box {
+                min-height: 250px;
+                max-height: calc(100dvh - 320px);
+                padding: 10px;
+            }
             .chat-main-container {
-                margin: 10px auto 20px auto;
-                padding: 0 0.5rem;
+                margin: 8px auto 14px auto;
+                padding: 0 4px;
             }
             .chat-card-body {
                 padding: 12px 8px;
             }
             .chat-input-bar {
-                gap: 6px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 10px;
             }
-            .chat-input-bar #chatSendBtn {
-                padding: 10px 14px;
+            .chat-recipient-select,
+            #chatRecipientSelect {
+                width: 100% !important;
+                order: 1;
+                min-height: 44px;
+                font-size: 16px !important;
             }
             .chat-input-bar .mic-chat-btn {
-                padding: 10px 12px;
+                order: 2;
+                width: 44px !important;
+                min-width: 44px !important;
+                height: 44px !important;
+                min-height: 44px !important;
+                padding: 0 !important;
+                flex-shrink: 0;
+            }
+            .chat-input-bar .chat-input-area {
+                order: 3;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .chat-input-bar #chatSendBtn {
+                order: 4;
+                min-height: 44px;
+                padding: 0 14px;
+                flex-shrink: 0;
             }
         }
     </style>
 </head>
-<<body>
+<body>
     <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
     <header class="app-header" id="ayaGlobalNavbar"></header>
 
@@ -149,6 +181,16 @@
                     <p class="chat-sub-text" id="subChatInfo" style="font-size: 0.95rem; opacity: 0.85; margin-bottom: 16px;">
                         تترجم رسائلك النصية والصوتية تلقائياً حسب لغة حسابك. تُحفظ كل رسالة لمدة 24 ساعة ثم تُحذف تلقائياً من القرص.
                     </p>
+
+                    <!-- Chat Filter Tabs Bar (TICKET-16 / Issue #34) -->
+                    <div class="chat-filter-tabs" id="chatFilterTabs" role="tablist" aria-label="Filtres de discussion">
+                        <button type="button" class="chat-tab-btn active" id="tabChatAll" data-filter="all" role="tab" aria-selected="true">
+                            🌍 Salon Général
+                        </button>
+                        <button type="button" class="chat-tab-btn" id="tabChatDms" data-filter="dms" role="tab" aria-selected="false">
+                            🔒 Mes DMs
+                        </button>
+                    </div>
 
                     <!-- Chat Messages History Container -->
                     <div class="chat-history-box" id="chatHistoryBox">
@@ -208,14 +250,14 @@
             </section>
         </main>
 
-        <footer class="app-footer" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+        <footer class="app-footer aya-legal-footer" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
             <p id="footerText" style="margin: 0;">وكيل الترجمة آية &bull; المحادثة المباشرة والمراسلة الفورية (localhost:3000)</p>
             <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; font-size: 0.82rem;">
-                <a href="/cgu.html" style="color: #cbd5e1; text-decoration: none;">Conditions Générales (CGU/CGV)</a>
+                <a href="/cgu.html" id="footerCguLink" style="color: #cbd5e1; text-decoration: none;">Conditions Générales (CGU/CGV)</a>
                 <span style="color: #64748b;">•</span>
-                <a href="/confidentialite.html" style="color: #cbd5e1; text-decoration: none;">Politique de Confidentialité (RGPD)</a>
+                <a href="/confidentialite.html" id="footerPrivacyLink" style="color: #cbd5e1; text-decoration: none;">Politique de Confidentialité (RGPD)</a>
                 <span style="color: #64748b;">•</span>
-                <a href="https://www.paypal.com/sosoxm2026@gmail.com" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: none;">❤️ Soutenir l'équipe (PayPal)</a>
+                <a href="https://paypal.me/sosoxm2026" id="footerSupportLink" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: none;">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
         </footer>
     </div>

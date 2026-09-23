@@ -66,10 +66,56 @@
 
 ---
 
+### 🟢 INCIDENT #007 - TITRE TRONQUÉ INACHEVÉ ('Droits sp') & DÉFAILLANCE COUVERTURE
+- **Date & Heure :** 2026-09-23 T12:45:00
+- **Agents Concernés :** Nadine (Directrice Éditoriale), Steve (Lead QA), Lionel (Graphisme Couverture), Alexandre (Expert DevOps / Résolution)
+- **Symptôme Originel :** Génération d'un titre tronqué incompréhensible ("Droits sp") et d'une couverture affichant ce fragment de mot inachevé sur un témoignage de Jabalia, consécutif à une interruption de génération token / quota 429 et une absence de filtre de complétude lexicale.
+- **Démarche Analytique d'Alexandre :**
+  1. **Diagnostic de la Cause Racine :**
+     - Lors de l'inférence synchrone de titrage, le modèle principal `gemini-2.5-flash` a subi un refus de quota HTTP 429 temporaire.
+     - Le repli a produit une chaîne fragmentaire interrompue au milieu du mot ("Droits sp..." au lieu de "Nos droits spoliés").
+     - La validation historique de Nadine ne contrôlait que `len(words) > 1` et `len(text) >= 3`, laissant passer ce faux titre de 2 mots et 9 caractères.
+  2. **Immunisation de l'Agent Nadine & Steve (`is_invalid_or_truncated_title`) :**
+     - Exigence stricte d'un groupe de sens fermé : minimum 3 mots et minimum 12 caractères.
+     - Détection et rejet automatique des fragments de mots orphelins (mots de $\le 2$ lettres non lexicaux comme 'sp', coupures brutales sans voyelles).
+     - Rejet formel et bascule automatique sur les modèles suivants de la cascade ou extraction contextuelle noble basée sur le `user_context`.
+  3. **Auto-Guérison Immédiate :**
+     - Régénération de la couverture au format 3:4 natif TikTok (1080×1440) avec le titre complet et digne : *"Nos droits bafoués à Jabalia"*.
+     - Déploiement automatique des fichiers corrigés dans le dossier `Téléchargements` de l'utilisateur.
+- **Résultat & Handoff :** ✅ **RÉSOLU**. Pipeline immunisé contre tout titre tronqué ou fragmentaire.
+
+---
+
+### 🟢 INCIDENT #008 - DÉCONNEXION STREAMING TUNNEL ("ERREUR RÉSEAU") & ANOMALIES VOAR (FR ➔ AR)
+- **Date & Heure :** 2026-09-23 T15:35:00
+- **Agents Concernés :** Alexandre (Lead DevOps), Thomas (Backend / Streaming), Lionel (Typographie & Design .ASS), Nadine (Nomenclature), Eden (Frontend UI)
+- **Symptôme Originel :** Une utilisatrice distante ("soso") a tenté de traduire une vidéo française en dialecte arabe (mode VOAR). Le traitement a affiché côté client le message d'alerte rouge : *"Erreur de communication réseau - La connexion avec le serveur a été interrompue pendant le traitement"*, laissant penser à un échec global de l'IA ou du serveur.
+- **Démarche Analytique d'Alexandre :**
+  1. **Autopsie des Fichiers Serveur & Télégramme :**
+     - Le backend a en réalité **parfaitement finalisé** le traitement en moins de 8 secondes (`data/videos.json`, vidéo `media (VOAR) (1).mp4` de 593 Ko, fichier sous-titres `.ass`, couverture et description générés avec succès).
+     - **Cause Racine n°1 (Conflit de Tunnels Cloudflare concurrents) :** Deux processus `run_tunnel_forever.py` (PID 16624 et PID 2276) tournaient simultanément, pilotant deux `cloudflared.exe`. Le premier tunnel a été coupé par Cloudflare en plein vol, coupant le stream HTTP Chunked de la cliente avant la réception du JSON final, ce qui a déclenché le catch réseau de `fetch()`.
+     - **Cause Racine n°2 (Absence de Heartbeat SSE/Chunked) :** Entre les étapes de transcription et d'encodage, aucun octet n'était émis, exposant la connexion aux fermetures agressives des proxies intermédiaires.
+     - **Cause Racine n°3 (Nomenclature "media (VOAR)" en Arabe) :** `sanitize_filename_stem` filtrait `[^a-zA-Z0-9\s\-]`, supprimant 100% des caractères arabes du titre sémantique de Nadine et provoquant un repli systématique sur le libellé générique `media`.
+     - **Cause Racine n°4 (Inversion d'horodatage & Police ASS) :** Présence d'un segment halluciné en fin de bande avec `start: 8.36s > end: 8.08s` (après la durée du média), et utilisation de la police `Impact` (incompatible avec la graphie arabe) au lieu de `Arial`/`Segoe UI`.
+  2. **Plan de Résolution & Auto-Guérison DevOps :**
+     - **Verrou d'Instance Unique (`run_tunnel_forever.py`) :** Implémentation d'un verrou socket loopback (`127.0.0.1:49992`) empêchant tout lancement accidentel de tunnels multiples concurrents. Élimination des processus orphelins.
+     - **Heartbeat Chunked Streaming (`routes/traduction.js`) :** Émission périodique d'un battement de cœur (`:\n`) toutes les 4 secondes maintenant le canal HTTP ouvert et étanche aux coupures de tunnel.
+     - **Isolation du Render Frontend (`public/traduction.html`) :** Encapsulation de `renderTranslationResult` dans son propre `try/catch` pour éviter que des erreurs DOM locales ne soient travesties en fausses erreurs réseau.
+     - **Garde-fou Horodatage & Police Arabe (`process_traduction.py`) :** Rejet strict des segments inversés (`start >= end` ou `start >= duration`), plafonnement à `total_duration`, et bascule automatique sur `Arial` pour le rendu libass en mode `ar`.
+     - **Sauvegarde Nomenclature Arabe :** En cas de titre en caractères arabes purs, repli propre sur le stem du média source plutôt que sur le mot `media`.
+- **Résultat & Handoff :** ✅ **RÉSOLU**. Serveur redémarré (PID managé), tunnel unique certifié actif (`library-forests-standard-midi.trycloudflare.com`), pipeline VOAR 100% stable et testé.
+
+---
+
 ## 📊 REGISTRE MÉMOIRE DES SOLUTIONS CONFRONTÉES (ALEXANDRE)
 
 | Code Erreur | Motif | Correction Mémorisée | Statut |
 | :--- | :--- | :--- | :--- |
+| `ERR_STREAMING_TUNNEL_DISCONNECT` | Tunnel Cloudflare tombé / conflit de double instance | Verrou socket loopback anti-doublon + Heartbeat HTTP 4s | ✅ MÉMORISÉ |
+| `ERR_VOAR_INVERTED_TIMESTAMPS` | Segments Whisper `start > end` post-durée | Filtre QA strict `start < end` et `start < total_duration` | ✅ MÉMORISÉ |
+| `ERR_VOAR_GENERIC_MEDIA_NAME` | Caractères arabes purgés par regex ASCII | Repli sur stem source noble + préservation métadonnées | ✅ MÉMORISÉ |
+| `ERR_VOAR_ASS_FONT_UNSUPPORTED` | Police `Impact` sans glyphes arabes | Bascule dynamique sur police arabe native (`Arial`) | ✅ MÉMORISÉ |
+| `ERR_TRUNCATED_SEMANTIC_TITLE` | Titre tronqué / fragmentaire ("Droits sp") | Garde-fou `is_invalid_or_truncated_title` ($\ge 3$ mots, $\ge 12$ car, anti-fragments) | ✅ MÉMORISÉ |
 | `ERR_CHAT_ROUTES_TRUNCATED` | Écrasement de `server.js` lors d'un refactor Studio | Consolidation unifiée SSOT de toutes les routes + Tests E2E | ✅ MEMORISÉ |
 | `ERR_MOCK_FALLBACK_SHORTCIRCUIT` | Mock 5s silencieux si 0 segments | Suppression fallback + RuntimeError + process.env + Verrou QA .ASS | ✅ MEMORISÉ |
 | `ERR_PATH_MISMATCH_UUID` | Nommage vidéo divergent | SSOT projectUUID (`video_${projectUUID}_1080x1920.mp4`) | ✅ MEMORISÉ |

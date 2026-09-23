@@ -132,6 +132,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatEmojiPicker = document.getElementById('chatEmojiPicker');
     let currentReplyTo = null;
 
+    // Chat Filter Tabs (TICKET-16)
+    const tabChatAll = document.getElementById('tabChatAll');
+    const tabChatDms = document.getElementById('tabChatDms');
+    let activeChatFilter = 'all'; // 'all' (Salon Général) ou 'dms' (Mes DMs)
+
     // Admin Chat Toolbar Elements
     const adminChatToolbar = document.getElementById('adminChatToolbar');
     const adminToggleChatBtn = document.getElementById('adminToggleChatBtn');
@@ -253,6 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sendAudioToJohnBtn: '📥 Envoyer cet audio dans le dossier "Message pour John"',
             purgeAudioBtn: '🗑️ Purger cet audio du disque',
             titleChatHeader: 'Chat Éphémère Traduit (Messages & Audios)',
+            tabChatAll: '🌍 Salon Général',
+            tabChatDms: '🔒 Mes DMs',
+            chatRecipientAll: '🌍 Tout le monde',
+            chatEmptyGeneral: '🌍 Aucun message public dans le salon général.',
+            chatEmptyDms: '🔒 Aucun message privé (DM) pour l\'instant.',
             badgeChatTimer: '🕒 Suppression automatique après 24h',
             subChatInfo: 'Vos messages texte et vocaux sont automatiquement traduits et vocalisés selon la langue de votre compte. Chaque message est conservé exactement 24h puis définitivement purgé du disque.',
             chatMicBtnTitle: 'Enregistrer une note vocale',
@@ -261,6 +271,18 @@ document.addEventListener('DOMContentLoaded', () => {
             chatEmptyNotice: '💬 Aucune conversation en cours. Tapez votre premier message !',
             chatPlayAudioText: 'Écouter l\'audio',
             chatStopAudioText: 'Arrêter',
+            chatPauseAudioText: 'Pause',
+            chatReplyBtnTitle: 'Répondre',
+            chatCancelReplyTitle: 'Annuler la réponse',
+            chatRecipientSelectTitle: 'Destinataire du message',
+            chatEmojiBtnTitle: 'Ajouter un émoji',
+            chatReplyToPrefix: '↩️ Répondre à ',
+            chatDmToPrefix: '🔒 Privé pour ',
+            chatDmFromPrefix: '🔒 De ',
+            chatDmFromSuffix: ' (Privé)',
+            chatQuoteDefaultSender: 'Message',
+            chatQuoteTitle: 'Cliquer pour voir le message original',
+            chatFilterTabsAriaLabel: 'Filtres de discussion',
             chatAudioGenerating: 'Génération audio en cours...',
             adminToggleChatDisable: '⏸️ Désactiver le Chat',
             adminToggleChatEnable: '▶️ Réactiver le Chat',
@@ -282,6 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alertDeleteMsgSuccess: '✅ Message supprimé avec succès.',
             adminDeleteMsgTitle: 'Supprimer ce message (Modération Admin)',
             footerText: 'Agent Traducteur Aya &bull; Interface Web & Serveur Local (localhost:3000)',
+            footerCgu: 'Conditions Générales (CGU/CGV)',
+            footerPrivacy: 'Politique de Confidentialité (RGPD)',
+            footerSupport: '❤️ Soutenir l\'équipe (PayPal)',
             // WhatsApp Guidance Modal Translations
             waGuidanceTitle: '✅ Note Vocale MP3 Téléchargée !',
             waGuidanceSub: 'Le fichier audio <strong id="waGuidanceFileName" class="filename-badge">note_vocale.mp3</strong> est maintenant dans vos Téléchargements.',
@@ -405,6 +430,11 @@ document.addEventListener('DOMContentLoaded', () => {
             sendAudioToJohnBtn: '📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"',
             purgeAudioBtn: '🗑️ حذف التسجيل الصوتي من القرص',
             titleChatHeader: 'المحادثة المباشرة المؤقتة المترجمة (رسائل وأصوات)',
+            tabChatAll: '🌍 المحادثة العامة',
+            tabChatDms: '🔒 رسائلي الخاصة',
+            chatRecipientAll: '🌍 الجميع',
+            chatEmptyGeneral: '🌍 لا توجد رسائل عامة حالياً.',
+            chatEmptyDms: '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.',
             badgeChatTimer: '🕒 الحذف التلقائي للرسائل بعد 24 ساعة',
             subChatInfo: 'تترجم رسائلك النصية والصوتية تلقائياً حسب لغة حسابك. تُحفظ كل رسالة لمدة 24 ساعة ثم تُحذف تلقائياً من القرص.',
             chatMicBtnTitle: 'تسجيل ملاحظة صوتية',
@@ -413,6 +443,18 @@ document.addEventListener('DOMContentLoaded', () => {
             chatEmptyNotice: '💬 لا توجد رسائل حالياً في المحادثة المؤقتة. اكتبي رسالتك الأولى!',
             chatPlayAudioText: 'استماع للتسجيل',
             chatStopAudioText: 'إيقاف',
+            chatPauseAudioText: 'إيقاف مؤقت',
+            chatReplyBtnTitle: 'رد على الرسالة',
+            chatCancelReplyTitle: 'إلغاء الرد',
+            chatRecipientSelectTitle: 'مستلم الرسالة',
+            chatEmojiBtnTitle: 'إضافة رمز تعبيري',
+            chatReplyToPrefix: '↩️ الرد على ',
+            chatDmToPrefix: '🔒 خاص إلى ',
+            chatDmFromPrefix: '🔒 من ',
+            chatDmFromSuffix: ' (خاص)',
+            chatQuoteDefaultSender: 'رسالة',
+            chatQuoteTitle: 'اضغط للانتقال إلى الرسالة الأصلية',
+            chatFilterTabsAriaLabel: 'مرشحات المحادثة',
             chatAudioGenerating: 'جاري توليد الصوت...',
             adminToggleChatDisable: '⏸️ تعطيل المحادثة',
             adminToggleChatEnable: '▶️ إعادة تفعيل المحادثة',
@@ -433,7 +475,10 @@ document.addEventListener('DOMContentLoaded', () => {
             alertDeleteMsgConfirm: 'هل أنت متأكد من حذف هذه الرسالة لجميع المستخدمين؟',
             alertDeleteMsgSuccess: '✅ تم حذف الرسالة بنجاح.',
             adminDeleteMsgTitle: 'حذف هذه الرسالة (إشراف المسؤول)',
-            footerText: 'وكيل الترجمة آية &bull; واجهة الويب والخادم المحلي (localhost:3000)',
+            footerText: 'وكيل الترجمة آية &bull; المحادثة المباشرة والمراسلة الفورية (localhost:3000)',
+            footerCgu: 'الشروط العامة (CGU/CGV)',
+            footerPrivacy: 'سياسة الخصوصية (RGPD)',
+            footerSupport: '❤️ دعم الفريق (PayPal)',
             // WhatsApp Guidance Modal Translations
             waGuidanceTitle: '✅ تم تحميل الملاحظة الصوتية MP3 بنجاح!',
             waGuidanceSub: 'تم حفظ الملف الصوتي <strong id="waGuidanceFileName" class="filename-badge">note_vocale.mp3</strong> في مجلد التحميلات (Downloads) على جهازك.',
@@ -496,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el && val !== undefined) el.setAttribute('placeholder', val);
     }
 
-    function applyLanguage(lang) {
+    function applyLanguage(lang, skipDispatch = false) {
         currentLang = lang;
         localStorage.setItem('aya_lang', lang);
 
@@ -627,6 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Chat Ephemeral Translations
         setInnerHTML('titleChatHeader', dict.titleChatHeader);
+        if (tabChatAll) tabChatAll.textContent = dict.tabChatAll || (lang === 'ar' ? '🌍 المحادثة العامة' : '🌍 Salon Général');
+        if (tabChatDms) tabChatDms.textContent = dict.tabChatDms || (lang === 'ar' ? '🔒 رسائلي الخاصة' : '🔒 Mes DMs');
         setInnerHTML('badgeChatTimer', dict.badgeChatTimer);
         setInnerHTML('subChatInfo', dict.subChatInfo);
         if (chatMicBtn && !isChatRecording) chatMicBtn.setAttribute('title', dict.chatMicBtnTitle);
@@ -635,7 +682,35 @@ document.addEventListener('DOMContentLoaded', () => {
         setInnerHTML('adminArchiveChatBtn', dict.adminArchiveChatBtn);
         setInnerHTML('adminResetChatBtn', dict.adminResetChatBtn);
 
+        // Localisation de l'option "Tous" et des titres des contrôles du chat
+        if (chatRecipientSelect) {
+            const optAll = chatRecipientSelect.querySelector('option[value="all"]');
+            if (optAll) {
+                optAll.textContent = dict.chatRecipientAll || (lang === 'ar' ? '🌍 الجميع' : '🌍 Tout le monde');
+            }
+            chatRecipientSelect.setAttribute('title', dict.chatRecipientSelectTitle || (lang === 'ar' ? 'مستلم الرسالة' : 'Destinataire du message'));
+        }
+        if (emojiBtn) {
+            emojiBtn.setAttribute('title', dict.chatEmojiBtnTitle || (lang === 'ar' ? 'إضافة رمز تعبيري' : 'Ajouter un émoji'));
+        }
+        if (closeReplyBtn) {
+            closeReplyBtn.setAttribute('title', dict.chatCancelReplyTitle || (lang === 'ar' ? 'إلغاء الرد' : 'Annuler la réponse'));
+        }
+        const filterTabs = document.getElementById('chatFilterTabs');
+        if (filterTabs) {
+            filterTabs.setAttribute('aria-label', dict.chatFilterTabsAriaLabel || (lang === 'ar' ? 'مرشحات المحادثة' : 'Filtres de discussion'));
+        }
+
+        // Mettre à jour immédiatement la langue des bulles de chat déjà affichées dans le DOM
+        updateChatMessagesLanguage(lang);
+
+        // Localisation du pied de page et des mentions légales
         setInnerHTML('footerText', dict.footerText);
+        setInnerHTML('footerCguLink', dict.footerCgu || (lang === 'ar' ? 'الشروط العامة (CGU/CGV)' : 'Conditions Générales (CGU/CGV)'));
+        setInnerHTML('footerPrivacyLink', dict.footerPrivacy || (lang === 'ar' ? 'سياسة الخصوصية (RGPD)' : 'Politique de Confidentialité (RGPD)'));
+        setInnerHTML('footerSupportLink', dict.footerSupport || (lang === 'ar' ? '❤️ دعم الفريق (PayPal)' : '❤️ Soutenir l\'équipe (PayPal)'));
+        const footerSupportLinkEl = document.getElementById('footerSupportLink');
+        if (footerSupportLinkEl) footerSupportLinkEl.href = 'https://paypal.me/sosoxm2026';
 
         // Pre-select opposite target language by default for existing audio selector
         if (selectAudioTargetLang) {
@@ -652,7 +727,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedItem) displaySelectedAudio(selectedItem);
         }
         loadChatMessages();
-        window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
+        if (!skipDispatch) {
+            window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
+        }
     }
 
     // Language Toggle Listeners
@@ -1600,23 +1677,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAudioPlayerHtml(msgId, audioUrl, dict) {
+        const lang = currentLang || 'fr';
+        const d = dict || (i18n && i18n[lang]) || {};
         if (!audioUrl) {
             return `
                 <div class="chat-audio-loading" id="audio-loading-${msgId}">
                     <span class="chat-loading-spinner">⏳</span>
-                    <span class="chat-loading-text">${dict.chatAudioGenerating || 'Génération audio...'}</span>
+                    <span class="chat-loading-text">${d.chatAudioGenerating || (lang === 'ar' ? 'جاري توليد الصوت...' : 'Génération audio...')}</span>
                 </div>
             `;
         }
+        const playTitle = lang === 'ar' ? 'تشغيل / إيقاف مؤقت' : 'Lecture / Pause';
+        const stopTitle = lang === 'ar' ? 'إيقاف' : 'Arrêter';
+        const playText = d.chatPlayAudioText || (lang === 'ar' ? 'استماع للتسجيل' : 'Écouter l\'audio');
+        const stopText = d.chatStopAudioText || (lang === 'ar' ? 'إيقاف' : 'Arrêter');
         return `
             <div class="chat-audio-player" id="audio-player-${msgId}" data-audio-url="${audioUrl}">
-                <button type="button" class="chat-audio-btn chat-btn-play" data-msg-id="${msgId}" title="Lecture / Pause">
+                <button type="button" class="chat-audio-btn chat-btn-play" data-msg-id="${msgId}" title="${playTitle}">
                     <span class="chat-btn-icon">▶️</span>
-                    <span class="chat-btn-label">${dict.chatPlayAudioText || 'Écouter'}</span>
+                    <span class="chat-btn-label">${playText}</span>
                 </button>
-                <button type="button" class="chat-audio-btn chat-btn-stop" data-msg-id="${msgId}" title="Stop">
+                <button type="button" class="chat-audio-btn chat-btn-stop" data-msg-id="${msgId}" title="${stopTitle}">
                     <span class="chat-btn-icon">⏹️</span>
-                    <span class="chat-btn-label">${dict.chatStopAudioText || 'Stop'}</span>
+                    <span class="chat-btn-label">${stopText}</span>
                 </button>
                 <div class="chat-audio-wave">
                     <span class="wave-bar"></span>
@@ -1636,13 +1719,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (chatHistoryBox) {
             const allPlayers = chatHistoryBox.querySelectorAll('.chat-audio-player');
-            const dict = i18n[currentLang];
+            const d = (i18n && i18n[currentLang]) || {};
             allPlayers.forEach(p => {
                 p.classList.remove('is-playing');
                 const icon = p.querySelector('.chat-btn-play .chat-btn-icon');
                 if (icon) icon.textContent = '▶️';
                 const label = p.querySelector('.chat-btn-play .chat-btn-label');
-                if (label && dict) label.textContent = dict.chatPlayAudioText || 'Écouter';
+                if (label) label.textContent = d.chatPlayAudioText || (currentLang === 'ar' ? 'استماع للتسجيل' : 'Écouter l\'audio');
             });
         }
     }
@@ -1664,13 +1747,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const iconSpan = btn.querySelector('.chat-btn-icon');
                 const labelSpan = btn.querySelector('.chat-btn-label');
-                const dict = i18n[currentLang];
+                const dict = (i18n && i18n[currentLang]) || {};
 
                 // Si cet audio est déjà en cours de lecture, on le met en pause
                 if (currentChatAudio && currentChatAudio.datasetAudioUrl === audioUrl && !currentChatAudio.paused) {
                     currentChatAudio.pause();
                     if (iconSpan) iconSpan.textContent = '▶️';
-                    if (labelSpan && dict) labelSpan.textContent = dict.chatPlayAudioText || 'Écouter';
+                    if (labelSpan) labelSpan.textContent = dict.chatPlayAudioText || (currentLang === 'ar' ? 'استماع للتسجيل' : 'Écouter l\'audio');
                     player.classList.remove('is-playing');
                     return;
                 }
@@ -1683,19 +1766,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentChatAudio.datasetAudioUrl = audioUrl;
 
                 if (iconSpan) iconSpan.textContent = '⏸️';
-                if (labelSpan) labelSpan.textContent = dict.chatPauseAudioText || 'Pause';
+                if (labelSpan) labelSpan.textContent = dict.chatPauseAudioText || (currentLang === 'ar' ? 'إيقاف مؤقت' : 'Pause');
                 player.classList.add('is-playing');
 
                 currentChatAudio.play().catch(err => {
                     console.warn("Audio play prevented:", err);
                     if (iconSpan) iconSpan.textContent = '▶️';
-                    if (labelSpan && dict) labelSpan.textContent = dict.chatPlayAudioText || 'Écouter';
+                    if (labelSpan) labelSpan.textContent = dict.chatPlayAudioText || (currentLang === 'ar' ? 'استماع للتسجيل' : 'Écouter l\'audio');
                     player.classList.remove('is-playing');
                 });
 
                 currentChatAudio.onended = () => {
                     if (iconSpan) iconSpan.textContent = '▶️';
-                    if (labelSpan && dict) labelSpan.textContent = dict.chatPlayAudioText || 'Écouter';
+                    if (labelSpan) labelSpan.textContent = dict.chatPlayAudioText || (currentLang === 'ar' ? 'استماع للتسجيل' : 'Écouter l\'audio');
                     player.classList.remove('is-playing');
                     currentChatAudio = null;
                 };
@@ -1722,7 +1805,7 @@ document.addEventListener('DOMContentLoaded', () => {
             text: (text || '').substring(0, 200)
         };
         if (chatReplyBanner && replySenderName && replyTextSnippet) {
-            replySenderName.textContent = `↩️ Répondre à ${sender}`;
+            replySenderName.textContent = currentLang === 'ar' ? `↩️ الرد على ${sender}` : `↩️ Répondre à ${sender}`;
             replyTextSnippet.textContent = currentReplyTo.text;
             chatReplyBanner.style.display = 'flex';
         }
@@ -1751,6 +1834,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.scrollToChatMessage = scrollToChatMessage;
 
+    function updateChatMessagesLanguage(lang) {
+        const dict = (i18n && i18n[lang]) ? i18n[lang] : (lang === 'ar' ? i18n.ar : i18n.fr);
+        if (!chatHistoryBox) return;
+
+        // 1. Bannière admin si présente
+        const noticeBanner = chatHistoryBox.querySelector('div[style*="rgba(239, 68, 68"]');
+        if (noticeBanner) {
+            noticeBanner.textContent = lang === 'ar' ? '⚠️ المحادثة معطلة حالياً للمستخدمين (وضع المسؤول)' : '⚠️ Le chat est désactivé pour les utilisateurs (Mode Admin)';
+        }
+
+        // 2. Mise à jour de chaque bulle de message
+        const bubbles = chatHistoryBox.querySelectorAll('.chat-bubble');
+        bubbles.forEach(bubble => {
+            const isMe = bubble.dataset.isMe === 'true' || bubble.classList.contains('sent');
+            const isPrivate = bubble.dataset.isPrivate === 'true' || bubble.classList.contains('private');
+            const recipient = bubble.dataset.recipient || '';
+            const sender = bubble.dataset.sender || '';
+
+            // Badge DM Privé
+            const dmBadge = bubble.querySelector('.dm-badge');
+            if (dmBadge && isPrivate) {
+                if (isMe) {
+                    const prefix = dict.chatDmToPrefix || (lang === 'ar' ? '🔒 خاص إلى ' : '🔒 Privé pour ');
+                    dmBadge.textContent = `${prefix}${recipient}`;
+                } else {
+                    const prefix = dict.chatDmFromPrefix || (lang === 'ar' ? '🔒 من ' : '🔒 De ');
+                    const suffix = dict.chatDmFromSuffix || (lang === 'ar' ? ' (خاص)' : ' (Privé)');
+                    dmBadge.textContent = `${prefix}${sender}${suffix}`;
+                }
+            }
+
+            // Lecteur audio : boutons Lecture / Arrêt
+            const playBtn = bubble.querySelector('.chat-btn-play');
+            if (playBtn) {
+                const playLabel = playBtn.querySelector('.chat-btn-label');
+                const audioEl = bubble.querySelector('audio');
+                const isPlaying = audioEl && !audioEl.paused;
+                if (playLabel) {
+                    playLabel.textContent = isPlaying 
+                        ? (dict.chatPauseAudioText || (lang === 'ar' ? 'إيقاف مؤقت' : 'Pause'))
+                        : (dict.chatPlayAudioText || (lang === 'ar' ? 'استماع للتسجيل' : 'Écouter l\'audio'));
+                }
+                playBtn.title = lang === 'ar' ? 'تشغيل / إيقاف مؤقت' : 'Lecture / Pause';
+            }
+
+            const stopBtn = bubble.querySelector('.chat-btn-stop');
+            if (stopBtn) {
+                const stopLabel = stopBtn.querySelector('.chat-btn-label');
+                if (stopLabel) {
+                    stopLabel.textContent = dict.chatStopAudioText || (lang === 'ar' ? 'إيقاف' : 'Arrêter');
+                }
+                stopBtn.title = lang === 'ar' ? 'إيقاف' : 'Arrêter';
+            }
+
+            // Bouton Répondre ↩️
+            const replyBtn = bubble.querySelector('.chat-reply-btn');
+            if (replyBtn) {
+                replyBtn.title = dict.chatReplyBtnTitle || (lang === 'ar' ? 'رد على الرسالة' : 'Répondre');
+            }
+
+            // Boîte de citation
+            const quoteBox = bubble.querySelector('.quote-box');
+            if (quoteBox) {
+                quoteBox.title = dict.chatQuoteTitle || (lang === 'ar' ? 'اضغط للانتقال إلى الرسالة الأصلية' : 'Cliquer pour voir le message original');
+                const quoteStrong = quoteBox.querySelector('strong');
+                if (quoteStrong && bubble.dataset.replySender) {
+                    quoteStrong.textContent = `↩️ ${bubble.dataset.replySender}`;
+                }
+            }
+
+            // Bouton Supprimer
+            const deleteBtn = bubble.querySelector('.chat-delete-btn');
+            if (deleteBtn) {
+                deleteBtn.title = dict.adminDeleteMsgTitle || (lang === 'ar' ? 'حذف هذه الرسالة (إشراف المسؤول)' : 'Supprimer ce message (Modération Admin)');
+            }
+
+            // État d'envoi
+            const statusTag = bubble.querySelector('.chat-status-tag');
+            if (statusTag) {
+                if (statusTag.classList.contains('status-sending')) {
+                    statusTag.title = lang === 'ar' ? 'جاري الإرسال...' : 'En cours d\'envoi...';
+                } else if (statusTag.classList.contains('status-error')) {
+                    statusTag.title = lang === 'ar' ? 'فشل الإرسال' : 'Échec d\'envoi';
+                } else if (statusTag.classList.contains('status-sent')) {
+                    statusTag.title = lang === 'ar' ? 'تم الإرسال' : 'Envoyé';
+                }
+            }
+
+            // État traduction en cours
+            const pulseLabel = bubble.querySelector('.chat-translating-pulse em');
+            if (pulseLabel) {
+                pulseLabel.textContent = lang === 'ar' ? 'جاري الترجمة...' : 'Traduction en cours...';
+            }
+
+            // Bannière d'erreur
+            const errBannerSpan = bubble.querySelector('.chat-msg-error-banner span');
+            if (errBannerSpan) {
+                errBannerSpan.textContent = lang === 'ar' ? '⚠️ فشل الإرسال' : '⚠️ Échec de transmission';
+            }
+            const errRetryBtn = bubble.querySelector('.chat-msg-error-banner .btn-chat-retry');
+            if (errRetryBtn) {
+                errRetryBtn.textContent = lang === 'ar' ? '🔄 إعادة المحاولة' : '🔄 Réessayer';
+            }
+        });
+
+        // 3. Mise à jour de la bannière de réponse active
+        if (chatReplyBanner && replySenderName && currentReplyTo) {
+            replySenderName.textContent = lang === 'ar' ? `↩️ الرد على ${currentReplyTo.sender}` : `↩️ Répondre à ${currentReplyTo.sender}`;
+        }
+        if (closeReplyBtn) {
+            closeReplyBtn.title = dict.chatCancelReplyTitle || (lang === 'ar' ? 'إلغاء الرد' : 'Annuler la réponse');
+        }
+
+        // 4. Titres des boutons de contrôle
+        if (chatRecipientSelect) {
+            chatRecipientSelect.title = dict.chatRecipientSelectTitle || (lang === 'ar' ? 'مستلم الرسالة' : 'Destinataire du message');
+        }
+        if (emojiBtn) {
+            emojiBtn.title = dict.chatEmojiBtnTitle || (lang === 'ar' ? 'إضافة رمز تعبيري' : 'Ajouter un émoji');
+        }
+        if (chatMicBtn && !isChatRecording) {
+            chatMicBtn.title = dict.chatMicBtnTitle || (lang === 'ar' ? 'تسجيل ملاحظة صوتية' : 'Enregistrer une note vocale');
+        }
+        const filterTabs = document.getElementById('chatFilterTabs');
+        if (filterTabs) {
+            filterTabs.setAttribute('aria-label', dict.chatFilterTabsAriaLabel || (lang === 'ar' ? 'مرشحات المحادثة' : 'Filtres de discussion'));
+        }
+    }
+
     function createBubbleElement(msg, dict) {
         const myName = currentUser ? (currentUser.name || currentUser.username).toLowerCase() : '';
         const isMe = myName && msg.sender.toLowerCase().includes(myName);
@@ -1762,6 +1974,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const bubble = document.createElement('div');
         bubble.className = `chat-bubble ${isMe ? 'sent' : 'received'} ${isPrivate ? 'private' : ''} ${statusClass}`;
         bubble.id = `chat-msg-${msg.id}`;
+        bubble.dataset.isPrivate = isPrivate ? 'true' : 'false';
+        bubble.dataset.isMe = isMe ? 'true' : 'false';
+        bubble.dataset.recipient = msg.recipient || 'all';
+        bubble.dataset.sender = msg.sender || '';
+        if (msg.replyTo && msg.replyTo.sender) {
+            bubble.dataset.replySender = msg.replyTo.sender;
+        }
 
         const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const audioControlsHtml = renderAudioPlayerHtml(msg.id, msg.audioUrl, dict);
@@ -1769,17 +1988,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let dmBadgeHtml = '';
         if (isPrivate) {
             if (isMe) {
-                dmBadgeHtml = `<div class="dm-badge">🔒 Privé pour ${escapeChatHtml(msg.recipient)}</div>`;
+                const prefix = dict.chatDmToPrefix || (currentLang === 'ar' ? '🔒 خاص إلى ' : '🔒 Privé pour ');
+                dmBadgeHtml = `<div class="dm-badge">${prefix}${escapeChatHtml(msg.recipient)}</div>`;
             } else {
-                dmBadgeHtml = `<div class="dm-badge">🔒 De ${escapeChatHtml(msg.sender)} (Privé)</div>`;
+                const prefix = dict.chatDmFromPrefix || (currentLang === 'ar' ? '🔒 من ' : '🔒 De ');
+                const suffix = dict.chatDmFromSuffix || (currentLang === 'ar' ? ' (خاص)' : ' (Privé)');
+                dmBadgeHtml = `<div class="dm-badge">${prefix}${escapeChatHtml(msg.sender)}${suffix}</div>`;
             }
         }
 
         let quoteHtml = '';
         if (msg.replyTo && msg.replyTo.text) {
+            const quoteTitle = dict.chatQuoteTitle || (currentLang === 'ar' ? 'اضغط للانتقال إلى الرسالة الأصلية' : 'Cliquer pour voir le message original');
+            const defaultSender = dict.chatQuoteDefaultSender || (currentLang === 'ar' ? 'رسالة' : 'Message');
             quoteHtml = `
-                <div class="quote-box" data-target-id="${escapeChatHtml(msg.replyTo.id || '')}" title="Cliquer pour voir le message original">
-                    <strong>↩️ ${escapeChatHtml(msg.replyTo.sender || 'Message')}</strong>
+                <div class="quote-box" data-target-id="${escapeChatHtml(msg.replyTo.id || '')}" title="${quoteTitle}">
+                    <strong>↩️ ${escapeChatHtml(msg.replyTo.sender || defaultSender)}</strong>
                     <p>${escapeChatHtml(msg.replyTo.text)}</p>
                 </div>
             `;
@@ -1794,18 +2018,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let deleteBtnHtml = '';
         if (isUserAdminCurrent) {
-            const deleteTitle = dict.adminDeleteMsgTitle || "Supprimer ce message (Modération Admin)";
+            const deleteTitle = dict.adminDeleteMsgTitle || (currentLang === 'ar' ? 'حذف هذه الرسالة (إشراف المسؤول)' : "Supprimer ce message (Modération Admin)");
             deleteBtnHtml = `<button type="button" class="chat-delete-btn" data-msg-id="${escapeChatHtml(msg.id)}" title="${escapeChatHtml(deleteTitle)}">🗑️</button>`;
         }
 
         let statusBadgeHtml = '';
         if (isMe) {
             if (isSending) {
-                statusBadgeHtml = `<span class="chat-status-tag status-sending" title="En cours d'envoi...">⏳</span>`;
+                statusBadgeHtml = `<span class="chat-status-tag status-sending" title="${currentLang === 'ar' ? 'جاري الإرسال...' : 'En cours d\'envoi...'}">⏳</span>`;
             } else if (isError) {
-                statusBadgeHtml = `<span class="chat-status-tag status-error" title="Échec d'envoi">⚠️</span>`;
+                statusBadgeHtml = `<span class="chat-status-tag status-error" title="${currentLang === 'ar' ? 'فشل الإرسال' : 'Échec d\'envoi'}">⚠️</span>`;
             } else {
-                statusBadgeHtml = `<span class="chat-status-tag status-sent" title="Envoyé">✓</span>`;
+                statusBadgeHtml = `<span class="chat-status-tag status-sent" title="${currentLang === 'ar' ? 'تم الإرسال' : 'Envoyé'}">✓</span>`;
             }
         }
 
@@ -1829,6 +2053,8 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
+        const replyBtnTitle = dict.chatReplyBtnTitle || (currentLang === 'ar' ? 'رد على الرسالة' : 'Répondre');
+
         bubble.innerHTML = `
             ${dmBadgeHtml}
             <div class="chat-sender-name">
@@ -1836,7 +2062,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span class="chat-time-tag">🕒 ${timeStr}</span>
                     ${statusBadgeHtml}
-                    <button type="button" class="chat-reply-btn" title="Répondre">↩️</button>
+                    <button type="button" class="chat-reply-btn" title="${escapeChatHtml(replyBtnTitle)}">↩️</button>
                     ${deleteBtnHtml}
                 </div>
             </div>
@@ -1957,6 +2183,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Filtrage dynamique du Chat (TICKET-16 : Salon Général / Mes DMs)
+    function applyChatFilter() {
+        if (!chatHistoryBox) return;
+        const bubbles = chatHistoryBox.querySelectorAll('.chat-bubble');
+        let visibleCount = 0;
+
+        bubbles.forEach(bubble => {
+            const isPrivate = bubble.classList.contains('private') || bubble.dataset.isPrivate === 'true';
+            if (activeChatFilter === 'dms') {
+                if (isPrivate) {
+                    bubble.style.display = '';
+                    visibleCount++;
+                } else {
+                    bubble.style.display = 'none';
+                }
+            } else {
+                // Salon Général : afficher uniquement les messages publics
+                if (!isPrivate) {
+                    bubble.style.display = '';
+                    visibleCount++;
+                } else {
+                    bubble.style.display = 'none';
+                }
+            }
+        });
+
+        // Placeholder si aucun message dans la vue active
+        let emptyFilterNotice = document.getElementById('chatEmptyFilterNotice');
+        if (visibleCount === 0 && bubbles.length > 0) {
+            if (!emptyFilterNotice) {
+                emptyFilterNotice = document.createElement('div');
+                emptyFilterNotice.id = 'chatEmptyFilterNotice';
+                emptyFilterNotice.className = 'chat-empty-filter-notice';
+                chatHistoryBox.appendChild(emptyFilterNotice);
+            }
+            emptyFilterNotice.style.display = 'block';
+            const filterDict = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : {};
+            if (activeChatFilter === 'dms') {
+                emptyFilterNotice.textContent = filterDict.chatEmptyDms || (currentLang === 'ar' ? '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.' : '🔒 Aucun message privé (DM) pour l\'instant.');
+            } else {
+                emptyFilterNotice.textContent = filterDict.chatEmptyGeneral || (currentLang === 'ar' ? '🌍 لا توجد رسائل عامة حالياً.' : '🌍 Aucun message public dans le salon général.');
+            }
+        } else if (emptyFilterNotice) {
+            emptyFilterNotice.style.display = 'none';
+        }
+    }
+
+    function setChatFilter(filter) {
+        activeChatFilter = filter;
+        if (tabChatAll && tabChatDms) {
+            if (filter === 'dms') {
+                tabChatDms.classList.add('active');
+                tabChatDms.setAttribute('aria-selected', 'true');
+                tabChatAll.classList.remove('active');
+                tabChatAll.setAttribute('aria-selected', 'false');
+            } else {
+                tabChatAll.classList.add('active');
+                tabChatAll.setAttribute('aria-selected', 'true');
+                tabChatDms.classList.remove('active');
+                tabChatDms.setAttribute('aria-selected', 'false');
+            }
+        }
+        applyChatFilter();
+        if (chatHistoryBox) {
+            chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
+        }
+    }
+
     async function loadChatMessages() {
         if (!chatHistoryBox) return;
         const dict = i18n[currentLang];
@@ -2073,6 +2367,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         fetchChatAudioTts(msg.id);
                     }
                 });
+                applyChatFilter();
                 chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
             } else {
                 // Synchronisation incrémentale : n'ajouter que les nouveaux messages sans couper l'audio actif
@@ -2115,6 +2410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (hasNew) {
+                    applyChatFilter();
                     chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
                 }
             }
@@ -2192,6 +2488,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const optimisticBubble = createBubbleElement(optimisticMsg, dict);
             chatHistoryBox.appendChild(optimisticBubble);
             renderedChatMessageIds.add(tempId);
+            applyChatFilter();
             chatHistoryBox.scrollTop = chatHistoryBox.scrollHeight;
         }
 
@@ -2405,6 +2702,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Gestionnaires d'onglets de filtrage Chat (TICKET-16)
+    if (tabChatAll) {
+        tabChatAll.addEventListener('click', () => setChatFilter('all'));
+    }
+    if (tabChatDms) {
+        tabChatDms.addEventListener('click', () => setChatFilter('dms'));
+    }
+
     // Admin Chat Toolbar Action Handlers
     if (adminToggleChatBtn) {
         adminToggleChatBtn.addEventListener('click', async () => {
@@ -2553,4 +2858,16 @@ document.addEventListener('DOMContentLoaded', () => {
     applyLanguage(currentLang);
     checkLoginStatus();
     loadChatMessages();
+
+    // Écouteur global pour bilinguisme instantané partagé avec la Navbar (Lot 2)
+    window.addEventListener('aya:languageChanged', (e) => {
+        if (e && e.detail && e.detail.lang) {
+            if (e.detail.lang !== currentLang) {
+                applyLanguage(e.detail.lang, true);
+            } else {
+                updateChatMessagesLanguage(e.detail.lang);
+            }
+            applyChatFilter();
+        }
+    });
 });

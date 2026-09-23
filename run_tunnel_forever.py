@@ -3,6 +3,20 @@ import time
 import json
 import re
 import os
+import sys
+import socket
+
+# Verrou d'instance unique (DevOps Alexandre - Anti-conflit de tunnels multiples)
+_instance_lock_socket = None
+def acquire_single_instance_lock(port=49992):
+    global _instance_lock_socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('127.0.0.1', port))
+        _instance_lock_socket = s
+        return True
+    except socket.error:
+        return False
 
 NEGATIVE_WORDS = [
     "alert", "war", "kill", "fail", "error", "limit", "dead", "crisis", 
@@ -19,6 +33,10 @@ def is_negative_url(url):
     return False, None
 
 def main():
+    if not acquire_single_instance_lock():
+        print("[Tunnel Manager] ⚠️ Une instance de run_tunnel_forever est déjà active sur le système. Arrêt préventif anti-doublon.")
+        sys.exit(0)
+
     print("[Tunnel Manager] Démarrage du gestionnaire de tunnel avec filtre de bienveillance visuelle...")
     while True:
         try:

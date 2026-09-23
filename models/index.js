@@ -5,6 +5,8 @@ const Transaction = require('./Transaction');
 const TikTokAccount = require('./TikTokAccount');
 const Video = require('./Video');
 const Card = require('./Card');
+const FeedbackRating = require('./FeedbackRating');
+const FailureReport = require('./FailureReport');
 
 module.exports = {
     connectDB,
@@ -15,5 +17,7 @@ module.exports = {
     Transaction,
     TikTokAccount,
     Video,
-    Card
+    Card,
+    FeedbackRating,
+    FailureReport
 };

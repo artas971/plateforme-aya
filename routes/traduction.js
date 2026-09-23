@@ -123,7 +123,24 @@ function cleanupTemporaryMedia(mediaPath) {
         console.warn(`[GARBAGE COLLECTION WARNING] Erreur inspection répertoire temporaire :`, dirErr.message);
     }
 }
+
 const { performance } = require('perf_hooks');
+
+// Map de rétention temporaire des médias en session pour le Restyle Rapide (~2s)
+// Permet à Lionel & Max de ré-incruster la vidéo en 2 secondes sans réanalyser par l'IA
+const activeSessionMedia = new Map();
+
+// Purge périodique des sessions inactives (> 30 min)
+setInterval(() => {
+    const now = Date.now();
+    for (const [uid, sess] of activeSessionMedia.entries()) {
+        if (sess && (now - sess.timestamp > 30 * 60 * 1000)) {
+            cleanupTemporaryMedia(sess.mediaPath);
+            activeSessionMedia.delete(uid);
+            console.log(`[SESSION GC] 🧹 Session média expirée (>30min) purgée pour l'utilisateur : ${uid}`);
+        }
+    }
+}, 5 * 60 * 1000);
 
 /**
  * Génère le Rapport d'Audit des Performances formaté (Agent Alexandre).
@@ -280,6 +297,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
     let creditReserved = false;
     let creditCommitted = false;
     let mediaPath = '';
+    let heartbeatInterval = null;
 
     try {
         const b = req.body || {};
@@ -304,6 +322,13 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             });
         }
         hasLock = true;
+
+        // Purge préventive de l'ancienne session média de cet utilisateur (Zéro pollution disque)
+        const oldSession = activeSessionMedia.get(userId);
+        if (oldSession && oldSession.mediaPath) {
+            cleanupTemporaryMedia(oldSession.mediaPath);
+            activeSessionMedia.delete(userId);
+        }
 
         // 2. Réservation du Crédit (Phase 1 Escrow / Ticket 3) : Décrémente le solde et incrémente le séquestre
         const reserveRes = await reserveCredit(userId);
@@ -449,6 +474,13 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             pyProcess.stderr.setEncoding('utf8');
         }
 
+        // Heartbeat périodique anti-timeout Cloudflare (keep-alive SSE/Chunked streaming toutes les 4s)
+        heartbeatInterval = setInterval(() => {
+            if (!res.writableEnded) {
+                res.write(':\n');
+            }
+        }, 4000);
+
         let stdoutData = '';
         let stderrData = '';
         let jsonIntercepted = false;
@@ -477,6 +509,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
         pyProcess.on('error', async (err) => {
             console.error('[TRADUCTION SPAWN ERROR]', err);
+            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
             if (creditReserved && !creditCommitted) {
                 await rollbackCredit(userId, "PROCESS_SPAWN_ERROR");
                 creditReserved = false;
@@ -499,6 +532,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
 
         // Interception de l'annulation de la requête côté client (AbortController)
         req.on('close', async () => {
+            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
             if (!res.writableEnded) {
                 isCancelled = true;
                 console.log(`[TRADUCTION CANCEL] ⚠️ Connexion client interrompue (AbortController). Arrêt forcé du pipeline...`);
@@ -679,6 +713,24 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                         creditReserved = false;
                     }
 
+                    // Auto-Diagnostic IA de l'incident par l'Agent Alexandre
+                    try {
+                        const { analyzeFailure } = require('../services/failureAnalyzer');
+                        analyzeFailure({
+                            jobId: finalData?.jobId || path.basename(inputFilePath || 'inconnu'),
+                            userId,
+                            username,
+                            userEmail: req.session?.user?.email,
+                            serviceType: 'traduction',
+                            component: 'FFmpeg/Whisper',
+                            mediaUrl: inputFilePath,
+                            errorMessage: `Échec du processus de traduction (code de sortie: ${code})`,
+                            errorStack: (finalData && finalData.error) ? finalData.error : "Anomalie lors du rendu des sous-titres."
+                        }).catch(e => console.warn('[FAILURE INTERCEPTOR] ⚠️ Erreur analyse :', e.message));
+                    } catch (failErr) {
+                        console.warn('[FAILURE INTERCEPTOR] ⚠️ Exception capture :', failErr.message);
+                    }
+
                     if (finalData) {
                         res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
                     } else {
@@ -692,16 +744,41 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                     }
                 }
             } finally {
+                if (heartbeatInterval) {
+                    clearInterval(heartbeatInterval);
+                    heartbeatInterval = null;
+                }
                 if (hasLock) {
                     releaseUserLock(userId);
                     hasLock = false;
                 }
-                cleanupTemporaryMedia(mediaPath);
+                if (finalData && finalData.success) {
+                    activeSessionMedia.set(userId, {
+                        mediaPath,
+                        originalName,
+                        targetLang,
+                        sourceLang,
+                        subColor,
+                        subPosition,
+                        bgTheme,
+                        titleB64,
+                        title: finalData.title || rawTitle || originalName,
+                        timestamp: Date.now()
+                    });
+                    console.log(`[SESSION TAMPON] 💾 Média conservé pour personnalisation rapide en session : ${path.basename(mediaPath)}`);
+                } else {
+                    cleanupTemporaryMedia(mediaPath);
+                    activeSessionMedia.delete(userId);
+                }
                 res.end();
             }
         });
 
     } catch (err) {
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
         console.error('[TRADUCTION ERROR]', err);
         if (creditReserved && !creditCommitted) {
             await rollbackCredit(userId, "SERVER_ERROR");
@@ -725,6 +802,191 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             res.end();
         }
     }
+});
+
+// 3. POST /api/traduction/restyle : Personnalisation instantanée des sous-titres (Couleur & Position) par Lionel & Max en ~2s (0 crédit)
+router.post('/api/traduction/restyle', async (req, res) => {
+    const user = req.session?.user;
+    const userId = user?.id || user?.username || 'anonymous';
+    let hasLock = false;
+    let heartbeatInterval = null;
+
+    try {
+        const session = activeSessionMedia.get(userId);
+        if (!session || !session.mediaPath || !fs.existsSync(session.mediaPath)) {
+            return res.status(400).json({
+                success: false,
+                code: "SESSION_EXPIRED",
+                message: "Le fichier média de votre session a expiré. Veuillez recharger votre vidéo pour modifier le style.",
+                error: "Média source introuvable ou session expirée."
+            });
+        }
+
+        if (!acquireUserLock(userId)) {
+            return res.status(429).json({
+                success: false,
+                code: "CONCURRENT_JOB_RUNNING",
+                message: "Un traitement vidéo est déjà en cours d'exécution. Veuillez patienter.",
+                error: "Opération concurrente en cours."
+            });
+        }
+        hasLock = true;
+
+        const b = req.body || {};
+        const subColor = b.sub_color || session.subColor || '#FFFF00';
+        const subPosition = String(b.sub_position || session.subPosition || '950');
+        const targetLang = session.targetLang || 'fr';
+        const sourceLang = session.sourceLang || 'auto';
+        const scriptPath = path.join(ROOT_DIR, 'process_traduction.py');
+
+        session.subColor = subColor;
+        session.subPosition = subPosition;
+        session.timestamp = Date.now();
+
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Transfer-Encoding', 'chunked');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+
+        res.write(`[PROGRESS] 10% - 🎨 Lionel configure la nouvelle couleur (${subColor}) et position (${subPosition})...\n`);
+
+        const pyArgs = [
+            scriptPath,
+            session.mediaPath,
+            targetLang,
+            subColor,
+            subPosition,
+            sourceLang,
+            'false',
+            'false',
+            session.bgTheme || 'bg_palestine',
+            'false',
+            '--title_b64',
+            session.titleB64 || Buffer.from(session.title || 'media', 'utf-8').toString('base64'),
+            '--restyle_only'
+        ];
+
+        heartbeatInterval = setInterval(() => {
+            if (!res.writableEnded) {
+                res.write(':\n');
+            }
+        }, 4000);
+
+        const pyProcess = spawnNice(getPythonBin(), pyArgs, {
+            cwd: ROOT_DIR,
+            env: {
+                ...process.env,
+                NODE_ENV: process.env.NODE_ENV || 'development',
+                PYTHON_ENV: process.env.PYTHON_ENV || 'local',
+                AYA_EXEC_PROFILE: process.env.AYA_EXEC_PROFILE || (process.env.NODE_ENV === 'production' ? 'cloud_vps_safe' : 'local_high_perf'),
+                PYTHONIOENCODING: 'utf-8',
+                PYTHONUTF8: '1'
+            }
+        });
+
+        if (pyProcess.stdout && typeof pyProcess.stdout.setEncoding === 'function') {
+            pyProcess.stdout.setEncoding('utf8');
+        }
+        if (pyProcess.stderr && typeof pyProcess.stderr.setEncoding === 'function') {
+            pyProcess.stderr.setEncoding('utf8');
+        }
+
+        let stdoutData = '';
+        let stderrData = '';
+        let jsonIntercepted = false;
+
+        pyProcess.stdout.on('data', (data) => {
+            const chunk = typeof data === 'string' ? data : data.toString('utf8');
+            stdoutData += chunk;
+
+            if (!jsonIntercepted) {
+                const idx = chunk.indexOf('---JSON_OUTPUT_START---');
+                if (idx !== -1) {
+                    jsonIntercepted = true;
+                    const pre = chunk.slice(0, idx);
+                    if (pre.length > 0) res.write(pre);
+                } else {
+                    res.write(chunk);
+                }
+            }
+        });
+
+        pyProcess.stderr.on('data', (data) => {
+            stderrData += data.toString();
+        });
+
+        pyProcess.on('error', (err) => {
+            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+            if (hasLock) { releaseUserLock(userId); hasLock = false; }
+            res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify({
+                success: false,
+                code: "PROCESS_SPAWN_ERROR",
+                message: "Erreur lors de la mise à jour des sous-titres.",
+                error: err.message
+            })}\n---JSON_OUTPUT_END---\n`);
+            res.end();
+        });
+
+        let isCancelled = false;
+        req.on('close', () => {
+            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+            if (!res.writableEnded) {
+                isCancelled = true;
+                if (hasLock) { releaseUserLock(userId); hasLock = false; }
+                if (pyProcess && pyProcess.pid) {
+                    killProcessTree(pyProcess.pid, 'TRADUCTION RESTYLE CANCEL');
+                }
+            }
+        });
+
+        pyProcess.on('close', async (code) => {
+            if (isCancelled) {
+                if (hasLock) { releaseUserLock(userId); hasLock = false; }
+                return;
+            }
+            try {
+                let finalData = null;
+                const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
+                if (jsonMatch) {
+                    try { finalData = JSON.parse(jsonMatch[1].trim()); } catch(e){}
+                }
+
+                if (finalData && finalData.success) {
+                    finalData.restyle_success = true;
+                    finalData.cost_credits = 0; // Opération de style 100% gratuite (0 crédit)
+                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData)}\n---JSON_OUTPUT_END---\n`);
+                } else {
+                    res.write(`\n---JSON_OUTPUT_START---\n${JSON.stringify(finalData || {
+                        success: false,
+                        code: "RESTYLE_FAILED",
+                        message: "Impossible d'appliquer le nouveau style aux sous-titres."
+                    })}\n---JSON_OUTPUT_END---\n`);
+                }
+            } finally {
+                if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+                if (hasLock) { releaseUserLock(userId); hasLock = false; }
+                res.end();
+            }
+        });
+
+    } catch (err) {
+        if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+        if (hasLock) { releaseUserLock(userId); hasLock = false; }
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 4. POST /api/traduction/reset-session : Purge du média temporaire et réinitialisation de la session (Passage à une nouvelle vidéo)
+router.post('/api/traduction/reset-session', (req, res) => {
+    const user = req.session?.user;
+    const userId = user?.id || user?.username || 'anonymous';
+    const sess = activeSessionMedia.get(userId);
+    if (sess && sess.mediaPath) {
+        cleanupTemporaryMedia(sess.mediaPath);
+        activeSessionMedia.delete(userId);
+        console.log(`[SESSION RESET] 🧹 Média temporaire de session purgé suite au clic 'Nouvelle Vidéo' pour ${userId}`);
+    }
+    res.json({ success: true, message: "Session réinitialisée avec succès." });
 });
 
 /**

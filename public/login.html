@@ -607,7 +607,7 @@
                 <span class="aya-legal-footer-sep">•</span>
                 <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
                 <span class="aya-legal-footer-sep">•</span>
-                <a href="https://www.paypal.com/sosoxm2026@gmail.com" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+                <a href="https://paypal.me/sosoxm2026" id="footerSupportLink" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
             <p class="aya-legal-footer-copyright">
                 © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
@@ -671,7 +671,8 @@
                 submitForgot: 'Envoyer le lien de réinitialisation',
                 submittingForgot: 'Envoi en cours...',
                 backToLogin: 'Retour à la connexion',
-                forgotSuccess: '✨ Si un compte correspond à ces informations, un lien de réinitialisation vous a été envoyé.'
+                forgotSuccess: '✨ Si un compte correspond à ces informations, un lien de réinitialisation vous a été envoyé.',
+                footerSupport: '❤️ Soutenir l\'équipe (PayPal)'
             },
             ar: {
                 dir: 'rtl',
@@ -726,7 +727,8 @@
                 submitForgot: 'إرسال رابط استعادة الحساب',
                 submittingForgot: 'جاري الإرسال...',
                 backToLogin: 'العودة لتسجيل الدخول',
-                forgotSuccess: '✨ إذا كان هناك حساب مرتبط بهذه البيانات، فقد تم إرسال رابط الاستعادة إلى بريدك.'
+                forgotSuccess: '✨ إذا كان هناك حساب مرتبط بهذه البيانات، فقد تم إرسال رابط الاستعادة إلى بريدك.',
+                footerSupport: '❤️ دعم الفريق (PayPal)'
             }
         };
 
@@ -784,6 +786,12 @@
             if (document.getElementById('forgotIdentifier')) document.getElementById('forgotIdentifier').placeholder = d.placeholderForgotId;
             if (document.getElementById('txtSubmitForgot')) document.getElementById('txtSubmitForgot').textContent = d.submitForgot;
             if (document.getElementById('txtBackToLogin')) document.getElementById('txtBackToLogin').textContent = d.backToLogin;
+
+            const footerSup = document.getElementById('footerSupportLink');
+            if (footerSup) {
+                footerSup.textContent = d.footerSupport;
+                footerSup.href = 'https://paypal.me/sosoxm2026';
+            }
 
             if (lang === 'ar') {
                 document.getElementById('btnAr').classList.add('active');
