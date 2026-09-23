@@ -570,6 +570,33 @@ def verify_timeline_coverage(segments: list, total_duration: float, tolerance: f
     return is_valid
 
 
+def get_cached_segments(media_path: str, target_lang: str) -> list:
+    """
+    Récupère instantanément les segments traduits et synchronisés depuis le cache local (Mode Restyle Rapide).
+    Court-circuite 100% des appels API (Whisper/Gemini) pour une ré-incrustation en ~2s par Max.
+    """
+    mode = 'VOAR' if target_lang.lower() == 'ar' else 'VOSTFR'
+    cache_dir = BASE_DIR / "cache_transcriptions"
+    base_name = Path(media_path).stem[:50]
+    raw_stem = re.sub(r"^\d+_", "", base_name)
+    if not cache_dir.exists():
+        return []
+
+    for fname in sorted(os.listdir(cache_dir), reverse=True):
+        if fname.endswith(".json") and mode in fname:
+            f_clean = re.sub(r"^\d+_", "", fname)
+            if raw_stem in f_clean or f_clean.startswith(raw_stem):
+                try:
+                    with open(cache_dir / fname, "r", encoding="utf-8") as cf:
+                        cached_segs = json.load(cf)
+                        if isinstance(cached_segs, list) and len(cached_segs) > 0:
+                            print(f"[RESTYLE ENGINE] ⚡ Cache trouvé pour restyle : {fname} ({len(cached_segs)} segments)", flush=True)
+                            return cached_segs
+                except Exception:
+                    pass
+    return []
+
+
 def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: float, silences: list, source_lang: str = 'auto', force_reprocess: bool = False, user_context: str = "") -> tuple:
     """
     Protocole Scan 5s Anti-Résumé & Smart Chunking sur Silences :
@@ -1062,10 +1089,19 @@ def build_ass_file(
             alignment = 2
             margin_v = 140
 
+    ass_font = 'Arial' if target_mode == 'ar' else 'Impact'
+
     ass_events = []
     for seg in segments:
         start_sec = float(seg["start"])
         end_sec = float(seg["end"])
+        # Garde-fou horodatage : élimination des segments inversés ou situés après la fin du média
+        if start_sec >= total_duration or start_sec >= end_sec:
+            print(f"[ASS ENGINE] ⚠️ Segment ignoré (horodatage incohérent ou hors durée): {start_sec:.2f}s -> {end_sec:.2f}s (durée={total_duration:.2f}s) '{seg.get('text', '')}'")
+            continue
+        if end_sec > total_duration:
+            end_sec = total_duration
+
         t_start = format_ass_time(start_sec)
         t_end = format_ass_time(end_sec)
         clean_text = sanitize_translation(seg["text"].strip())
@@ -1081,7 +1117,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: SubtitleStyle,Impact,{font_size},{ass_primary_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,{alignment},{margin_lr},{margin_lr},{margin_v},1
+Style: SubtitleStyle,{ass_font},{font_size},{ass_primary_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,{alignment},{margin_lr},{margin_lr},{margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -1254,6 +1290,30 @@ def _strip_dangling_trailing_words(text: str) -> str:
     return cur
 
 
+def is_invalid_or_truncated_title(title: str) -> bool:
+    """
+    Garde-Fou Titre Sémantique (Agent Steve / Nadine - Incident #007) :
+    Détecte et rejette impitoyablement les titres tronqués ou incomplets :
+    1. Moins de 3 mots ou moins de 12 caractères (ex: 'Droits sp', '100', 'Maison')
+    2. Dernier mot suspect (fragment tronqué de 2 lettres non lexical, ex: 'sp', 'in')
+    3. Finit par un mot de liaison ou préposition orpheline ('de', 'du', 'nos', 'et', etc.)
+    """
+    if not title:
+        return True
+    cleaned = title.strip().strip('"\':«»*.- ')
+    words = cleaned.split()
+    if len(words) < 3 or len(cleaned) < 12:
+        return True
+    last_word = words[-1].lower()
+    # Mots de liaison orphelins
+    if last_word in DANGLING_STOPWORDS_FR or last_word in DANGLING_STOPWORDS_AR:
+        return True
+    # Fragments tronqués évidents (2 lettres non lexicales en fin de titre, ex: 'sp')
+    if len(last_word) <= 2 and last_word not in {'or', 'an', 'un', 'il', 'on', 'en', 'au'}:
+        return True
+    return False
+
+
 def validate_and_sanitize_title(title: str, max_words: int = 6, max_chars: int = 48, fallback: str = "Témoignage de Palestine") -> str:
     """
     Valide et assainit le Titre Sémantique (Garantie Anti-Troncature & Fins Fermées) :
@@ -1292,12 +1352,11 @@ def validate_and_sanitize_title(title: str, max_words: int = 6, max_chars: int =
     # 4. Élimination récursive des mots de liaison orphelins en fin de chaîne
     sanitized = _strip_dangling_trailing_words(cleaned)
 
-    # 5. Sécurité : si le nettoyage a tout vidé ou laissé un résidu < 3 caractères
-    if not sanitized or len(sanitized) < 3:
-        base_clean = _strip_dangling_trailing_words(title)
-        if base_clean and len(base_clean) >= 3:
-            return base_clean
-        return fallback
+    # 5. Sécurité : si le nettoyage a tout vidé ou laissé un résidu invalide/tronqué
+    if not sanitized or len(sanitized) < 3 or is_invalid_or_truncated_title(sanitized):
+        if fallback and not is_invalid_or_truncated_title(fallback):
+            return fallback
+        return "Témoignage de Palestine"
 
     return sanitized
 
@@ -1689,19 +1748,24 @@ TITRE :"""
                             len(words) <= 1 or cleaned.isdigit() or re.match(r'^\d+$', cleaned)
                         )
                         is_greeting = bool(re.search(greeting_pattern, cleaned, re.IGNORECASE))
-                        if cleaned and not is_raw_or_technical_filename(cleaned) and not is_isolated_digit_or_single_word and not is_greeting:
+                        is_truncated = is_invalid_or_truncated_title(cleaned)
+                        if cleaned and not is_raw_or_technical_filename(cleaned) and not is_isolated_digit_or_single_word and not is_greeting and not is_truncated:
                             semantic_title = cleaned
                             break
             except Exception as e:
                 continue
 
-    # Fallback si absent, invalide/technique ou salutation
-    if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE):
+    # Fallback si absent, invalide/technique, salutation ou tronqué
+    if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE) or is_invalid_or_truncated_title(semantic_title):
         # Si un contexte utilisateur est fourni, essayer d'en déduire un titre contextuel
         if user_context and len(user_context.strip()) > 5:
             clean_ctx = re.sub(r'[#\*\n]', ' ', user_context).strip()
-            first_words = clean_ctx.split()[:4]
-            semantic_title = " ".join(first_words)
+            words_ctx = clean_ctx.split()
+            candidate = " ".join(words_ctx[:5])
+            if not is_invalid_or_truncated_title(candidate):
+                semantic_title = candidate
+            else:
+                semantic_title = clean_fallback
         else:
             semantic_title = clean_fallback
 
@@ -1794,23 +1858,21 @@ def _generate_dynamic_heuristic_description(segments: list, semantic_title: str 
     quotes_formatted = "\n".join([f"« {q} »" for q in quotes]) if quotes else "« Paroles et faits recueillis sur le vif lors de cet enregistrement. »"
     title_hook = semantic_title.strip() if semantic_title else "Témoignage exclusif du terrain"
 
-    p1 = f"🔥 TÉMOIGNAGE EXCLUSIF : {title_hook.upper()}\nChaque mot prononcé dans cet enregistrement résonne comme une archive vivante de notre époque. À travers cette prise de parole authentique, c'est la réalité sans fard du terrain qui s'exprime, portant la voix de ceux qui vivent et témoignent avec courage au quotidien."
+    p1 = f"{title_hook}\nChaque mot prononcé dans cet enregistrement résonne comme une archive vivante de notre époque. À travers cette prise de parole authentique, c'est la réalité sans fard du terrain qui s'exprime, portant la voix de ceux qui vivent et témoignent avec courage au quotidien."
 
     if user_context and user_context.strip():
-        p2 = f"📌 CONTEXTE DU RÉCIT :\nCe document s'inscrit dans un cadre précis : {user_context.strip()}. Les faits et réflexions partagés ici éclairent la situation vécue et permettent de saisir avec justesse la portée des événements rapportés."
+        p2 = f"Ce document s'inscrit dans un cadre précis : {user_context.strip()}. Les faits et réflexions partagés ici éclairent la situation vécue et permettent de saisir avec justesse la portée des événements rapportés."
     else:
-        p2 = f"📌 DÉROULEMENT DU TÉMOIGNAGE :\nL'enregistrement restitue chronologiquement les épreuves, les réflexions et les faits partagés avec sincérité. Au fil des minutes, le récit expose avec dignité la réalité humaine et les défis rencontrés sur le terrain."
+        p2 = "L'enregistrement restitue chronologiquement les épreuves, les réflexions et les faits partagés avec sincérité. Au fil des minutes, le récit expose avec dignité la réalité humaine et les défis rencontrés sur le terrain."
 
-    p3 = f"💬 PAROLES FORTES EXTRAITES DU MÉDIA :\n{quotes_formatted}"
+    p3 = "Ne laissez pas ce récit se perdre dans l'indifférence. Relayez cette voix, commentez avec respect et enregistrez cette publication pour préserver et diffuser cette mémoire. Chaque relais compte pour faire entendre la vérité."
 
-    p4 = f"🧠 ANALYSE HUMAINE ET PORTÉE UNIVERSELLE :\nAu-delà du constat immédiat, cette archive vivante rappelle l'importance fondamentale de documenter chaque expérience humaine. Elle constitue un repère essentiel pour la mémoire collective, rappelant que derrière chaque témoignage se trouvent des destins réels qui méritent d'être entendus, respectés et préservés pour l'Histoire."
-
-    p5 = f"👉 TRANSMETTEZ CETTE VOIX :\nNe laissez pas ce récit se perdre dans l'indifférence. Partagez, commentez avec respect et enregistrez cette publication pour préserver et diffuser cette mémoire. Chaque relais compte pour faire entendre la vérité."
+    p4 = f"---\n{quotes_formatted}\n\nAu-delà du constat immédiat, cette archive vivante rappelle l'importance fondamentale de documenter chaque expérience humaine. Elle constitue un repère essentiel pour la mémoire collective, rappelant que derrière chaque témoignage se trouvent des destins réels qui méritent d'être entendus, respectés et préservés pour l'Histoire."
 
     hashtags = _extract_dynamic_hashtags(segments, user_context=user_context)
     hashtags_str = " ".join(hashtags)
 
-    return f"{p1}\n\n{p2}\n\n{p3}\n\n{p4}\n\n{p5}\n\n🏷️ {hashtags_str}".strip()
+    return f"{p1}\n\n{p2}\n\n{p3}\n\n{p4}\n\n{hashtags_str}".strip()
 
 
 def _generate_sober_context_description(user_context: str = "", semantic_title: str = "", target_lang: str = 'fr') -> str:
@@ -1821,12 +1883,35 @@ def _generate_sober_context_description(user_context: str = "", semantic_title: 
     title = semantic_title.strip() if semantic_title else "Témoignage du terrain"
     ctx = user_context.strip() if user_context else "Enregistrement et document d'archive recueillis sur le terrain."
 
-    p1 = f"TÉMOIGNAGE : {title.upper()}\nCe document audiovisuel recueilli sur le vif porte la mémoire et la vérité d'une situation humaine éprouvante."
-    p2 = f"CONTEXTE FACTUEL :\n{ctx}\nLes propos et éléments partagés dans cet enregistrement témoignent de la dignité et de la douleur vécues au quotidien."
-    p3 = "👉 Ne laissons pas ces témoignages sombrer dans l'oubli. Partagez et conservez cette archive pour que la vérité humaine des faits demeure accessible à tous."
+    p1 = f"{title}\nCe document audiovisuel recueilli sur le vif porte la mémoire et la vérité d'une situation humaine éprouvante."
+    p2 = f"{ctx}\nLes propos et éléments partagés dans cet enregistrement témoignent de la dignité et de la douleur vécues au quotidien."
+    p3 = "Ne laissons pas ces témoignages sombrer dans l'oubli. Partagez et conservez cette archive pour que la vérité humaine des faits demeure accessible à tous."
     tags = "#Témoignage #Mémoire #Vérité #Solidarité #Archive"
 
-    return f"{p1}\n\n{p2}\n\n{p3}\n\n🏷️ {tags}"
+    return f"{p1}\n\n{p2}\n\n{p3}\n\n{tags}"
+
+
+def _clean_ai_meta_headers(text: str) -> str:
+    """
+    Supprime toutes les étiquettes et méta-titres artificiels générés par l'IA
+    (ex: 'Partie 1 : 🔥 LE HOOK', 'Partie 2 : 📌 LE CONTEXTE', '👉 LE CTA', '📖 L'HISTOIRE COMPLÈTE', '🏷️ LES HASHTAGS')
+    pour que la description paraisse 100% humaine, fluide et naturelle.
+    """
+    if not text:
+        return text
+
+    patterns = [
+        r'(?mi)^(?:\*{0,2})partie\s*\d+\s*:\s*[^\n]+(?:\*{0,2})\s*\n?',
+        r'(?mi)^(?:\*{0,2})[🔥📌👉📖🏷️💬🧠⚡]\s*(?:le\s+hook|le\s+contexte|le\s+cta|l\'histoire\s+complète|histoire\s+complète|les\s+hashtags|l\'accroche|accroche|contexte|appel\s+à\s+l\'action|témoignage\s+exclusif|paroles\s+fortes|analyse\s+humaine|transmettez\s+cette\s+voix)[^\n]*(?:\*{0,2})\s*\n?',
+        r'(?mi)^(?:\*{0,2})(?:hook|contexte|cta|l\'histoire\s+complète|histoire\s+complète|hashtags)\s*:\s*(?:\*{0,2})\s*\n?',
+        r'(?mi)^🏷️\s*'
+    ]
+    cleaned = text
+    for pat in patterns:
+        cleaned = re.sub(pat, '', cleaned)
+
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned).strip()
+    return cleaned
 
 
 def _sanitize_tiktok_hashtags(text: str) -> str:
@@ -1835,6 +1920,7 @@ def _sanitize_tiktok_hashtags(text: str) -> str:
     - Supprime strictement toute auto-promotion (#AyaStudio, #Aya, #PlateformeAya)
     - Limite strictement le nombre total de hashtags à 5 maximum
     - Élimine les mentions promotionnelles éventuelles dans le corps du texte
+    - Supprime les préfixes décoratifs superflus sur la ligne de hashtags
     """
     if not text:
         return text
@@ -1852,7 +1938,6 @@ def _sanitize_tiktok_hashtags(text: str) -> str:
 
     if last_non_empty_idx >= 0 and '#' in lines[last_non_empty_idx]:
         tag_line = lines[last_non_empty_idx]
-        prefix = "🏷️ " if "🏷️" in tag_line else ""
         raw_tags = re.findall(r'#[\w\u00C0-\u017F]+', tag_line)
         cleaned_tags = []
         for tag in raw_tags:
@@ -1865,7 +1950,7 @@ def _sanitize_tiktok_hashtags(text: str) -> str:
         # Limiter strictement à 5 hashtags maximum
         cleaned_tags = cleaned_tags[:5]
         tag_str = ' '.join(cleaned_tags)
-        lines[last_non_empty_idx] = f"{prefix}{tag_str}".strip()
+        lines[last_non_empty_idx] = tag_str.strip()
         return '\n'.join(lines).strip()
 
     return text.strip()
@@ -1909,29 +1994,32 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
 MISSION STRICTE & OBLIGATOIRE :
 Rédige la Smart Description TikTok Hybride ({lang_instruction}) pour ce témoignage vidéo.
 {title_context}{context_directive}
-STRUCTURE HYBRIDE STRICTE EN EXACTEMENT 5 PARTIES :
-Tu dois impérativement respecter l'ordre et le format suivant sans rien omettre :
+STRUCTURE NARRATIVE NATURELLE & FLUIDE (SANS AUCUNE ÉTIQUETTE NI TITRE DE SECTION) :
+Organise le texte de façon percutante, humaine et captivante dans l'ordre suivant, mais SANS JAMAIS ÉCRIRE d'en-tête de section ni de préfixe artificiel (ne jamais écrire "Partie 1", "Partie 2", "LE HOOK", "LE CONTEXTE", "LE CTA", "L'HISTOIRE COMPLÈTE", "LES HASHTAGS", etc.) :
 
-Partie 1 : 🔥 LE HOOK
-1 phrase percutante et captivante qui stoppe net le scroll.
+1. L'ACCROCHE (directement en ouverture) :
+1 phrase percutante qui stoppe net le scroll et saisit l'attention dès les premiers mots (sans aucun intitulé).
 
-Partie 2 : 📌 LE CONTEXTE
-Exactement 2 lignes factuelles, humaines et sobres résumant la situation (format "Impact", sans extrapolation).
+2. LE CONTEXTE (séparé par un saut de ligne) :
+Exactement 2 lignes factuelles, humaines et sobres résumant la situation réelle (format "Impact", sans extrapolation).
 
-Partie 3 : 👉 LE CTA
-1 phrase incisive invitant à relayer cette voix, commenter et soutenir la mémoire.
+3. L'APPEL À L'ENGAGEMENT (séparé par un saut de ligne) :
+1 phrase incisive invitant à relayer cette voix, commenter pour préserver la mémoire et soutenir les personnes concernées.
 
-Partie 4 : 📖 L'HISTOIRE COMPLÈTE
-Insère d'abord un séparateur de tirets (---), puis développe un texte narratif, immersif et riche en mots-clés d'environ 300 mots pour nourrir l'algorithme SEO de TikTok sans polluer la lecture immédiate. Raconte la scène fidèlement, la dignité et la réalité vécue.
+4. L'HISTOIRE COMPLÈTE EN PROFONDEUR (séparée par la ligne '---') :
+Insère d'abord une ligne de séparation avec trois tirets :
+---
+Puis développe un texte narratif, immersif et riche en mots-clés d'environ 300 mots pour nourrir l'algorithme SEO de TikTok et offrir une compréhension intime de la scène. Raconte fidèlement les faits, la dignité et la réalité vécue.
 
-Partie 5 : 🏷️ LES HASHTAGS
-Une liste de 3 à 5 hashtags pertinents, sobres et ciblés (MAXIMUM 5 HASHTAGS AU TOTAL : ex: #Gaza #HistoireVraie #Témoignage #Résilience #PourToi).
+5. LES HASHTAGS (en toute fin, sur une nouvelle ligne) :
+Insère directement 3 à 5 hashtags pertinents et ciblés (MAXIMUM 5 HASHTAGS : ex: #Témoignage #HistoireVraie #Résilience #Cisjordanie #PourToi).
 
-CONSIGNES STRICTES DE SOBRIÉTÉ, ZÉRO PUBLICITÉ & ZÉRO FABULATION :
-- INTERDICTION FORMELLE D'AUTO-PROMOTION : Ne cite JAMAIS la marque ou le nom du projet (pas de "Plateforme Aya", pas de "Aya Studio"). N'inclus JAMAIS #AyaStudio ou #Aya dans les hashtags. Le contenu doit être 100% authentique et centré sur le témoin et l'Histoire humaine.
-- MAXIMUM 5 HASHTAGS : Ne dépasse JAMAIS 5 hashtags dans la Partie 5.
-- Si aucun lieu précis (ville, camp, quartier) n'est explicitement mentionné dans la transcription finale ou le contexte utilisateur, IL EST STRICTEMENT INTERDIT d'en inventer un (comme Deir al-Balah, Rafah, Khan Younès, etc.). Reste scrupuleusement fidèle aux propos et faits avérés.
-- Veille à ce que chaque phrase soit menée à son terme sans jamais être interrompue ou tronquée.
+CONSIGNES STRICTES D'AUTHENTICITÉ (ZÉRO ÉTIQUETTE IA) :
+- INTERDICTION ABSOLUE d'écrire des mentions de métadonnées telles que "Partie 1", "Partie 2", "Partie 3", "Partie 4", "Partie 5", "LE HOOK", "LE CONTEXTE", "LE CTA", "L'HISTOIRE COMPLÈTE", "LES HASHTAGS" ou des préfixes similaires. Le texte doit paraître 100% naturel, écrit avec sensibilité et force par un créateur ou journaliste de terrain.
+- INTERDICTION FORMELLE D'AUTO-PROMOTION : Ne cite JAMAIS la marque ou le nom du projet (pas de "Plateforme Aya", pas de "Aya Studio"). N'inclus JAMAIS #AyaStudio ou #Aya dans les hashtags.
+- MAXIMUM 5 HASHTAGS à la fin.
+- Si aucun lieu précis n'est explicitement mentionné, n'en invente aucun. Reste scrupuleusement fidèle aux faits avérés.
+- Veille à ce que chaque phrase soit menée à son terme sans être tronquée.
 
 RÈGLE FORMELLE DE SORTIE :
 Renvoie UNIQUEMENT le texte final rédigé. Pas de JSON, pas de balises markdown ```, pas de préambule d'introduction.
@@ -1966,6 +2054,7 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
                         clean = raw_text.strip()
                         clean = re.sub(r'^```(?:markdown)?\s*', '', clean)
                         clean = re.sub(r'\s*```$', '', clean)
+                        clean = _clean_ai_meta_headers(clean)
                         context_summary = clean.strip()
                         print(f"[IA NADINE ASYNC] ✅ Smart Description générée avec succès via {model_name} ({len(context_summary)} car.)", flush=True)
                         break
@@ -1996,9 +2085,10 @@ TRANSCRIPTION COMPLÈTE DU TÉMOIGNAGE :
     # Filet de sécurité hashtags dynamiques si absents
     if '#' not in context_summary:
         dyn_tags = _extract_dynamic_hashtags(segments, user_context=user_context)
-        context_summary += f"\n\n🏷️ {' '.join(dyn_tags)}"
+        context_summary += f"\n\n{' '.join(dyn_tags)}"
 
     # Nettoyage et bridage strict anti-promotion et max 5 hashtags
+    context_summary = _clean_ai_meta_headers(context_summary)
     context_summary = _sanitize_tiktok_hashtags(context_summary)
 
     return context_summary.strip()
@@ -2087,8 +2177,19 @@ def main():
         if user_context:
             print(f"[CONTEXT GROUNDING] 🧭 Contexte utilisateur injecté ({len(user_context)} car.) : {user_context[:80]}...", flush=True)
 
-        # 2. Transcription & Traduction par Protocole Scan 5s
-        segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
+        # 2. Transcription & Traduction par Protocole Scan 5s (ou Restyle Rapide)
+        restyle_only = '--restyle_only' in sys.argv
+        if restyle_only:
+            print("[PROGRESS] 20% - 🎨 Mode Personnalisation Directe : récupération des sous-titres depuis le cache local...", flush=True)
+            segments = get_cached_segments(media_input, target_lang)
+            if not segments:
+                print("[PROGRESS] 30% - ⚠️ Aucun cache trouvé pour ce média. Lancement de l'analyse acoustique normale...", flush=True)
+                segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=False, user_context=user_context)
+            else:
+                ai_model_used = "cache_local"
+                print(f"[RESTYLE SUCCESS] ⚡ {len(segments)} répliques réutilisées instantanément (0s d'attente IA) !", flush=True)
+        else:
+            segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=force_reprocess, user_context=user_context)
 
         # 3. Extraction du titre personnalisé éventuel (CLI / Base64)
         custom_title = None
@@ -2104,26 +2205,37 @@ def main():
         if custom_title:
             is_technical_title = bool(re.search(r'^(?:tg|media|audio|video|upload|file|recording)?[-_\s]*\d{7,}', custom_title, re.IGNORECASE))
 
-        # 4. SÉQUENÇAGE CRITIQUE : Génération ÉCLAIR du Titre Sémantique (Nadine - Synchrone, timeout 10s)
-        print("[PROGRESS] 60% - ⚡ Nadine génère le Titre Sémantique Éclair (Max 40 car, synchrone)...", flush=True)
-        t0_nadine_titre = time.time()
-        semantic_title = generate_semantic_title(segments, target_lang=target_lang, user_context=user_context)
-
-        # PRIORITÉ ABSOLUE AU TITRE SÉMANTIQUE IA SUR LES ARGUMENTS CLI / NOMS DE FICHIERS BRUTS
+        # 4. SÉQUENÇAGE DU TITRE SÉMANTIQUE
         clean_fallback = "Témoignage de Palestine" if target_lang.lower() != 'ar' else "شهادة حية من فلسطين"
-
         greeting_pattern = r'^(?:bonjour|salut|merci|comment\s+vas[-\s]?tu|coucou|bienvenue|bonsoir|all[oô]|salam|ahlan|marhaban|lou[ée]\s+soit\s+dieu|au\s+nom\s+de\s+dieu|alhamdulillah|bismillah)\b'
-        if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE):
-            if custom_title and not is_raw_or_technical_filename(custom_title) and not re.search(greeting_pattern, custom_title, re.IGNORECASE) and len(custom_title) > 3:
-                semantic_title = validate_and_sanitize_title(custom_title, max_words=6, max_chars=48, fallback=clean_fallback)
-            else:
-                semantic_title = clean_fallback
 
-        record_alexandre_agent("Nadine", "nadine_titre_semantique", t0_nadine_titre, details=f"'{semantic_title}' ({len(semantic_title)} car.)")
-        print(f"[TITRE SÉMANTIQUE IA] ✨ '{semantic_title}' ({len(semantic_title)} car.) [Priorité Absolue IA]", flush=True)
+        if restyle_only and custom_title and not is_technical_title:
+            semantic_title = custom_title
+            t0_nadine_titre = time.time()
+            record_alexandre_agent("Nadine", "nadine_titre_semantique", t0_nadine_titre, details=f"'{semantic_title}' (Titre conservé)")
+            print(f"[TITRE SÉMANTIQUE RECYCLÉ] ✨ '{semantic_title}' (Mode Restyle Rapide)", flush=True)
+        else:
+            print("[PROGRESS] 60% - ⚡ Nadine génère le Titre Sémantique Éclair (Max 40 car, synchrone)...", flush=True)
+            t0_nadine_titre = time.time()
+            semantic_title = generate_semantic_title(segments, target_lang=target_lang, user_context=user_context)
+
+            if not semantic_title or is_raw_or_technical_filename(semantic_title) or re.search(greeting_pattern, semantic_title, re.IGNORECASE):
+                if custom_title and not is_raw_or_technical_filename(custom_title) and not re.search(greeting_pattern, custom_title, re.IGNORECASE) and len(custom_title) > 3:
+                    semantic_title = validate_and_sanitize_title(custom_title, max_words=6, max_chars=48, fallback=clean_fallback)
+                else:
+                    semantic_title = clean_fallback
+
+            record_alexandre_agent("Nadine", "nadine_titre_semantique", t0_nadine_titre, details=f"'{semantic_title}' ({len(semantic_title)} car.)")
+            print(f"[TITRE SÉMANTIQUE IA] ✨ '{semantic_title}' ({len(semantic_title)} car.) [Priorité Absolue IA]", flush=True)
 
         # Assainissement pour nomenclature des fichiers (.mp4, .ass, .jpg, .txt, .md) basé STRICTEMENT sur le titre sémantique IA
         clean_title_stem = sanitize_filename_stem(semantic_title, max_length=50)
+        if clean_title_stem == "media" and media_input:
+            source_stem = sanitize_filename_stem(Path(media_input).stem, max_length=50)
+            if source_stem and source_stem != "media":
+                clean_title_stem = source_stem
+            elif target_lang.lower() == 'ar':
+                clean_title_stem = "Temoignage_Palestine"
         print(f"[NOMENCLATURE] 🏷️ Stem assaini : '{clean_title_stem}'", flush=True)
 
         # Production Immédiate de la Couverture 9:16 (Lionel) dès l'obtention du titre sémantique
@@ -2132,42 +2244,49 @@ def main():
         desc_filename = None
         desc_path = None
 
+        desc_thread = None
         if generate_tiktok_pack:
             cover_filename = f"{clean_title_stem} (Couverture 9-16).jpg"
             cover_path = OUTPUT_DIR / cover_filename
-            print("[PROGRESS] 65% - 🎨 Lionel produit immédiatement la Couverture 9:16 avec le Titre Sémantique...", flush=True)
-            t0_lionel = time.time()
-            try:
-                generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
-                record_alexandre_agent("Lionel", "lionel_couverture_9_16", t0_lionel, details=f"Couverture: {cover_filename}")
-                print(f"[COUVERTURE PRÊTE] 🖼️ {cover_filename}", flush=True)
-            except Exception as cv_err:
-                record_alexandre_agent("Lionel", "lionel_couverture_9_16", t0_lionel, status="WARNING", details=str(cv_err))
-                print(f"[LIONEL COUVERTURE WARNING] Erreur : {cv_err}", file=sys.stderr)
-
             desc_filename = f"{clean_title_stem} (Description TikTok).txt"
             desc_path = OUTPUT_DIR / desc_filename
 
-        # Lancement Asynchrone de la Smart Description TikTok en tâche de fond (Thread parallèle pendant FFmpeg)
-        async_desc_result = {"text": ""}
+            if restyle_only and cover_path.exists():
+                print(f"[RESTYLE ENGINE] 🖼️ Couverture 9:16 existante réutilisée : {cover_filename}", flush=True)
+            else:
+                print("[PROGRESS] 65% - 🎨 Lionel produit immédiatement la Couverture 9:16 avec le Titre Sémantique...", flush=True)
+                t0_lionel = time.time()
+                try:
+                    generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
+                    record_alexandre_agent("Lionel", "lionel_couverture_9_16", t0_lionel, details=f"Couverture: {cover_filename}")
+                    print(f"[COUVERTURE PRÊTE] 🖼️ {cover_filename}", flush=True)
+                except Exception as cv_err:
+                    record_alexandre_agent("Lionel", "lionel_couverture_9_16", t0_lionel, status="WARNING", details=str(cv_err))
+                    print(f"[LIONEL COUVERTURE WARNING] Erreur : {cv_err}", file=sys.stderr)
 
-        def _async_desc_worker():
-            try:
-                print("[ASYNC THREAD] 📝 Nadine rédige la Smart Description TikTok en arrière-plan...", flush=True)
-                t0_desc = time.time()
-                d_text = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang, user_context=user_context)
-                record_alexandre_agent("Nadine", "nadine_description_tiktok_async", t0_desc, details=f"{len(d_text)} car.")
-                async_desc_result["text"] = d_text
-                if desc_path:
-                    with open(desc_path, 'w', encoding='utf-8') as df:
-                        df.write(d_text.strip() + '\n')
-                    print(f"[ASYNC THREAD SUCCÈS] 📝 Description écrite dans {desc_path.name}", flush=True)
-            except Exception as e_desc:
-                record_alexandre_agent("Nadine", "nadine_description_tiktok_async", time.time(), status="WARNING", details=str(e_desc))
-                print(f"[ASYNC THREAD WARNING] Erreur description : {e_desc}", file=sys.stderr)
+            # Lancement Asynchrone de la Smart Description TikTok si inexistante
+            if not (restyle_only and desc_path.exists()):
+                async_desc_result = {"text": ""}
 
-        desc_thread = threading.Thread(target=_async_desc_worker, daemon=True)
-        desc_thread.start()
+                def _async_desc_worker():
+                    try:
+                        print("[ASYNC THREAD] 📝 Nadine rédige la Smart Description TikTok en arrière-plan...", flush=True)
+                        t0_desc = time.time()
+                        d_text = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang, user_context=user_context)
+                        record_alexandre_agent("Nadine", "nadine_description_tiktok_async", t0_desc, details=f"{len(d_text)} car.")
+                        async_desc_result["text"] = d_text
+                        if desc_path:
+                            with open(desc_path, 'w', encoding='utf-8') as df:
+                                df.write(d_text.strip() + '\n')
+                            print(f"[ASYNC THREAD SUCCÈS] 📝 Description écrite dans {desc_path.name}", flush=True)
+                    except Exception as e_desc:
+                        record_alexandre_agent("Nadine", "nadine_description_tiktok_async", time.time(), status="WARNING", details=str(e_desc))
+                        print(f"[ASYNC THREAD WARNING] Erreur description : {e_desc}", file=sys.stderr)
+
+                desc_thread = threading.Thread(target=_async_desc_worker, daemon=True)
+                desc_thread.start()
+            else:
+                print(f"[RESTYLE ENGINE] 📝 Description TikTok existante réutilisée : {desc_filename}", flush=True)
 
         # ⚡ COURT-CIRCUIT MODE EXPRESS (MODULE 2 : TEXTE MARKDOWN EN < 5S)
         if express_mode:
@@ -2249,20 +2368,20 @@ def main():
         ass_path = OUTPUT_DIR / ass_filename
         mp4_path = OUTPUT_DIR / mp4_filename
 
-        # 6. Génération du fichier .ASS (Lionel / Thomas)
-        print("[PROGRESS] 75% - Génération et stylisation des sous-titres .ASS...", flush=True)
+        # 6. Génération du fichier .ASS (🎨 Lionel)
+        print("[PROGRESS] 75% - 🎨 Lionel stylise les sous-titres .ASS (couleur & position)...", flush=True)
         t0_ass = time.time()
         build_ass_file(segments, ass_path, is_video, width, height, duration, sub_color_hex, sub_margin_v)
         record_alexandre_agent("Lionel", "lionel_ass_styling", t0_ass, details=f"Fichier: {ass_filename}")
 
-        # 7. Incrustation vidéo FFmpeg (Thomas - S'exécute en parallèle de la rédaction de Nadine en arrière-plan)
-        print("[PROGRESS] 80% - Encodage et incrustation vidéo FFmpeg en cours (en parallèle du thread IA)...", flush=True)
+        # 7. Incrustation vidéo FFmpeg (🎬 Max)
+        print("[PROGRESS] 80% - 🎬 Max ré-incruste la vidéo avec FFmpeg...", flush=True)
         t0_ffmpeg = time.time()
         render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme, has_audio=has_audio)
-        record_alexandre_agent("Thomas", "thomas_ffmpeg_encode", t0_ffmpeg, details=f"Encodage final: {mp4_filename}")
+        record_alexandre_agent("Max", "max_ffmpeg_encode", t0_ffmpeg, details=f"Encodage final: {mp4_filename}")
 
         # 8. Synchronisation de la Smart Description Asynchrone
-        if desc_thread.is_alive():
+        if desc_thread and desc_thread.is_alive():
             print("[PROGRESS] 97% - Synchronisation de la Smart Description TikTok...", flush=True)
             desc_thread.join(timeout=25)
 

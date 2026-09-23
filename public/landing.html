@@ -1237,7 +1237,7 @@
                     L'achat de crédits techniques ci-dessus finance uniquement l'infrastructure d'hébergement. Si vous désirez soutenir directement l'équipe bénévole et l'aide humanitaire en Palestine, les dons volontaires s'effectuent via un lien PayPal dédié 100% indépendant.
                 </p>
             </div>
-            <a href="https://www.paypal.com/sosoxm2026@gmail.com" target="_blank" rel="noopener noreferrer" class="btn-paypal-donate" id="btnPaypal" style="margin-left: auto;">
+            <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="btn-paypal-donate" id="btnPaypal" style="margin-left: auto;">
                 <span>🕊️</span> Faire un don PayPal
             </a>
         </div>
@@ -1262,7 +1262,7 @@
                 <span class="aya-legal-footer-sep">•</span>
                 <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
                 <span class="aya-legal-footer-sep">•</span>
-                <a href="https://www.paypal.com/sosoxm2026@gmail.com" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+                <a href="https://paypal.me/sosoxm2026" id="footerSupportLink" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
             <p class="aya-legal-footer-copyright">
                 © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
@@ -1330,7 +1330,8 @@
                     btnPaypal: '<span>🕊️</span> Faire un don PayPal',
                     ctaFinalTitle: 'Faites entendre la voix du terrain',
                     ctaFinalSub: 'Rejoignez notre réseau de créateurs et commencez à traduire vos premières vidéos dès aujourd\'hui.',
-                    btnCtaFinal: '🚀 Créer mon compte (5 Crédits offerts)'
+                    btnCtaFinal: '🚀 Créer mon compte (5 Crédits offerts)',
+                    footerSupport: '❤️ Soutenir l\'équipe (PayPal)'
                 },
                 ar: {
                     dir: 'rtl',
@@ -1388,7 +1389,8 @@
                     btnPaypal: '<span>🕊️</span> التبرع عبر PayPal',
                     ctaFinalTitle: 'ساهم في إيصال صوت الميدان إلى العالم',
                     ctaFinalSub: 'انضم لشبكة صناع المحتوى وابدأ بترجمة فيديوهاتك الأولى اليوم.',
-                    btnCtaFinal: '🚀 إنشاء حسابي (٥ أرصدة مجانية)'
+                    btnCtaFinal: '🚀 إنشاء حسابي (٥ أرصدة مجانية)',
+                    footerSupport: '❤️ دعم الفريق (PayPal)'
                 }
             };
 
@@ -1472,6 +1474,12 @@
                 updateTxt('ctaFinalTitle', d.ctaFinalTitle);
                 updateTxt('ctaFinalSub', d.ctaFinalSub);
                 updateTxt('btnCtaFinal', d.btnCtaFinal, true);
+
+                updateTxt('footerSupportLink', d.footerSupport);
+                const footerSup = document.getElementById('footerSupportLink');
+                if (footerSup) footerSup.href = 'https://paypal.me/sosoxm2026';
+                const btnPaypalEl = document.getElementById('btnPaypal');
+                if (btnPaypalEl) btnPaypalEl.href = 'https://paypal.me/sosoxm2026';
 
                 if (lang === 'ar') {
                     document.getElementById('btnLangAr').classList.add('active');

@@ -195,6 +195,17 @@
             fbSuccessTitle: 'Retour transmis et analysé !',
             fbLinkGitHub: '<span>🐙</span> Voir l\'Issue sur GitHub &rarr;',
 
+            // Atelier de Personnalisation Post-Génération (Option 1)
+            restyleSectionTitle: '🎨 Personnaliser les sous-titres',
+            restyleSectionSub: 'Changez la couleur ou l\'emplacement en 1 clic sans attendre.',
+            restyleColorLabel: 'Couleur des sous-titres :',
+            restylePosLabel: 'Emplacement vertical :',
+            btnApplyRestyle: '⚡ Mettre à jour la vidéo',
+            restyleNotice: 'Prêt en 2 secondes • Gratuit (0 crédit)',
+            btnNewVideo: '➕ Traduire une nouvelle vidéo',
+            restyleProgress: '🎬 Max ré-incruste vos sous-titres avec FFmpeg...',
+            restyleSuccess: '✨ Sous-titres personnalisés avec succès !',
+
             // Résilience Anti-Quota & Modèle IA
             badgeModelPrefix: '🧠 Modèle :',
             errAiOverloaded: 'Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.',
@@ -545,6 +556,17 @@
             fbBtnSubmitting: '<span>⏳</span> جاري التصنيف الذكي وإنشاء التذكرة...',
             fbSuccessTitle: 'تم استلام التقرير وتصنيفه بنجاح!',
             fbLinkGitHub: '<span>🐙</span> معاينة التذكرة على غيت هاب &rarr;',
+
+            // Atelier de Personnalisation Post-Génération (Option 1)
+            restyleSectionTitle: '🎨 تخصيص مظهر الترجمة',
+            restyleSectionSub: 'غيّر لون أو موضع النصوص بنقرة واحدة فوراً دون انتظار.',
+            restyleColorLabel: 'لون نصوص الترجمة :',
+            restylePosLabel: 'الموضع الرأسي للترجمة :',
+            btnApplyRestyle: '⚡ تحديث مظهر الفيديو',
+            restyleNotice: 'جاهز خلال ثانيتين • مجاني تماماً (0 رصيد)',
+            btnNewVideo: '➕ ترجمة فيديو جديد',
+            restyleProgress: '🎬 ماكس يعيد دمج الترجمة عبر FFmpeg...',
+            restyleSuccess: '✨ تم تحديث مظهر الترجمة بنجاح!',
 
             // Résilience Anti-Quota & Modèle IA
             badgeModelPrefix: '🧠 النموذج:',
@@ -942,8 +964,9 @@
             updateElementText('rechargeBannerTitle', dict.rechargeBannerTitle, true);
             updateElementText('rechargeBannerText', dict.rechargeBannerText);
             updateElementText('paypalSolidarityTitle', dict.paypalSolidarityTitle, true);
-            updateElementText('paypalSolidarityDesc', dict.paypalSolidarityDesc);
             updateElementText('btnPaypalDonation', dict.btnPaypalDonation, true);
+            const btnPaypalDonationEl = document.getElementById('btnPaypalDonation');
+            if (btnPaypalDonationEl) btnPaypalDonationEl.href = 'https://paypal.me/sosoxm2026';
 
             // Traduction des cartes de packs Stripe dans la modale
             const packsContainer = document.getElementById('stripePacksContainer');
@@ -1070,7 +1093,10 @@
             const privLink = legalFooter.querySelector('a[href*="confidentialite"]');
             if (privLink) privLink.textContent = dict.footerPrivacyLink;
             const paypalLink = legalFooter.querySelector('a[href*="paypal"]');
-            if (paypalLink) paypalLink.textContent = dict.footerPaypalLink;
+            if (paypalLink) {
+                paypalLink.textContent = dict.footerPaypalLink;
+                paypalLink.href = 'https://paypal.me/sosoxm2026';
+            }
             const copyright = legalFooter.querySelector('.aya-legal-footer-copyright');
             if (copyright) copyright.textContent = dict.footerCopyright;
         }

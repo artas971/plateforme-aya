@@ -142,7 +142,7 @@ function verifyWebhookEvent(rawBody, signature) {
  * Lien PayPal pour les dons de solidarité (totalement séparé de Stripe)
  */
 function getPayPalDonationUrl() {
-    return process.env.PAYPAL_ME_URL || 'https://www.paypal.com/sosoxm2026@gmail.com';
+    return process.env.PAYPAL_ME_URL || 'https://paypal.me/sosoxm2026';
 }
 
 module.exports = {
