@@ -349,7 +349,15 @@
             chkCover: '🎨 Cover 9:16 .TXT',
             btnGenerateStudio: '⚡ VALIDER & GÉNÉRER LE PACK V3',
             simTitle: '📱 Simulateur Visuel TikTok 9:16 (1080x1920)',
-            simRealtime: '● Aperçu Temps Réel Actif'
+            simRealtime: '● Aperçu Temps Réel Actif',
+            optModeVostfr: '🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)',
+            optModeVoar: '🇫🇷 Français ➔ 🇵🇸 Arabe Palestinien (Gaza Ammiya) (VOAR)',
+            optMediaAudio: '🎙️ Fichier Audio (.mpeg / .mp3 / .wav / .ogg / .m4a / .opus / .aac / .flac) + Image de Fond',
+            optMediaVideo: '🎬 Fichier Vidéo (.mpeg / .mpg / .mp4 / .mov / .mkv / .webm / .ts)',
+            sourceMediaAudioLabel: '📁 1. Fichier Audio Source :',
+            sourceMediaVideoLabel: '📁 1. Fichier Vidéo Source :',
+            placeholderAudioFile: '📁 Choisissez votre fichier audio ou vidéo (.mpeg, .mp3, .ogg, .mp4...)...',
+            placeholderBgFile: '🖼️ Cliquez pour choisir votre image de fond 9:16...'
         },
         ar: {
             dir: 'rtl',
@@ -692,7 +700,15 @@
             chkCover: '🎨 موجه الغلاف 9:16 .TXT',
             btnGenerateStudio: '⚡ اعتماد وتوليد حزمة V3',
             simTitle: '📱 محاكي العرض المرئي تيك توك 9:16 (1080x1920)',
-            simRealtime: '● المعاينة الحية نشطة'
+            simRealtime: '● المعاينة الحية نشطة',
+            optModeVostfr: '🇵🇸 عربي فلسطيني (غزة) ➔ 🇫🇷 فرنسي (VOSTFR)',
+            optModeVoar: '🇫🇷 فرنسي ➔ 🇵🇸 عربي فلسطيني (عامية غزة) (VOAR)',
+            optMediaAudio: '🎙️ ملف صوتي (.mp3 / .wav / .ogg / .m4a / .opus / .aac / .flac) + صورة خلفية',
+            optMediaVideo: '🎬 ملف فيديو (.mp4 / .mov / .mkv / .webm / .ts / .mpeg)',
+            sourceMediaAudioLabel: '📁 ١. ملف الصوت المصدر:',
+            sourceMediaVideoLabel: '📁 ١. ملف الفيديو المصدر:',
+            placeholderAudioFile: '📁 اختر ملف الصوت أو الفيديو المصدر (.mp3, .wav, .mp4...)...',
+            placeholderBgFile: '🖼️ اضغط لاختيار صورة الخلفية 9:16...'
         }
     };
 
@@ -1014,6 +1030,32 @@
             updateElementText('chkCoverLabel', dict.chkCover, true);
             updateElementText('simTitle', dict.simTitle);
             updateElementText('simRealtime', dict.simRealtime);
+
+            updateElementText('optModeVostfr', dict.optModeVostfr);
+            updateElementText('optModeVoar', dict.optModeVoar);
+            updateElementText('optMediaAudio', dict.optMediaAudio);
+            updateElementText('optMediaVideo', dict.optMediaVideo);
+
+            const sourceMediaLabel = document.getElementById('source-media-label');
+            const mediaType = document.getElementById('media-type');
+            if (sourceMediaLabel && mediaType) {
+                sourceMediaLabel.innerText = (mediaType.value === 'VIDEO') 
+                    ? dict.sourceMediaVideoLabel 
+                    : dict.sourceMediaAudioLabel;
+            }
+
+            const selectedFileDisplay = document.getElementById('selected-filename-display');
+            const sourceMediaInput = document.getElementById('source-media-file');
+            if (selectedFileDisplay && (!sourceMediaInput || !sourceMediaInput.files || sourceMediaInput.files.length === 0)) {
+                selectedFileDisplay.textContent = dict.placeholderAudioFile;
+            }
+
+            const bgFileDisplay = document.getElementById('bg-filename-display');
+            const bgFileInput = document.getElementById('bg-file');
+            if (bgFileDisplay && (!bgFileInput || !bgFileInput.files || bgFileInput.files.length === 0)) {
+                bgFileDisplay.textContent = dict.placeholderBgFile;
+            }
+
             const btnSubmit = document.getElementById('btn-submit');
             if (btnSubmit && !btnSubmit.disabled) {
                 btnSubmit.innerHTML = dict.btnGenerateStudio;
