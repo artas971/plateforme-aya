@@ -22,10 +22,26 @@ router.get('/vocab-themes', (req, res) => {
     }
 });
 
+// ── Anti-Abus & Rate Limiting en mémoire pour la prévisualisation ──
+const previewRateLimitMap = new Map();
+
+// Nettoyage régulier des entrées de rate limiting expirées (toutes les 10 min)
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, timestamp] of previewRateLimitMap.entries()) {
+        if (now - timestamp > 60000) {
+            previewRateLimitMap.delete(key);
+        }
+    }
+}, 10 * 60 * 1000);
+
 /**
  * POST /api/premium/vocabulary-words-preview
  * Génère instantanément une proposition de 5 mots bilingues via Gemini Flash (0 crédit)
- * Gère excludeWords pour proposer une autre liste sans doublons.
+ * Garde-fous anti-abus :
+ *  - Rate limit : 1 appel toutes les 3 secondes max (HTTP 429)
+ *  - Plafond de régénérations : 4 régénérations max par thème/session (Erreur à la 5ᵉ)
+ *  - Gère excludeWords pour proposer une liste 100% sans doublons.
  */
 router.post('/vocabulary-words-preview', requireAuth, async (req, res) => {
     const sessionUser = req.session?.user;
@@ -37,7 +53,24 @@ router.post('/vocabulary-words-preview', requireAuth, async (req, res) => {
         });
     }
 
-    let { theme, level, customWords, excludeWords } = req.body || {};
+    // 1. Rate Limiting Anti-Spam (1 appel toutes les 3 secondes par session / IP)
+    const rateLimitKey = sessionUser.id || sessionUser.username || req.ip || 'anon';
+    const now = Date.now();
+    const lastCall = previewRateLimitMap.get(rateLimitKey);
+    if (lastCall && (now - lastCall) < 3000) {
+        const waitMs = 3000 - (now - lastCall);
+        const waitSec = (waitMs / 1000).toFixed(1);
+        console.warn(`[API VOCAB PREVIEW] ⚠️ Rate limit déclenché pour ${rateLimitKey} (${waitMs}ms restantes)`);
+        return res.status(429).json({
+            success: false,
+            error: `Veuillez patienter encore ${waitSec}s avant de relancer une proposition.`,
+            rateLimited: true,
+            retryAfter: 3
+        });
+    }
+    previewRateLimitMap.set(rateLimitKey, now);
+
+    let { theme, level, customWords, excludeWords, isRegeneration } = req.body || {};
 
     const safeTheme = typeof theme === 'string' && theme.trim() ? theme.trim().slice(0, 100) : 'Vocabulaire du quotidien';
     const safeLevel = VALID_LEVELS.includes(String(level).toLowerCase()) ? String(level).toLowerCase() : 'debutant';
@@ -58,6 +91,37 @@ router.post('/vocabulary-words-preview', requireAuth, async (req, res) => {
         safeExcludeWords = excludeWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean);
     }
 
+    // 2. Plafond Strict de 4 Régénérations Gratuites consécutives par thème
+    if (!req.session.vocabRegenCounts) {
+        req.session.vocabRegenCounts = {};
+    }
+
+    const themeKey = safeTheme.toLowerCase().trim();
+    const isRegenRequest = isRegeneration === true || safeExcludeWords.length > 0;
+
+    let currentRegens = req.session.vocabRegenCounts[themeKey] || 0;
+
+    if (isRegenRequest) {
+        if (currentRegens >= 4) {
+            console.warn(`[API VOCAB PREVIEW] ⛔ Plafond de 4 régénérations atteint pour "${safeTheme}" (Session: ${sessionUser.username || sessionUser.id})`);
+            return res.status(400).json({
+                success: false,
+                error: "Limite de régénérations atteinte pour ce thème. Veuillez valider cette sélection ou passer en saisie manuelle.",
+                limitReached: true,
+                remainingRegenerations: 0,
+                regenerationCount: 4
+            });
+        }
+        currentRegens += 1;
+        req.session.vocabRegenCounts[themeKey] = currentRegens;
+    } else {
+        // Nouvelle demande initiale sur ce thème : remise à zéro du compteur de régénérations
+        currentRegens = 0;
+        req.session.vocabRegenCounts[themeKey] = 0;
+    }
+
+    const remainingRegenerations = Math.max(0, 4 - currentRegens);
+
     try {
         const vocabData = await vocabCardService.generateVocabularyData(safeTheme, safeCustomWords, safeLevel, safeExcludeWords);
         return res.json({
@@ -66,7 +130,10 @@ router.post('/vocabulary-words-preview', requireAuth, async (req, res) => {
             level: safeLevel,
             titleFr: vocabData.titleFr,
             titleAr: vocabData.titleAr,
-            words: vocabData.words
+            words: vocabData.words,
+            regenerationCount: currentRegens,
+            remainingRegenerations,
+            limitReached: remainingRegenerations === 0
         });
     } catch (err) {
         console.error('[API VOCAB PREVIEW] ❌ Erreur prévisualisation mots :', err.message);
@@ -171,6 +238,11 @@ router.post('/vocabulary-card', requireAuth, async (req, res) => {
             words: cardResult.words,
             costCredits: 1
         });
+
+        // Réinitialisation du quota de régénération pour ce thème
+        if (req.session?.vocabRegenCounts && safeTheme) {
+            delete req.session.vocabRegenCounts[safeTheme.toLowerCase().trim()];
+        }
 
         console.log(`[API VOCAB CARD] 🎉 Génération terminée avec succès pour ${username} (Fiche ID: ${cardResult.cardId})`);
 

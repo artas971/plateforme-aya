@@ -748,6 +748,17 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPreviewVocabData = null;
         seenWordsList = [];
 
+        // Réinitialiser les états d'anti-abus et badges
+        const notice = document.getElementById('vocabRegenLimitNotice');
+        if (notice) notice.style.display = 'none';
+        const badge = document.getElementById('vocabRegenBadge');
+        if (badge) badge.textContent = '(4 essais restants)';
+        if (btnVocabRollAnother) {
+            btnVocabRollAnother.disabled = false;
+            btnVocabRollAnother.style.opacity = '1';
+            btnVocabRollAnother.style.cursor = 'pointer';
+        }
+
         // Charger les thèmes à jour
         loadVocabThemes();
 
@@ -962,14 +973,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     theme,
                     level: selectedDifficultyLevel,
                     customWords,
-                    excludeWords: seenWordsList
+                    excludeWords: seenWordsList,
+                    isRegeneration: isRollAnother
                 })
             });
 
             const data = await response.json();
 
-            if (!response.ok || !data.success || !Array.isArray(data.words) || data.words.length === 0) {
+            // Gestion spécifique du Rate Limiting (HTTP 429)
+            if (response.status === 429) {
+                showToast(data.error || "Veuillez patienter 3 secondes entre chaque génération.", "warning");
+                return;
+            }
+
+            // Gestion du Plafond de régénérations atteint
+            if (!response.ok || !data.success) {
+                if (data.limitReached || response.status === 400) {
+                    const notice = document.getElementById('vocabRegenLimitNotice');
+                    if (notice) notice.style.display = 'block';
+                    const badge = document.getElementById('vocabRegenBadge');
+                    if (badge) badge.textContent = '(0 essai restant)';
+                    if (btnVocabRollAnother) {
+                        btnVocabRollAnother.disabled = true;
+                        btnVocabRollAnother.style.opacity = '0.5';
+                        btnVocabRollAnother.style.cursor = 'not-allowed';
+                    }
+                }
                 throw new Error(data.error || "Impossible de prévisualiser les mots.");
+            }
+
+            if (!Array.isArray(data.words) || data.words.length === 0) {
+                throw new Error("Schéma de mots invalide reçu du serveur.");
             }
 
             currentPreviewVocabData = data;
@@ -980,6 +1014,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     seenWordsList.push(w.french);
                 }
             });
+
+            // Mettre à jour le compteur d'essais restants (4 max)
+            const remaining = data.remainingRegenerations !== undefined ? data.remainingRegenerations : 4;
+            const badge = document.getElementById('vocabRegenBadge');
+            if (badge) {
+                badge.textContent = `(${remaining} essai${remaining > 1 ? 's' : ''} restant${remaining > 1 ? 's' : ''})`;
+            }
+
+            const notice = document.getElementById('vocabRegenLimitNotice');
+            if (remaining === 0 || data.limitReached) {
+                if (notice) notice.style.display = 'block';
+                if (btnVocabRollAnother) {
+                    btnVocabRollAnother.disabled = true;
+                    btnVocabRollAnother.style.opacity = '0.5';
+                    btnVocabRollAnother.style.cursor = 'not-allowed';
+                }
+            } else {
+                if (notice) notice.style.display = 'none';
+                if (btnVocabRollAnother) {
+                    btnVocabRollAnother.disabled = false;
+                    btnVocabRollAnother.style.opacity = '1';
+                    btnVocabRollAnother.style.cursor = 'pointer';
+                }
+            }
 
             // Afficher dans l'écran d'arbitrage
             if (vocabPreviewTitleFr) vocabPreviewTitleFr.textContent = data.titleFr || theme.toUpperCase();
@@ -998,10 +1056,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnSubmitVocabGenerate.style.opacity = '1';
             }
             if (btnSubmitVocabText) btnSubmitVocabText.textContent = "Prévisualiser les 5 mots (Gratuit)";
-            if (btnVocabRollAnother) {
-                btnVocabRollAnother.disabled = false;
-                btnVocabRollAnother.style.opacity = '1';
-            }
             if (rollSpinner) rollSpinner.style.display = 'none';
         }
     }

@@ -156,11 +156,12 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
     }
 
     const models = [
-        'gemini-2.5-flash',
-        'gemini-flash-latest',
+        'gemini-3.1-flash-lite',
+        'gemini-3.5-flash-lite',
         'gemini-3.5-flash',
         'gemini-flash-lite-latest',
-        'gemini-pro-latest'
+        'gemini-flash-latest',
+        'gemini-2.5-flash'
     ];
 
     let lastError = null;
@@ -193,7 +194,32 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
                 continue;
             }
 
-            const parsed = JSON.parse(textResponse);
+            let cleanText = textResponse.trim();
+            if (cleanText.startsWith('```json')) {
+                cleanText = cleanText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+            } else if (cleanText.startsWith('```')) {
+                cleanText = cleanText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+            }
+
+            let parsed;
+            try {
+                parsed = JSON.parse(cleanText);
+            } catch (err) {
+                lastError = new Error(`Erreur parsing JSON (${model}): ${err.message}`);
+                continue;
+            }
+
+            // Normalisation de structure au cas où Gemini renvoie un tableau direct
+            if (Array.isArray(parsed)) {
+                parsed = { words: parsed };
+            } else if (!parsed.words && Array.isArray(parsed.vocabulary)) {
+                parsed.words = parsed.vocabulary;
+            } else if (!parsed.words && Array.isArray(parsed.items)) {
+                parsed.words = parsed.items;
+            } else if (!parsed.words && Array.isArray(parsed.cards)) {
+                parsed.words = parsed.cards;
+            }
+
             if (!parsed.words || !Array.isArray(parsed.words) || parsed.words.length < 5) {
                 lastError = new Error("Schéma JSON incomplet reçu de Gemini.");
                 continue;
@@ -215,14 +241,17 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
  * - Pôle Arabophone (Turquoise Aya / 'Cairo')
  */
 function buildHtmlTemplate(vocabData) {
-    const cardsHtml = vocabData.words.slice(0, 5).map(item => `
+    const cardsHtml = vocabData.words.slice(0, 5).map(item => {
+        const isLongFr = (item.french || '').length > 12;
+        const isLongAr = (item.arabic || '').length > 12;
+        return `
       <div class="card-item-bilingual">
         <!-- Compartiment Francophone (Apprendre le Shami) -->
         <div class="comp-box comp-fr">
           <div class="comp-header">
             <span class="comp-flag">FRANÇAIS</span>
           </div>
-          <div class="comp-word-fr">${escapeHtml(item.french)}</div>
+          <div class="comp-word-fr ${isLongFr ? 'comp-word-long' : ''}">${escapeHtml(item.french)}</div>
           <div class="comp-phon-fr" title="Comment le dire en arabe Shami">
             <span class="phon-tag-fr">En Shami :</span>
             <span class="phon-val">${escapeHtml(item.phoneticFr)}</span>
@@ -239,14 +268,15 @@ function buildHtmlTemplate(vocabData) {
           <div class="comp-header">
             <span class="comp-flag">عَرَبِيٌّ شَامِيٌّ</span>
           </div>
-          <div class="comp-word-ar">${escapeHtml(item.arabic)}</div>
+          <div class="comp-word-ar ${isLongAr ? 'comp-word-long' : ''}">${escapeHtml(item.arabic)}</div>
           <div class="comp-phon-ar" title="نُطْقُ الْفَرَنْسِيِّ بِالْعَرَبِيِّ">
             <span class="phon-tag-ar">نُطْقُ الْفَرَنْسِيِّ :</span>
             <span class="phon-val-ar">${escapeHtml(item.phoneticAr)}</span>
           </div>
         </div>
       </div>
-    `).join('\n');
+    `;
+    }).join('\n');
 
     return `<!DOCTYPE html>
 <html lang="fr">
@@ -425,29 +455,40 @@ function buildHtmlTemplate(vocabData) {
 
     .comp-word-fr {
       font-family: 'Inter', sans-serif;
-      font-size: clamp(0.82rem, 2.2vw, 1rem);
+      font-size: clamp(0.78rem, 2.1vw, 0.98rem);
       font-weight: 900;
       color: #ffffff;
       text-transform: uppercase;
       letter-spacing: 0.3px;
       line-height: 1.15;
       word-break: break-word;
+      overflow-wrap: break-word;
       margin-top: 1px;
+    }
+
+    .comp-word-fr.comp-word-long {
+      font-size: clamp(0.68rem, 1.7vw, 0.82rem);
+      letter-spacing: 0.1px;
     }
 
     .comp-word-ar {
       font-family: 'Cairo', sans-serif;
-      font-size: clamp(1.02rem, 2.9vw, 1.25rem);
+      font-size: clamp(0.96rem, 2.8vw, 1.22rem);
       font-weight: 900;
       color: #fef08a;
       line-height: 1.2;
       word-break: break-word;
+      overflow-wrap: break-word;
       margin-top: 1px;
+    }
+
+    .comp-word-ar.comp-word-long {
+      font-size: clamp(0.82rem, 2.2vw, 1.02rem);
     }
 
     .comp-phon-fr {
       font-family: 'Inter', sans-serif;
-      font-size: clamp(0.7rem, 1.8vw, 0.82rem);
+      font-size: clamp(0.66rem, 1.7vw, 0.78rem);
       font-weight: 700;
       color: #38bdf8;
       background: rgba(56, 189, 248, 0.16);
@@ -465,17 +506,17 @@ function buildHtmlTemplate(vocabData) {
 
     .phon-tag-fr {
       color: #bae6fd;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
       white-space: nowrap;
     }
 
     .comp-phon-ar {
       font-family: 'Cairo', sans-serif;
-      font-size: clamp(0.7rem, 1.8vw, 0.82rem);
+      font-size: clamp(0.68rem, 1.7vw, 0.8rem);
       font-weight: 700;
-      color: #ffffff;
-      background: rgba(0, 0, 0, 0.28);
+      color: #5eead4;
+      background: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(45, 212, 191, 0.4);
       padding: 2px 6px;
       border-radius: 6px;
@@ -489,9 +530,15 @@ function buildHtmlTemplate(vocabData) {
     }
 
     .phon-tag-ar {
-      color: #5eead4;
-      font-size: 0.65rem;
+      color: #99f6e4;
+      font-size: 0.62rem;
       font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .phon-val-ar {
+      color: #5eead4;
+      font-weight: 700;
     }
 
     /* Séparateur Central avec Émoji */
