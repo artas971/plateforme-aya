@@ -6,6 +6,7 @@ const User = require('../models/User');
 const { isDbConnected } = require('../config/database');
 const { getUserWallet } = require('../services/walletService');
 const { getUserVideoHistory, deleteUserVideo } = require('../services/videoHistoryService');
+const { getUserCards, deleteUserCard } = require('../services/cardHistoryService');
 
 const DATA_DIR = path.join(__dirname, '../data');
 const FALLBACK_USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -175,6 +176,61 @@ router.delete('/videos/:id', async (req, res) => {
         }
     } catch (err) {
         console.error('[API DELETE VIDEO ERROR]', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * GET /api/user/cards : Historique personnel des fiches de vocabulaire générées
+ */
+router.get('/cards', async (req, res) => {
+    try {
+        const sessionUser = req.session?.user;
+        if (!sessionUser) {
+            return res.status(401).json({ success: false, error: "Non connecté." });
+        }
+
+        const page = parseInt(req.query.page || '1', 10);
+        const limit = parseInt(req.query.limit || '30', 10);
+        const result = await getUserCards(sessionUser.id || sessionUser.username, { page, limit });
+
+        return res.json({
+            success: true,
+            count: result.cards.length,
+            total: result.total,
+            page: result.page,
+            limit: result.limit,
+            cards: result.cards
+        });
+    } catch (err) {
+        console.error('[API USER CARDS ERROR]', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * DELETE /api/user/cards/:id : Supprime une fiche de l'historique personnel
+ */
+router.delete('/cards/:id', async (req, res) => {
+    try {
+        const sessionUser = req.session?.user;
+        if (!sessionUser) {
+            return res.status(401).json({ success: false, error: "Non connecté." });
+        }
+
+        const cardId = req.params.id;
+        if (!cardId) {
+            return res.status(400).json({ success: false, error: "Identifiant de fiche manquant." });
+        }
+
+        const deleted = await deleteUserCard(cardId, sessionUser.id || sessionUser.username);
+        if (deleted) {
+            return res.json({ success: true, message: "Fiche supprimée de votre historique avec succès." });
+        } else {
+            return res.status(404).json({ success: false, error: "Fiche introuvable ou non autorisée." });
+        }
+    } catch (err) {
+        console.error('[API DELETE USER CARD ERROR]', err);
         return res.status(500).json({ success: false, error: err.message });
     }
 });

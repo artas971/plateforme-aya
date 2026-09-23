@@ -149,64 +149,133 @@
             <!-- Colonne Droite : Historique des Vidéos Générées -->
             <div class="profile-main">
                 
-                <section class="profile-card" style="min-height: 520px;">
-                    <div class="history-header">
-                        <div class="profile-card-title" id="historyTitleText" style="font-size: 1.25rem;">
-                            <span>🎬</span> Historique de mes Vidéos
-                            <span id="historyCountBadge" style="font-size: 0.8rem; background: rgba(11, 83, 148, 0.1); color: var(--color-primary); padding: 3px 10px; border-radius: 20px; margin-left: 6px;">
-                                0 vidéo
-                            </span>
-                        </div>
-                        <button type="button" id="btnRefreshHistory" class="btn-action-sm" style="max-width: 130px;">
-                            <span>🔄</span> Actualiser
-                        </button>
-                    </div>
+                <!-- Barre d'Onglets Moderne -->
+                <div class="profile-tabs-nav" role="tablist">
+                    <button type="button" class="profile-tab-btn active" id="tabBtnVideos" role="tab" aria-selected="true">
+                        <span>🎬</span> <span>Vidéos Traduites</span>
+                        <span class="tab-badge" id="historyCountBadge">0 vidéo</span>
+                    </button>
+                    <button type="button" class="profile-tab-btn" id="tabBtnCards" role="tab" aria-selected="false">
+                        <span>🎴</span> <span>Fiches Vocabulaire 9:16</span>
+                        <span class="tab-badge" id="cardsCountBadge">0 fiche</span>
+                        <span class="tab-badge-new">✨ Nouveau</span>
+                    </button>
+                </div>
 
-                    <!-- Loader Shimmer Skeletons (UX Latency Masking) -->
-                    <div id="videoHistoryLoading" style="display: flex; flex-direction: column; gap: 14px; padding: 10px 0;">
-                        <div class="aya-skeleton-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div class="aya-skeleton aya-skeleton-title"></div>
-                                <div class="aya-skeleton" style="width: 70px; height: 22px; border-radius: 20px;"></div>
+                <!-- ONGLET 1 : Historique Vidéos -->
+                <div id="tabContentVideos">
+                    <section class="profile-card" style="min-height: 520px;">
+                        <div class="history-header">
+                            <div class="profile-card-title" id="historyTitleText" style="font-size: 1.25rem;">
+                                <span>🎬</span> Historique de mes Vidéos
                             </div>
-                            <div class="aya-skeleton aya-skeleton-line" style="width: 45%;"></div>
-                            <div class="aya-skeleton-actions">
-                                <div class="aya-skeleton aya-skeleton-btn"></div>
-                                <div class="aya-skeleton aya-skeleton-btn"></div>
-                                <div class="aya-skeleton aya-skeleton-btn" style="max-width: 44px;"></div>
+                            <button type="button" id="btnRefreshHistory" class="btn-action-sm" style="max-width: 130px;">
+                                <span>🔄</span> Actualiser
+                            </button>
+                        </div>
+
+                        <!-- Loader Shimmer Skeletons (UX Latency Masking) -->
+                        <div id="videoHistoryLoading" style="display: flex; flex-direction: column; gap: 14px; padding: 10px 0;">
+                            <div class="aya-skeleton-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="aya-skeleton aya-skeleton-title"></div>
+                                    <div class="aya-skeleton" style="width: 70px; height: 22px; border-radius: 20px;"></div>
+                                </div>
+                                <div class="aya-skeleton aya-skeleton-line" style="width: 45%;"></div>
+                                <div class="aya-skeleton-actions">
+                                    <div class="aya-skeleton aya-skeleton-btn"></div>
+                                    <div class="aya-skeleton aya-skeleton-btn"></div>
+                                    <div class="aya-skeleton aya-skeleton-btn" style="max-width: 44px;"></div>
+                                </div>
+                            </div>
+                            <div class="aya-skeleton-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="aya-skeleton aya-skeleton-title" style="width: 60%;"></div>
+                                    <div class="aya-skeleton" style="width: 70px; height: 22px; border-radius: 20px;"></div>
+                                </div>
+                                <div class="aya-skeleton aya-skeleton-line" style="width: 35%;"></div>
+                                <div class="aya-skeleton-actions">
+                                    <div class="aya-skeleton aya-skeleton-btn"></div>
+                                    <div class="aya-skeleton aya-skeleton-btn"></div>
+                                    <div class="aya-skeleton aya-skeleton-btn" style="max-width: 44px;"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="aya-skeleton-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div class="aya-skeleton aya-skeleton-title" style="width: 60%;"></div>
-                                <div class="aya-skeleton" style="width: 70px; height: 22px; border-radius: 20px;"></div>
+
+                        <!-- État Vide -->
+                        <div id="videoHistoryEmpty" class="empty-history-box" style="display: none;">
+                            <span class="empty-history-icon">🎥</span>
+                            <h3 id="historyEmptyTitle" style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
+                                Aucune vidéo générée pour le moment
+                            </h3>
+                            <p id="historyEmptySub" style="color: var(--text-secondary); max-width: 440px; font-size: 0.92rem;">
+                                Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.
+                            </p>
+                            <a href="/traduction" class="btn-nav-link" id="btnStartFirstTrad" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff;">
+                                <span>✨</span> Lancer une première traduction
+                            </a>
+                        </div>
+
+                        <!-- Grille des Vidéos -->
+                        <div id="videoHistoryGrid" class="video-grid" style="display: none;"></div>
+                    </section>
+                </div>
+
+                <!-- ONGLET 2 : Fiches Vocabulaire 9:16 (Premium) -->
+                <div id="tabContentCards" style="display: none;">
+                    <section class="profile-card" style="min-height: 520px;">
+                        <div class="history-header">
+                            <div>
+                                <div class="profile-card-title" style="font-size: 1.25rem;">
+                                    <span>🎴</span> Fiches Vocabulaire & Audio 9:16
+                                </div>
+                                <p style="font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px;">
+                                    Fiches éducatives bilingues (FR / Arabe Shami) prêtes à publier sur TikTok & Réels.
+                                </p>
                             </div>
-                            <div class="aya-skeleton aya-skeleton-line" style="width: 35%;"></div>
-                            <div class="aya-skeleton-actions">
-                                <div class="aya-skeleton aya-skeleton-btn"></div>
-                                <div class="aya-skeleton aya-skeleton-btn"></div>
-                                <div class="aya-skeleton aya-skeleton-btn" style="max-width: 44px;"></div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button type="button" id="btnRefreshCards" class="btn-action-sm" style="max-width: 130px;">
+                                    <span>🔄</span> Actualiser
+                                </button>
+                                <button type="button" id="btnOpenVocabModal" class="btn-primary" style="padding: 9px 18px; font-size: 0.9rem; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span>➕</span> Nouvelle Fiche 9:16
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- État Vide -->
-                    <div id="videoHistoryEmpty" class="empty-history-box" style="display: none;">
-                        <span class="empty-history-icon">🎥</span>
-                        <h3 id="historyEmptyTitle" style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
-                            Aucune vidéo générée pour le moment
-                        </h3>
-                        <p id="historyEmptySub" style="color: var(--text-secondary); max-width: 440px; font-size: 0.92rem;">
-                            Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.
-                        </p>
-                        <a href="/traduction" class="btn-nav-link" id="btnStartFirstTrad" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff;">
-                            <span>✨</span> Lancer une première traduction
-                        </a>
-                    </div>
+                        <!-- Loader Shimmer Skeletons Fiches -->
+                        <div id="cardsHistoryLoading" style="display: flex; flex-direction: column; gap: 14px; padding: 10px 0;">
+                            <div class="aya-skeleton-card">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div class="aya-skeleton aya-skeleton-title" style="width: 50%;"></div>
+                                    <div class="aya-skeleton" style="width: 80px; height: 22px; border-radius: 20px;"></div>
+                                </div>
+                                <div class="aya-skeleton aya-skeleton-line" style="width: 70%;"></div>
+                                <div class="aya-skeleton aya-skeleton-actions">
+                                    <div class="aya-skeleton aya-skeleton-btn"></div>
+                                    <div class="aya-skeleton aya-skeleton-btn"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Grille des Vidéos -->
-                    <div id="videoHistoryGrid" class="video-grid" style="display: none;"></div>
-                </section>
+                        <!-- État Vide Fiches -->
+                        <div id="cardsHistoryEmpty" class="empty-history-box" style="display: none;">
+                            <span class="empty-history-icon">🎴</span>
+                            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary);">
+                                Aucune fiche de vocabulaire générée
+                            </h3>
+                            <p style="color: var(--text-secondary); max-width: 460px; font-size: 0.92rem;">
+                                Créez instantanément des fiches 9:16 avec translittération bilatérale (arabe/français) et audio double voix natif avec silences pédagogiques.
+                            </p>
+                            <button type="button" id="btnEmptyCreateCard" class="btn-nav-link" style="margin-top: 8px; background: var(--color-turquoise); border-color: var(--color-turquoise); color: #fff; cursor: pointer;">
+                                <span>✨</span> Créer ma première fiche (1 Crédit)
+                            </button>
+                        </div>
+
+                        <!-- Grille des Fiches Vocabulaire -->
+                        <div id="cardsHistoryGrid" class="vocab-grid" style="display: none;"></div>
+                    </section>
+                </div>
 
             </div>
 
@@ -308,19 +377,266 @@
         </div>
     </div>
 
-    <!-- Modal Lecteur Vidéo Plein Écran -->
-    <div class="aya-modal-backdrop" id="videoPreviewModal" style="display: none;">
-        <div class="aya-modal-content" style="max-width: 640px; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 id="modalVideoTitle" style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    Lecture Vidéo
-                </h3>
-                <button type="button" id="btnCloseVideoModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;">
+    <!-- Modal Créateur Fiches Vocabulaire 9:16 (Premium Sprint J3) -->
+    <div class="aya-modal-backdrop" id="vocabCreateModal" style="display: none;">
+        <div class="aya-modal-content vocab-modal-content">
+            <!-- Entête Modal -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+                        <span>✨</span> Créateur de Fiches Vocabulaire 9:16
+                    </h3>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">
+                        Format TikTok & Réels avec prononciation double voix native (FR + Arabe Shami).
+                    </p>
+                </div>
+                <button type="button" id="btnCloseVocabCreateModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;" title="Fermer">
                     ✕
                 </button>
             </div>
-            <div style="background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; max-height: 480px;">
-                <video id="modalVideoPlayer" controls preload="metadata" style="width: 100%; max-height: 480px;"></video>
+
+            <!-- Bannière Coût & Solde Utilisateur -->
+            <div id="vocabWalletBanner" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(0, 188, 212, 0.08); border: 1px solid rgba(0, 188, 212, 0.3); border-radius: 12px; margin-bottom: 18px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.2rem;">💳</span>
+                    <div>
+                        <div style="font-size: 0.88rem; font-weight: 700; color: var(--color-primary);">
+                            Coût : 1 crédit par fiche complète
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-secondary);">
+                            Votre solde : <strong id="vocabModalUserCredits" style="color: #00838f;">--</strong> crédit(s) disponible(s)
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="btnVocabRechargeFast" class="btn-action-sm primary" style="max-width: 140px; font-size: 0.8rem; padding: 6px 12px;">
+                    <span>⚡</span> Recharger
+                </button>
+            </div>
+
+            <!-- Alerte Solde Épuisé (Conditionnelle) -->
+            <div id="vocabZeroCreditAlert" style="display: none; padding: 12px 14px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; margin-bottom: 18px; color: #dc2626; font-size: 0.88rem; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>⚠️</span>
+                    <span>Votre solde est épuisé (0 crédit). Rechargez pour lancer la génération.</span>
+                </div>
+                <button type="button" id="btnVocabRechargeAlert" class="btn-action-sm danger" style="padding: 5px 12px; font-size: 0.8rem;">
+                    Recharger
+                </button>
+            </div>
+
+            <!-- Formulaire de Configuration -->
+            <form id="vocabGenerateForm" onsubmit="return false;">
+                <!-- 1. Thèmes suggérés rapides -->
+                <div style="margin-bottom: 16px;">
+                    <label class="profile-form-label" style="display: block; margin-bottom: 4px;">
+                        1. Thèmes populaires (Sélection en 1 clic) :
+                    </label>
+                    <div class="theme-chips-container" id="themeChipsContainer">
+                        <span class="theme-chip active" data-theme="Solidarité & Espoir">🕊️ Solidarité & Espoir</span>
+                        <span class="theme-chip" data-theme="Palestine & Liberté">🍉 Palestine & Liberté</span>
+                        <span class="theme-chip" data-theme="Hospitalité & Quotidien">☕ Hospitalité & Quotidien</span>
+                        <span class="theme-chip" data-theme="Fraternité & Partage">🤝 Fraternité & Partage</span>
+                        <span class="theme-chip" data-theme="Nature & Oliviers">🌿 Nature & Oliviers</span>
+                        <span class="theme-chip" data-theme="Courage & Patience">💪 Courage & Patience</span>
+                    </div>
+                </div>
+
+                <!-- 2. Thème personnalisé -->
+                <div style="margin-bottom: 16px;">
+                    <label for="vocabThemeInput" class="profile-form-label" style="display: block; margin-bottom: 4px;">
+                        2. Ou saisissez votre thème personnalisé :
+                    </label>
+                    <input type="text" id="vocabThemeInput" class="profile-input" placeholder="Ex: Les salutations amicales, la cuisine de grand-mère..." value="Solidarité & Espoir" maxlength="80">
+                </div>
+
+                <!-- 3. Niveau de difficulté -->
+                <div style="margin-bottom: 16px;">
+                    <label class="profile-form-label" style="display: block; margin-bottom: 4px;">
+                        3. Niveau de difficulté pédagogique :
+                    </label>
+                    <div class="level-chips-container" id="levelChipsContainer">
+                        <div class="level-chip active" data-level="debutant">
+                            <span style="display: block; font-size: 1rem;">🟢</span>
+                            <span>Débutant</span>
+                            <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Mots simples du quotidien</small>
+                        </div>
+                        <div class="level-chip" data-level="intermediaire">
+                            <span style="display: block; font-size: 1rem;">🟡</span>
+                            <span>Intermédiaire</span>
+                            <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Expressions vivantes</small>
+                        </div>
+                        <div class="level-chip" data-level="avance">
+                            <span style="display: block; font-size: 1rem;">🔴</span>
+                            <span>Avancé</span>
+                            <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Vocabulaire poétique & nuancé</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Option Mots libres personnalisés -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label for="vocabCustomWordsInput" class="profile-form-label" style="margin-bottom: 0;">
+                            4. Mots spécifiques imposés (Facultatif) :
+                        </label>
+                        <small style="color: var(--text-secondary); font-size: 0.76rem;">Optionnel • 5 mots max</small>
+                    </div>
+                    <input type="text" id="vocabCustomWordsInput" class="profile-input" placeholder="Ex: Paix, Espoir, Famille, Pardon, Amour (séparés par virgules)">
+                </div>
+
+                <!-- Bouton d'Action Principal -->
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                    <button type="button" id="btnCancelVocabCreate" class="btn-action-sm" style="padding: 12px 20px;">
+                        Annuler
+                    </button>
+                    <button type="submit" id="btnSubmitVocabGenerate" class="btn-primary" style="padding: 12px 26px; border-radius: 12px; font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                        <span>⚡</span> <span id="btnSubmitVocabText">Générer ma Fiche 9:16 (1 Crédit)</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Écran de Progression en direct (Pendant la génération) -->
+            <div id="vocabProgressScreen" style="display: none; padding: 30px 10px; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 14px; animation: pulseOnlineGreen 1.5s infinite ease-in-out;">
+                    🎨
+                </div>
+                <h4 id="vocabProgressTitle" style="font-size: 1.2rem; font-weight: 800; color: var(--color-primary); margin-bottom: 8px;">
+                    Création de votre Fiche Vocabulaire 9:16 en cours...
+                </h4>
+                <p id="vocabProgressStep" style="color: var(--text-secondary); font-size: 0.95rem; max-width: 440px; margin: 0 auto 20px auto;">
+                    Étape 1/3 : Analyse sémantique & phonétique bilingue par Gemini Flash...
+                </p>
+                <div style="max-width: 380px; height: 8px; background: #e2e8f0; border-radius: 10px; margin: 0 auto; overflow: hidden;">
+                    <div id="vocabProgressBar" style="width: 25%; height: 100%; background: linear-gradient(90deg, #0b5394, #00bcd4); border-radius: 10px; transition: width 0.4s ease;"></div>
+                </div>
+                <small style="display: block; color: #94a3b8; margin-top: 14px; font-size: 0.78rem;">
+                    💡 Puppeteer génère le rendu visuel HD 1080×1920 tandis qu'Edge-TTS assemble la piste bilingue.
+                </small>
+            </div>
+
+            <!-- Écran de Résultat & Rendu Immédiat (Post-génération) -->
+            <div id="vocabResultScreen" style="display: none; margin-top: 10px;">
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <span style="font-size: 2rem;">🎉</span>
+                    <h4 style="font-size: 1.25rem; font-weight: 800; color: #059669; margin-top: 4px;">
+                        Fiche Vocabulaire Prête !
+                    </h4>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                        Votre livrable HD 1080×1920 et la piste audio ont été générés avec succès.
+                    </p>
+                </div>
+
+                <!-- Aperçu 9:16 + Lecteur Audio + Actions -->
+                <div class="vocab-render-preview">
+                    <!-- Vignette 9:16 responsive cliquable -->
+                    <div class="vocab-preview-img-wrap" id="vocabResultImgWrap" title="Cliquer pour afficher en plein écran" style="cursor: pointer;">
+                        <img id="vocabResultImg" src="" alt="Fiche Vocabulaire 9:16">
+                    </div>
+
+                    <!-- Pôle Audio, Mots & Téléchargement -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <span id="vocabResultLevelBadge" class="vocab-tag-pill">DÉBUTANT</span>
+                            <h4 id="vocabResultTitleFr" style="font-size: 1.15rem; font-weight: 800; color: var(--color-primary); margin-top: 4px;">--</h4>
+                            <p id="vocabResultTitleAr" style="font-family: var(--font-arabic); font-size: 1.25rem; font-weight: 800; color: #00838f;">--</p>
+                        </div>
+
+                        <!-- Lecteur Audio HTML5 -->
+                        <div>
+                            <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                                <span>🎙️</span> Prononciation Bilingue Native (FR + Shami) :
+                            </label>
+                            <audio id="vocabResultAudio" controls class="vocab-audio-player"></audio>
+                        </div>
+
+                        <!-- Liste compacte des 5 mots générés -->
+                        <div class="vocab-words-preview-list" id="vocabResultWordsList"></div>
+
+                        <!-- Boutons de Téléchargement Directs -->
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+                            <a id="btnDownloadCardJpg" href="#" download class="btn-vocab-download primary">
+                                <span>⬇️</span> Télécharger la Fiche HD (.jpg 1080×1920)
+                            </a>
+                            <a id="btnDownloadCardMp3" href="#" download class="btn-vocab-download secondary">
+                                <span>🎵</span> Télécharger l'Audio (.mp3)
+                            </a>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                            <button type="button" id="btnVocabCreateAnother" class="btn-action-sm" style="padding: 8px 16px;">
+                                <span>➕</span> Créer une autre fiche
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Visualisation Détail d'une Fiche de l'Historique -->
+    <div class="aya-modal-backdrop" id="vocabDetailModal" style="display: none;">
+        <div class="aya-modal-content vocab-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                <div>
+                    <h3 id="detailCardTitleFr" style="font-size: 1.2rem; font-weight: 800; color: var(--color-primary);">
+                        Fiche Vocabulaire
+                    </h3>
+                    <p id="detailCardTitleAr" style="font-family: var(--font-arabic); font-size: 1.15rem; font-weight: 800; color: #00838f;">--</p>
+                </div>
+                <button type="button" id="btnCloseVocabDetailModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;" title="Fermer">
+                    ✕
+                </button>
+            </div>
+
+            <div class="vocab-render-preview">
+                <div class="vocab-preview-img-wrap">
+                    <img id="detailCardImg" src="" alt="Fiche 9:16">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div>
+                        <span id="detailCardLevelBadge" class="vocab-tag-pill">DÉBUTANT</span>
+                        <div id="detailCardDate" style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 4px;">📅 --</div>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                            <span>🎙️</span> Prononciation Bilingue :
+                        </label>
+                        <audio id="detailCardAudio" controls class="vocab-audio-player"></audio>
+                    </div>
+
+                    <div class="vocab-words-preview-list" id="detailCardWordsList"></div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                        <a id="btnDetailDownloadJpg" href="#" download class="btn-vocab-download primary">
+                            <span>⬇️</span> Télécharger la Fiche HD (.jpg)
+                        </a>
+                        <a id="btnDetailDownloadMp3" href="#" download class="btn-vocab-download secondary">
+                            <span>🎵</span> Télécharger l'Audio (.mp3)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmation Suppression Fiche -->
+    <div class="aya-modal-backdrop" id="vocabDeleteModal" style="display: none;">
+        <div class="aya-modal-content" style="max-width: 440px; padding: 24px; text-align: center;">
+            <div style="font-size: 2.8rem; margin-bottom: 12px;">🗑️</div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: #dc2626; margin-bottom: 8px;">
+                Supprimer cette fiche ?
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.5; margin-bottom: 22px;">
+                Cette action supprimera définitivement la fiche de vocabulaire ainsi que ses fichiers image HD et audio associés.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 12px;">
+                <button type="button" id="btnCancelDeleteCard" class="btn-action-sm" style="padding: 10px 20px;">
+                    Annuler
+                </button>
+                <button type="button" id="btnConfirmDeleteCard" class="btn-action-sm danger" style="padding: 10px 24px; font-weight: 700;">
+                    Confirmer la suppression
+                </button>
             </div>
         </div>
     </div>

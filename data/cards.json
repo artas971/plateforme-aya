@@ -1,0 +1,66 @@
+[
+  {
+    "id": "vcard_1790123899613_zsnx7",
+    "user": "aya",
+    "username": "@aya",
+    "theme": "Palestine & Liberté",
+    "level": "debutant",
+    "titleFr": "PALESTINE & LIBERTÉ",
+    "titleAr": "فِلَسْطِينُ وَالْحُرِّيَّةُ",
+    "imageUrl": "/uploads/cards/vcard_1790123899613_zsnx7.jpg",
+    "imageFilename": "vcard_1790123899613_zsnx7.jpg",
+    "audioUrl": "/uploads/cards/vcard_1790123899613_zsnx7.mp3",
+    "audioFilename": "vcard_1790123899613_zsnx7.mp3",
+    "words": [
+      {
+        "french": "LIBERTÉ",
+        "arabic": "الْحُرِّيَّةُ",
+        "phoneticFr": "Al-Hour-riy-yah",
+        "phoneticAr": "لِيبَيْرْتِه",
+        "icon": "🕊️",
+        "ttsFrench": "Liberté",
+        "ttsArabic": "الْحُرِّيَّةُ"
+      },
+      {
+        "french": "PAIX",
+        "arabic": "السَّلَامُ",
+        "phoneticFr": "As-Sa-lam",
+        "phoneticAr": "پِي",
+        "icon": "🌿",
+        "ttsFrench": "Paix",
+        "ttsArabic": "السَّلَامُ"
+      },
+      {
+        "french": "TERRE",
+        "arabic": "الأَرْضُ",
+        "phoneticFr": "Al-Ard",
+        "phoneticAr": "تَيْرْ",
+        "icon": "🌍",
+        "ttsFrench": "Terre",
+        "ttsArabic": "الأَرْضُ"
+      },
+      {
+        "french": "ESPOIR",
+        "arabic": "الأَمَلُ",
+        "phoneticFr": "Al-A-mal",
+        "phoneticAr": "إِسْبُوَّارْ",
+        "icon": "⭐",
+        "ttsFrench": "Espoir",
+        "ttsArabic": "الأَمَلُ"
+      },
+      {
+        "french": "DIGANTÉ",
+        "arabic": "الصُّمُودُ",
+        "phoneticFr": "As-Sou-moud",
+        "phoneticAr": "رِزِيسْطَانْسْ",
+        "icon": "✊",
+        "ttsFrench": "Résistance",
+        "ttsArabic": "الصُّمُودُ"
+      }
+    ],
+    "costCredits": 1,
+    "status": "completed",
+    "createdAt": "2026-09-23T00:38:56.256Z",
+    "updatedAt": "2026-09-23T00:38:56.256Z"
+  }
+]
