@@ -117,9 +117,31 @@ Réponds STRICTEMENT au format JSON suivant :
 }`;
 
     const levelText = level === 'avance' ? 'avancé' : level === 'intermediaire' ? 'intermédiaire' : 'débutant';
-    const userPrompt = customWords && Array.isArray(customWords) && customWords.length > 0
-        ? `Génère la fiche éducative pour ces 5 mots précis : ${customWords.slice(0, 5).join(', ')}. Niveau adapté : ${levelText}.`
-        : `Génère 5 mots essentiels et poignants sur le thème : "${theme || 'solidarite_et_espoir'}". Niveau de difficulté adapté : ${levelText}.`;
+
+    // Normalisation robuste du tableau customWords
+    let cleanCustomWords = null;
+    if (customWords) {
+        if (Array.isArray(customWords)) {
+            cleanCustomWords = customWords.map(w => (typeof w === 'string' ? w.trim() : '')).filter(Boolean).slice(0, 5);
+        } else if (typeof customWords === 'string' && customWords.trim()) {
+            cleanCustomWords = customWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean).slice(0, 5);
+        }
+    }
+
+    let userPrompt;
+    if (cleanCustomWords && cleanCustomWords.length > 0) {
+        if (cleanCustomWords.length >= 5) {
+            userPrompt = `Tu DOIS générer la fiche éducative pour ces 5 mots précis imposés par l'utilisateur : ${cleanCustomWords.join(', ')}. Niveau adapté : ${levelText}. Respecte scrupuleusement ces 5 mots sans en substituer aucun.`;
+        } else {
+            const missingCount = 5 - cleanCustomWords.length;
+            userPrompt = `L'utilisateur a imposé ${cleanCustomWords.length} mot(s) précis : ${cleanCustomWords.join(', ')}.
+Consigne impérative : Tu DOIS obligatoirement inclure ces ${cleanCustomWords.length} mot(s) exacts dans la fiche.
+Ensuite, pour respecter le gabarit obligatoire de 5 mots de l'affiche 9:16, invente et complète intelligemment avec exactement ${missingCount} mot(s) supplémentaire(s) pertinent(s) et en parfaite harmonie avec le thème "${theme || 'vocabulaire_quotidien'}".
+Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} mots imposés + les ${missingCount} mots complémentaires). Niveau adapté : ${levelText}.`;
+        }
+    } else {
+        userPrompt = `Génère 5 mots essentiels et poignants sur le thème : "${theme || 'solidarite_et_espoir'}". Niveau de difficulté adapté : ${levelText}.`;
+    }
 
     const models = [
         'gemini-2.5-flash',

@@ -37,7 +37,14 @@ router.post('/vocabulary-card', requireAuth, async (req, res) => {
         safeCustomWords = customWords
             .map(w => (typeof w === 'string' ? w.trim() : ''))
             .filter(Boolean)
-            .slice(0, 10);
+            .slice(0, 5);
+        if (safeCustomWords.length === 0) safeCustomWords = null;
+    } else if (typeof customWords === 'string' && customWords.trim()) {
+        safeCustomWords = customWords
+            .split(/[,;\n]+/)
+            .map(w => w.trim())
+            .filter(Boolean)
+            .slice(0, 5);
         if (safeCustomWords.length === 0) safeCustomWords = null;
     }
 

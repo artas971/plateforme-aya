@@ -747,32 +747,100 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Gestion du sélecteur de mode (Auto Thématique vs Saisie Manuelle)
+    let currentVocabMode = 'theme';
+    const btnModeTheme = document.getElementById('btnModeTheme');
+    const btnModeCustom = document.getElementById('btnModeCustom');
+    const panelModeTheme = document.getElementById('panelModeTheme');
+    const panelModeCustom = document.getElementById('panelModeCustom');
+    const btnClearCustomWords = document.getElementById('btnClearCustomWords');
+
+    if (btnModeTheme && btnModeCustom) {
+        btnModeTheme.addEventListener('click', () => {
+            currentVocabMode = 'theme';
+            btnModeTheme.classList.add('active');
+            btnModeCustom.classList.remove('active');
+            if (panelModeTheme) panelModeTheme.style.display = 'block';
+            if (panelModeCustom) panelModeCustom.style.display = 'none';
+        });
+
+        btnModeCustom.addEventListener('click', () => {
+            currentVocabMode = 'custom';
+            btnModeCustom.classList.add('active');
+            btnModeTheme.classList.remove('active');
+            if (panelModeTheme) panelModeTheme.style.display = 'none';
+            if (panelModeCustom) panelModeCustom.style.display = 'block';
+            const firstInput = document.getElementById('customWordInput1');
+            if (firstInput) firstInput.focus();
+        });
+    }
+
+    if (btnClearCustomWords) {
+        btnClearCustomWords.addEventListener('click', () => {
+            for (let i = 1; i <= 5; i++) {
+                const inp = document.getElementById(`customWordInput${i}`);
+                if (inp) inp.value = '';
+            }
+            const customTitleInp = document.getElementById('vocabCustomTitleInput');
+            if (customTitleInp) customTitleInp.value = '';
+            const firstInput = document.getElementById('customWordInput1');
+            if (firstInput) firstInput.focus();
+        });
+    }
+
     // Gestion de la soumission du formulaire de génération
     if (vocabGenerateForm) {
         vocabGenerateForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const theme = (vocabThemeInput?.value || '').trim() || 'Solidarité & Espoir';
-            const rawWords = (vocabCustomWordsInput?.value || '').trim();
-            const customWords = rawWords
-                ? rawWords.split(/[,;\n]+/).map(w => w.trim()).filter(Boolean)
-                : null;
+            let theme = 'Solidarité & Espoir';
+            let customWords = null;
+
+            if (currentVocabMode === 'custom') {
+                const wordsCollected = [];
+                for (let i = 1; i <= 5; i++) {
+                    const val = (document.getElementById(`customWordInput${i}`)?.value || '').trim();
+                    if (val) wordsCollected.push(val);
+                }
+
+                if (wordsCollected.length === 0) {
+                    showToast("Veuillez saisir au moins 1 mot ou choisir le mode thématique automatique.", "warning");
+                    return;
+                }
+
+                customWords = wordsCollected;
+                const customTitle = (document.getElementById('vocabCustomTitleInput')?.value || '').trim();
+                theme = customTitle || customWords.slice(0, 2).join(' & ') || 'Mots Choisis';
+            } else {
+                theme = (vocabThemeInput?.value || '').trim() || 'Solidarité & Espoir';
+                customWords = null;
+            }
 
             // Masquer le formulaire et afficher l'écran de progression
             vocabGenerateForm.style.display = 'none';
             vocabProgressScreen.style.display = 'block';
-            vocabProgressBar.style.width = '20%';
+            vocabProgressBar.style.width = '15%';
+            if (vocabProgressStep) vocabProgressStep.textContent = "Étape 1/4 : Analyse sémantique & phonétique par Gemini Flash...";
 
-            // Simulation d'étapes de progression pédagogique
-            const stepTimer1 = setTimeout(() => {
-                if (vocabProgressStep) vocabProgressStep.textContent = "Étape 2/3 : Rendu visuel 1080×1920 (Puppeteer Headless & Safe Zones)...";
-                if (vocabProgressBar) vocabProgressBar.style.width = '55%';
-            }, 3500);
-
-            const stepTimer2 = setTimeout(() => {
-                if (vocabProgressStep) vocabProgressStep.textContent = "Étape 3/3 : Synthèse vocale double voix (Henri + Sana) & silences pédagogiques...";
-                if (vocabProgressBar) vocabProgressBar.style.width = '85%';
-            }, 8500);
+            // Échelonnement réaliste de la progression sur les 20 à 25 secondes du pipeline
+            const stepTimers = [
+                setTimeout(() => {
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 2/4 : Rendu graphique HD 1080×1920 (Puppeteer Headless)...";
+                    if (vocabProgressBar) vocabProgressBar.style.width = '40%';
+                }, 3500),
+                setTimeout(() => {
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 3/4 : Synthèse neuronale bilingue (voix Henri + Sana)...";
+                    if (vocabProgressBar) vocabProgressBar.style.width = '65%';
+                }, 8500),
+                setTimeout(() => {
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 4/4 : Assemblage des 10 segments audio avec silences pédagogiques...";
+                    if (vocabProgressBar) vocabProgressBar.style.width = '85%';
+                }, 15000),
+                setTimeout(() => {
+                    if (vocabProgressStep) vocabProgressStep.textContent = "Finalisation de la fiche et enregistrement haute définition...";
+                    if (vocabProgressBar) vocabProgressBar.style.width = '95%';
+                }, 20000)
+            ];
 
             try {
                 const response = await fetch('/api/premium/vocabulary-card', {
@@ -788,8 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                 });
 
-                clearTimeout(stepTimer1);
-                clearTimeout(stepTimer2);
+                stepTimers.forEach(t => clearTimeout(t));
 
                 const data = await response.json();
 
@@ -856,8 +923,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadCardsHistory();
 
             } catch (err) {
-                clearTimeout(stepTimer1);
-                clearTimeout(stepTimer2);
+                stepTimers.forEach(t => clearTimeout(t));
                 console.error('[VOCAB CARD GENERATION ERROR]', err);
                 vocabProgressScreen.style.display = 'none';
                 vocabGenerateForm.style.display = 'block';

@@ -425,34 +425,98 @@
             </div>
 
             <!-- Formulaire de Configuration -->
+            <!-- Formulaire de Configuration -->
             <form id="vocabGenerateForm" onsubmit="return false;">
-                <!-- 1. Thèmes suggérés rapides -->
-                <div style="margin-bottom: 16px;">
-                    <label class="profile-form-label" style="display: block; margin-bottom: 4px;">
-                        1. Thèmes populaires (Sélection en 1 clic) :
+                <!-- Sélecteur de Mode : Auto Thématique vs Manuel Mot par Mot -->
+                <div style="margin-bottom: 18px;">
+                    <label class="profile-form-label" style="display: block; margin-bottom: 8px;">
+                        Mode de création de la fiche :
                     </label>
-                    <div class="theme-chips-container" id="themeChipsContainer">
-                        <span class="theme-chip active" data-theme="Solidarité & Espoir">🕊️ Solidarité & Espoir</span>
-                        <span class="theme-chip" data-theme="Palestine & Liberté">🍉 Palestine & Liberté</span>
-                        <span class="theme-chip" data-theme="Hospitalité & Quotidien">☕ Hospitalité & Quotidien</span>
-                        <span class="theme-chip" data-theme="Fraternité & Partage">🤝 Fraternité & Partage</span>
-                        <span class="theme-chip" data-theme="Nature & Oliviers">🌿 Nature & Oliviers</span>
-                        <span class="theme-chip" data-theme="Courage & Patience">💪 Courage & Patience</span>
+                    <div class="vocab-mode-toggle" id="vocabModeToggle">
+                        <button type="button" class="vocab-mode-btn active" id="btnModeTheme" data-mode="theme">
+                            <span class="mode-icon">🤖</span>
+                            <span class="mode-text">Génération par Thème (Auto IA)</span>
+                        </button>
+                        <button type="button" class="vocab-mode-btn" id="btnModeCustom" data-mode="custom">
+                            <span class="mode-icon">✍️</span>
+                            <span class="mode-text">Saisie Manuelle (Mot par Mot)</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- 2. Thème personnalisé -->
-                <div style="margin-bottom: 16px;">
-                    <label for="vocabThemeInput" class="profile-form-label" style="display: block; margin-bottom: 4px;">
-                        2. Ou saisissez votre thème personnalisé :
-                    </label>
-                    <input type="text" id="vocabThemeInput" class="profile-input" placeholder="Ex: Les salutations amicales, la cuisine de grand-mère..." value="Solidarité & Espoir" maxlength="80">
+                <!-- PANNEAU 1 : Mode Automatique par Thème -->
+                <div id="panelModeTheme">
+                    <!-- 1. Thèmes suggérés rapides -->
+                    <div style="margin-bottom: 16px;">
+                        <label class="profile-form-label" style="display: block; margin-bottom: 4px;">
+                            1. Thèmes populaires (Sélection en 1 clic) :
+                        </label>
+                        <div class="theme-chips-container" id="themeChipsContainer">
+                            <span class="theme-chip active" data-theme="Solidarité & Espoir">🕊️ Solidarité & Espoir</span>
+                            <span class="theme-chip" data-theme="Palestine & Liberté">🍉 Palestine & Liberté</span>
+                            <span class="theme-chip" data-theme="Hospitalité & Quotidien">☕ Hospitalité & Quotidien</span>
+                            <span class="theme-chip" data-theme="Fraternité & Partage">🤝 Fraternité & Partage</span>
+                            <span class="theme-chip" data-theme="Nature & Oliviers">🌿 Nature & Oliviers</span>
+                            <span class="theme-chip" data-theme="Courage & Patience">💪 Courage & Patience</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Thème personnalisé -->
+                    <div style="margin-bottom: 16px;">
+                        <label for="vocabThemeInput" class="profile-form-label" style="display: block; margin-bottom: 4px;">
+                            2. Ou saisissez votre thème personnalisé :
+                        </label>
+                        <input type="text" id="vocabThemeInput" class="profile-input" placeholder="Ex: Les salutations amicales, la cuisine de grand-mère..." value="Solidarité & Espoir" maxlength="80">
+                    </div>
                 </div>
 
-                <!-- 3. Niveau de difficulté -->
+                <!-- PANNEAU 2 : Mode Manuel Mot par Mot -->
+                <div id="panelModeCustom" style="display: none; margin-bottom: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="profile-form-label" style="margin-bottom: 0;">
+                            Vos 5 mots personnalisés :
+                        </label>
+                        <button type="button" id="btnClearCustomWords" class="btn-clear-words" title="Effacer tous les champs">
+                            🗑️ Tout effacer
+                        </button>
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 12px;">
+                        Saisissez les mots à traduire. Si vous en indiquez entre 1 et 4, l'IA complétera harmonieusement pour atteindre le format 9:16 complet (5 mots).
+                    </p>
+
+                    <!-- Titre facultatif de la fiche manuelle -->
+                    <div style="margin-bottom: 12px;">
+                        <input type="text" id="vocabCustomTitleInput" class="profile-input" placeholder="Titre de votre fiche (Facultatif - ex: Mes mots du cœur)" maxlength="60" style="font-size: 0.88rem;">
+                    </div>
+
+                    <div class="custom-words-grid">
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">1</span>
+                            <input type="text" class="custom-word-input" id="customWordInput1" placeholder="Ex: Liberté" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">2</span>
+                            <input type="text" class="custom-word-input" id="customWordInput2" placeholder="Ex: Solidarité" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">3</span>
+                            <input type="text" class="custom-word-input" id="customWordInput3" placeholder="Ex: Espoir" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">4</span>
+                            <input type="text" class="custom-word-input" id="customWordInput4" placeholder="Ex: Paix" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">5</span>
+                            <input type="text" class="custom-word-input" id="customWordInput5" placeholder="Ex: Courage" maxlength="40">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Niveau de difficulté (Commun aux 2 modes) -->
                 <div style="margin-bottom: 16px;">
                     <label class="profile-form-label" style="display: block; margin-bottom: 4px;">
-                        3. Niveau de difficulté pédagogique :
+                        Niveau de difficulté pédagogique :
                     </label>
                     <div class="level-chips-container" id="levelChipsContainer">
                         <div class="level-chip active" data-level="debutant">
@@ -471,17 +535,6 @@
                             <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Vocabulaire poétique & nuancé</small>
                         </div>
                     </div>
-                </div>
-
-                <!-- 4. Option Mots libres personnalisés -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <label for="vocabCustomWordsInput" class="profile-form-label" style="margin-bottom: 0;">
-                            4. Mots spécifiques imposés (Facultatif) :
-                        </label>
-                        <small style="color: var(--text-secondary); font-size: 0.76rem;">Optionnel • 5 mots max</small>
-                    </div>
-                    <input type="text" id="vocabCustomWordsInput" class="profile-input" placeholder="Ex: Paix, Espoir, Famille, Pardon, Amour (séparés par virgules)">
                 </div>
 
                 <!-- Bouton d'Action Principal -->
