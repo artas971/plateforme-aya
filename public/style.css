@@ -3711,7 +3711,7 @@ html[dir="rtl"] .step-content p {
 
 @media (max-width: 768px) {
     .aya-cookie-banner {
-        bottom: 12px;
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
         width: calc(100% - 24px);
         padding: 14px 16px;
     }
@@ -3740,7 +3740,8 @@ html[dir="rtl"] .step-content p {
     text-align: center;
     font-size: 0.84rem;
     border-top: 1px solid #1e293b;
-    margin-top: auto;
+    margin-top: 40px;
+    border-radius: 14px;
     width: 100%;
     box-sizing: border-box;
     font-family: var(--font-ui, 'Plus Jakarta Sans', sans-serif);
@@ -3792,6 +3793,24 @@ html[dir="rtl"] .step-content p {
     margin: 0;
     color: #64748b;
     font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .aya-legal-footer {
+        padding: 22px 16px calc(24px + env(safe-area-inset-bottom, 0px)) 16px;
+        margin-top: 28px;
+        margin-bottom: 24px;
+        border-radius: 12px;
+    }
+    .aya-legal-footer-links {
+        gap: 10px 14px;
+    }
+    .aya-legal-footer-links a {
+        font-size: 0.82rem;
+    }
+    .aya-legal-footer-copyright {
+        font-size: 0.76rem;
+    }
 }
 
 /* ==========================================================================
@@ -4926,7 +4945,7 @@ html[dir="rtl"] .step-content p {
         bottom: 0;
         left: 0;
         right: 0;
-        z-index: 1000;
+        z-index: 10000;
         height: 60px;
         background: rgba(15, 23, 42, 0.96);
         backdrop-filter: blur(18px);

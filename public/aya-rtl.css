@@ -545,3 +545,17 @@ html[dir="rtl"] .sheet-card-arrow {
     transform: scaleX(-1);
 }
 
+/* ── Harmonisation du Footer Légal & Solidaire en RTL (TICKET-19) ── */
+html[dir="rtl"] .aya-legal-footer {
+    direction: rtl;
+    text-align: center;
+}
+
+html[dir="rtl"] .aya-legal-footer-links {
+    direction: rtl;
+}
+
+html[dir="rtl"] .aya-legal-footer-copyright {
+    direction: rtl;
+    font-family: var(--font-arabic) !important;
+}

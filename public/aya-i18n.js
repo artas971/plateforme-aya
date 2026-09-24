@@ -345,6 +345,7 @@
             // Liens Pied de Page Légal & Solidaire
             footerCguLink: 'Conditions Générales (CGU/CGV)',
             footerPrivacyLink: 'Politique de Confidentialité (RGPD)',
+            footerMentionsLink: 'Mentions Légales',
             footerPaypalLink: '❤️ Soutenir l\'équipe (PayPal)',
             footerCopyright: '© 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.',
 
@@ -730,6 +731,7 @@
             // Liens Pied de Page Légal & Solidaire
             footerCguLink: 'الشروط العامة (CGU/CGV)',
             footerPrivacyLink: 'سياسة الخصوصية (RGPD)',
+            footerMentionsLink: 'البيانات القانونية',
             footerPaypalLink: '❤️ دعم الفريق (PayPal)',
             footerCopyright: '© 2026 استوديو آية — منصة الترجمة والدبلجة التضامنية. جميع الحقوق محفوظة.',
 
@@ -1164,21 +1166,8 @@
             }
         }
 
-        // Mise à jour des liens du pied de page légal & solidaire
-        const legalFooter = document.querySelector('.aya-legal-footer');
-        if (legalFooter) {
-            const cguLink = legalFooter.querySelector('a[href*="cgu"]');
-            if (cguLink) cguLink.textContent = dict.footerCguLink;
-            const privLink = legalFooter.querySelector('a[href*="confidentialite"]');
-            if (privLink) privLink.textContent = dict.footerPrivacyLink;
-            const paypalLink = legalFooter.querySelector('a[href*="paypal"]');
-            if (paypalLink) {
-                paypalLink.textContent = dict.footerPaypalLink;
-                paypalLink.href = 'https://paypal.me/sosoxm2026';
-            }
-            const copyright = legalFooter.querySelector('.aya-legal-footer-copyright');
-            if (copyright) copyright.textContent = dict.footerCopyright;
-        }
+        // Mise à jour et hydratation multilingue du pied de page légal & solidaire (TICKET-19)
+        initSharedFooter();
 
         // Déclenchement d'un événement global pour les autres scripts
         window.dispatchEvent(new CustomEvent('aya:languageChanged', { detail: { lang, dict } }));
@@ -1203,6 +1192,39 @@
         } catch (e) {
             return null;
         }
+    }
+
+    // 2. bis. Harmonisation & Hydratation Automatisée du Footer Légal & Solidaire (TICKET-19)
+    function initSharedFooter() {
+        const footers = document.querySelectorAll('.aya-legal-footer, footer.app-footer');
+        const dict = translations[currentLang] || translations.fr;
+
+        footers.forEach(footer => {
+            // Normalisation de la classe CSS et du style standard
+            if (!footer.classList.contains('aya-legal-footer')) {
+                footer.className = 'aya-legal-footer';
+            }
+            if (!footer.getAttribute('style') || !footer.style.marginTop) {
+                footer.style.marginTop = '40px';
+                footer.style.borderRadius = '14px';
+            }
+
+            // Normalisation stricte et identique de la structure interne sur toutes les pages (TICKET-19)
+            footer.innerHTML = `
+                <div class="aya-legal-footer-inner">
+                    <div class="aya-legal-footer-links">
+                        <a href="/cgu.html">${dict.footerCguLink || 'Conditions Générales (CGU/CGV)'}</a>
+                        <span class="aya-legal-footer-sep">•</span>
+                        <a href="/confidentialite.html">${dict.footerPrivacyLink || 'Politique de Confidentialité (RGPD)'}</a>
+                        <span class="aya-legal-footer-sep">•</span>
+                        <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">${dict.footerPaypalLink || "❤️ Soutenir l'équipe (PayPal)"}</a>
+                    </div>
+                    <p class="aya-legal-footer-copyright">
+                        ${dict.footerCopyright || "© 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés."}
+                    </p>
+                </div>
+            `;
+        });
     }
 
     // 3. Construction de la Navbar Partagée Homogène & Navigation Moderne
@@ -1699,13 +1721,21 @@
         translations,
         setLanguage,
         initSharedNavbar,
+        initSharedFooter,
         getErrorInfo
     };
 
     // Initialisation automatique au chargement du DOM
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initSharedNavbar);
-    } else {
+    function initializeComponents() {
         initSharedNavbar();
+        initSharedFooter();
+        // Garantit l'application initiale des traductions sur l'ensemble de la page
+        setLanguage(currentLang);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeComponents);
+    } else {
+        initializeComponents();
     }
 })();

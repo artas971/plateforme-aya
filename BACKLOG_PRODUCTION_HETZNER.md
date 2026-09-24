@@ -7,9 +7,9 @@
 
 | Statut | Quantité | Description |
 | :--- | :---: | :--- |
-| **✅ RÉSOLUS (P0, P1, P2, P3)** | **18 / 19** | **18 tickets résolus, 1 nouveau ticket d'interface en cours** |
+| **✅ RÉSOLUS (P0, P1, P2, P3)** | **19 / 19** | **19 tickets résolus (100% du backlog complété)** |
 | **🟠 EN ATTENTE (P1 - Haute)** | **0** | Aucun ticket P1 restant (Garbage Collection, MongoDB TTL, SSE, Sauvegardes résolus) |
-| **🟡 EN ATTENTE (P2 - Moyenne)** | **1** | **[TICKET-19]** : Harmonisation globale de la footbar / footer selon `/communaute` |
+| **🟡 EN ATTENTE (P2 - Moyenne)** | **0** | Aucun ticket P2 restant (Footbar harmonisée, WCAG 44px, Safe-areas résolus) |
 | **⚪ EN ATTENTE (P3 - Confort)** | **0** | Aucun ticket P3 restant (Cache LRU, Onglets de filtrage, RTL résolus) |
 
 ---
@@ -36,6 +36,7 @@
 - **[TICKET-13]** ([#31](https://github.com/artas971/plateforme-aya/issues/31)) - **Clic Avatar / Nom pour Bascule Rapide en DM** - En-tête de bulle interactive `.chat-sender-clickable` pour préremplir instantanément la cible privée vers l'auteur. - **Priorité : P2 (RÉSOLU & FERMÉ)**
 - **[TICKET-14]** ([#32](https://github.com/artas971/plateforme-aya/issues/32)) - **Passage de Puppeteer en Warm Singleton avec Recyclage Périodique** - Classe `WarmBrowserManager` dans `services/vocabularyCardService.js` réduisant la latence de génération de 37% avec recyclage mémoire automatique. - **Priorité : P2 (RÉSOLU & FERMÉ)**
 - **[TICKET-15]** ([#33](https://github.com/artas971/plateforme-aya/issues/33)) - **Agrandissement des Cibles Tactiles Mobile (Conformité WCAG 44px)** - Cibles minimales 44 × 44 px sur les actions tactiles. - **Priorité : P2 (RÉSOLU & FERMÉ)**
+- **[TICKET-19]** ([#38](https://github.com/artas971/plateforme-aya/issues/38)) - **Harmonisation Globale de la Footbar / Footer sur Toutes les Pages** - Standardisation et déploiement du pied de page légal et solidaire (CGU/CGV, Politique de Confidentialité RGPD, Soutien PayPal solidaire, Copyright 2026) calqué à 100% sur le modèle validé de la page `/communaute`. Déploiement sur `fiches.html`, `traduction.html`, `traducteur.html`, `mentions-legales.html`, `moderation.html`, `index.html`, `studio.html`, `admin.html`, avec hydratation multilingue temps réel (FR/AR) via `aya-i18n.js` et adaptation safe-area mobile. - **Priorité : P2 (RÉSOLU & FERMÉ)**
 
 ### ⚪ Priorité P3 : Confort Avancé, Cache & Typographie :
 - **[TICKET-16]** ([#34](https://github.com/artas971/plateforme-aya/issues/34)) - **Barre d'Onglets de Filtrage du Chat (`Général` / `DMs`)** - Filtrage instantané côté client. - **Priorité : P3 (RÉSOLU & FERMÉ)**
@@ -48,8 +49,6 @@
 
 ---
 
-## 🟡 TICKETS EN ATTENTE D'IMPLÉMENTATION
-
-### 🟡 Priorité P2 : Ergonomie & Cohérence UI :
-- **[TICKET-19]** ([#38](https://github.com/artas971/plateforme-aya/issues/38)) - **Harmonisation Globale de la Footbar / Footer sur Toutes les Pages** - Standardisation et déploiement du pied de page légal et solidaire (CGU/CGV, Politique de Confidentialité RGPD, Soutien PayPal solidaire, Copyright 2026) calqué à 100% sur le modèle validé de la page `/communaute` ([modèle de référence](https://rugby-practitioner-mere-brian.trycloudflare.com/communaute)). Déploiement sur `fiches.html`, `traduction.html`, `traducteur.html`, `mentions-legales.html`, `moderation.html`, `index.html`, avec hydratation multilingue temps réel (FR/AR) via `aya-i18n.js` et adaptation safe-area mobile. - **Priorité : P2 (EN ATTENTE)**
+## 🟢 BACKLOG INTÉGRALEMENT RÉSOLU (19 / 19)
+Toutes les priorités (P0, P1, P2, P3) et tickets d'orchestration ont été rigoureusement implémentés, testés et harmonisés.
 

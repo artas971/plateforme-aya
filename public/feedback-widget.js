@@ -36,6 +36,32 @@
             border-color: #FFFFFF;
         }
 
+        /* Adaptation Mobile : Dégagement de la Bottom Navigation Bar (72px + safe area) */
+        @media (max-width: 768px) {
+            .aya-feedback-btn {
+                bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+                right: 12px;
+                padding: 0.45rem 0.85rem;
+                font-size: 0.78rem;
+                border-radius: 20px;
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            }
+        }
+
+        [dir="rtl"] .aya-feedback-btn,
+        html[dir="rtl"] .aya-feedback-btn {
+            right: auto;
+            left: 24px;
+        }
+
+        @media (max-width: 768px) {
+            [dir="rtl"] .aya-feedback-btn,
+            html[dir="rtl"] .aya-feedback-btn {
+                right: auto;
+                left: 12px;
+            }
+        }
+
         .aya-feedback-overlay {
             position: fixed;
             inset: 0;

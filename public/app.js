@@ -708,9 +708,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setInnerHTML('footerText', dict.footerText);
         setInnerHTML('footerCguLink', dict.footerCgu || (lang === 'ar' ? 'الشروط العامة (CGU/CGV)' : 'Conditions Générales (CGU/CGV)'));
         setInnerHTML('footerPrivacyLink', dict.footerPrivacy || (lang === 'ar' ? 'سياسة الخصوصية (RGPD)' : 'Politique de Confidentialité (RGPD)'));
-        setInnerHTML('footerSupportLink', dict.footerSupport || (lang === 'ar' ? '❤️ دعم الفريق (PayPal)' : '❤️ Soutenir l\'équipe (PayPal)'));
-        const footerSupportLinkEl = document.getElementById('footerSupportLink');
-        if (footerSupportLinkEl) footerSupportLinkEl.href = 'https://paypal.me/sosoxm2026';
+        const footerSupportLinkEl = document.getElementById('footerSupportLink') || document.querySelector('.aya-legal-footer-paypal');
+        if (footerSupportLinkEl) {
+            footerSupportLinkEl.innerHTML = dict.footerSupport || (lang === 'ar' ? '❤️ دعم الفريق (PayPal)' : '❤️ Soutenir l\'équipe (PayPal)');
+            footerSupportLinkEl.href = 'https://paypal.me/sosoxm2026';
+        }
 
         // Pre-select opposite target language by default for existing audio selector
         if (selectAudioTargetLang) {

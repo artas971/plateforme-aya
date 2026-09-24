@@ -1386,17 +1386,15 @@
         </div>
     </section>
 
-    <!-- 7. Pied de page Légal Harmonisé -->
-    <footer class="aya-legal-footer">
+    <!-- Pied de page Légal Harmonisé -->
+    <footer class="aya-legal-footer" style="margin-top: 40px; border-radius: 14px;">
         <div class="aya-legal-footer-inner">
             <div class="aya-legal-footer-links">
-                <a href="/mentions-legales.html">Mentions Légales</a>
-                <span class="aya-legal-footer-sep">•</span>
                 <a href="/cgu.html">Conditions Générales (CGU/CGV)</a>
                 <span class="aya-legal-footer-sep">•</span>
                 <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
                 <span class="aya-legal-footer-sep">•</span>
-                <a href="https://paypal.me/sosoxm2026" id="footerSupportLink" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+                <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
             <p class="aya-legal-footer-copyright">
                 © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
@@ -1640,9 +1638,11 @@
                 updateTxt('ctaFinalSub', d.ctaFinalSub);
                 updateTxt('btnCtaFinal', d.btnCtaFinal, true);
 
-                updateTxt('footerSupportLink', d.footerSupport);
-                const footerSup = document.getElementById('footerSupportLink');
-                if (footerSup) footerSup.href = 'https://paypal.me/sosoxm2026';
+                const footerSup = document.getElementById('footerSupportLink') || document.querySelector('.aya-legal-footer-paypal');
+                if (footerSup) {
+                    footerSup.textContent = d.footerSupport || (lang === 'ar' ? '❤️ دعم الفريق (PayPal)' : '❤️ Soutenir l\'équipe (PayPal)');
+                    footerSup.href = 'https://paypal.me/sosoxm2026';
+                }
                 const btnPaypalEl = document.getElementById('btnPaypal');
                 if (btnPaypalEl) btnPaypalEl.href = 'https://paypal.me/sosoxm2026';
 
