@@ -144,4 +144,31 @@ router.post('/api/payment/webhook', async (req, res) => {
     res.json({ received: true });
 });
 
+/**
+ * GET /api/payment/transactions : Récupère l'historique des achats de l'utilisateur connecté
+ */
+router.get('/api/payment/transactions', requireSessionUser, async (req, res) => {
+    try {
+        const { getUserTransactions } = require('../services/transactionService');
+        const userId = req.session.user.id || req.session.user.username;
+        const txs = await getUserTransactions(userId, 50);
+        return res.json({ success: true, transactions: txs });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * GET /api/impact/stats : Tableau de bord d'impact public pour la Palestine (Tickets #16 & #17)
+ */
+router.get('/api/impact/stats', async (req, res) => {
+    try {
+        const { getSolidarityImpactMetrics } = require('../services/financialMetricsService');
+        const metrics = await getSolidarityImpactMetrics();
+        return res.json(metrics);
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 module.exports = router;

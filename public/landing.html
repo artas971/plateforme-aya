@@ -848,6 +848,108 @@
             gap: 8px;
         }
 
+        /* Dashboard d'Impact Solidaire & Transparence (Tickets #16 & #17) */
+        .solidarity-impact-dashboard {
+            margin-top: 36px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(11, 83, 148, 0.12) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            padding: 30px 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            text-align: left;
+        }
+
+        .impact-header {
+            margin-bottom: 22px;
+        }
+
+        .impact-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--emerald);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .impact-header h3 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 6px 0;
+        }
+
+        .impact-header p {
+            font-size: 0.92rem;
+            color: #94a3b8;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .impact-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .impact-stat-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+        }
+
+        .impact-stat-card.highlight {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .impact-stat-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .impact-stat-value {
+            font-size: 1.65rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .impact-stat-card.highlight .impact-stat-value {
+            color: var(--emerald);
+        }
+
+        .impact-stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .impact-formula-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+        }
+
         .paypal-text p {
             margin: 0;
             font-size: 0.85rem;
@@ -1241,6 +1343,36 @@
                 <span>🕊️</span> Faire un don PayPal
             </a>
         </div>
+
+        <!-- Dashboard d'Impact Solidaire & Transparence (Tickets #16 & #17) -->
+        <div class="solidarity-impact-dashboard" id="solidarityImpactDashboard">
+            <div class="impact-header">
+                <div class="impact-header-badge"><span>🕊️</span> Modèle Solidaire & Éthique</div>
+                <h3 id="impactTitle">Dashboard d'Impact Collectif pour la Palestine</h3>
+                <p id="impactSub">En toute transparence : chaque pack de crédits finance les serveurs et reverse l'intégralité de sa marge nette au soutien sur le terrain.</p>
+            </div>
+            <div class="impact-stats-grid">
+                <div class="impact-stat-card">
+                    <span class="impact-stat-icon">🎬</span>
+                    <span class="impact-stat-value" id="impactStatVideos">15+</span>
+                    <span class="impact-stat-label">Vidéos traduites & archivées</span>
+                </div>
+                <div class="impact-stat-card highlight">
+                    <span class="impact-stat-icon">❤️</span>
+                    <span class="impact-stat-value" id="impactStatDonation">12,50 €</span>
+                    <span class="impact-stat-label">Fonds nets reversés au soutien</span>
+                </div>
+                <div class="impact-stat-card">
+                    <span class="impact-stat-icon">👥</span>
+                    <span class="impact-stat-value" id="impactStatContributors">12</span>
+                    <span class="impact-stat-label">Contributeurs engagés</span>
+                </div>
+            </div>
+            <div class="impact-formula-box">
+                <span class="formula-icon">📐</span>
+                <span class="formula-text"><strong>Formule mathématique de redistribution :</strong> [Prix payé TTC] - [Frais bancaires Stripe + Coût de Revient Unitaire technique (~0.05€)] = <strong>100% de la marge nette reversée</strong>.</span>
+            </div>
+        </div>
     </section>
 
     <!-- 6. Call To Action Final -->
@@ -1495,6 +1627,21 @@
             document.getElementById('btnLangFr').addEventListener('click', () => setLanguage('fr'));
             document.getElementById('btnLangAr').addEventListener('click', () => setLanguage('ar'));
             setLanguage(currentLang);
+
+            // Chargement dynamique du Dashboard d'Impact Solidaire (Tickets #16 & #17)
+            fetch('/api/impact/stats')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.summary) {
+                        const vidEl = document.getElementById('impactStatVideos');
+                        const donEl = document.getElementById('impactStatDonation');
+                        const usrEl = document.getElementById('impactStatContributors');
+                        if (vidEl && data.summary.totalVideosTranslated) vidEl.textContent = `${data.summary.totalVideosTranslated}+`;
+                        if (donEl && data.summary.estimatedSolidarityEur !== undefined) donEl.textContent = `${data.summary.estimatedSolidarityEur.toFixed(2).replace('.', ',')} €`;
+                        if (usrEl && data.summary.totalContributors) usrEl.textContent = `${data.summary.totalContributors}`;
+                    }
+                })
+                .catch(() => {});
         })();
     </script>
 

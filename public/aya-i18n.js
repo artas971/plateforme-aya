@@ -1227,7 +1227,7 @@
                 <div class="navbar-brand">
                     <a href="/chat-en-direct" class="brand-link" title="Aya Studio Accueil">
                         <div class="avatar-badge">
-                            <span class="avatar-initials">آية</span>
+                            <img src="/assets/logo_aya_icon.svg" alt="Aya Studio" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<span class=\'avatar-initials\'>آية</span>'">
                             <span class="status-dot"></span>
                         </div>
                         <div class="brand-text">

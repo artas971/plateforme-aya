@@ -1,5 +1,53 @@
 [
   {
+    "id": "fail_1790275534777_fwpxs",
+    "jobId": "1790275478932_video5884350021540781480.mp4",
+    "user": "john",
+    "username": "@john",
+    "userEmail": null,
+    "serviceType": "traduction",
+    "component": "FFmpeg/Whisper",
+    "mediaUrl": "C:\\Users\\artas\\Desktop\\aya\\uploads\\1790275478932_video5884350021540781480.mp4",
+    "inputParams": {},
+    "errorMessage": "Échec du processus de traduction (code de sortie: 1)",
+    "errorStack": "Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.",
+    "aiDiagnosis": {
+      "analyzed": true,
+      "cause": "Échec inattendu du processus d'encodage",
+      "technicalExplanation": "Le sous-processus de traitement s'est terminé avec un code d'erreur non nul.",
+      "proposedFix": "Vérifier l'intégrité du fichier source et relancer le traitement.",
+      "suggestedAction": "RETRY_DEFAULT"
+    },
+    "status": "pending_admin_review",
+    "reviewedBy": null,
+    "reviewedAt": null,
+    "createdAt": "2026-09-24T18:45:34.777Z"
+  },
+  {
+    "id": "fail_1790273909195_6e269",
+    "jobId": "1790273863002_video5884350021540781480.mp4",
+    "user": "john",
+    "username": "@john",
+    "userEmail": null,
+    "serviceType": "traduction",
+    "component": "AI/Gemini",
+    "mediaUrl": "C:\\Users\\artas\\Desktop\\aya\\uploads\\1790273863002_video5884350021540781480.mp4",
+    "inputParams": {},
+    "errorMessage": "Échec du processus de traduction (code de sortie: 1)",
+    "errorStack": "Les serveurs IA sont temporairement surchargés. Veuillez réessayer dans quelques minutes.",
+    "aiDiagnosis": {
+      "analyzed": true,
+      "cause": "Saturation temporaire des serveurs IA (Quota 429 ou Surcharge 503 Provider)",
+      "technicalExplanation": "Les modèles IA de transcription et traduction ont atteint le plafond de requêtes (RPM/TPM) ou subi un pic de charge mondial chez le fournisseur.",
+      "proposedFix": "Bascule automatique sur le modèle de secours Flash-Lite ou la clé API secondaire avec temporisation de sécurité (Circuit Breaker).",
+      "suggestedAction": "RETRY_DEFAULT"
+    },
+    "status": "pending_admin_review",
+    "reviewedBy": null,
+    "reviewedAt": null,
+    "createdAt": "2026-09-24T18:18:29.195Z"
+  },
+  {
     "id": "fail_1790194065547_rwk57",
     "jobId": "job_ffmpeg_crash_99",
     "user": "user_tester_42",

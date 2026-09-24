@@ -1546,6 +1546,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 openRechargeModal();
             }
 
+            // Détection du retour de paiement Stripe
+            const paymentParam = urlParams.get('payment');
+            if (paymentParam === 'success') {
+                showToast("🎉 Paiement validé avec succès ! Vos crédits sont disponibles.", "success");
+                loadUserProfile();
+                setTimeout(() => loadUserProfile(), 2000);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (paymentParam === 'cancelled' || paymentParam === 'cancel') {
+                showToast("Paiement annulé. Aucun débit n'a été effectué.", "warning");
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             if (actionParam === 'create' || hash === '#create-card') {
                 switchTab('cards');
                 setTimeout(openVocabCreateModal, 300);

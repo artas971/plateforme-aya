@@ -409,45 +409,46 @@ Question de l'utilisateur :
 "${question.trim()}"`;
 
     if (geminiKey) {
-        try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
-            const payload = {
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [
-                            { text: `${systemInstruction}\n\n---\n\n${userPrompt}` }
-                        ]
-                    }
-                ],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 600
+        const candidateModels = ['gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
+        const payload = {
+            contents: [
+                {
+                    role: 'user',
+                    parts: [
+                        { text: `${systemInstruction}\n\n---\n\n${userPrompt}` }
+                    ]
                 }
-            };
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (replyText) {
-                    return {
-                        success: true,
-                        agent: targetAgent,
-                        isCouncil,
-                        reply: replyText.trim()
-                    };
-                }
-            } else {
-                console.warn('[AGENT SUPERVISOR] Erreur API Gemini, bascule sur réponse heuristique locale :', response.status);
+            ],
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 600
             }
-        } catch (err) {
-            console.warn('[AGENT SUPERVISOR] Exception lors de l\'appel Gemini :', err.message);
+        };
+
+        for (const model of candidateModels) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (replyText) {
+                        return {
+                            success: true,
+                            agent: targetAgent,
+                            isCouncil,
+                            reply: replyText.trim()
+                        };
+                    }
+                }
+            } catch (err) {
+                // Essayer le modèle suivant
+            }
         }
     }
 

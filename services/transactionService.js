@@ -170,9 +170,23 @@ async function getFinancialKPIs() {
     };
 }
 
+/**
+ * Récupère l'historique des transactions d'un utilisateur spécifique
+ */
+async function getUserTransactions(userId, limit = 50) {
+    if (!userId) return [];
+    const all = await getTransactions(500);
+    const uid = String(userId).toLowerCase();
+    return all.filter(t => 
+        (t.userId && String(t.userId).toLowerCase() === uid) ||
+        (t.username && String(t.username).toLowerCase() === uid)
+    ).slice(0, limit);
+}
+
 module.exports = {
     recordTransaction,
     getTransactions,
+    getUserTransactions,
     getFinancialKPIs,
     readFallbackTransactions,
     saveFallbackTransactions

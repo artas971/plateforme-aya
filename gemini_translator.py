@@ -24,13 +24,77 @@ if os.path.exists(env_file):
 import time
 import re
 
-LAST_MODEL_USED = "gemini-2.5-flash"
+LAST_MODEL_USED = "gemini-flash-lite-latest"
 LAST_TELEMETRY = {
     "t_exec_s": 0.0,
-    "model_used": "gemini-2.5-flash",
+    "model_used": "gemini-flash-lite-latest",
     "retries": 0,
     "warnings": []
 }
+
+# =========================================================================
+# CIRCUIT BREAKER & HEALTH REGISTRY POUR LES MODÈLES IA GOOGLE GEMINI
+# Prévention active contre la saturation de quota (429) et les surcharges (503)
+# =========================================================================
+_MODEL_COOLDOWNS = {}
+
+def _is_model_available(model_name: str) -> bool:
+    blocked_until = _MODEL_COOLDOWNS.get(model_name, 0)
+    return time.time() >= blocked_until
+
+def _mark_model_cooldown(model_name: str, duration_seconds: float, reason: str = ""):
+    _MODEL_COOLDOWNS[model_name] = time.time() + duration_seconds
+    print(f"[CIRCUIT BREAKER] ⏸️ Modèle {model_name} mis en quarantaine pour {duration_seconds:.0f}s (Raison: {reason}).", flush=True)
+
+def _get_gemini_keys():
+    """Récupère toutes les clés Gemini configurées pour le failover multi-clés."""
+    keys = []
+    candidates = [
+        os.environ.get("GEMINI_API_KEY"),
+        os.environ.get("GOOGLE_API_KEY"),
+        os.environ.get("GEMINI_API_KEY_FALLBACK"),
+        os.environ.get("GEMINI_API_KEY_2")
+    ]
+    for val in candidates:
+        if val:
+            for piece in val.split(","):
+                k = piece.strip().strip('"').strip("'")
+                if k and k not in keys:
+                    keys.append(k)
+    return keys
+
+def _get_active_models_cascade(include_text_only=False):
+    """
+    Retourne la cascade optimale ordonnée selon la santé des modèles en temps réel.
+    Les modèles disponibles sont interrogés en priorité.
+    """
+    if include_text_only:
+        # Pôle traduction textuelle pure (Agent Jade)
+        pool = [
+            "gemini-flash-lite-latest",
+            "gemini-3.1-flash-lite",
+            "gemma-4-26b-a4b-it",
+            "gemini-2.5-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-pro-latest"
+        ]
+    else:
+        # Pôle transcription audio / multimodal
+        pool = [
+            "gemini-flash-lite-latest",
+            "gemini-3.1-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.5-flash",
+            "gemini-pro-latest"
+        ]
+
+    available = [m for m in pool if _is_model_available(m)]
+    in_cooldown = [m for m in pool if not _is_model_available(m)]
+    # Si tous les modèles sont en quarantaine, on retente celui dont le cooldown expire le plus tôt
+    return available if available else sorted(pool, key=lambda m: _MODEL_COOLDOWNS.get(m, 0))
+
 
 def _parse_timestamp_val(val, default=0.0):
     if isinstance(val, (int, float)):
@@ -112,12 +176,12 @@ def normalize_and_rescale_segments(raw_segments: list, window_dur: float = None)
 def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_duration=None, source_lang='auto', force_reprocess=False, user_context=''):
     global LAST_MODEL_USED, LAST_TELEMETRY
     t_jade_start = time.time()
-    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if not gemini_key:
+    keys_list = _get_gemini_keys()
+    if not keys_list:
         print("[Pole 3 Gemini] Pas de cle GEMINI_API_KEY detectee.")
         return None
 
-    print(f"[Pole 3 Gemini] Lancement transcription/traduction ({mode}, source: {source_lang}, force_reprocess: {force_reprocess}) via Gemini 2.5 Flash...")
+    print(f"[Pole 3 Gemini] Lancement transcription/traduction ({mode}, source: {source_lang}, force_reprocess: {force_reprocess}) via Cascade Resiliente...")
 
     # Extraction / conversion audio optimisée (MP3 64k mono pour upload rapide)
     temp_audio = os.path.join(os.path.dirname(media_path), f"temp_gemini_{os.getpid()}.mp3")
@@ -324,61 +388,65 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
 
     req_data = json.dumps(payload).encode("utf-8")
 
-    # Cascade de modèles IA Google Gemini officiellement actifs (API v1beta)
-    MODELS_CASCADE = [
-        "gemini-2.5-flash",
-        "gemini-flash-lite-latest",
-        "gemini-3.1-flash-lite",
-        "gemini-3.5-flash",
-        "gemini-pro-latest"
-    ]
+    models_to_try = _get_active_models_cascade(include_text_only=False)
 
-    for idx, model_name in enumerate(MODELS_CASCADE):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
-        try:
-            req = urllib.request.Request(
-                url,
-                data=req_data,
-                headers={"Content-Type": "application/json"}
-            )
-            with urllib.request.urlopen(req, timeout=35) as resp:
-                res_data = json.loads(resp.read().decode("utf-8"))
-                out_raw = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                segments = json.loads(out_raw)
-                if isinstance(segments, list) and len(segments) > 0:
-                    segments = normalize_and_rescale_segments(segments, total_duration)
-                    print(f"[Pôle 3 Gemini] ✅ Succès avec modèle {model_name} : {len(segments)} segments reçus !")
-                    LAST_MODEL_USED = model_name
-                    LAST_TELEMETRY["t_exec_s"] = round(time.time() - t_jade_start, 2)
-                    LAST_TELEMETRY["model_used"] = model_name
-                    LAST_TELEMETRY["retries"] = idx
-                    # Sauvegarde dans le cache
-                    try:
-                        with open(cache_file, "w", encoding="utf-8") as cf:
-                            json.dump(segments, cf, ensure_ascii=False, indent=2)
-                    except Exception:
-                        pass
-                    return segments
-        except urllib.error.HTTPError as he:
-            is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
-            if is_quota:
-                print(f"[Pôle 3 Gemini] ⚠️ Quota 429 atteint sur {model_name}. Pause 2s avant modèle de secours...", flush=True)
-                time.sleep(2.0)
-                next_model = MODELS_CASCADE[idx + 1] if idx + 1 < len(MODELS_CASCADE) else "aucun"
-                print(f"[PROGRESS] ⚠️ Bascule sur le modèle de secours ({next_model})...", flush=True)
-            else:
-                print(f"[Pôle 3 Gemini] Erreur HTTP {he.code} sur {model_name} : {he}. Bascule vers le modèle suivant...", flush=True)
-            continue
-        except Exception as e:
-            err_str = str(e).lower()
-            is_quota = any(q in err_str for q in ["429", "quota", "resource_exhausted", "resourceexhausted"])
-            if is_quota:
-                print("⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours...", flush=True)
-                next_model = MODELS_CASCADE[idx + 1] if idx + 1 < len(MODELS_CASCADE) else "modèle suivant"
-                print(f"[PROGRESS] ⚠️ Quota Gemini 2.5 atteint, bascule sur le modèle de secours ({next_model})...", flush=True)
-            else:
-                print(f"[Pôle 3 Gemini] Modèle {model_name} indisponible ({e}). Bascule vers le modèle suivant...", flush=True)
-            continue
+    for gemini_key in keys_list:
+        for idx, model_name in enumerate(models_to_try):
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+            max_attempts = 2
+            for attempt in range(max_attempts):
+                try:
+                    req = urllib.request.Request(
+                        url,
+                        data=req_data,
+                        headers={"Content-Type": "application/json"}
+                    )
+                    with urllib.request.urlopen(req, timeout=35) as resp:
+                        res_data = json.loads(resp.read().decode("utf-8"))
+                        out_raw = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                        segments = json.loads(out_raw)
+                        if isinstance(segments, list) and len(segments) > 0:
+                            segments = normalize_and_rescale_segments(segments, total_duration)
+                            print(f"[Pôle 3 Gemini] ✅ Succès avec modèle {model_name} : {len(segments)} segments reçus !", flush=True)
+                            LAST_MODEL_USED = model_name
+                            LAST_TELEMETRY["t_exec_s"] = round(time.time() - t_jade_start, 2)
+                            LAST_TELEMETRY["model_used"] = model_name
+                            LAST_TELEMETRY["retries"] = idx
+                            # Sauvegarde dans le cache
+                            try:
+                                with open(cache_file, "w", encoding="utf-8") as cf:
+                                    json.dump(segments, cf, ensure_ascii=False, indent=2)
+                            except Exception:
+                                pass
+                            return segments
+                        break
+                except urllib.error.HTTPError as he:
+                    is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
+                    is_503 = (he.code == 503) or "demand" in str(he).lower()
+
+                    if is_503 and attempt < max_attempts - 1:
+                        backoff = 2.0
+                        print(f"[Pôle 3 Gemini] ⚠️ Modèle {model_name} en pic de charge (503). Retentative dans {backoff}s (tentative {attempt+1}/{max_attempts})...", flush=True)
+                        time.sleep(backoff)
+                        continue
+
+                    if is_quota:
+                        _mark_model_cooldown(model_name, 180.0, "Quota 429 atteint")
+                        print(f"[Pôle 3 Gemini] ⚠️ Quota 429 sur {model_name}. Modèle mis en quarantaine 180s.", flush=True)
+                    elif is_503:
+                        _mark_model_cooldown(model_name, 60.0, "Surcharge 503")
+                        print(f"[Pôle 3 Gemini] ⚠️ Surcharge 503 confirmée sur {model_name}. Modèle mis en quarantaine 60s.", flush=True)
+                    else:
+                        print(f"[Pôle 3 Gemini] Erreur HTTP {he.code} sur {model_name} : {he}.", flush=True)
+                    break
+                except Exception as e:
+                    err_str = str(e).lower()
+                    is_quota = any(q in err_str for q in ["429", "quota", "resource_exhausted", "resourceexhausted"])
+                    if is_quota:
+                        _mark_model_cooldown(model_name, 180.0, "Quota atteint")
+                    else:
+                        print(f"[Pôle 3 Gemini] Modèle {model_name} indisponible ({e}).", flush=True)
+                    break
 
 
 def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context: str = '') -> list:
@@ -390,21 +458,12 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
     """
     global LAST_MODEL_USED, LAST_TELEMETRY
     t_jade_start = time.time()
-    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if not gemini_key or not units:
+    keys_list = _get_gemini_keys()
+    if not keys_list or not units:
         return []
 
     target_desc = "français percutant, fluide et soigné (VOSTFR)" if mode == 'VOSTFR' else "arabe palestinien dialectal de Gaza (Ammiya de Gaza - VOAR)"
     context_directive = f"\nContexte éditorial : {user_context.strip()}\n" if user_context and user_context.strip() else ""
-
-    # Cascade de modèles IA Google Gemini officiellement actifs (API v1beta)
-    MODELS_CASCADE = [
-        "gemini-2.5-flash",
-        "gemini-flash-lite-latest",
-        "gemini-3.1-flash-lite",
-        "gemini-3.5-flash",
-        "gemini-pro-latest"
-    ]
 
     BATCH_SIZE = 25
     all_translated_segments = []
@@ -431,57 +490,80 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
         req_data = json.dumps(req_payload).encode("utf-8")
 
         sub_batch_translated = None
+        models_to_try = _get_active_models_cascade(include_text_only=True)
 
-        for model_name in MODELS_CASCADE:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
-            try:
-                req = urllib.request.Request(url, data=req_data, headers={"Content-Type": "application/json"})
-                with urllib.request.urlopen(req, timeout=30) as resp:
-                    res_data = json.loads(resp.read().decode("utf-8"))
-                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
-                    lines = raw_text.strip().splitlines()
-                    translated_map = {}
-                    for line in lines:
-                        m = re.match(r"^(\d+)[\.\)]\s*(.*)", line.strip())
-                        if m:
-                            idx = int(m.group(1)) - 1
-                            translated_map[idx] = m.group(2).strip()
+        for gemini_key in keys_list:
+            if sub_batch_translated is not None:
+                break
+            for model_name in models_to_try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+                max_attempts = 2
+                for attempt in range(max_attempts):
+                    try:
+                        req = urllib.request.Request(url, data=req_data, headers={"Content-Type": "application/json"})
+                        with urllib.request.urlopen(req, timeout=30) as resp:
+                            res_data = json.loads(resp.read().decode("utf-8"))
+                            raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                            lines = raw_text.strip().splitlines()
+                            translated_map = {}
+                            for line in lines:
+                                m = re.match(r"^(\d+)[\.\)]\s*(.*)", line.strip())
+                                if m:
+                                    idx = int(m.group(1)) - 1
+                                    translated_map[idx] = m.group(2).strip()
 
-                    sub_batch_translated = []
-                    for i, u in enumerate(sub_units):
-                        if i in translated_map and translated_map[i]:
-                            tr_text = translated_map[i]
+                            candidate_translated = []
+                            for i, u in enumerate(sub_units):
+                                if i in translated_map and translated_map[i]:
+                                    tr_text = translated_map[i]
+                                else:
+                                    candidate_translated = None
+                                    break
+                                candidate_translated.append({
+                                    "start": round(float(u["start"]), 2),
+                                    "end": round(float(u["end"]), 2),
+                                    "text": tr_text
+                                })
+
+                            if candidate_translated is not None:
+                                sub_batch_translated = candidate_translated
+                                LAST_MODEL_USED = f"Whisper + {model_name}"
+                                break
+                    except urllib.error.HTTPError as he:
+                        is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
+                        is_503 = (he.code == 503) or "demand" in str(he).lower()
+
+                        if is_503 and attempt < max_attempts - 1:
+                            backoff = 2.0
+                            print(f"[IA JADE BATCH] ⚠️ Modèle {model_name} en pic de charge (503). Retentative dans {backoff}s (tentative {attempt+1}/{max_attempts})...", flush=True)
+                            time.sleep(backoff)
+                            continue
+
+                        if is_quota:
+                            _mark_model_cooldown(model_name, 180.0, "Quota 429 atteint")
+                            print(f"[IA JADE BATCH] ⚠️ Quota 429 sur {model_name}. Modèle mis en quarantaine 180s.", flush=True)
+                        elif is_503:
+                            _mark_model_cooldown(model_name, 60.0, "Surcharge 503")
+                            print(f"[IA JADE BATCH] ⚠️ Surcharge 503 sur {model_name}. Modèle mis en quarantaine 60s.", flush=True)
                         else:
-                            # Ligne manquante dans la liste numérotée -> invalidation pour tester modèle suivant
-                            sub_batch_translated = None
-                            break
-                        sub_batch_translated.append({
-                            "start": round(float(u["start"]), 2),
-                            "end": round(float(u["end"]), 2),
-                            "text": tr_text
-                        })
-
-                    if sub_batch_translated is not None:
-                        LAST_MODEL_USED = f"Whisper + {model_name}"
+                            print(f"[IA JADE BATCH] Erreur HTTP {he.code} sur {model_name} : {he}.", flush=True)
                         break
-            except urllib.error.HTTPError as he:
-                is_quota = (he.code == 429) or any(q in str(he).lower() for q in ["quota", "resource_exhausted", "resourceexhausted"])
-                if is_quota:
-                    print(f"[IA JADE BATCH] ⚠️ Quota 429 atteint sur {model_name}. Pause 2s avant modèle suivant...", flush=True)
-                    time.sleep(2.0)
-                else:
-                    print(f"[IA JADE BATCH] Erreur HTTP {he.code} sur {model_name} : {he}. Bascule modèle suivant...", flush=True)
-                continue
-            except Exception as e:
-                print(f"[IA JADE BATCH] Modèle {model_name} indisponible ({e}). Bascule modèle suivant...", flush=True)
-                continue
+                    except Exception as e:
+                        err_str = str(e).lower()
+                        is_quota = any(q in err_str for q in ["429", "quota", "resource_exhausted", "resourceexhausted"])
+                        if is_quota:
+                            _mark_model_cooldown(model_name, 180.0, "Quota atteint")
+                        else:
+                            print(f"[IA JADE BATCH] Modèle {model_name} indisponible ({e}).", flush=True)
+                        break
+
+                if sub_batch_translated is not None:
+                    break
 
         if sub_batch_translated is not None:
             all_translated_segments.extend(sub_batch_translated)
         else:
-            # INTERDICTION ABSOLUE DU REPLI SILENCIEUX (Ticket Incident Alexandre)
-            # Lever une exception claire au lieu de renvoyer le texte source arabe corrompu
-            raise RuntimeError(f"Échec critique de traduction (Agent Jade) : tous les modèles IA ({', '.join(MODELS_CASCADE)}) ont échoué sur le sous-lot {b_start // BATCH_SIZE + 1}. Aucun repli non traduit autorisé.")
+            raise RuntimeError(f"Échec critique de traduction (Agent Jade) : tous les modèles IA ({', '.join(models_to_try)}) ont échoué sur le sous-lot {b_start // BATCH_SIZE + 1}. Aucun repli non traduit autorisé.")
 
     LAST_TELEMETRY["t_exec_s"] = round(time.time() - t_jade_start, 2)
     LAST_TELEMETRY["model_used"] = LAST_MODEL_USED

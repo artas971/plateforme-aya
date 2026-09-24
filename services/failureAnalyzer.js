@@ -70,31 +70,38 @@ ${failureContext.errorMessage || 'Erreur non spécifiée'}
 - Stack / Extraits de logs :
 ${(failureContext.errorStack || '').slice(-2000)}`;
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n---\n\n${userPrompt}` }] }],
-                generationConfig: {
-                    temperature: 0.2,
-                    responseMimeType: "application/json"
-                }
-            })
-        });
+        const candidateModels = ['gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
+        for (const model of candidateModels) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\n---\n\n${userPrompt}` }] }],
+                        generationConfig: {
+                            temperature: 0.2,
+                            responseMimeType: "application/json"
+                        }
+                    })
+                });
 
-        if (response.ok) {
-            const data = await response.json();
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) {
-                const parsed = JSON.parse(text);
-                return {
-                    analyzed: true,
-                    cause: parsed.cause || "Anomalie d'exécution du pipeline",
-                    technicalExplanation: parsed.technicalExplanation || "Interruption du processus de rendu.",
-                    proposedFix: parsed.proposedFix || "Relancer avec ré-encodage préalable.",
-                    suggestedAction: parsed.suggestedAction || "RETRY_DEFAULT"
-                };
+                if (response.ok) {
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) {
+                        const parsed = JSON.parse(text);
+                        return {
+                            analyzed: true,
+                            cause: parsed.cause || "Anomalie d'exécution du pipeline",
+                            technicalExplanation: parsed.technicalExplanation || "Interruption du processus de rendu.",
+                            proposedFix: parsed.proposedFix || "Relancer avec ré-encodage préalable.",
+                            suggestedAction: parsed.suggestedAction || "RETRY_DEFAULT"
+                        };
+                    }
+                }
+            } catch (modelErr) {
+                // Essayer le modèle suivant de la cascade
             }
         }
     } catch (err) {
@@ -115,7 +122,12 @@ function fallbackFailureDiagnosis(context) {
     let proposedFix = "Vérifier l'intégrité du fichier source et relancer le traitement.";
     let suggestedAction = "RETRY_DEFAULT";
 
-    if (errorStr.includes('ffmpeg') || errorStr.includes('codec') || errorStr.includes('aac') || errorStr.includes('h264') || errorStr.includes('moov atom')) {
+    if (errorStr.includes('quota') || errorStr.includes('429') || errorStr.includes('surcharg') || errorStr.includes('resource_exhausted') || errorStr.includes('saturé')) {
+        cause = "Saturation temporaire des serveurs IA (Quota 429 ou Surcharge 503 Provider)";
+        technicalExplanation = "Les modèles IA de transcription et traduction ont atteint le plafond de requêtes (RPM/TPM) ou subi un pic de charge mondial chez le fournisseur.";
+        proposedFix = "Bascule automatique sur le modèle de secours Flash-Lite ou la clé API secondaire avec temporisation de sécurité (Circuit Breaker).";
+        suggestedAction = "RETRY_DEFAULT";
+    } else if (errorStr.includes('ffmpeg') || errorStr.includes('codec') || errorStr.includes('aac') || errorStr.includes('h264') || errorStr.includes('moov atom')) {
         cause = "Incompatibilité de codec ou conteneur multimédia corrompu (FFmpeg)";
         technicalExplanation = "FFmpeg a rencontré une erreur lors du démultiplexage ou du transcodage du flux source. Le conteneur peut être incomplet ou utiliser un profil non supporté.";
         proposedFix = "Transcoder la source en H.264 / AAC 48kHz standard avant passage dans les filtres ASS.";

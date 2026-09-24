@@ -1,5 +1,33 @@
 [
   {
+    "id": "tx_1790281427644_6h5vds",
+    "userId": "test_payer_1790281427644",
+    "username": "PayerTest",
+    "email": "payer@test.local",
+    "packId": "pack_5",
+    "credits": 5,
+    "amount": 2.99,
+    "currency": "EUR",
+    "provider": "stripe",
+    "providerTransactionId": "pi_test_1790281427644",
+    "status": "succeeded",
+    "createdAt": "2026-09-24T20:23:47.644Z"
+  },
+  {
+    "id": "tx_1790281403205_1cg03s",
+    "userId": "test_payer_1790281403205",
+    "username": "PayerTest",
+    "email": "payer@test.local",
+    "packId": "pack_5",
+    "credits": 5,
+    "amount": 2.99,
+    "currency": "EUR",
+    "provider": "stripe",
+    "providerTransactionId": "pi_test_1790281403205",
+    "status": "succeeded",
+    "createdAt": "2026-09-24T20:23:23.205Z"
+  },
+  {
     "id": "tx_1790025100000_a1b2c3",
     "userId": "usr_1790024221536_oek8gw",
     "username": "@artas971",

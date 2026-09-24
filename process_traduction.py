@@ -1628,18 +1628,24 @@ Ligne 8 : Une sélection de hashtags mixtes pertinents (ex: #Gaza #Palestine #T�
 
 Ne renvoie QUE le texte brut final, sans balises de code markdown (pas de ```txt), sans introduction ni conclusion."""
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_key}"
+            steve_cascade = ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-2.5-flash"]
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500}
             }
-
-            req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read().decode('utf-8'))
-                raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
-                if raw_text:
-                    desc_content = raw_text.strip()
+            req_b = json.dumps(payload).encode('utf-8')
+            for sm in steve_cascade:
+                try:
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{sm}:generateContent?key={gemini_key}"
+                    req = urllib.request.Request(url, data=req_b, headers={'Content-Type': 'application/json'})
+                    with urllib.request.urlopen(req, timeout=15) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                        raw_text = data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                        if raw_text:
+                            desc_content = raw_text.strip()
+                            break
+                except Exception:
+                    continue
         except Exception as e:
             print(f"[AGENT STEVE WARNING] Erreur appel Gemini LLM : {e}, bascule sur modèle heuristique.", file=sys.stderr)
 
@@ -1980,9 +1986,9 @@ def generate_tiktok_description(segments: list, semantic_title: str = "", target
 
     # Cascade de modèles IA Google Gemini officiellement actifs (API v1beta)
     CASCADE = [
-        "gemini-2.5-flash",
         "gemini-flash-lite-latest",
         "gemini-3.1-flash-lite",
+        "gemini-2.5-flash",
         "gemini-flash-latest"
     ]
 
