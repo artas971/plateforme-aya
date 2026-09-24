@@ -7,9 +7,9 @@
 
 | Statut | Quantité | Description |
 | :--- | :---: | :--- |
-| **✅ RÉSOLUS (P0, P1, P2, P3)** | **18 / 18** | **100% du Backlog Hetzner résolu et prêt pour la production !** |
+| **✅ RÉSOLUS (P0, P1, P2, P3)** | **18 / 19** | **18 tickets résolus, 1 nouveau ticket d'interface en cours** |
 | **🟠 EN ATTENTE (P1 - Haute)** | **0** | Aucun ticket P1 restant (Garbage Collection, MongoDB TTL, SSE, Sauvegardes résolus) |
-| **🟡 EN ATTENTE (P2 - Moyenne)** | **0** | Aucun ticket P2 restant (Warm Chromium, Clic 1-clic DM, Safe areas résolus) |
+| **🟡 EN ATTENTE (P2 - Moyenne)** | **1** | **[TICKET-19]** : Harmonisation globale de la footbar / footer selon `/communaute` |
 | **⚪ EN ATTENTE (P3 - Confort)** | **0** | Aucun ticket P3 restant (Cache LRU, Onglets de filtrage, RTL résolus) |
 
 ---
@@ -45,3 +45,11 @@
 ### 📢 Lancement & Légal (Phase 2 & Jour J) :
 - **[LANCEMENT / MARKETING]** ([#23](https://github.com/artas971/plateforme-aya/issues/23)) - **Publication de la 1ère Vidéo TikTok Inaugurale (Jour J - 26 Septembre)** - Kit complet généré dans `public/assets/tiktok_jour_j/` (sous-titres ASS V3, miniature 9:16, description hybride). - **RÉSOLU & FERMÉ**
 - **[PHASE 2]** ([#14](https://github.com/artas971/plateforme-aya/issues/14)) - **Conformité Légale France & RGPD** - Pages `mentions-legales.html` (LCEN), `cgu.html` et `confidentialite.html` (RGPD/CNIL) avec routage public et footer. - **RÉSOLU & FERMÉ**
+
+---
+
+## 🟡 TICKETS EN ATTENTE D'IMPLÉMENTATION
+
+### 🟡 Priorité P2 : Ergonomie & Cohérence UI :
+- **[TICKET-19]** ([#38](https://github.com/artas971/plateforme-aya/issues/38)) - **Harmonisation Globale de la Footbar / Footer sur Toutes les Pages** - Standardisation et déploiement du pied de page légal et solidaire (CGU/CGV, Politique de Confidentialité RGPD, Soutien PayPal solidaire, Copyright 2026) calqué à 100% sur le modèle validé de la page `/communaute` ([modèle de référence](https://rugby-practitioner-mere-brian.trycloudflare.com/communaute)). Déploiement sur `fiches.html`, `traduction.html`, `traducteur.html`, `mentions-legales.html`, `moderation.html`, `index.html`, avec hydratation multilingue temps réel (FR/AR) via `aya-i18n.js` et adaptation safe-area mobile. - **Priorité : P2 (EN ATTENTE)**
+
