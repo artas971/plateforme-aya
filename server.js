@@ -45,6 +45,15 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Middleware d'interception d'erreur JSON malformé (anti-crash Express sur payload corrompu)
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && (err.status === 400 || err.statusCode === 400)) {
+        console.warn('⚠️ [SERVER WARNING] Requête avec JSON malformé interceptée et neutralisée:', err.message);
+        return res.status(400).json({ success: false, error: 'Format JSON invalide.' });
+    }
+    next(err);
+});
+
 // Session Express (Authentification des Testeurs Habilités)
 const session = require('express-session');
 const { authRouter, requireAuth } = require('./routes/auth');
@@ -285,6 +294,17 @@ app.use('/api/user', userRouter);
 app.use('/api/premium', premiumRouter);
 app.use(traductionRouter);
 app.use(tiktokRouter);
+
+// Middleware Global de Gestion des Erreurs (Anti-Crash Global Express)
+app.use((err, req, res, next) => {
+    console.error('❌ [SERVER GLOBAL ERROR HANDLER]', err);
+    if (!res.headersSent) {
+        res.status(err.status || err.statusCode || 500).json({
+            success: false,
+            error: err.message || 'Erreur interne du serveur'
+        });
+    }
+});
 
 // Démarrage du Serveur & Connexion Base de Données
 const { connectDB } = require('./config/database');

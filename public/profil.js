@@ -978,7 +978,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            let data;
+            if (contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const errorHtml = await response.text();
+                if (response.status === 401) {
+                    showToast("Session expirée. Redirection vers la page de connexion...", "warning");
+                    setTimeout(() => {
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash);
+                    }, 1200);
+                    return;
+                } else if (response.status === 404) {
+                    throw new Error("L'endpoint de prévisualisation est introuvable. Veuillez vérifier que le serveur est bien démarré.");
+                } else {
+                    throw new Error(`Erreur serveur (${response.status}). Veuillez réessayer.`);
+                }
+            }
 
             // Gestion spécifique du Rate Limiting (HTTP 429)
             if (response.status === 429) {
@@ -1139,7 +1156,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 stepTimers.forEach(t => clearTimeout(t));
 
-                const data = await response.json();
+                const contentType = response.headers.get('content-type') || '';
+                let data;
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const errorHtml = await response.text();
+                    vocabProgressScreen.style.display = 'none';
+                    if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'block';
+                    if (response.status === 401) {
+                        showToast("Session expirée. Veuillez vous reconnecter.", "warning");
+                        window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.hash);
+                        return;
+                    }
+                    throw new Error(`Erreur serveur (${response.status}) lors de la fabrication.`);
+                }
 
                 if (response.status === 402 || data.reason === 'INSUFFICIENT_CREDITS') {
                     vocabProgressScreen.style.display = 'none';
