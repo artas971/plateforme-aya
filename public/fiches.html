@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aya Studio | Fiches Éducatives Bilingues</title>
+
+    <!-- Favicon & Brand Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Stylesheets officiels Aya -->
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
+
+    <style>
+        :root {
+            --color-primary: #0b5394;
+            --color-turquoise: #00bcd4;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --border-color: rgba(153, 153, 153, 0.25);
+            --text-color: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .fiches-container {
+            width: 100%;
+            max-width: 1100px;
+            padding: 2rem 1.5rem 6.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .fiches-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .fiches-hero-text h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .fiches-hero-text p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .fiches-hero-wallet {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 188, 212, 0.25);
+            padding: 10px 18px;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(0, 188, 212, 0.08);
+        }
+
+        .fiches-studio-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .fiches-container { padding: 1rem 1rem 6rem 1rem; }
+            .fiches-hero { padding: 18px; }
+            .fiches-studio-card { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barre de Navigation Globale (Aya Studio Unified) -->
+    <header class="app-header" id="ayaGlobalNavbar"></header>
+
+    <main class="fiches-container">
+
+        <!-- 1. En-tête / Hero Section -->
+        <section class="fiches-hero">
+            <div class="fiches-hero-text">
+                <h1><span>🎴</span> Fiches Éducatives Bilingues</h1>
+                <p>Générez des affiches de vocabulaire bilingues Shami / Français prêtes à imprimer ou publier sur les réseaux sociaux, avec prononciation double voix native.</p>
+            </div>
+            <div class="fiches-hero-wallet">
+                <div>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); font-weight: 700;">Mon Solde</div>
+                    <div style="font-size: 1.25rem; font-weight: 800; color: var(--color-turquoise);">
+                        <span id="fichesUserCredits">--</span> crédit(s)
+                    </div>
+                </div>
+                <button type="button" id="btnFichesRecharge" class="btn-primary" style="padding: 8px 16px; font-size: 0.85rem; border-radius: 10px;">
+                    <span>⚡</span> Recharger
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. Studio de Création de Fiche -->
+        <section class="fiches-studio-card">
+            
+            <!-- Alerte Solde Épuisé (Conditionnelle) -->
+            <div id="fichesZeroCreditAlert" style="display: none; padding: 14px 18px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; margin-bottom: 22px; color: #dc2626; font-size: 0.92rem; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.2rem;">⚠️</span>
+                    <span>Votre solde de crédits est épuisé. Rechargez pour générer une affiche haute définition.</span>
+                </div>
+                <button type="button" id="btnAlertRecharge" class="btn-action-sm danger" style="padding: 6px 14px; font-size: 0.85rem;">
+                    Recharger mon compte
+                </button>
+            </div>
+
+            <!-- ÉCRAN 1 : Formulaire de Configuration -->
+            <form id="fichesGenerateForm" onsubmit="return false;">
+                
+                <!-- Sélecteur de Mode -->
+                <div style="margin-bottom: 22px;">
+                    <label class="profile-form-label" style="display: block; margin-bottom: 8px;">
+                        Mode de création de la fiche :
+                    </label>
+                    <div class="vocab-mode-toggle" id="fichesModeToggle">
+                        <button type="button" class="vocab-mode-btn active" id="btnModeTheme" data-mode="theme">
+                            <span class="mode-icon">🎯</span>
+                            <span class="mode-text">Par Thème</span>
+                        </button>
+                        <button type="button" class="vocab-mode-btn" id="btnModeCustom" data-mode="custom">
+                            <span class="mode-icon">✍️</span>
+                            <span class="mode-text">Saisie Manuelle (Mot par Mot)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PANNEAU A : Mode Thématique -->
+                <div id="panelModeTheme">
+                    <div style="margin-bottom: 18px;">
+                        <label class="profile-form-label" style="display: block; margin-bottom: 6px;">
+                            1. Thèmes suggérés (Sélection en 1 clic) :
+                        </label>
+                        <div class="theme-chips-container" id="themeChipsContainer">
+                            <!-- Injection dynamique depuis /api/premium/vocab-themes -->
+                            <span class="theme-chip active" data-theme="Solidarité & Espoir">🕊️ Solidarité & Espoir</span>
+                            <span class="theme-chip" data-theme="Palestine & Liberté">🍉 Palestine & Liberté</span>
+                            <span class="theme-chip" data-theme="Hospitalité & Quotidien">☕ Hospitalité & Quotidien</span>
+                            <span class="theme-chip" data-theme="Fraternité & Partage">🤝 Fraternité & Partage</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label for="fichesThemeInput" class="profile-form-label" style="display: block; margin-bottom: 6px;">
+                            2. Ou saisissez votre thème personnalisé :
+                        </label>
+                        <input type="text" id="fichesThemeInput" class="profile-input" placeholder="Ex: Les salutations amicales, la cuisine de grand-mère..." value="Solidarité & Espoir" maxlength="80">
+                    </div>
+                </div>
+
+                <!-- PANNEAU B : Mode Manuel Mot par Mot -->
+                <div id="panelModeCustom" style="display: none; margin-bottom: 22px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="profile-form-label" style="margin-bottom: 0;">
+                            Vos 5 mots personnalisés :
+                        </label>
+                        <button type="button" id="btnClearCustomWords" class="btn-clear-words" title="Effacer tous les champs">
+                            🗑️ Tout effacer
+                        </button>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 14px;">
+                        Saisissez entre 1 et 5 mots à traduire. Si vous en indiquez moins de 5, l'IA complétera harmonieusement pour atteindre le format complet de l'affiche.
+                    </p>
+
+                    <div style="margin-bottom: 14px;">
+                        <input type="text" id="fichesCustomTitleInput" class="profile-input" placeholder="Titre personnalisé de l'affiche (Optionnel - ex: Mots de Paix)" maxlength="60" style="font-size: 0.9rem;">
+                    </div>
+
+                    <div class="custom-words-grid">
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">1</span>
+                            <input type="text" class="custom-word-input" id="customWordInput1" placeholder="Ex: Liberté" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">2</span>
+                            <input type="text" class="custom-word-input" id="customWordInput2" placeholder="Ex: Solidarité" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">3</span>
+                            <input type="text" class="custom-word-input" id="customWordInput3" placeholder="Ex: Espoir" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">4</span>
+                            <input type="text" class="custom-word-input" id="customWordInput4" placeholder="Ex: Paix" maxlength="40">
+                        </div>
+                        <div class="custom-word-row">
+                            <span class="custom-word-badge">5</span>
+                            <input type="text" class="custom-word-input" id="customWordInput5" placeholder="Ex: Courage" maxlength="40">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Niveau de difficulté -->
+                <div style="margin-bottom: 22px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+                        <label class="profile-form-label" style="margin-bottom: 0;">
+                            Niveau de difficulté pédagogique :
+                        </label>
+                        <span id="levelBadgeRoleHint" style="font-size: 0.78rem; color: #00838f; font-weight: 600;">
+                            🏷️ Imprimé sur votre affiche
+                        </span>
+                    </div>
+                    <div class="level-chips-container" id="levelChipsContainer">
+                        <div class="level-chip active" data-level="debutant">
+                            <span style="display: block; font-size: 1.1rem;">🟢</span>
+                            <span>Débutant</span>
+                            <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Mots simples du quotidien</small>
+                        </div>
+                        <div class="level-chip" data-level="intermediaire">
+                            <span style="display: block; font-size: 1.1rem;">🟡</span>
+                            <span>Intermédiaire</span>
+                            <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Expressions vivantes</small>
+                        </div>
+                        <div class="level-chip" data-level="avance">
+                            <span style="display: block; font-size: 1.1rem;">🔴</span>
+                            <span>Avancé</span>
+                            <small style="display: block; font-size: 0.72rem; color: #64748b; font-weight: normal;">Vocabulaire poétique & nuancé</small>
+                        </div>
+                    </div>
+                    <div id="levelHelpContextBox" style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; background: rgba(0, 188, 212, 0.07); border: 1px solid rgba(0, 188, 212, 0.22); border-radius: 8px; padding: 8px 14px; line-height: 1.4;">
+                        <span style="font-size: 1.1rem; flex-shrink: 0;">💡</span>
+                        <span id="levelHelpText">Guide le choix des 5 mots par l'IA et définit le badge affiché sur votre affiche.</span>
+                    </div>
+                </div>
+
+                <!-- Bouton Principal de Soumission -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                    <button type="submit" id="btnSubmitPreview" class="btn-primary" style="padding: 14px 30px; border-radius: 14px; font-size: 1.05rem; cursor: pointer; display: inline-flex; align-items: center; gap: 10px;">
+                        <span>🔍</span> <span id="btnSubmitPreviewText">Prévisualiser les 5 mots (Gratuit)</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- ÉCRAN 2 : Arbitrage Intermédiaire & Prévisualisation des 5 Mots -->
+            <div id="fichesPreviewScreen" style="display: none; margin-top: 10px;">
+                <div style="text-align: center; margin-bottom: 18px;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; color: #059669; margin-bottom: 8px;">
+                        <span>🎁</span> Prévisualisation Gratuite • 0 Crédit Débité
+                    </div>
+                    <h3 id="previewTitleFr" style="font-size: 1.4rem; font-weight: 800; color: var(--color-primary); margin: 2px 0;">--</h3>
+                    <p id="previewTitleAr" style="font-family: var(--font-arabic, 'Cairo'); font-size: 1.3rem; font-weight: 800; color: #00838f; margin: 0;">--</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">
+                        Examinez les 5 mots proposés. Si vous les connaissez déjà ou souhaitez en voir d'autres, régénérez en 1 clic !
+                    </p>
+                </div>
+
+                <!-- Grille des 5 cartes bilingues -->
+                <div id="previewCardsContainer" class="vocab-preview-cards-container"></div>
+
+                <!-- Actions d'Arbitrage -->
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <!-- Bandeau Quota Atteint -->
+                    <div id="regenLimitNotice" style="display: none; padding: 12px 16px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 10px; color: #b45309; font-size: 0.85rem; text-align: center;">
+                        <span>ℹ️</span> Limite de régénérations atteinte pour ce thème. Veuillez valider cette sélection ou passer en saisie manuelle.
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" id="btnBackToForm" class="btn-action-sm" style="padding: 11px 18px;">
+                            <span>✏️</span> Modifier critères
+                        </button>
+                        
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                            <button type="button" id="btnRollAnother" class="btn-action-sm secondary" style="padding: 11px 18px; font-weight: 700;">
+                                <span id="rollSpinner" style="display: none;">⏳</span> <span>🔄</span> <span id="btnRollText">Proposer d'autres mots</span> <span id="regenBadge" style="font-size: 0.76rem; opacity: 0.85; margin-left: 4px; color: var(--color-turquoise); font-weight: 600;">(4 essais restants)</span>
+                            </button>
+                            <button type="button" id="btnConfirmGenerate" class="btn-primary" style="padding: 12px 24px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                                <span>✨</span> Valider &amp; Générer (1 Crédit)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉCRAN 3 : Progression en direct -->
+            <div id="fichesProgressScreen" style="display: none; padding: 40px 10px; text-align: center;">
+                <div style="font-size: 3.2rem; margin-bottom: 16px; animation: pulseOnlineGreen 1.5s infinite ease-in-out;">🎨</div>
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--color-primary); margin-bottom: 8px;">Fabrication de votre Affiche Bilingue en cours...</h3>
+                <p id="fichesProgressStep" style="color: var(--text-secondary); font-size: 0.9rem; max-width: 480px; margin: 0 auto 20px auto;">
+                    Mise en page haute définition par le moteur Puppeteer Studio...
+                </p>
+                <div style="width: 100%; max-width: 440px; height: 8px; background: rgba(0, 0, 0, 0.08); border-radius: 999px; margin: 0 auto; overflow: hidden;">
+                    <div id="fichesProgressBar" style="width: 25%; height: 100%; background: linear-gradient(90deg, #0b5394, #00bcd4); border-radius: 999px; transition: width 0.4s ease;"></div>
+                </div>
+                <p style="font-size: 0.76rem; color: #94a3b8; margin-top: 14px;">Temps moyen estimé : 8 à 12 secondes</p>
+            </div>
+
+            <!-- ÉCRAN 4 : Résultat de la Génération -->
+            <div id="fichesResultScreen" style="display: none; margin-top: 10px;">
+                <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 14px; padding: 14px 18px; margin-bottom: 22px; display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 1.6rem;">🎉</span>
+                    <div>
+                        <div style="font-weight: 800; color: #059669; font-size: 1rem;">Votre Affiche de Vocabulaire est prête !</div>
+                        <div style="font-size: 0.82rem; color: var(--text-secondary);">Fiche 9:16 haute définition avec audio bilingue combiné.</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start;">
+                    <div style="border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid rgba(0, 0, 0, 0.1);">
+                        <img id="resultCardImg" src="" alt="Affiche générée" style="width: 100%; display: block; object-fit: cover;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <h3 id="resultTitleFr" style="font-size: 1.4rem; font-weight: 800; color: var(--color-primary); margin: 0;">--</h3>
+                                <span id="resultLevelBadge" class="card-level-badge level-debutant">Débutant</span>
+                            </div>
+                            <p id="resultTitleAr" style="font-family: var(--font-arabic, 'Cairo'); font-size: 1.3rem; font-weight: 800; color: #00838f; margin: 0;">--</p>
+                        </div>
+
+                        <!-- Lecteur Audio Bilingue -->
+                        <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <span>🎧</span> Prononciation Native Bilingue (Shami / Français) :
+                            </div>
+                            <audio id="resultCardAudio" controls style="width: 100%; height: 38px;"></audio>
+                        </div>
+
+                        <!-- Actions de Téléchargement -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px;">
+                            <a id="btnDownloadJpg" href="#" download class="btn-primary" style="padding: 10px 18px; border-radius: 10px; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                <span>💾</span> Télécharger l'Affiche (JPG)
+                            </a>
+                            <a id="btnDownloadMp3" href="#" download class="btn-action-sm" style="padding: 10px 18px; border-radius: 10px; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                <span>🎵</span> Télécharger l'Audio (MP3)
+                            </a>
+                            <button type="button" id="btnCreateAnother" class="btn-action-sm secondary" style="padding: 10px 18px; border-radius: 10px; font-size: 0.9rem;">
+                                <span>➕</span> Créer une autre fiche
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 3. Galerie / Historique Personnel des Fiches -->
+        <section class="profile-card" style="min-height: 400px; margin-top: 10px;">
+            <div class="history-header">
+                <div>
+                    <div class="profile-card-title" style="font-size: 1.25rem;">
+                        <span>📜</span> Mes Affiches Récentes
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">
+                        Retrouvez toutes vos affiches bilingues et réécoutez leurs fichiers audio.
+                    </p>
+                </div>
+                <button type="button" id="btnRefreshHistory" class="btn-action-sm" style="max-width: 130px;">
+                    <span>🔄</span> Actualiser
+                </button>
+            </div>
+
+            <!-- Loader Shimmer -->
+            <div id="galleryLoading" style="display: flex; flex-direction: column; gap: 14px; padding: 10px 0;">
+                <div class="aya-skeleton-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="aya-skeleton aya-skeleton-title" style="width: 50%;"></div>
+                        <div class="aya-skeleton" style="width: 80px; height: 22px; border-radius: 20px;"></div>
+                    </div>
+                    <div class="aya-skeleton aya-skeleton-line" style="width: 70%;"></div>
+                </div>
+            </div>
+
+            <!-- État Vide -->
+            <div id="galleryEmpty" class="empty-history-box" style="display: none;">
+                <span class="empty-history-icon">🎴</span>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary);">Aucune affiche créée pour le moment</h3>
+                <p style="color: var(--text-secondary); max-width: 440px; font-size: 0.9rem;">
+                    Configurez votre premier thème ci-dessus pour fabriquer votre première affiche bilingue.
+                </p>
+            </div>
+
+            <!-- Grille des Fiches -->
+            <div id="galleryGrid" class="vocab-grid" style="display: none;"></div>
+        </section>
+
+    </main>
+
+    <!-- Modal Recharger Mon Solde -->
+    <div class="aya-modal-backdrop" id="rechargeModal" style="display: none;">
+        <div class="aya-modal-content recharge-modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+                    <span>⚡</span> Recharger mes Crédits Aya
+                </h3>
+                <button type="button" id="btnCloseRechargeModal" style="background: transparent; border: none; font-size: 1.4rem; cursor: pointer; color: #94a3b8;" title="Fermer">✕</button>
+            </div>
+            <div style="padding: 10px 0;">
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    Pour continuer vos créations, choisissez un pack de crédits sur votre espace personnel.
+                </p>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <a href="/profil#packs" class="btn-primary" style="padding: 10px 20px; border-radius: 10px; text-decoration: none; font-size: 0.9rem;">
+                        Accéder aux Packs de Crédits ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts officiels Aya -->
+    <script src="/aya-i18n.js"></script>
+    <script src="/fiches.js"></script>
+</body>
+</html>

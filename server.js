@@ -265,6 +265,10 @@ app.get(['/profil', '/profil.html'], requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'profil.html'));
 });
 
+app.get(['/fiches', '/fiches.html'], requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'fiches.html'));
+});
+
 // Verrouillage de sécurité global : toutes les routes applicatives et API suivantes nécessitent d'être connecté
 app.use(requireAuth);
 

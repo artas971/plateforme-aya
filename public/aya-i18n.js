@@ -1215,8 +1215,9 @@
         const isModeration = path.includes('moderation');
         const isTraducteur = path.includes('traducteur');
         const isProfil = path.includes('profil');
-        const isChat = path.includes('chat') || path === '/chat-en-direct' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
-        const isCreationActive = isTraduction || isStudio || isCommunaute || isTraducteur;
+        const isFiches = path.includes('fiches');
+        const isChat = path.includes('chat') || path === '/chat-en-direct' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !isFiches && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
+        const isCreationActive = isTraduction || isStudio || isCommunaute || isTraducteur || isFiches;
 
         const dict = translations[currentLang] || translations.fr;
 
@@ -1266,7 +1267,7 @@
                                     <span class="dropdown-item-desc" id="navVideoSub">${dict.navVideoSub}</span>
                                 </div>
                             </a>
-                            <a href="/profil#cards" class="dropdown-item" role="menuitem">
+                            <a href="/fiches" class="dropdown-item ${isFiches ? 'active' : ''}" role="menuitem">
                                 <span class="dropdown-item-icon">🎴</span>
                                 <div class="dropdown-item-content">
                                     <span class="dropdown-item-title" id="navCardsText">${dict.navCardsText}</span>
@@ -1429,7 +1430,7 @@
                     </div>
                     <span class="sheet-card-arrow">➔</span>
                 </a>
-                <a href="/profil#cards" class="sheet-card">
+                <a href="/fiches" class="sheet-card ${isFiches ? 'active' : ''}">
                     <div class="sheet-card-icon">🎴</div>
                     <div class="sheet-card-info">
                         <strong id="sheetCardsTitle">${dict.navCardsText}</strong>
