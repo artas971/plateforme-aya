@@ -1,5 +1,69 @@
 [
   {
+    "id": "vcard_1790283594292_prljt",
+    "user": "john",
+    "username": "@john",
+    "theme": "Nature & Oliviers",
+    "level": "debutant",
+    "titleFr": "NATURE ET OLIVIERS",
+    "titleAr": "الطَّبِيعَةُ وَأَشْجَارُ الزَّيْتُونِ",
+    "imageUrl": "/uploads/cards/vcard_1790283594292_prljt.jpg",
+    "imageFilename": "vcard_1790283594292_prljt.jpg",
+    "audioUrl": "/uploads/cards/vcard_1790283594292_prljt.mp3",
+    "audioFilename": "vcard_1790283594292_prljt.mp3",
+    "words": [
+      {
+        "french": "OLIVIER",
+        "arabic": "زَيْتُونَة",
+        "phoneticFr": "Zay-tou-neh",
+        "phoneticAr": "أُولِيفْيِيه",
+        "icon": "🌳",
+        "ttsFrench": "Olivier",
+        "ttsArabic": "زَيْتُونَة"
+      },
+      {
+        "french": "TERRE",
+        "arabic": "أَرْض",
+        "phoneticFr": "Ard",
+        "phoneticAr": "تِير",
+        "icon": "🌍",
+        "ttsFrench": "Terre",
+        "ttsArabic": "أَرْض"
+      },
+      {
+        "french": "HUILE",
+        "arabic": "زَيْت",
+        "phoneticFr": "Zayt",
+        "phoneticAr": "وِيل",
+        "icon": "🫗",
+        "ttsFrench": "Huile",
+        "ttsArabic": "زَيْت"
+      },
+      {
+        "french": "FEUILLE",
+        "arabic": "وَرَقَة",
+        "phoneticFr": "Wa-ra-qa",
+        "phoneticAr": "فُويّ",
+        "icon": "🍃",
+        "ttsFrench": "Feuille",
+        "ttsArabic": "وَرَقَة"
+      },
+      {
+        "french": "SOLEIL",
+        "arabic": "شَمْس",
+        "phoneticFr": "Chams",
+        "phoneticAr": "لُو سُولَيّ",
+        "icon": "☀",
+        "ttsFrench": "Soleil",
+        "ttsArabic": "شَمْس"
+      }
+    ],
+    "costCredits": 1,
+    "status": "completed",
+    "createdAt": "2026-09-24T21:00:06.554Z",
+    "updatedAt": "2026-09-24T21:00:06.554Z"
+  },
+  {
     "id": "vcard_1790199627928_caxio",
     "user": "john",
     "username": "@john",

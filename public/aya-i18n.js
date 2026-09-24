@@ -81,6 +81,7 @@
             publishSuccessTitle: '✅ Témoignage soumis avec succès !',
             publishSuccessMsg: 'Votre publication a été transmise avec succès. Elle est actuellement en cours d\'examen par l\'équipe de modération (statut : En attente) avant sa mise en ligne sur le mur public.',
             feedSectionTitle: '✨ Témoignages Publiés',
+            placeholderSearch: 'Rechercher par mot-clé, témoin, tag...',
             feedEmptyTitle: 'Aucun témoignage publié pour le moment',
             feedEmptySub: 'Soyez le premier à partager une vidéo sous-titrée sur le Mur Communautaire !',
             postPendingBadge: '⏳ En attente de modération',
@@ -465,6 +466,7 @@
             publishSuccessTitle: '✅ تم إرسال الشهادة بنجاح!',
             publishSuccessMsg: 'تم استلام منشورك بنجاح. وهو الآن قيد المراجعة والتدقيق من قبل فريق الإشراف (الحالة: قيد الانتظار) قبل ظهوره على الجدار العام.',
             feedSectionTitle: '✨ أحدث الشهادات المنشورة',
+            placeholderSearch: 'البحث بالكلمات المفتاحية، الشاهد، الوسم...',
             feedEmptyTitle: 'لا توجد شهادات منشورة حالياً',
             feedEmptySub: 'كن أول من يشارك فيديو مترجماً على جدار المجتمع!',
             postPendingBadge: '⏳ قيد المراجعة',
@@ -912,6 +914,7 @@
             updateElementText('labelPublishTags', dict.labelPublishTags);
             updateElementPlaceholder('tagsInput', dict.placeholderPublishTags);
             updateElementText('feedSectionTitle', dict.feedSectionTitle);
+            updateElementPlaceholder('feedSearchInput', dict.placeholderSearch);
             updateElementText('feedEmptyTitle', dict.feedEmptyTitle);
             updateElementText('feedEmptySub', dict.feedEmptySub);
             updateElementText('btnReplaceMediaText', dict.btnReplaceMediaText);

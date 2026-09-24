@@ -604,7 +604,129 @@
             border-color: var(--color-primary);
         }
 
+        /* Barre de Recherche Instantanée */
+        .feed-search-bar-wrap {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 0 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+        }
 
+        .feed-search-bar-wrap:focus-within {
+            border-color: var(--color-turquoise);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.15), 0 4px 12px rgba(15, 23, 42, 0.06);
+        }
+
+        .feed-search-icon {
+            font-size: 1.1rem;
+            color: #64748b;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .feed-search-input {
+            flex: 1;
+            height: 44px;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: #1e293b;
+        }
+
+        .feed-search-clear {
+            background: rgba(148, 163, 184, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+        }
+
+        .feed-search-clear:hover {
+            background: rgba(239, 68, 68, 0.18);
+            color: #ef4444;
+        }
+
+        /* Contrôle Afficher Plus (Révélation Progressive) */
+        .feed-load-more-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 28px 0 12px;
+        }
+
+        .btn-load-more {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 28px;
+            min-height: 48px;
+            border-radius: 28px;
+            border: 1.5px solid rgba(11, 83, 148, 0.25);
+            background: #ffffff;
+            color: var(--color-primary);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(11, 83, 148, 0.08);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            touch-action: manipulation;
+        }
+
+        .btn-load-more:hover {
+            background: linear-gradient(135deg, var(--color-primary) 0%, #0d69b8 100%);
+            color: #ffffff;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(11, 83, 148, 0.22);
+        }
+
+        .btn-load-more:active {
+            transform: translateY(0);
+        }
+
+        .load-more-icon {
+            font-size: 1.15rem;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-load-more:hover .load-more-icon {
+            transform: translateY(2px);
+        }
+
+        .load-more-badge {
+            background: rgba(11, 83, 148, 0.1);
+            color: var(--color-primary);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            transition: all 0.2s;
+        }
+
+        .btn-load-more:hover .load-more-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
 
         /* Grille des posts — 3 colonnes franches, progression fluide */
         .feed-grid {
@@ -1265,6 +1387,16 @@
                 flex-shrink: 0;
                 min-height: 36px;
             }
+
+            .feed-search-bar-wrap {
+                max-width: 100%;
+            }
+
+            .btn-load-more {
+                width: 100%;
+                max-width: 360px;
+                padding: 12px 18px;
+            }
         }
     </style>
 </head>
@@ -1387,6 +1519,13 @@
             <div class="feed-header">
                 <h2 id="feedSectionTitle">✨ Témoignages Publiés</h2>
 
+                <!-- Barre de Recherche Rapide Instantanée -->
+                <div class="feed-search-bar-wrap">
+                    <span class="feed-search-icon" aria-hidden="true">🔍</span>
+                    <input type="text" id="feedSearchInput" class="feed-search-input" placeholder="Rechercher par mot-clé, témoin, tag..." autocomplete="off">
+                    <button type="button" id="btnClearSearch" class="feed-search-clear" style="display: none;" title="Effacer la recherche" aria-label="Effacer la recherche">✕</button>
+                </div>
+
                 <!-- Barre de filtres TYPE -->
                 <div class="feed-type-filters" id="feedTypeFilters">
                     <button class="type-filter-btn active" data-type="all">
@@ -1413,6 +1552,15 @@
             <!-- Grille des Cartes -->
             <div class="feed-grid" id="feedGrid">
                 <!-- Rendu dynamique JS -->
+            </div>
+
+            <!-- Bouton Afficher Plus de Témoignages (Révélation Progressive) -->
+            <div class="feed-load-more-wrap" id="feedLoadMoreWrap" style="display: none;">
+                <button type="button" class="btn-load-more" id="btnLoadMore">
+                    <span class="load-more-icon">📥</span>
+                    <span id="loadMoreText">Afficher plus de témoignages</span>
+                    <span class="load-more-badge" id="loadMoreBadge">0</span>
+                </button>
             </div>
 
             <!-- État vide (Fallback) -->
@@ -1451,7 +1599,10 @@
             let currentPosts = [];
             let activeTagFilter = 'all';
             let activeTypeFilter = 'all';
-
+            let searchQuery = '';
+            const PAGE_SIZE = 9;
+            let visibleCount = PAGE_SIZE;
+            let filteredPosts = [];
 
             const dropzone = document.getElementById('mediaDropzone');
             const fileInput = document.getElementById('mediaFileInput');
@@ -1471,6 +1622,12 @@
             const feedFilters = document.getElementById('feedFilters');
             const feedTypeFilters = document.getElementById('feedTypeFilters');
             const publishDetails = document.getElementById('publishDetails');
+            const feedSearchInput = document.getElementById('feedSearchInput');
+            const btnClearSearch = document.getElementById('btnClearSearch');
+            const feedLoadMoreWrap = document.getElementById('feedLoadMoreWrap');
+            const btnLoadMore = document.getElementById('btnLoadMore');
+            const loadMoreText = document.getElementById('loadMoreText');
+            const loadMoreBadge = document.getElementById('loadMoreBadge');
 
             // ── Formulaire : replié par défaut sur tous les écrans ───────
             (function initFormCollapse() {
@@ -1852,22 +2009,133 @@
                 });
             }
 
-            function filterAndRender() {
-                let filtered = currentPosts;
+            function filterAndRender(resetVisible = true) {
+                if (resetVisible) {
+                    visibleCount = PAGE_SIZE;
+                }
+
+                let list = currentPosts;
 
                 // 1. Filtre par type
                 if (activeTypeFilter === 'video') {
-                    filtered = filtered.filter(p => p.type !== 'chat_highlight');
+                    list = list.filter(p => p.type !== 'chat_highlight');
                 } else if (activeTypeFilter === 'chat_highlight') {
-                    filtered = filtered.filter(p => p.type === 'chat_highlight');
+                    list = list.filter(p => p.type === 'chat_highlight');
                 }
 
                 // 2. Filtre par hashtag
                 if (activeTagFilter !== 'all') {
-                    filtered = filtered.filter(p => p.tags && p.tags.includes(activeTagFilter));
+                    list = list.filter(p => p.tags && p.tags.includes(activeTagFilter));
                 }
 
-                renderPosts(filtered);
+                // 3. Filtre par recherche textuelle (insensible à la casse & trim)
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    list = list.filter(p => {
+                        const content = (p.originalContent || '').toLowerCase();
+                        const trans = (p.translatedText || '').toLowerCase();
+                        const orig = (p.originalText || '').toLowerCase();
+                        const author = (p.authorName || '').toLowerCase();
+                        const tags = Array.isArray(p.tags) ? p.tags.join(' ').toLowerCase() : '';
+                        return content.includes(q) || trans.includes(q) || orig.includes(q) || author.includes(q) || tags.includes(q);
+                    });
+                }
+
+                filteredPosts = list;
+
+                // Affichage / masquage de l'état vide
+                if (filteredPosts.length === 0) {
+                    feedGrid.innerHTML = '';
+                    emptyFeed.style.display = 'flex';
+                    if (feedLoadMoreWrap) feedLoadMoreWrap.style.display = 'none';
+
+                    const isAr = typeof isArabic === 'function' && isArabic();
+                    const emptyTitle = document.getElementById('feedEmptyTitle');
+                    const emptySub = document.getElementById('feedEmptySub');
+                    if (searchQuery) {
+                        if (emptyTitle) emptyTitle.textContent = isAr ? 'لم يتم العثور على نتائج' : 'Aucun résultat trouvé pour votre recherche';
+                        if (emptySub) emptySub.textContent = isAr ? 'جرب كلمات مفتاحية أخرى أو امسح البحث لعرض كل الشهادات.' : 'Essayez d\'autres mots-clés ou effacez la recherche pour réafficher les témoignages.';
+                    } else {
+                        if (emptyTitle) emptyTitle.textContent = isAr ? 'لا توجد شهادات منشورة حالياً' : 'Aucun témoignage publié pour le moment';
+                        if (emptySub) emptySub.textContent = isAr ? 'كن أول من يشارك فيديو مترجماً على جدار المجتمع!' : 'Soyez le premier à partager une vidéo sous-titrée sur le Mur Communautaire !';
+                    }
+                    return;
+                }
+
+                emptyFeed.style.display = 'none';
+
+                // Tranche visible
+                const visibleList = filteredPosts.slice(0, visibleCount);
+                renderPosts(visibleList);
+
+                // Gestion du bouton "Afficher plus"
+                updateLoadMoreControls();
+            }
+
+            function updateLoadMoreControls() {
+                if (!feedLoadMoreWrap || !btnLoadMore) return;
+
+                const remaining = filteredPosts.length - visibleCount;
+                if (remaining > 0) {
+                    feedLoadMoreWrap.style.display = 'flex';
+                    const isAr = typeof isArabic === 'function' && isArabic();
+                    if (loadMoreText) {
+                        loadMoreText.textContent = isAr ? 'عرض المزيد من الشهادات' : 'Afficher plus de témoignages';
+                    }
+                    if (loadMoreBadge) {
+                        loadMoreBadge.textContent = isAr ? `${remaining} متبقية` : `+${remaining} restants`;
+                    }
+                } else {
+                    feedLoadMoreWrap.style.display = 'none';
+                }
+            }
+
+            function initFeedControls() {
+                // Recherche en temps réel
+                if (feedSearchInput) {
+                    let searchTimeout = null;
+                    feedSearchInput.addEventListener('input', () => {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => {
+                            searchQuery = feedSearchInput.value.trim();
+                            if (btnClearSearch) {
+                                btnClearSearch.style.display = searchQuery ? 'flex' : 'none';
+                            }
+                            filterAndRender(true);
+                        }, 180);
+                    });
+                }
+
+                // Bouton effacer recherche
+                if (btnClearSearch && feedSearchInput) {
+                    btnClearSearch.addEventListener('click', () => {
+                        feedSearchInput.value = '';
+                        searchQuery = '';
+                        btnClearSearch.style.display = 'none';
+                        filterAndRender(true);
+                        feedSearchInput.focus();
+                    });
+                }
+
+                // Bouton "Afficher plus"
+                if (btnLoadMore) {
+                    btnLoadMore.addEventListener('click', () => {
+                        const prevCount = visibleCount;
+                        visibleCount += PAGE_SIZE;
+                        const nextBatch = filteredPosts.slice(prevCount, visibleCount);
+                        const isAr = typeof isArabic === 'function' && isArabic();
+
+                        nextBatch.forEach(post => {
+                            if (post.type === 'chat_highlight') {
+                                feedGrid.appendChild(renderHighlightCard(post, isAr));
+                            } else {
+                                feedGrid.appendChild(renderStandardCard(post, isAr));
+                            }
+                        });
+
+                        updateLoadMoreControls();
+                    });
+                }
             }
 
             // ── Rendu principal — dispatcher selon le type ────────────────
@@ -2193,7 +2461,8 @@
                     updateTypeCounts(currentPosts);
                     extractAndRenderTags(currentPosts);
                     initTypeFilters();
-                    renderPosts(currentPosts);
+                    initFeedControls();
+                    filterAndRender(true);
 
                 } catch (err) {
                     console.error('Erreur chargement posts :', err);
