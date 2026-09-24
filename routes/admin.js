@@ -801,5 +801,92 @@ router.put('/vocab-themes/:id/toggle', requireAdmin, (req, res) => {
     }
 });
 
+/**
+ * GET /api/admin/maintenance/disk
+ * État d'occupation des dossiers tampons et temporaires (Ticket #27 - TICKET-09)
+ */
+router.get('/maintenance/disk', requireAdmin, (req, res) => {
+    try {
+        const { runGarbageCollection, AUDIO_A_TRAITER_DIR, REPONSED_DIR, TEMP_DIR } = require('../services/garbageCollectorService');
+        
+        function getFolderMetrics(dirPath) {
+            if (!fs.existsSync(dirPath)) return { count: 0, sizeMb: 0 };
+            const entries = fs.readdirSync(dirPath);
+            let size = 0;
+            let fileCount = 0;
+            for (const f of entries) {
+                try {
+                    const st = fs.statSync(path.join(dirPath, f));
+                    if (st.isFile()) {
+                        fileCount++;
+                        size += st.size;
+                    }
+                } catch (e) {}
+            }
+            return { count: fileCount, sizeMb: (size / (1024 * 1024)).toFixed(2) };
+        }
+
+        const metrics = {
+            audio_a_traiter: getFolderMetrics(AUDIO_A_TRAITER_DIR),
+            fichiers_reponse_a_envoyer: getFolderMetrics(REPONSED_DIR),
+            temp: getFolderMetrics(TEMP_DIR)
+        };
+
+        const totalMb = (parseFloat(metrics.audio_a_traiter.sizeMb) + parseFloat(metrics.fichiers_reponse_a_envoyer.sizeMb) + parseFloat(metrics.temp.sizeMb)).toFixed(2);
+
+        return res.json({
+            success: true,
+            totalDiskUsageMb: `${totalMb} MB`,
+            folders: metrics
+        });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * POST /api/admin/maintenance/gc
+ * Déclenchement manuel ou planifié du Garbage Collector NVMe (Ticket #27 - TICKET-09)
+ */
+router.post('/maintenance/gc', requireAdmin, (req, res) => {
+    try {
+        const { runGarbageCollection } = require('../services/garbageCollectorService');
+        const dryRun = req.body?.dryRun === true;
+        const result = runGarbageCollection({ dryRun });
+        return res.json({ success: true, result });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * GET /api/admin/maintenance/backups
+ * Liste des sauvegardes de bases de données et leur statut (Ticket #28 - TICKET-10)
+ */
+router.get('/maintenance/backups', requireAdmin, (req, res) => {
+    try {
+        const { listBackups } = require('../services/backupService');
+        const backups = listBackups();
+        return res.json({ success: true, count: backups.length, backups });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * POST /api/admin/maintenance/backup-now
+ * Déclenchement immédiat d'une sauvegarde de la base de données (Ticket #28 - TICKET-10)
+ */
+router.post('/maintenance/backup-now', requireAdmin, async (req, res) => {
+    try {
+        const { performBackup } = require('../services/backupService');
+        const report = await performBackup();
+        return res.json({ success: true, report });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 module.exports = router;
+
 

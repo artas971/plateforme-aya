@@ -2058,7 +2058,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bubble.innerHTML = `
             ${dmBadgeHtml}
             <div class="chat-sender-name">
-                <span>👤 ${escapeChatHtml(msg.sender)}</span>
+                <span class="chat-sender-clickable" data-sender="${escapeChatHtml(msg.sender)}" title="${currentLang === 'ar' ? 'اضغط للمراسلة الخاصة مع ' + escapeChatHtml(msg.sender) : 'Cliquer pour écrire en privé à @' + escapeChatHtml(msg.sender)}">👤 ${escapeChatHtml(msg.sender)}</span>
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span class="chat-time-tag">🕒 ${timeStr}</span>
                     ${statusBadgeHtml}
@@ -2074,6 +2074,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${audioControlsHtml}
             </div>
         `;
+
+        // Clic sur l'Avatar / Nom de l'expéditeur pour bascule 1-clic en DM (Ticket #31 - TICKET-13)
+        const senderClickable = bubble.querySelector('.chat-sender-clickable');
+        if (senderClickable) {
+            senderClickable.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const senderName = senderClickable.dataset.sender;
+                const myName = currentUser ? (currentUser.name || currentUser.username) : '';
+                if (senderName && senderName.toLowerCase() !== (myName || '').toLowerCase()) {
+                    selectChatRecipient(senderName);
+                }
+            });
+        }
 
         // Interaction Clic droit pour répondre
         bubble.addEventListener('contextmenu', (e) => {
@@ -2702,6 +2715,179 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ==========================================================================
+    // TARGET PILL & BANNIÈRE PRIVÉE DE COMPOSITION (Ticket #26 & #31)
+    // ==========================================================================
+    const chatTargetPill = document.getElementById('chatTargetPill');
+    const targetPillIcon = document.getElementById('targetPillIcon');
+    const targetPillLabel = document.getElementById('targetPillLabel');
+    const targetPresenceMenu = document.getElementById('targetPresenceMenu');
+    const presenceMenuItems = document.getElementById('presenceMenuItems');
+    const presenceCountBadge = document.getElementById('presenceCountBadge');
+    const chatPrivateBanner = document.getElementById('chatPrivateBanner');
+    const privateBannerText = document.getElementById('privateBannerText');
+    const closePrivateBannerBtn = document.getElementById('closePrivateBannerBtn');
+
+    function selectChatRecipient(target) {
+        const normalizedTarget = (target && target !== 'all') ? target.trim() : 'all';
+
+        if (chatRecipientSelect) {
+            let found = false;
+            for (let i = 0; i < chatRecipientSelect.options.length; i++) {
+                if (chatRecipientSelect.options[i].value.toLowerCase() === normalizedTarget.toLowerCase()) {
+                    chatRecipientSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && normalizedTarget !== 'all') {
+                const opt = document.createElement('option');
+                opt.value = normalizedTarget;
+                opt.textContent = `👤 ${normalizedTarget}`;
+                chatRecipientSelect.appendChild(opt);
+                chatRecipientSelect.value = normalizedTarget;
+            }
+        }
+
+        const isPrivate = (normalizedTarget !== 'all');
+
+        if (chatTargetPill) {
+            if (isPrivate) {
+                chatTargetPill.classList.add('pill-private-active');
+                if (targetPillIcon) targetPillIcon.textContent = '🔒';
+                if (targetPillLabel) targetPillLabel.textContent = `@${normalizedTarget}`;
+            } else {
+                chatTargetPill.classList.remove('pill-private-active');
+                if (targetPillIcon) targetPillIcon.textContent = '🌍';
+                if (targetPillLabel) targetPillLabel.textContent = currentLang === 'ar' ? 'الصالون العام' : 'Salon Général';
+            }
+        }
+
+        if (chatPrivateBanner && privateBannerText) {
+            if (isPrivate) {
+                chatPrivateBanner.style.display = 'flex';
+                privateBannerText.innerHTML = currentLang === 'ar'
+                    ? `🔒 أنت تراسل الآن بشكل خاص <strong>@${escapeChatHtml(normalizedTarget)}</strong>. مشفر وسري تماماً.`
+                    : `🔒 Vous écrivez en privé à <strong>@${escapeChatHtml(normalizedTarget)}</strong>. Échange chiffré et strictement confidentiel.`;
+            } else {
+                chatPrivateBanner.style.display = 'none';
+            }
+        }
+
+        if (chatSendBtn) {
+            if (isPrivate) {
+                chatSendBtn.classList.add('btn-private-active');
+                chatSendBtn.innerHTML = currentLang === 'ar' ? '🔒 إرسال في الخاص' : '🔒 Envoyer en Privé';
+            } else {
+                chatSendBtn.classList.remove('btn-private-active');
+                chatSendBtn.innerHTML = i18n[currentLang]?.chatSendBtn || 'Envoyer';
+            }
+        }
+
+        if (targetPresenceMenu) {
+            targetPresenceMenu.style.display = 'none';
+            chatTargetPill?.setAttribute('aria-expanded', 'false');
+        }
+
+        if (isPrivate && chatInputText) {
+            chatInputText.focus();
+        }
+    }
+
+    async function loadPresenceForTargetMenu() {
+        if (!presenceMenuItems) return;
+        const currentTarget = chatRecipientSelect ? chatRecipientSelect.value : 'all';
+
+        try {
+            const res = await fetch('/api/presence');
+            const data = await res.json();
+            const liveUsers = data.users || [];
+
+            if (presenceCountBadge) {
+                presenceCountBadge.textContent = `${liveUsers.length} en ligne`;
+            }
+
+            const staticTeam = ['Steve', 'Soso', 'John', 'Anaïs', 'Aya'];
+            const myName = currentUser ? (currentUser.name || currentUser.username) : '';
+
+            const allTargetsMap = new Map();
+            liveUsers.forEach(u => {
+                const name = u.name || u.username;
+                if (name && name.toLowerCase() !== (myName || '').toLowerCase()) {
+                    allTargetsMap.set(name.toLowerCase(), { name, isOnline: true, role: u.role });
+                }
+            });
+            staticTeam.forEach(name => {
+                if (name.toLowerCase() !== (myName || '').toLowerCase() && !allTargetsMap.has(name.toLowerCase())) {
+                    allTargetsMap.set(name.toLowerCase(), { name, isOnline: false, role: 'collaborateur' });
+                }
+            });
+
+            let html = `
+                <div class="presence-item ${currentTarget === 'all' ? 'active' : ''}" data-target="all">
+                    <div class="presence-item-left">
+                        <span class="target-pill-icon">🌍</span>
+                        <span>${currentLang === 'ar' ? 'الصالون العام (الجميع)' : 'Salon Général (Tout le monde)'}</span>
+                    </div>
+                </div>
+            `;
+
+            for (const [, item] of allTargetsMap) {
+                const isSelected = (currentTarget.toLowerCase() === item.name.toLowerCase());
+                html += `
+                    <div class="presence-item ${isSelected ? 'active' : ''}" data-target="${escapeChatHtml(item.name)}">
+                        <div class="presence-item-left">
+                            <span class="presence-dot ${item.isOnline ? '' : 'offline'}"></span>
+                            <span>👤 @${escapeChatHtml(item.name)}</span>
+                        </div>
+                        <span style="font-size: 0.72rem; opacity: 0.6;">${item.isOnline ? (currentLang === 'ar' ? 'متصل' : 'En ligne') : ''}</span>
+                    </div>
+                `;
+            }
+
+            presenceMenuItems.innerHTML = html;
+
+            presenceMenuItems.querySelectorAll('.presence-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const target = el.dataset.target;
+                    selectChatRecipient(target);
+                });
+            });
+        } catch (e) {
+            console.warn('[Presence Menu Error]:', e);
+        }
+    }
+
+    if (chatTargetPill) {
+        chatTargetPill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!targetPresenceMenu) return;
+            const isShown = targetPresenceMenu.style.display !== 'none';
+            if (!isShown) {
+                loadPresenceForTargetMenu();
+                targetPresenceMenu.style.display = 'block';
+                chatTargetPill.setAttribute('aria-expanded', 'true');
+            } else {
+                targetPresenceMenu.style.display = 'none';
+                chatTargetPill.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (targetPresenceMenu && !targetPresenceMenu.contains(e.target) && e.target !== chatTargetPill) {
+                targetPresenceMenu.style.display = 'none';
+                chatTargetPill.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    if (closePrivateBannerBtn) {
+        closePrivateBannerBtn.addEventListener('click', () => {
+            selectChatRecipient('all');
+        });
+    }
+
     // Gestionnaires d'onglets de filtrage Chat (TICKET-16)
     if (tabChatAll) {
         tabChatAll.addEventListener('click', () => setChatFilter('all'));
@@ -2781,8 +2967,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Auto-refresh chat every 2.5 seconds pour une modération réactive instantanée
-    setInterval(loadChatMessages, 2500);
+    // Configuration Server-Sent Events (SSE) Zéro-Polling (Ticket #25 - TICKET-07)
+    let chatEventSource = null;
+    function initChatSSE() {
+        if (chatEventSource) {
+            try { chatEventSource.close(); } catch (e) {}
+            chatEventSource = null;
+        }
+
+        if (!window.EventSource) {
+            console.warn('⚠️ [SSE] EventSource non supporté par ce navigateur, fallback polling activé.');
+            setInterval(loadChatMessages, 5000);
+            return;
+        }
+
+        try {
+            chatEventSource = new EventSource('/api/chat/stream');
+
+            chatEventSource.addEventListener('new_message', (e) => {
+                try {
+                    loadChatMessages();
+                } catch (err) {}
+            });
+
+            chatEventSource.addEventListener('update_message', (e) => {
+                try {
+                    loadChatMessages();
+                } catch (err) {}
+            });
+
+            chatEventSource.addEventListener('delete_message', (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    const bubble = document.getElementById(`chat-msg-${data.id}`);
+                    if (bubble) {
+                        bubble.remove();
+                        renderedChatMessageIds.delete(data.id);
+                    }
+                } catch (err) {}
+            });
+
+            chatEventSource.addEventListener('reset_chat', () => {
+                loadChatMessages();
+            });
+
+            chatEventSource.onerror = (err) => {
+                // Reconnexion automatique standard assurée par EventSource
+            };
+        } catch (e) {
+            console.warn('⚠️ [SSE] Erreur initialisation EventSource:', e);
+            setInterval(loadChatMessages, 5000);
+        }
+    }
+
+    // Initialisation SSE Zéro-Polling & Heartbeat de fond à 30 secondes
+    initChatSSE();
+    setInterval(loadChatMessages, 30000);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            loadChatMessages();
+        }
+    });
 
     // VOSTFR Video TikTok & ASS Subtitle Creator Handler (Protocole V3)
     const vostfrMediaFileInput = document.getElementById('vostfrMediaFileInput');

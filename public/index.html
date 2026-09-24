@@ -206,16 +206,42 @@
                         <button id="closeReplyBtn" type="button" title="Annuler la réponse">✕</button>
                     </div>
 
+                    <!-- Bannière de composition confidentielle (DMs) - Ticket #26 & #31 -->
+                    <div id="chatPrivateBanner" class="chat-private-banner" style="display: none;">
+                        <div class="private-banner-content">
+                            <span class="private-lock-icon">🔒</span>
+                            <span id="privateBannerText" class="private-text">Vous écrivez en privé. Échange chiffré et strictement confidentiel.</span>
+                        </div>
+                        <button type="button" id="closePrivateBannerBtn" class="close-private-btn" title="Repasser en salon public">Repasser en public ✕</button>
+                    </div>
+
                     <!-- Chat Input Bar -->
                     <div class="chat-input-bar">
-                        <select id="chatRecipientSelect" class="chat-recipient-select" title="Destinataire du message">
-                            <option value="all">🌍 Tout le monde</option>
-                            <option value="Steve">👤 Steve</option>
-                            <option value="Soso">👤 Soso</option>
-                            <option value="John">👤 John</option>
-                            <option value="Anaïs">👤 Anaïs</option>
-                            <option value="Aya">👤 Aya</option>
-                        </select>
+                        <!-- Composant Target Pill Dynamique connecté à /api/presence -->
+                        <div class="target-pill-wrapper">
+                            <button type="button" id="chatTargetPill" class="chat-target-pill" title="Changer le destinataire">
+                                <span id="targetPillIcon" class="target-pill-icon">🌍</span>
+                                <span id="targetPillLabel" class="target-pill-label">Salon Général</span>
+                                <span class="target-pill-arrow">▾</span>
+                            </button>
+                            <div id="targetPresenceMenu" class="target-presence-menu" style="display: none;">
+                                <div class="presence-menu-header">
+                                    <span id="presenceHeaderTitle">Destinataire du message</span>
+                                    <span id="presenceCountBadge" class="presence-badge">En direct</span>
+                                </div>
+                                <div class="presence-menu-items" id="presenceMenuItems">
+                                    <!-- Rempli dynamiquement par /api/presence -->
+                                </div>
+                            </div>
+                            <select id="chatRecipientSelect" class="chat-recipient-select" style="display: none;" title="Destinataire du message">
+                                <option value="all">🌍 Tout le monde</option>
+                                <option value="Steve">👤 Steve</option>
+                                <option value="Soso">👤 Soso</option>
+                                <option value="John">👤 John</option>
+                                <option value="Anaïs">👤 Anaïs</option>
+                                <option value="Aya">👤 Aya</option>
+                            </select>
+                        </div>
 
                         <button class="btn btn-danger mic-chat-btn" id="chatMicBtn" title="Enregistrer une note vocale">
                             🎙️

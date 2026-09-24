@@ -740,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="preview-comp-fr">
                     <span class="preview-badge-tag preview-badge-fr">FRANÇAIS</span>
                     <div class="preview-word-fr">${item.french}</div>
-                    <div class="preview-sub-fr">🗣️ ${item.phoneticFr || ''}</div>
+                    <div class="preview-sub-fr">🗣️ En Shami : ${item.phoneticFr || ''}</div>
                 </div>
                 <div class="preview-comp-divider">
                     <span>${item.icon || '✨'}</span>

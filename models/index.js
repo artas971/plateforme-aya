@@ -7,6 +7,7 @@ const Video = require('./Video');
 const Card = require('./Card');
 const FeedbackRating = require('./FeedbackRating');
 const FailureReport = require('./FailureReport');
+const ChatMessage = require('./ChatMessage');
 
 module.exports = {
     connectDB,
@@ -19,5 +20,6 @@ module.exports = {
     Video,
     Card,
     FeedbackRating,
-    FailureReport
+    FailureReport,
+    ChatMessage
 };

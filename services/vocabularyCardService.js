@@ -93,6 +93,98 @@ function sanitizeEmoji(iconStr, defaultEmoji = '✨') {
 }
 
 /**
+ * Calcule la distance d'édition de Levenshtein entre deux chaînes
+ */
+function levenshteinDistance(a, b) {
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+    return matrix[b.length][a.length];
+}
+
+/**
+ * Normalise une chaîne pour comparaison textuelle (minuscules, sans accents, sans tirets/espaces/ponctuation)
+ */
+function normalizeForComparison(str) {
+    if (!str) return '';
+    return str
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Normalisation phonétique simplifiée française pour intercepter les transcriptions du mot français
+ * (ex: "audace" -> "odas", "o-das" -> "odas")
+ */
+function phoneticFrenchSimplify(str) {
+    if (!str) return '';
+    let s = normalizeForComparison(str);
+    s = s.replace(/eau/g, 'o')
+         .replace(/au/g, 'o')
+         .replace(/ph/g, 'f')
+         .replace(/qu/g, 'k')
+         .replace(/gu([eiy])/g, 'g$1')
+         .replace(/c([eiy])/g, 's$1')
+         .replace(/c/g, 'k')
+         .replace(/ai/g, 'e')
+         .replace(/ei/g, 'e')
+         .replace(/ou/g, 'u')
+         .replace(/([aeiouy])s([aeiouy])/g, '$1z$2')
+         .replace(/(.)\1+/g, '$1')
+         .replace(/e$/g, '');
+    return s;
+}
+
+/**
+ * Calcule le taux de similarité (0.0 à 1.0) entre phoneticFr et le mot french.
+ * Détecte si phoneticFr est une copie ou une transcription du mot français plutôt que de l'arabe.
+ */
+function checkPhoneticSimilarityWithFrench(phoneticFr, frenchWord) {
+    if (!phoneticFr || !frenchWord) return 0;
+
+    const cleanPhon = normalizeForComparison(phoneticFr);
+    const cleanFrench = normalizeForComparison(frenchWord);
+
+    if (!cleanPhon || !cleanFrench) return 0;
+
+    // 1. Similarité Levenshtein directe normalisée
+    const maxLen = Math.max(cleanPhon.length, cleanFrench.length);
+    const distRaw = levenshteinDistance(cleanPhon, cleanFrench);
+    const simRaw = maxLen > 0 ? 1 - (distRaw / maxLen) : 0;
+
+    // 2. Similarité phonétique simplifiée (règles de prononciation françaises)
+    const phonSimp = phoneticFrenchSimplify(phoneticFr);
+    const frenchSimp = phoneticFrenchSimplify(frenchWord);
+    const maxLenSimp = Math.max(phonSimp.length, frenchSimp.length);
+    let simPhonetic = 0;
+    if (maxLenSimp > 0) {
+        const distSimp = levenshteinDistance(phonSimp, frenchSimp);
+        simPhonetic = 1 - (distSimp / maxLenSimp);
+    }
+
+    return Math.max(simRaw, simPhonetic);
+}
+
+/**
  * 1. Génération sémantique des 5 mots bilingues via Gemini Flash (ou customWords)
  */
 async function generateVocabularyData(theme, customWords = null, level = 'debutant', excludeWords = []) {
@@ -106,8 +198,13 @@ Tu dois générer exactement 5 fiches de vocabulaire thématiques adaptées à l
 
 Règles de translittération strictes :
 1. Pour l'arabe : écriture en arabe avec vocalisation complète (Tashkeel / Harakat).
-2. Phonétique pour francophones (phoneticFr) : en alphabet latin découpé en syllabes avec tirets [ex: Mar-ha-ban, Ach-chams]. Conventions : Kh pour خ, Gh pour غ, Ch pour ش, Q pour ق, 'A pour ع.
-3. Phonétique pour arabophones (phoneticAr) : transcription du mot français en lettres arabes avec Tashkeel complet [ex: بُونْژُورْ pour Bonjour, لُو سُولَيّْ pour Le Soleil, لَا كُونْفْيَانْسْ pour La Confiance]. Règle impérative : lettre 'V' = ڤ, son 'J' = ژ, voyelle '-er/-é' = ـِيه.
+2. Phonétique pour francophones (phoneticFr) :
+   ⚠️ RÈGLE FONDAMENTALE ET IMPÉRATIVE :
+   Ce champ sert UNIQUEMENT à apprendre aux francophones à prononcer le mot ARABE en dialecte Shami !
+   Il doit TOUJOURS contenir la prononciation phonétique en alphabet latin découpé en syllabes avec tirets DU MOT ARABE (ex: pour بَسَالَة -> Ba-sal-la, pour ثَبَات -> Tha-bat, pour إِقْدَام -> Iq-dam, pour تَجَلُّد -> Ta-jal-lud, pour جُرْأَة -> Jur-'a).
+   🚫 INTERDICTION FORMELLE ET ABSOLUE : Ne JAMAIS découper ni transcrire le mot français dans phoneticFr (ne JAMAIS écrire "In-tré-pi-di-té", "Sto-i-cism" ou "O-das"). Si tu y mets le mot français, la fiche est complètement fausse et rejetée.
+   Conventions phonétiques : Kh pour خ, Gh pour غ, Ch pour ش, Q pour ق, 'A pour ع.
+3. Phonétique pour arabophones (phoneticAr) : transcription du mot français en lettres arabes avec Tashkeel complet pour permettre aux arabophones d'apprendre à prononcer le mot français [ex: بُونْژُورْ pour Bonjour, لُو سُولَيّْ pour Le Soleil, لَا كُونْفْيَانْسْ pour La Confiance, أَنْتْرِيپِيدِيتِيه pour Intrépidité]. Règle impérative : lettre 'V' = ڤ, son 'J' = ژ, voyelle '-er/-é' = ـِيه.
 4. Choisis EXACTEMENT UN SEUL émoji Unicode standard très évocateur pour chaque mot (ex: 🌳 pour un arbre, 🪚 pour une scie, 🍞 pour du pain). Interdiction d'utiliser du texte ou du code markdown à la place de l'émoji.
 
 Réponds STRICTEMENT au format JSON suivant :
@@ -118,8 +215,8 @@ Réponds STRICTEMENT au format JSON suivant :
   "words": [
     {
       "french": "MOT EN FRANCAIS (MAJUSCULES)",
-      "arabic": "(الْكَلِمَةُ بِالْعَرَبِيَّةِ)",
-      "phoneticFr": "Phonétique-Latin-Découpée",
+      "arabic": "الْكَلِمَةُ بِالْعَرَبِيَّةِ الشَّامِيَّةِ مَعَ التَّشْكِيلِ",
+      "phoneticFr": "Prononciation-Du-Mot-Arabe-En-Alphabet-Latin (ex: Iq-dam, JAMAIS le mot francais)",
       "phoneticAr": "كِتَابَةُ النُّطْقِ الْفَرَنْسِيِّ بِالْعَرَبِيِّ",
       "icon": "👋",
       "ttsFrench": "Texte français à prononcer",
@@ -242,6 +339,25 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
                 ...w,
                 icon: sanitizeEmoji(w.icon, '✨')
             }));
+
+            // 🛡️ SANITY CHECK : Filet de sécurité algorithmique anti-inversion phonétique
+            let sanityCheckFailed = false;
+            let failureReason = '';
+
+            for (const word of parsed.words) {
+                const sim = checkPhoneticSimilarityWithFrench(word.phoneticFr, word.french);
+                if (sim >= 0.75) {
+                    sanityCheckFailed = true;
+                    failureReason = `Inversion phonétique détectée pour "${word.french}" : phoneticFr="${word.phoneticFr}" (similarité calculée: ${Math.round(sim * 100)}% >= 75%). Ce champ doit impérativement contenir la prononciation du mot arabe "${word.arabic}" et non du français.`;
+                    break;
+                }
+            }
+
+            if (sanityCheckFailed) {
+                console.warn(`[SANITY CHECK VOCAB] ⚠️ ${failureReason} -> Rejet de l'itération et re-roll immédiat.`);
+                lastError = new Error(`Sanity check rejeté : ${failureReason}`);
+                continue;
+            }
 
             return parsed;
         } catch (e) {
@@ -635,62 +751,161 @@ function escapeHtml(str) {
 }
 
 /**
- * 3. Rendu Puppeteer Headless (1080x1920) avec test de collision DOM
+ * Warm Singleton Browser Manager (Ticket #32 - TICKET-14)
+ * - Maintient une instance unique de Chromium ouverte en arrière-plan
+ * - Réutilise les onglets via browser.newPage() avec fermeture garantie
+ * - Recyclage périodique après 25 générations ou si inactif depuis 15 minutes
+ * - Protège contre les fuites de mémoire et supprime la latence de démarrage (cold start)
+ */
+class WarmBrowserManager {
+    constructor() {
+        this.browser = null;
+        this.operationsCount = 0;
+        this.maxOperations = 25;
+        this.lastUsedTimestamp = Date.now();
+        this.idleTimeoutMs = 15 * 60 * 1000;
+        this.launchPromise = null;
+
+        const cleanup = async () => {
+            await this.close();
+        };
+        process.once('SIGINT', cleanup);
+        process.once('SIGTERM', cleanup);
+        process.once('beforeExit', cleanup);
+    }
+
+    async getBrowser() {
+        const now = Date.now();
+        if (this.browser && (this.operationsCount >= this.maxOperations || (now - this.lastUsedTimestamp > this.idleTimeoutMs))) {
+            console.log(`♻️ [PUPPETEER WARM RECYCLE] Recyclage périodique de l'instance Chromium (${this.operationsCount} rendus)...`);
+            await this.close();
+        }
+
+        if (this.browser && this.browser.isConnected()) {
+            this.lastUsedTimestamp = Date.now();
+            return this.browser;
+        }
+
+        if (this.launchPromise) {
+            return this.launchPromise;
+        }
+
+        this.launchPromise = (async () => {
+            const browserPath = getBrowserExecutablePath();
+            console.log(`🚀 [PUPPETEER WARM SINGLETON] Lancement de l'instance warm Chromium : ${browserPath}`);
+            const browser = await puppeteer.launch({
+                executablePath: browserPath,
+                headless: true,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-gpu',
+                    '--disable-dev-shm-usage',
+                    '--font-render-hinting=medium',
+                    '--disable-extensions',
+                    '--disable-component-update'
+                ],
+                defaultViewport: { width: 1080, height: 1920, deviceScaleFactor: 2.25 }
+            });
+
+            browser.on('disconnected', () => {
+                console.warn('⚠️ [PUPPETEER] Instance Chromium déconnectée.');
+                if (this.browser === browser) {
+                    this.browser = null;
+                    this.operationsCount = 0;
+                }
+            });
+
+            this.browser = browser;
+            this.operationsCount = 0;
+            this.lastUsedTimestamp = Date.now();
+            this.launchPromise = null;
+            return browser;
+        })();
+
+        return this.launchPromise;
+    }
+
+    async withPage(action) {
+        const browser = await this.getBrowser();
+        const page = await browser.newPage();
+        this.operationsCount++;
+        this.lastUsedTimestamp = Date.now();
+
+        try {
+            return await action(page);
+        } finally {
+            try {
+                await page.close();
+            } catch (e) {
+                console.warn('⚠️ [PUPPETEER] Erreur fermeture onglet :', e.message);
+            }
+        }
+    }
+
+    async close() {
+        if (this.browser) {
+            try {
+                await this.browser.close();
+            } catch (e) {}
+            this.browser = null;
+            this.operationsCount = 0;
+        }
+    }
+}
+
+const warmBrowserManager = new WarmBrowserManager();
+
+/**
+ * 3. Rendu Puppeteer Headless (1080x1920) avec test de collision DOM (Warm Singleton)
  */
 async function renderCardImage(htmlContent, outputPath) {
-    const browserPath = getBrowserExecutablePath();
     const tempHtmlFile = path.join(TEMP_BUILD_DIR, `temp_card_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.html`);
     fs.writeFileSync(tempHtmlFile, htmlContent, 'utf8');
 
-    let browser = null;
     try {
-        browser = await puppeteer.launch({
-            executablePath: browserPath,
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--font-render-hinting=medium'],
-            defaultViewport: { width: 1080, height: 1920, deviceScaleFactor: 2.25 }
-        });
+        await warmBrowserManager.withPage(async (page) => {
+            await page.goto('file:///' + tempHtmlFile.replace(/\\/g, '/'), { waitUntil: 'networkidle0' });
 
-        const page = await browser.newPage();
-        await page.goto('file:///' + tempHtmlFile.replace(/\\/g, '/'), { waitUntil: 'networkidle0' });
+            // Temporisation et attente explicite du chargement complet des polices Web (Noto Color Emoji, Cairo, Inter)
+            try {
+                await page.evaluate(() => document.fonts.ready);
+            } catch (e) {}
+            await new Promise(r => setTimeout(r, 400));
 
-        // Temporisation et attente explicite du chargement complet des polices Web (Noto Color Emoji, Cairo, Inter)
-        try {
-            await page.evaluate(() => document.fonts.ready);
-        } catch (e) {}
-        await new Promise(r => setTimeout(r, 600));
-
-        // Test de collision et de troncature DOM
-        const check = await page.evaluate(() => {
-            const poster = document.getElementById('poster');
-            const items = document.querySelectorAll('.card-item-all-in-one');
-            let truncated = false;
-            const posterRect = poster.getBoundingClientRect();
-            const itemRects = Array.from(items).map(it => {
-                const rect = it.getBoundingClientRect();
-                if (rect.bottom > posterRect.bottom - 5 || rect.top < posterRect.top) {
-                    truncated = true;
-                }
-                return { top: rect.top, bottom: rect.bottom };
+            // Test de collision et de troncature DOM
+            const check = await page.evaluate(() => {
+                const poster = document.getElementById('poster');
+                const items = document.querySelectorAll('.card-item-all-in-one');
+                let truncated = false;
+                const posterRect = poster.getBoundingClientRect();
+                const itemRects = Array.from(items).map(it => {
+                    const rect = it.getBoundingClientRect();
+                    if (rect.bottom > posterRect.bottom - 5 || rect.top < posterRect.top) {
+                        truncated = true;
+                    }
+                    return { top: rect.top, bottom: rect.bottom };
+                });
+                return { truncated, itemCount: items.length };
             });
-            return { truncated, itemCount: items.length };
-        });
 
-        if (check.truncated) {
-            console.warn("⚠️ Attention : Troncature d'éléments détectée dans le gabarit.");
-        }
+            if (check.truncated) {
+                console.warn("⚠️ Attention : Troncature d'éléments détectée dans le gabarit.");
+            }
 
-        const posterElement = await page.$('#poster');
-        await posterElement.screenshot({
-            path: outputPath,
-            type: 'jpeg',
-            quality: 95
+            const posterElement = await page.$('#poster');
+            await posterElement.screenshot({
+                path: outputPath,
+                type: 'jpeg',
+                quality: 95
+            });
         });
 
         return outputPath;
     } finally {
-        if (browser) await browser.close();
-        if (fs.existsSync(tempHtmlFile)) fs.unlinkSync(tempHtmlFile);
+        if (fs.existsSync(tempHtmlFile)) {
+            try { fs.unlinkSync(tempHtmlFile); } catch (e) {}
+        }
     }
 }
 
@@ -881,5 +1096,6 @@ module.exports = {
     generateVocabularyData,
     buildHtmlTemplate,
     renderCardImage,
-    generateCombinedAudio
+    generateCombinedAudio,
+    warmBrowserManager
 };

@@ -563,8 +563,8 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             }
             console.log(`[TRADUCTION PROCESS] Script Python terminé avec le code : ${code}`);
 
+            let finalData = null;
             try {
-                let finalData = null;
                 const jsonMatch = stdoutData.match(/---JSON_OUTPUT_START---([\s\S]*?)---JSON_OUTPUT_END---/);
                 if (jsonMatch) {
                     try {
@@ -717,13 +717,13 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                     try {
                         const { analyzeFailure } = require('../services/failureAnalyzer');
                         analyzeFailure({
-                            jobId: finalData?.jobId || path.basename(inputFilePath || 'inconnu'),
+                            jobId: finalData?.jobId || path.basename(mediaPath || 'inconnu'),
                             userId,
                             username,
                             userEmail: req.session?.user?.email,
                             serviceType: 'traduction',
                             component: 'FFmpeg/Whisper',
-                            mediaUrl: inputFilePath,
+                            mediaUrl: mediaPath,
                             errorMessage: `Échec du processus de traduction (code de sortie: ${code})`,
                             errorStack: (finalData && finalData.error) ? finalData.error : "Anomalie lors du rendu des sous-titres."
                         }).catch(e => console.warn('[FAILURE INTERCEPTOR] ⚠️ Erreur analyse :', e.message));
@@ -744,33 +744,39 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                     }
                 }
             } finally {
-                if (heartbeatInterval) {
-                    clearInterval(heartbeatInterval);
-                    heartbeatInterval = null;
+                try {
+                    if (heartbeatInterval) {
+                        clearInterval(heartbeatInterval);
+                        heartbeatInterval = null;
+                    }
+                    if (hasLock) {
+                        releaseUserLock(userId);
+                        hasLock = false;
+                    }
+                    if (finalData && finalData.success) {
+                        activeSessionMedia.set(userId, {
+                            mediaPath,
+                            originalName,
+                            targetLang,
+                            sourceLang,
+                            subColor,
+                            subPosition,
+                            bgTheme,
+                            titleB64,
+                            title: finalData.title || rawTitle || originalName,
+                            timestamp: Date.now()
+                        });
+                        console.log(`[SESSION TAMPON] 💾 Média conservé pour personnalisation rapide en session : ${path.basename(mediaPath)}`);
+                    } else {
+                        cleanupTemporaryMedia(mediaPath);
+                        activeSessionMedia.delete(userId);
+                    }
+                } catch (cleanupErr) {
+                    console.error('[TRADUCTION CLEANUP ERROR]', cleanupErr);
                 }
-                if (hasLock) {
-                    releaseUserLock(userId);
-                    hasLock = false;
+                if (!res.writableEnded) {
+                    res.end();
                 }
-                if (finalData && finalData.success) {
-                    activeSessionMedia.set(userId, {
-                        mediaPath,
-                        originalName,
-                        targetLang,
-                        sourceLang,
-                        subColor,
-                        subPosition,
-                        bgTheme,
-                        titleB64,
-                        title: finalData.title || rawTitle || originalName,
-                        timestamp: Date.now()
-                    });
-                    console.log(`[SESSION TAMPON] 💾 Média conservé pour personnalisation rapide en session : ${path.basename(mediaPath)}`);
-                } else {
-                    cleanupTemporaryMedia(mediaPath);
-                    activeSessionMedia.delete(userId);
-                }
-                res.end();
             }
         });
 

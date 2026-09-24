@@ -147,6 +147,10 @@ app.get(['/confidentialite', '/confidentialite.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'confidentialite.html'));
 });
 
+app.get(['/mentions-legales', '/mentions-legales.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'mentions-legales.html'));
+});
+
 // Page de réinitialisation de mot de passe publique (accessible via le lien reçu par e-mail)
 app.get(['/reset-password', '/reset-password.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'reset-password.html'));
@@ -331,4 +335,8 @@ app.listen(PORT, async () => {
     // Démarrage du Worker autonome Google Drive (Ticket 5)
     const { startDriveWorker } = require('./services/driveWorker');
     startDriveWorker();
+
+    // Démarrage du Service de Garbage Collection NVMe (Ticket #27 - TICKET-09)
+    const { startGarbageCollectorService } = require('./services/garbageCollectorService');
+    startGarbageCollectorService();
 });
