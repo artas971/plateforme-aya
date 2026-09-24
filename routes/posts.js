@@ -93,21 +93,48 @@ function writeFallbackPosts(posts) {
  */
 router.get('/', async (req, res) => {
     try {
-        const { tag, lang } = req.query;
+        const { tag, lang, type, search, q } = req.query;
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
+        const limit = hasPagination ? Math.min(Math.max(parseInt(req.query.limit) || 9, 1), 50) : 100;
+        const searchTerm = (search || q || '').trim();
 
         if (isDbConnected()) {
             const query = { moderationStatus: 'approved' };
-            if (tag) query.tags = tag;
+            if (tag && tag !== 'all') query.tags = tag;
             if (lang) query.targetLang = lang;
+            if (type && type !== 'all') query.type = type;
+
+            if (searchTerm) {
+                const escaped = searchTerm.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+                const regex = new RegExp(escaped, 'i');
+                query.$or = [
+                    { originalContent: regex },
+                    { translatedText: regex },
+                    { originalText: regex },
+                    { authorName: regex },
+                    { tags: regex }
+                ];
+            }
+
+            const total = await Post.countDocuments(query);
+            const totalPages = Math.ceil(total / limit) || 1;
+            const skip = hasPagination ? (page - 1) * limit : 0;
 
             const posts = await Post.find(query)
                 .sort({ isPinned: -1, createdAt: -1 })
-                .limit(50)
+                .skip(skip)
+                .limit(limit)
                 .lean();
 
             return res.json({
                 success: true,
                 count: posts.length,
+                total,
+                page,
+                limit,
+                totalPages,
+                hasMore: page < totalPages,
                 posts
             });
         }
@@ -116,8 +143,20 @@ router.get('/', async (req, res) => {
         let posts = readFallbackPosts();
         posts = posts.filter(p => p.moderationStatus === 'approved');
 
-        if (tag) posts = posts.filter(p => p.tags && p.tags.includes(tag));
+        if (tag && tag !== 'all') posts = posts.filter(p => p.tags && p.tags.includes(tag));
         if (lang) posts = posts.filter(p => p.targetLang === lang);
+        if (type && type !== 'all') posts = posts.filter(p => p.type === type);
+
+        if (searchTerm) {
+            const s = searchTerm.toLowerCase();
+            posts = posts.filter(p => 
+                (p.originalContent && p.originalContent.toLowerCase().includes(s)) ||
+                (p.translatedText && p.translatedText.toLowerCase().includes(s)) ||
+                (p.originalText && p.originalText.toLowerCase().includes(s)) ||
+                (p.authorName && p.authorName.toLowerCase().includes(s)) ||
+                (Array.isArray(p.tags) && p.tags.some(t => t.toLowerCase().includes(s)))
+            );
+        }
 
         posts.sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
@@ -125,10 +164,20 @@ router.get('/', async (req, res) => {
             return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
 
+        const total = posts.length;
+        const totalPages = Math.ceil(total / limit) || 1;
+        const skip = hasPagination ? (page - 1) * limit : 0;
+        const paginatedPosts = hasPagination ? posts.slice(skip, skip + limit) : posts.slice(0, limit);
+
         return res.json({
             success: true,
-            count: posts.length,
-            posts
+            count: paginatedPosts.length,
+            total,
+            page,
+            limit,
+            totalPages,
+            hasMore: page < totalPages,
+            posts: paginatedPosts
         });
     } catch (err) {
         console.error('❌ Erreur GET /api/posts :', err);
