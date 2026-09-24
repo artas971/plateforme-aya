@@ -81,12 +81,6 @@
             publishSuccessTitle: '✅ Témoignage soumis avec succès !',
             publishSuccessMsg: 'Votre publication a été transmise avec succès. Elle est actuellement en cours d\'examen par l\'équipe de modération (statut : En attente) avant sa mise en ligne sur le mur public.',
             feedSectionTitle: '✨ Témoignages Publiés',
-            carouselTitle: '⭐ À la Une — Coups de Cœur de la Communauté',
-            placeholderSearch: 'Rechercher par mot-clé, témoin, hashtag...',
-            labelModeGrid: 'Grille',
-            labelModeStories: 'Stories',
-            labelPrevPage: 'Précédent',
-            labelNextPage: 'Suivant',
             feedEmptyTitle: 'Aucun témoignage publié pour le moment',
             feedEmptySub: 'Soyez le premier à partager une vidéo sous-titrée sur le Mur Communautaire !',
             postPendingBadge: '⏳ En attente de modération',
@@ -471,12 +465,6 @@
             publishSuccessTitle: '✅ تم إرسال الشهادة بنجاح!',
             publishSuccessMsg: 'تم استلام منشورك بنجاح. وهو الآن قيد المراجعة والتدقيق من قبل فريق الإشراف (الحالة: قيد الانتظار) قبل ظهوره على الجدار العام.',
             feedSectionTitle: '✨ أحدث الشهادات المنشورة',
-            carouselTitle: '⭐ المميز — مختارات المجتمع',
-            placeholderSearch: 'البحث بالكلمات المفتاحية، الشاهد، الوسم...',
-            labelModeGrid: 'شبكة',
-            labelModeStories: 'قصص',
-            labelPrevPage: 'السابق',
-            labelNextPage: 'التالي',
             feedEmptyTitle: 'لا توجد شهادات منشورة حالياً',
             feedEmptySub: 'كن أول من يشارك فيديو مترجماً على جدار المجتمع!',
             postPendingBadge: '⏳ قيد المراجعة',
@@ -924,12 +912,6 @@
             updateElementText('labelPublishTags', dict.labelPublishTags);
             updateElementPlaceholder('tagsInput', dict.placeholderPublishTags);
             updateElementText('feedSectionTitle', dict.feedSectionTitle);
-            updateElementText('carouselTitle', dict.carouselTitle);
-            updateElementPlaceholder('feedSearchInput', dict.placeholderSearch);
-            updateElementText('labelModeGrid', dict.labelModeGrid);
-            updateElementText('labelModeStories', dict.labelModeStories);
-            updateElementText('labelPrevPage', dict.labelPrevPage);
-            updateElementText('labelNextPage', dict.labelNextPage);
             updateElementText('feedEmptyTitle', dict.feedEmptyTitle);
             updateElementText('feedEmptySub', dict.feedEmptySub);
             updateElementText('btnReplaceMediaText', dict.btnReplaceMediaText);

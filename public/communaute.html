@@ -1265,713 +1265,6 @@
                 flex-shrink: 0;
                 min-height: 36px;
             }
-        /* ── Carousel À la Une (Desktop & Tablette) ── */
-        .featured-carousel-section {
-            background: linear-gradient(135deg, rgba(11, 83, 148, 0.05) 0%, rgba(0, 188, 212, 0.08) 100%);
-            border: 1.5px solid rgba(0, 188, 212, 0.25);
-            border-radius: 20px;
-            padding: 22px 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            position: relative;
-        }
-
-        .carousel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .carousel-title-wrap {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .carousel-title-wrap h3 {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--color-primary);
-            margin: 0;
-        }
-
-        .carousel-badge-icon {
-            font-size: 1.3rem;
-        }
-
-        .carousel-nav-arrows {
-            display: flex;
-            gap: 8px;
-        }
-
-        .carousel-arrow-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: var(--color-primary);
-            font-size: 1.4rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-        }
-
-        .carousel-arrow-btn:hover {
-            background: var(--color-primary);
-            color: #ffffff;
-            border-color: var(--color-primary);
-            transform: scale(1.05);
-        }
-
-        .featured-carousel-track {
-            display: flex;
-            gap: 18px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
-            padding-bottom: 8px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: thin;
-        }
-
-        .featured-carousel-track::-webkit-scrollbar {
-            height: 6px;
-        }
-        .featured-carousel-track::-webkit-scrollbar-thumb {
-            background: rgba(11, 83, 148, 0.2);
-            border-radius: 10px;
-        }
-
-        .carousel-card {
-            flex: 0 0 280px;
-            scroll-snap-align: start;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(11, 83, 148, 0.08);
-            position: relative;
-        }
-
-        .carousel-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 24px rgba(11, 83, 148, 0.16);
-            border-color: var(--color-turquoise);
-        }
-
-        .carousel-card-media {
-            width: 100%;
-            height: 180px;
-            background: #0f172a;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .carousel-card-media video,
-        .carousel-card-media img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .carousel-play-overlay {
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(11, 83, 148, 0.85);
-            backdrop-filter: blur(4px);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: transform 0.2s ease;
-        }
-
-        .carousel-card:hover .carousel-play-overlay {
-            transform: scale(1.12);
-            background: var(--color-primary);
-        }
-
-        .carousel-card-body {
-            padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex-grow: 1;
-        }
-
-        .carousel-card-author {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: var(--color-primary);
-        }
-
-        .carousel-card-text {
-            font-size: 0.88rem;
-            line-height: 1.4;
-            color: #334155;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            margin: 0;
-        }
-
-        /* ── Recherche Instantanée & Contrôles de Vue ── */
-        .feed-controls-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            width: 100%;
-            flex-wrap: wrap;
-        }
-
-        .feed-search-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 8px 14px;
-            flex: 1 1 280px;
-            max-width: 450px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .feed-search-bar:focus-within {
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px rgba(11, 83, 148, 0.15);
-        }
-
-        .feed-search-input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 0.92rem;
-            color: #1e293b;
-            background: transparent;
-        }
-
-        .btn-clear-search {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            font-size: 0.9rem;
-            padding: 2px 6px;
-        }
-        .btn-clear-search:hover { color: #334155; }
-
-        .view-mode-switcher {
-            display: flex;
-            background: #f1f5f9;
-            border-radius: 10px;
-            padding: 3px;
-            gap: 4px;
-        }
-
-        .view-mode-btn {
-            background: transparent;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .view-mode-btn.active {
-            background: #ffffff;
-            color: var(--color-primary);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            font-weight: 700;
-        }
-
-        /* ── Pagination Interactive ── */
-        .feed-pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin-top: 36px;
-            padding: 16px;
-            flex-wrap: wrap;
-        }
-
-        .pagination-btn {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--color-primary);
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-        }
-
-        .pagination-btn:hover:not(:disabled) {
-            background: var(--color-primary);
-            color: #ffffff;
-            border-color: var(--color-primary);
-            transform: translateY(-1px);
-        }
-
-        .pagination-btn:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-            border-color: #e2e8f0;
-        }
-
-        .pagination-pages {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-
-        .page-num-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            color: #475569;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .page-num-btn:hover {
-            border-color: var(--color-primary);
-            color: var(--color-primary);
-        }
-
-        .page-num-btn.active {
-            background: var(--color-primary);
-            color: #ffffff;
-            border-color: var(--color-primary);
-            box-shadow: 0 2px 8px rgba(11, 83, 148, 0.25);
-        }
-
-        .pagination-info {
-            font-size: 0.85rem;
-            color: #64748b;
-            font-weight: 500;
-            margin-left: 8px;
-        }
-
-        /* ── Mode Cinéma / Lightbox Immersion ── */
-        .cinema-modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 15, 29, 0.92);
-            backdrop-filter: blur(8px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .cinema-modal-content {
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 92vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-            overflow: hidden;
-        }
-
-        .cinema-close-btn {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            color: #ffffff;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            transition: all 0.2s ease;
-        }
-        .cinema-close-btn:hover { background: rgba(239, 68, 68, 0.8); }
-
-        .cinema-nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            font-size: 1.8rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 15;
-            transition: all 0.2s ease;
-        }
-        .cinema-nav-btn:hover:not(:disabled) {
-            background: var(--color-turquoise);
-            color: #0f172a;
-        }
-        .cinema-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-        .cinema-prev-btn { left: 16px; }
-        .cinema-next-btn { right: 16px; }
-
-        .cinema-card-container {
-            padding: 30px 60px 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-            color: #ffffff;
-        }
-
-        .cinema-media-frame {
-            max-height: 52vh;
-            width: auto;
-            max-width: 100%;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            background: #000000;
-        }
-
-        .cinema-media-frame video {
-            max-height: 52vh;
-            width: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        .cinema-text-block {
-            max-width: 680px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .cinema-author {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--color-turquoise);
-            margin-bottom: 6px;
-        }
-
-        .cinema-desc {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #cbd5e1;
-            margin: 0;
-        }
-
-        .cinema-footer-bar {
-            background: #090d16;
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .cinema-counter {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        .cinema-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .cinema-action-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .cinema-action-btn:hover { background: rgba(255, 255, 255, 0.2); }
-
-        /* ── Lecteur Plein Écran Mobile (Aya Stories) ── */
-        .stories-viewer {
-            position: fixed;
-            inset: 0;
-            background: #000000;
-            z-index: 10001;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-        }
-
-        .stories-top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            padding: 14px 16px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .stories-header-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #ffffff;
-        }
-
-        .stories-brand {
-            font-size: 0.95rem;
-            font-weight: 800;
-            color: #38bdf8;
-        }
-
-        .stories-close-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: #ffffff;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-
-        .stories-snap-container {
-            flex: 1;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            height: 100%;
-        }
-        .stories-snap-container::-webkit-scrollbar { display: none; }
-
-        .story-slide {
-            height: 100vh;
-            height: 100dvh;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #000000;
-        }
-
-        .story-media-wrap {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .story-media-wrap video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .story-overlay-bottom {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 30px 18px 24px;
-            background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
-            color: #ffffff;
-            z-index: 30;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-width: 80%;
-        }
-
-        .story-author-name {
-            font-weight: 700;
-            font-size: 1rem;
-            color: #38bdf8;
-        }
-
-        .story-caption {
-            font-size: 0.88rem;
-            line-height: 1.4;
-            max-height: 80px;
-            overflow-y: auto;
-            margin: 0;
-            color: #f1f5f9;
-        }
-
-        .stories-side-actions {
-            position: absolute;
-            right: 14px;
-            bottom: 60px;
-            z-index: 40;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .story-side-btn {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255,255,255,0.25);
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-        }
-        .story-side-btn span.btn-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            margin-top: 2px;
-        }
-
-        /* ── Vue Grille Compacte Mobile (2 colonnes) ── */
-        .feed-grid.compact-mode {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
-        }
-
-        .compact-post-card {
-            background: #ffffff;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            transition: transform 0.2s ease;
-        }
-        .compact-post-card:active { transform: scale(0.98); }
-
-        .compact-thumb-wrap {
-            width: 100%;
-            aspect-ratio: 9/12;
-            background: #0f172a;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .compact-thumb-wrap img, .compact-thumb-wrap video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .compact-badge {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            color: #ffffff;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-        .compact-likes {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            color: #ffffff;
-            font-size: 0.72rem;
-            padding: 2px 6px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .compact-info {
-            padding: 8px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .compact-author {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--color-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .compact-excerpt {
-            font-size: 0.72rem;
-            color: #64748b;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
     </style>
 </head>
@@ -2089,45 +1382,10 @@
 
 
 
-        <!-- Section Carrousel "À la Une" (Desktop & Tablette) -->
-        <section class="featured-carousel-section" id="featuredCarouselSection" style="display: none;">
-            <div class="carousel-header">
-                <div class="carousel-title-wrap">
-                    <span class="carousel-badge-icon">⭐</span>
-                    <h3 id="carouselTitle">À la Une — Coups de Cœur de la Communauté</h3>
-                </div>
-                <div class="carousel-nav-arrows">
-                    <button type="button" class="carousel-arrow-btn" id="carouselPrevBtn" aria-label="Précédent">‹</button>
-                    <button type="button" class="carousel-arrow-btn" id="carouselNextBtn" aria-label="Suivant">›</button>
-                </div>
-            </div>
-            <div class="featured-carousel-track" id="featuredCarouselTrack">
-                <!-- Cartes injectées dynamiquement -->
-            </div>
-        </section>
-
         <!-- Fil d'Actualité Public -->
         <section class="feed-section">
             <div class="feed-header">
                 <h2 id="feedSectionTitle">✨ Témoignages Publiés</h2>
-
-                <!-- Barre de Contrôles & Recherche Rapide -->
-                <div class="feed-controls-row">
-                    <div class="feed-search-bar">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="feedSearchInput" class="feed-search-input" placeholder="Rechercher par mot-clé, témoin, hashtag..." autocomplete="off">
-                        <button type="button" id="btnClearSearch" class="btn-clear-search" style="display: none;" title="Effacer la recherche">✕</button>
-                    </div>
-
-                    <div class="view-mode-switcher" id="viewModeSwitcher">
-                        <button type="button" class="view-mode-btn active" data-mode="grid" id="btnModeGrid">
-                            <span>🔲</span> <span id="labelModeGrid">Grille</span>
-                        </button>
-                        <button type="button" class="view-mode-btn" data-mode="stories" id="btnModeStories">
-                            <span>📱</span> <span id="labelModeStories">Stories</span>
-                        </button>
-                    </div>
-                </div>
 
                 <!-- Barre de filtres TYPE -->
                 <div class="feed-type-filters" id="feedTypeFilters">
@@ -2151,23 +1409,10 @@
                 </div>
             </div>
 
+
             <!-- Grille des Cartes -->
             <div class="feed-grid" id="feedGrid">
                 <!-- Rendu dynamique JS -->
-            </div>
-
-            <!-- Barre de Pagination Interactive -->
-            <div class="feed-pagination" id="feedPagination" style="display: none;">
-                <button type="button" class="pagination-btn" id="btnPrevPage">
-                    <span>‹</span> <span id="labelPrevPage">Précédent</span>
-                </button>
-                <div class="pagination-pages" id="paginationPages">
-                    <!-- Pages injectées en JS -->
-                </div>
-                <button type="button" class="pagination-btn" id="btnNextPage">
-                    <span id="labelNextPage">Suivant</span> <span>›</span>
-                </button>
-                <span class="pagination-info" id="paginationInfo">Page 1 sur 1</span>
             </div>
 
             <!-- État vide (Fallback) -->
@@ -2177,41 +1422,6 @@
                 <p id="feedEmptySub">Soyez le premier à partager une vidéo sous-titrée sur le Mur Communautaire !</p>
             </div>
         </section>
-    </div>
-
-    <!-- Modal Mode Cinéma & Immersion (Desktop / Tablette) -->
-    <div class="cinema-modal-backdrop" id="cinemaModal" style="display: none;" role="dialog" aria-modal="true">
-        <div class="cinema-modal-content">
-            <button type="button" class="cinema-close-btn" id="btnCinemaClose" aria-label="Fermer">✕</button>
-            <button type="button" class="cinema-nav-btn cinema-prev-btn" id="btnCinemaPrev" aria-label="Témoignage précédent">‹</button>
-            <button type="button" class="cinema-nav-btn cinema-next-btn" id="btnCinemaNext" aria-label="Témoignage suivant">›</button>
-            
-            <div class="cinema-card-container" id="cinemaCardContainer">
-                <!-- Média et texte bilingue projetés ici -->
-            </div>
-
-            <div class="cinema-footer-bar">
-                <span class="cinema-counter" id="cinemaCounter">Témoignage 1 sur 1</span>
-                <div class="cinema-actions">
-                    <button type="button" class="cinema-action-btn" id="btnCinemaLike">❤️ <span id="cinemaLikeCount">0</span></button>
-                    <button type="button" class="cinema-action-btn" id="btnCinemaCopy">📋 Copier</button>
-                    <button type="button" class="cinema-action-btn" id="btnCinemaShare">🔗 Partager</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Lecteur Plein Écran Mobile (Aya Stories) -->
-    <div class="stories-viewer" id="storiesViewer" style="display: none;">
-        <div class="stories-top-bar">
-            <div class="stories-header-meta">
-                <span class="stories-brand">✨ Aya Stories</span>
-                <button type="button" class="stories-close-btn" id="btnStoriesClose" aria-label="Fermer">✕</button>
-            </div>
-        </div>
-        <div class="stories-snap-container" id="storiesSnapContainer">
-            <!-- Slides verticales injectées ici -->
-        </div>
     </div>
 
     <!-- Pied de page Légal Harmonisé -->
@@ -2261,50 +1471,6 @@
             const feedFilters = document.getElementById('feedFilters');
             const feedTypeFilters = document.getElementById('feedTypeFilters');
             const publishDetails = document.getElementById('publishDetails');
-
-            // ── Éléments d'interaction du carrousel héroïque ──
-            const featuredCarouselSection = document.getElementById('featuredCarouselSection');
-            const featuredCarouselTrack = document.getElementById('featuredCarouselTrack');
-            const carouselPrevBtn = document.getElementById('carouselPrevBtn');
-            const carouselNextBtn = document.getElementById('carouselNextBtn');
-
-            // ── Contrôles de recherche et sélecteur de vue ──
-            const feedSearchInput = document.getElementById('feedSearchInput');
-            const btnClearSearch = document.getElementById('btnClearSearch');
-            const btnModeGrid = document.getElementById('btnModeGrid');
-            const btnModeStories = document.getElementById('btnModeStories');
-
-            // ── Pagination interactive ──
-            const feedPagination = document.getElementById('feedPagination');
-            const btnPrevPage = document.getElementById('btnPrevPage');
-            const btnNextPage = document.getElementById('btnNextPage');
-            const paginationPages = document.getElementById('paginationPages');
-            const paginationInfo = document.getElementById('paginationInfo');
-
-            // ── Mode Cinéma / Lightbox Immersion ──
-            const cinemaModal = document.getElementById('cinemaModal');
-            const cinemaCardContainer = document.getElementById('cinemaCardContainer');
-            const btnCinemaClose = document.getElementById('btnCinemaClose');
-            const btnCinemaPrev = document.getElementById('btnCinemaPrev');
-            const btnCinemaNext = document.getElementById('btnCinemaNext');
-            const cinemaCounter = document.getElementById('cinemaCounter');
-            const btnCinemaLike = document.getElementById('btnCinemaLike');
-            const cinemaLikeCount = document.getElementById('cinemaLikeCount');
-            const btnCinemaCopy = document.getElementById('btnCinemaCopy');
-            const btnCinemaShare = document.getElementById('btnCinemaShare');
-
-            // ── Lecteur Plein Écran Mobile (Aya Stories) ──
-            const storiesViewer = document.getElementById('storiesViewer');
-            const storiesSnapContainer = document.getElementById('storiesSnapContainer');
-            const btnStoriesClose = document.getElementById('btnStoriesClose');
-
-            // ── États interactifs globaux ──
-            let searchQuery = '';
-            let currentPage = 1;
-            const pageSize = 9;
-            let currentViewMode = 'grid'; // 'grid' ou 'stories'
-            let cinemaIndex = 0;
-            let cinemaList = [];
 
             // ── Formulaire : replié par défaut sur tous les écrans ───────
             (function initFormCollapse() {
@@ -2686,8 +1852,8 @@
                 });
             }
 
-            function getFilteredPosts() {
-                let filtered = currentPosts || [];
+            function filterAndRender() {
+                let filtered = currentPosts;
 
                 // 1. Filtre par type
                 if (activeTypeFilter === 'video') {
@@ -2698,224 +1864,32 @@
 
                 // 2. Filtre par hashtag
                 if (activeTagFilter !== 'all') {
-                    filtered = filtered.filter(p => Array.isArray(p.tags) && p.tags.includes(activeTagFilter));
+                    filtered = filtered.filter(p => p.tags && p.tags.includes(activeTagFilter));
                 }
 
-                // 3. Filtre par recherche textuelle (titre, contenu, auteur, tag)
-                if (searchQuery) {
-                    const q = searchQuery.toLowerCase();
-                    filtered = filtered.filter(p => 
-                        (p.originalContent && p.originalContent.toLowerCase().includes(q)) ||
-                        (p.translatedText && p.translatedText.toLowerCase().includes(q)) ||
-                        (p.originalText && p.originalText.toLowerCase().includes(q)) ||
-                        (p.authorName && p.authorName.toLowerCase().includes(q)) ||
-                        (Array.isArray(p.tags) && p.tags.some(t => t.toLowerCase().includes(q)))
-                    );
-                }
-
-                return filtered;
+                renderPosts(filtered);
             }
 
-            function filterAndRender() {
-                currentPage = 1;
-                renderPaginatedFeed();
-            }
+            // ── Rendu principal — dispatcher selon le type ────────────────
+            function renderPosts(posts) {
+                feedGrid.innerHTML = '';
 
-            // ── Rendu Paginé & Contrôles Dynamiques ───────────────────────
-            function renderPaginatedFeed() {
-                const filtered = getFilteredPosts();
-                const isAr = isArabic();
-
-                if (!filtered || filtered.length === 0) {
-                    feedGrid.innerHTML = '';
+                if (!posts || posts.length === 0) {
                     emptyFeed.style.display = 'flex';
-                    if (feedPagination) feedPagination.style.display = 'none';
                     return;
                 }
 
                 emptyFeed.style.display = 'none';
-
-                const totalPages = Math.ceil(filtered.length / pageSize) || 1;
-                if (currentPage > totalPages) currentPage = totalPages;
-                if (currentPage < 1) currentPage = 1;
-
-                const startIdx = (currentPage - 1) * pageSize;
-                const endIdx = startIdx + pageSize;
-                const pagePosts = filtered.slice(startIdx, endIdx);
-
-                feedGrid.innerHTML = '';
-                const isMobileCompact = currentViewMode === 'compact' || (window.innerWidth <= 768 && currentViewMode === 'grid');
-
-                if (isMobileCompact) {
-                    feedGrid.classList.add('compact-mode');
-                    pagePosts.forEach((post, i) => {
-                        feedGrid.appendChild(renderCompactCard(post, startIdx + i, filtered, isAr));
-                    });
-                } else {
-                    feedGrid.classList.remove('compact-mode');
-                    pagePosts.forEach((post, i) => {
-                        if (post.type === 'chat_highlight') {
-                            feedGrid.appendChild(renderHighlightCard(post, isAr, startIdx + i, filtered));
-                        } else {
-                            feedGrid.appendChild(renderStandardCard(post, isAr, startIdx + i, filtered));
-                        }
-                    });
-                }
-
-                renderPaginationControls(totalPages, filtered.length, startIdx, Math.min(endIdx, filtered.length), isAr);
-            }
-
-            // ── Contrôles de Pagination (‹ 1 2 3 ›) ──────────────────────
-            function renderPaginationControls(totalPages, totalItems, startIdx, endIdx, isAr) {
-                if (!feedPagination) return;
-                if (totalPages <= 1) {
-                    feedPagination.style.display = 'none';
-                    return;
-                }
-
-                feedPagination.style.display = 'flex';
-                if (btnPrevPage) btnPrevPage.disabled = currentPage <= 1;
-                if (btnNextPage) btnNextPage.disabled = currentPage >= totalPages;
-
-                if (paginationInfo) {
-                    paginationInfo.textContent = isAr 
-                        ? `عرض ${startIdx + 1} - ${endIdx} من أصل ${totalItems} شهادة`
-                        : `Affichage ${startIdx + 1} - ${endIdx} sur ${totalItems} témoignages`;
-                }
-
-                if (!paginationPages) return;
-                paginationPages.innerHTML = '';
-
-                for (let p = 1; p <= totalPages; p++) {
-                    if (totalPages > 7) {
-                        if (p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 1) {
-                            if (p === 2 || p === totalPages - 1) {
-                                const dots = document.createElement('span');
-                                dots.textContent = '…';
-                                dots.style.color = '#94a3b8';
-                                dots.style.padding = '0 4px';
-                                paginationPages.appendChild(dots);
-                            }
-                            continue;
-                        }
-                    }
-
-                    const pageBtn = document.createElement('button');
-                    pageBtn.type = 'button';
-                    pageBtn.className = 'page-num-btn' + (p === currentPage ? ' active' : '');
-                    pageBtn.textContent = p;
-                    pageBtn.addEventListener('click', () => {
-                        if (currentPage !== p) {
-                            currentPage = p;
-                            renderPaginatedFeed();
-                            feedGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    });
-                    paginationPages.appendChild(pageBtn);
-                }
-            }
-
-            // ── Carrousel Héroïque "À la Une" ─────────────────────────────
-            function renderFeaturedCarousel(posts) {
-                if (!featuredCarouselSection || !featuredCarouselTrack) return;
-                const featured = (posts || []).filter(p => p.isPinned || p.mediaUrl || p.type === 'video').slice(0, 8);
-
-                if (featured.length < 2) {
-                    featuredCarouselSection.style.display = 'none';
-                    return;
-                }
-
-                featuredCarouselSection.style.display = 'flex';
-                featuredCarouselTrack.innerHTML = '';
                 const isAr = isArabic();
 
-                featured.forEach((post, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'carousel-card';
-
-                    const author = escapeHtml(post.authorName || (isAr ? 'شاهد من المجتمع' : 'Témoin solidaire'));
-                    const text = escapeHtml(post.originalContent || post.originalText || '');
-                    const cleanThumbnail = post.mediaThumbnail
-                        ? post.mediaThumbnail.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '').replace(/^https?:\/\/localhost:\d+/i, '')
-                        : '';
-                    const cleanMediaUrl = post.mediaUrl
-                        ? post.mediaUrl.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '').replace(/^https?:\/\/localhost:\d+/i, '')
-                        : '';
-
-                    let mediaDisplay = '';
-                    if (cleanThumbnail) {
-                        mediaDisplay = `<img src="${escapeHtml(cleanThumbnail)}" alt="${author}" loading="lazy">`;
-                    } else if (cleanMediaUrl && /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
-                        mediaDisplay = `<video src="${escapeHtml(cleanMediaUrl)}" preload="none" muted></video>`;
+                posts.forEach(post => {
+                    // Dispatcher : chat_highlight → renderHighlightCard, sinon → renderStandardCard
+                    if (post.type === 'chat_highlight') {
+                        feedGrid.appendChild(renderHighlightCard(post, isAr));
                     } else {
-                        mediaDisplay = `<div style="font-size: 2.8rem; color: #38bdf8; display:flex; align-items:center; justify-content:center; height:100%;">💬</div>`;
-                    }
-
-                    card.innerHTML = `
-                        <div class="carousel-card-media">
-                            ${mediaDisplay}
-                            <div class="carousel-play-overlay">▶</div>
-                        </div>
-                        <div class="carousel-card-body">
-                            <span class="carousel-card-author">${author} ${post.isPinned ? '📌' : ''}</span>
-                            <p class="carousel-card-text">${text}</p>
-                        </div>
-                    `;
-
-                    card.addEventListener('click', () => {
-                        openCinemaModal(idx, featured);
-                    });
-
-                    featuredCarouselTrack.appendChild(card);
-                });
-            }
-
-            // ── Carte Compacte Mobile (Grille 2 Colonnes) ─────────────────
-            function renderCompactCard(post, index, list, isAr) {
-                const card = document.createElement('article');
-                card.className = 'compact-post-card';
-
-                const author = escapeHtml(post.authorName || (isAr ? 'شاهد' : 'Témoin'));
-                const content = escapeHtml(post.originalContent || post.originalText || '');
-                const cleanThumbnail = post.mediaThumbnail
-                    ? post.mediaThumbnail.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '').replace(/^https?:\/\/localhost:\d+/i, '')
-                    : '';
-                const cleanMediaUrl = post.mediaUrl
-                    ? post.mediaUrl.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '').replace(/^https?:\/\/localhost:\d+/i, '')
-                    : '';
-
-                let mediaThumb = '';
-                if (cleanThumbnail) {
-                    mediaThumb = `<img src="${escapeHtml(cleanThumbnail)}" alt="${author}" loading="lazy">`;
-                } else if (cleanMediaUrl && /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
-                    mediaThumb = `<video src="${escapeHtml(cleanMediaUrl)}" preload="none" muted></video>`;
-                } else {
-                    mediaThumb = `<div style="font-size: 2.2rem; color: #38bdf8;">💬</div>`;
-                }
-
-                const typeBadge = post.type === 'video' ? '🎬' : (post.type === 'chat_highlight' ? '💬' : '📝');
-
-                card.innerHTML = `
-                    <div class="compact-thumb-wrap">
-                        ${mediaThumb}
-                        <span class="compact-badge">${typeBadge}</span>
-                        <span class="compact-likes">❤️ ${post.likesCount || 0}</span>
-                    </div>
-                    <div class="compact-info">
-                        <span class="compact-author">${author}</span>
-                        <p class="compact-excerpt">${content}</p>
-                    </div>
-                `;
-
-                card.addEventListener('click', () => {
-                    if (window.innerWidth <= 768) {
-                        openStoriesViewer(index);
-                    } else {
-                        openCinemaModal(index, list);
+                        feedGrid.appendChild(renderStandardCard(post, isAr));
                     }
                 });
-
-                return card;
             }
 
             // ── Carte Citation Bilingue (chat_highlight) ──────────────────
@@ -3029,7 +2003,7 @@
             }
 
             // ── Carte Standard (vidéo / texte) ────────────────────────────
-            function renderStandardCard(post, isAr, cardIndex, list) {
+            function renderStandardCard(post, isAr) {
                 const card = document.createElement('article');
                 card.className = 'post-card';
 
@@ -3040,7 +2014,6 @@
                 const verifiedBadge = isAr ? "✅ موثق" : "✅ Vérifié";
                 const copyTextLabel = isAr ? "نسخ النص" : "Copier le texte";
                 const shareTextLabel = isAr ? "مشاركة" : "Partager";
-                const cinemaTextLabel = isAr ? "سينما" : "Cinéma";
 
                 // Média — avec poster (vignette) si disponible
                 let mediaHtml = '';
@@ -3054,7 +2027,7 @@
                     if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
                         const posterAttr = cleanThumbnail ? ` poster="${escapeHtml(cleanThumbnail)}"` : '';
                         mediaHtml = `
-                            <div class="post-media-container" title="${isAr ? 'انقر للفتح في وضع السينما 🎬' : 'Cliquer pour ouvrir en Mode Cinéma 🎬'}">
+                            <div class="post-media-container">
                                 <video src="${escapeHtml(cleanMediaUrl)}"${posterAttr} controls playsinline preload="metadata"></video>
                             </div>
                         `;
@@ -3101,9 +2074,6 @@
                         <button class="post-action-btn like-btn" data-id="${post._id}">
                             <span>❤️</span> <span class="like-count">${post.likesCount || 0}</span>
                         </button>
-                        <button class="post-action-btn cinema-btn" title="Ouvrir en plein écran">
-                            <span>🎬</span> ${cinemaTextLabel}
-                        </button>
                         <button class="post-action-btn copy-btn" data-content="${escapeHtml(post.originalContent)}">
                             <span>📋</span> ${copyTextLabel}
                         </button>
@@ -3112,15 +2082,6 @@
                         </button>
                     </div>
                 `;
-
-                // Clic sur bouton Cinéma
-                const cinemaBtn = card.querySelector('.cinema-btn');
-                if (cinemaBtn) {
-                    cinemaBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openCinemaModal(cardIndex !== undefined ? cardIndex : 0, list);
-                    });
-                }
 
                 // "Voir plus" : afficher uniquement si le texte est réellement tronqué
                 requestAnimationFrame(() => {
@@ -3142,6 +2103,8 @@
                         });
                     }
                 });
+
+
 
                 // Événement Like
                 const likeBtn = card.querySelector('.like-btn');
@@ -3187,389 +2150,6 @@
                 return card;
             }
 
-            // ── Mode Cinéma / Lightbox Immersion ──────────────────────────
-            function openCinemaModal(index, list) {
-                cinemaList = list && list.length > 0 ? list : getFilteredPosts();
-                if (!cinemaList || cinemaList.length === 0) return;
-                cinemaIndex = Math.max(0, Math.min(index, cinemaList.length - 1));
-                renderCinemaCard();
-                if (cinemaModal) {
-                    cinemaModal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                }
-            }
-
-            function closeCinemaModal() {
-                if (!cinemaModal) return;
-                cinemaModal.style.display = 'none';
-                document.body.style.overflow = '';
-                if (cinemaCardContainer) {
-                    const media = cinemaCardContainer.querySelector('video, audio');
-                    if (media) media.pause();
-                    cinemaCardContainer.innerHTML = '';
-                }
-            }
-
-            function renderCinemaCard() {
-                if (!cinemaList || cinemaList.length === 0 || !cinemaCardContainer) return;
-                const post = cinemaList[cinemaIndex];
-                const isAr = isArabic();
-
-                if (btnCinemaPrev) btnCinemaPrev.disabled = cinemaIndex === 0;
-                if (btnCinemaNext) btnCinemaNext.disabled = cinemaIndex >= cinemaList.length - 1;
-
-                if (cinemaCounter) {
-                    cinemaCounter.textContent = isAr 
-                        ? `شهادة ${cinemaIndex + 1} من أصل ${cinemaList.length}`
-                        : `Témoignage ${cinemaIndex + 1} sur ${cinemaList.length}`;
-                }
-
-                if (cinemaLikeCount) cinemaLikeCount.textContent = post.likesCount || 0;
-
-                const defaultAuthor = isAr ? "شاهد مجهول" : "Anonyme";
-                const authorName = post.authorName || defaultAuthor;
-                const content = post.originalContent || post.originalText || '';
-                const trans = post.translatedText || '';
-
-                let mediaHtml = '';
-                if (post.mediaUrl) {
-                    const cleanMediaUrl = post.mediaUrl
-                        .replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '')
-                        .replace(/^https?:\/\/localhost:\d+/i, '');
-                    if (post.mediaType === 'video' || /\.(mp4|mov|webm)$/i.test(cleanMediaUrl)) {
-                        mediaHtml = `
-                            <div class="cinema-media-frame">
-                                <video src="${escapeHtml(cleanMediaUrl)}" controls autoplay playsinline></video>
-                            </div>
-                        `;
-                    } else if (post.mediaType === 'audio' || /\.(mp3|wav|m4a)$/i.test(cleanMediaUrl)) {
-                        mediaHtml = `
-                            <div class="cinema-media-frame" style="padding: 24px; background: #1e293b;">
-                                <audio src="${escapeHtml(cleanMediaUrl)}" controls autoplay></audio>
-                            </div>
-                        `;
-                    }
-                }
-
-                let bilingueHtml = '';
-                if (trans) {
-                    bilingueHtml = `
-                        <div style="background: rgba(255,255,255,0.06); padding: 14px 18px; border-radius: 12px; margin-top: 10px; border-left: 3px solid var(--color-turquoise); text-align: left;">
-                            <div style="font-size: 0.8rem; font-weight: 700; color: #38bdf8; margin-bottom: 4px;">🇫🇷 Traduction certifiée :</div>
-                            <div style="font-size: 0.92rem; color: #f1f5f9; line-height: 1.5;">${escapeHtml(trans)}</div>
-                        </div>
-                    `;
-                }
-
-                cinemaCardContainer.innerHTML = `
-                    ${mediaHtml}
-                    <div class="cinema-text-block">
-                        <div class="cinema-author">👤 ${escapeHtml(authorName)} ${post.isPinned ? '📌' : ''}</div>
-                        <p class="cinema-desc">${escapeHtml(content)}</p>
-                        ${bilingueHtml}
-                    </div>
-                `;
-
-                // Actions dans le mode cinéma
-                if (btnCinemaLike) {
-                    btnCinemaLike.onclick = async () => {
-                        try {
-                            const res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
-                            const data = await res.json();
-                            if (data.success) {
-                                post.likesCount = data.likesCount;
-                                if (cinemaLikeCount) cinemaLikeCount.textContent = data.likesCount;
-                            }
-                        } catch(e) {}
-                    };
-                }
-
-                if (btnCinemaCopy) {
-                    btnCinemaCopy.onclick = () => {
-                        navigator.clipboard.writeText(content + (trans ? '\n\n' + trans : '')).then(() => {
-                            const old = btnCinemaCopy.innerHTML;
-                            btnCinemaCopy.innerHTML = isAr ? '✅ تم النسخ' : '✅ Copié !';
-                            setTimeout(() => btnCinemaCopy.innerHTML = old, 2000);
-                        });
-                    };
-                }
-
-                if (btnCinemaShare) {
-                    btnCinemaShare.onclick = () => {
-                        if (navigator.share) {
-                            navigator.share({
-                                title: `Témoignage de ${authorName} sur Aya`,
-                                text: content.slice(0, 100) + '...',
-                                url: window.location.href
-                            }).catch(() => {});
-                        } else {
-                            navigator.clipboard.writeText(window.location.href).then(() => {
-                                const old = btnCinemaShare.innerHTML;
-                                btnCinemaShare.innerHTML = isAr ? '✅ تم النسخ' : '✅ Lien copié !';
-                                setTimeout(() => btnCinemaShare.innerHTML = old, 2000);
-                            });
-                        }
-                    };
-                }
-            }
-
-            // ── Lecteur Plein Écran Mobile (Aya Stories) ──────────────────
-            function openStoriesViewer(startIndex = 0) {
-                if (!storiesViewer || !storiesSnapContainer) return;
-                const list = getFilteredPosts();
-                if (!list || list.length === 0) return;
-
-                storiesSnapContainer.innerHTML = '';
-                const isAr = isArabic();
-
-                list.forEach((post, idx) => {
-                    const slide = document.createElement('div');
-                    slide.className = 'story-slide';
-                    slide.dataset.index = idx;
-
-                    const author = escapeHtml(post.authorName || (isAr ? 'شاهد من المجتمع' : 'Témoin solidaire'));
-                    const content = escapeHtml(post.originalContent || post.originalText || '');
-                    const cleanUrl = post.mediaUrl ? post.mediaUrl.replace(/^https?:\/\/[^\/]+(?=\/(?:download|uploads|fichiers_reponse_a_envoyer)\/)/i, '').replace(/^https?:\/\/localhost:\d+/i, '') : '';
-
-                    let mediaEl = '';
-                    if (cleanUrl && /\.(mp4|mov|webm)$/i.test(cleanUrl)) {
-                        mediaEl = `<video src="${escapeHtml(cleanUrl)}" playsinline loop ${idx === startIndex ? 'autoplay' : ''}></video>`;
-                    } else {
-                        mediaEl = `<div style="padding: 30px; text-align: center; color: white; font-size: 1.15rem; line-height: 1.6; max-width: 85%;">${content}</div>`;
-                    }
-
-                    slide.innerHTML = `
-                        <div class="story-media-wrap">
-                            ${mediaEl}
-                            <div class="story-overlay-bottom">
-                                <span class="story-author-name">${author}</span>
-                                <p class="story-caption">${content}</p>
-                            </div>
-                            <div class="stories-side-actions">
-                                <button type="button" class="story-side-btn story-like-btn" data-id="${post._id}">
-                                    <span>❤️</span>
-                                    <span class="btn-label">${post.likesCount || 0}</span>
-                                </button>
-                                ${post.translatedText ? `<button type="button" class="story-side-btn story-trans-btn" title="Traduire"><span>🌐</span><span class="btn-label">Trad</span></button>` : ''}
-                                <button type="button" class="story-side-btn story-share-btn">
-                                    <span>🔗</span>
-                                    <span class="btn-label">Partager</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-
-                    // Actions de la slide story
-                    const likeBtn = slide.querySelector('.story-like-btn');
-                    if (likeBtn) {
-                        likeBtn.addEventListener('click', async (e) => {
-                            e.stopPropagation();
-                            try {
-                                const res = await fetch(`/api/posts/${post._id}/like`, { method: 'POST' });
-                                const data = await res.json();
-                                if (data.success) {
-                                    likeBtn.querySelector('.btn-label').textContent = data.likesCount;
-                                }
-                            } catch(err) {}
-                        });
-                    }
-
-                    const transBtn = slide.querySelector('.story-trans-btn');
-                    if (transBtn && post.translatedText) {
-                        let isShowingTrans = false;
-                        transBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const captionEl = slide.querySelector('.story-caption');
-                            if (captionEl) {
-                                isShowingTrans = !isShowingTrans;
-                                captionEl.textContent = isShowingTrans ? post.translatedText : (post.originalContent || post.originalText);
-                                transBtn.style.background = isShowingTrans ? 'var(--color-turquoise)' : '';
-                            }
-                        });
-                    }
-
-                    const shareBtn = slide.querySelector('.story-share-btn');
-                    if (shareBtn) {
-                        shareBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (navigator.share) {
-                                navigator.share({
-                                    title: `Témoignage de ${author} sur Aya`,
-                                    text: content.slice(0, 100),
-                                    url: window.location.href
-                                }).catch(() => {});
-                            } else {
-                                navigator.clipboard.writeText(window.location.href);
-                            }
-                        });
-                    }
-
-                    storiesSnapContainer.appendChild(slide);
-                });
-
-                storiesViewer.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-
-                const targetSlide = storiesSnapContainer.children[startIndex];
-                if (targetSlide) {
-                    targetSlide.scrollIntoView();
-                }
-
-                setupStoriesIntersectionObserver();
-            }
-
-            function closeStoriesViewer() {
-                if (!storiesViewer) return;
-                storiesViewer.style.display = 'none';
-                document.body.style.overflow = '';
-                if (storiesSnapContainer) {
-                    storiesSnapContainer.querySelectorAll('video').forEach(v => v.pause());
-                    storiesSnapContainer.innerHTML = '';
-                }
-            }
-
-            function setupStoriesIntersectionObserver() {
-                if (!('IntersectionObserver' in window)) return;
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        const video = entry.target.querySelector('video');
-                        if (video) {
-                            if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-                                video.play().catch(() => {});
-                            } else {
-                                video.pause();
-                            }
-                        }
-                    });
-                }, { threshold: [0.6] });
-
-                storiesSnapContainer.querySelectorAll('.story-slide').forEach(slide => {
-                    observer.observe(slide);
-                });
-            }
-
-            // ── Initialisation des Événements Interactifs ────────────────
-            function initInteractiveControls() {
-                // Flèches du Carrousel
-                if (carouselPrevBtn && featuredCarouselTrack) {
-                    carouselPrevBtn.addEventListener('click', () => {
-                        featuredCarouselTrack.scrollBy({ left: -300, behavior: 'smooth' });
-                    });
-                }
-                if (carouselNextBtn && featuredCarouselTrack) {
-                    carouselNextBtn.addEventListener('click', () => {
-                        featuredCarouselTrack.scrollBy({ left: 300, behavior: 'smooth' });
-                    });
-                }
-
-                // Recherche Textuelle Débouncée
-                if (feedSearchInput) {
-                    let searchTimeout = null;
-                    feedSearchInput.addEventListener('input', () => {
-                        clearTimeout(searchTimeout);
-                        searchTimeout = setTimeout(() => {
-                            searchQuery = feedSearchInput.value.trim();
-                            if (btnClearSearch) btnClearSearch.style.display = searchQuery ? 'block' : 'none';
-                            currentPage = 1;
-                            renderPaginatedFeed();
-                        }, 250);
-                    });
-                }
-
-                if (btnClearSearch && feedSearchInput) {
-                    btnClearSearch.addEventListener('click', () => {
-                        feedSearchInput.value = '';
-                        searchQuery = '';
-                        btnClearSearch.style.display = 'none';
-                        currentPage = 1;
-                        renderPaginatedFeed();
-                    });
-                }
-
-                // Boutons de Pagination
-                if (btnPrevPage) {
-                    btnPrevPage.addEventListener('click', () => {
-                        if (currentPage > 1) {
-                            currentPage--;
-                            renderPaginatedFeed();
-                            feedGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    });
-                }
-
-                if (btnNextPage) {
-                    btnNextPage.addEventListener('click', () => {
-                        const totalPages = Math.ceil(getFilteredPosts().length / pageSize);
-                        if (currentPage < totalPages) {
-                            currentPage++;
-                            renderPaginatedFeed();
-                            feedGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    });
-                }
-
-                // Sélecteur de Vue (Grille vs Stories)
-                if (btnModeGrid) {
-                    btnModeGrid.addEventListener('click', () => {
-                        currentViewMode = 'grid';
-                        btnModeGrid.classList.add('active');
-                        if (btnModeStories) btnModeStories.classList.remove('active');
-                        renderPaginatedFeed();
-                    });
-                }
-
-                if (btnModeStories) {
-                    btnModeStories.addEventListener('click', () => {
-                        openStoriesViewer(0);
-                    });
-                }
-
-                // Boutons Modal Cinéma
-                if (btnCinemaClose) btnCinemaClose.addEventListener('click', closeCinemaModal);
-                if (btnCinemaPrev) {
-                    btnCinemaPrev.addEventListener('click', () => {
-                        if (cinemaIndex > 0) {
-                            cinemaIndex--;
-                            renderCinemaCard();
-                        }
-                    });
-                }
-                if (btnCinemaNext) {
-                    btnCinemaNext.addEventListener('click', () => {
-                        if (cinemaIndex < cinemaList.length - 1) {
-                            cinemaIndex++;
-                            renderCinemaCard();
-                        }
-                    });
-                }
-
-                // Clic backdrop pour fermer le mode cinéma
-                if (cinemaModal) {
-                    cinemaModal.addEventListener('click', (e) => {
-                        if (e.target === cinemaModal) closeCinemaModal();
-                    });
-                }
-
-                // Fermer Stories
-                if (btnStoriesClose) btnStoriesClose.addEventListener('click', closeStoriesViewer);
-
-                // Navigation Clavier Globale (Cinéma & Stories)
-                document.addEventListener('keydown', (e) => {
-                    if (cinemaModal && cinemaModal.style.display !== 'none') {
-                        if (e.key === 'Escape') closeCinemaModal();
-                        else if (e.key === 'ArrowLeft' && cinemaIndex > 0) {
-                            cinemaIndex--;
-                            renderCinemaCard();
-                        } else if (e.key === 'ArrowRight' && cinemaIndex < cinemaList.length - 1) {
-                            cinemaIndex++;
-                            renderCinemaCard();
-                        }
-                    } else if (storiesViewer && storiesViewer.style.display !== 'none') {
-                        if (e.key === 'Escape') closeStoriesViewer();
-                    }
-                });
-            }
-
             function formatDateRelative(dateStr) {
                 const isAr = isArabic();
                 if (!dateStr) return isAr ? "منذ قليل" : "Récemment";
@@ -3597,10 +2177,10 @@
                     .replace(/'/g, "&#039;");
             }
 
-            // ── loadPosts avec pagination, recherche et carrousel ─────────
+            // ── loadPosts avec compteurs type ─────────────────────────────
             async function loadPosts() {
                 try {
-                    const res = await fetch('/api/posts?limit=100');
+                    const res = await fetch('/api/posts');
                     const data = await res.json();
 
                     if (!res.ok || !data.success) {
@@ -3608,18 +2188,16 @@
                     }
 
                     currentPosts = data.posts || [];
-                    if (heroPostsCount) heroPostsCount.textContent = currentPosts.length;
+                    heroPostsCount.textContent = currentPosts.length;
 
                     updateTypeCounts(currentPosts);
                     extractAndRenderTags(currentPosts);
                     initTypeFilters();
-                    initInteractiveControls();
-                    renderFeaturedCarousel(currentPosts);
-                    renderPaginatedFeed();
+                    renderPosts(currentPosts);
 
                 } catch (err) {
                     console.error('Erreur chargement posts :', err);
-                    if (emptyFeed) emptyFeed.style.display = 'flex';
+                    emptyFeed.style.display = 'flex';
                 }
             }
 
