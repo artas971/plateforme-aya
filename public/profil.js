@@ -24,6 +24,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseRechargeModal = document.getElementById('btnCloseRechargeModal');
     const btnAcknowledgeRecharge = document.getElementById('btnAcknowledgeRecharge');
 
+    // Pré-hydratation immédiate du solde depuis le cache local (Zéro-Flicker)
+    try {
+        const cachedUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
+        if (cachedUser) {
+            if (cachedUser.credits !== undefined && walletAvailableCredits) {
+                walletAvailableCredits.textContent = cachedUser.credits;
+            }
+            if (cachedUser.creditsReserved !== undefined && walletReservedCredits) {
+                walletReservedCredits.textContent = cachedUser.creditsReserved;
+            }
+        }
+    } catch (e) {}
+
     // Éléments du DOM Historique Vidéos
     const historyCountBadge = document.getElementById('historyCountBadge');
     const btnRefreshHistory = document.getElementById('btnRefreshHistory');
@@ -126,11 +139,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Portefeuille
+                const credits = Number(user.credits ?? user.wallet?.availableCredits ?? user.wallet?.credits ?? 0);
                 if (walletAvailableCredits) {
-                    walletAvailableCredits.textContent = user.credits !== undefined ? user.credits : 0;
+                    walletAvailableCredits.textContent = credits;
                 }
                 if (walletReservedCredits) {
                     walletReservedCredits.textContent = user.creditsReserved !== undefined ? user.creditsReserved : 0;
+                }
+                if (vocabModalUserCredits) {
+                    vocabModalUserCredits.textContent = credits;
+                }
+                if (vocabZeroCreditAlert && credits > 0) {
+                    vocabZeroCreditAlert.style.display = 'none';
                 }
 
                 // Afficher le lien vers la tour de contrôle si l'utilisateur est administrateur
@@ -140,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Synchronisation locale pour aya-i18n.js et autres pages
-                localStorage.setItem('aya_user', JSON.stringify(user));
+                localStorage.setItem('aya_user', JSON.stringify({ ...user, credits }));
 
                 // Mise à jour de la navbar globale si déjà montée
                 const navAvatar = document.getElementById('navbarAvatarImg');
@@ -762,12 +782,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Charger les thèmes à jour
         loadVocabThemes();
 
-        // Synchroniser le solde de crédits
-        const availableCreditsText = walletAvailableCredits ? walletAvailableCredits.textContent : '--';
-        const numCredits = parseInt(availableCreditsText, 10);
-        if (vocabModalUserCredits) vocabModalUserCredits.textContent = availableCreditsText;
+        // Synchroniser le solde de crédits de façon sûre (priorité à l'objet utilisateur)
+        let numCredits = NaN;
+        try {
+            const cachedUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
+            if (cachedUser && cachedUser.credits !== undefined) {
+                numCredits = Number(cachedUser.credits);
+            }
+        } catch (e) {}
 
-        if (!isNaN(numCredits) && numCredits <= 0) {
+        if (isNaN(numCredits) && walletAvailableCredits) {
+            const txt = walletAvailableCredits.textContent.trim();
+            if (txt !== '--') numCredits = parseInt(txt, 10);
+        }
+
+        if (isNaN(numCredits)) numCredits = 0;
+
+        if (vocabModalUserCredits) vocabModalUserCredits.textContent = numCredits;
+
+        if (numCredits <= 0) {
             if (vocabZeroCreditAlert) vocabZeroCreditAlert.style.display = 'flex';
             if (btnSubmitVocabGenerate) {
                 btnSubmitVocabGenerate.disabled = true;

@@ -4391,7 +4391,9 @@ html[dir="rtl"] .step-content p {
     justify-content: center;
     flex-shrink: 0;
     width: 32px;
-    font-size: 1.2rem;
+    font-size: 1.35rem;
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', 'Android Emoji', 'EmojiSymbols', sans-serif;
+    line-height: 1;
 }
 
 /* Boutons d'action Fiches */
@@ -4567,6 +4569,123 @@ html[dir="rtl"] .step-content p {
     }
 }
 
+/* =========================================================================
+   ERGONOMIE DESKTOP (ZÉRO SCROLL) : Grille 5 Colonnes Horizontale (Lot 1)
+   ========================================================================= */
+@media (min-width: 820px) {
+    /* Écran d'Arbitrage : 5 cartes côte à côte sur une seule ligne sans scroll */
+    .vocab-preview-cards-container {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 12px !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        padding: 8px 2px !important;
+    }
+
+    .vocab-preview-item-bilingual {
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        align-items: stretch !important;
+        padding: 14px 10px !important;
+        min-height: 230px !important;
+        gap: 10px !important;
+        text-align: center !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    }
+
+    .preview-comp-fr {
+        text-align: center !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+    }
+
+    .preview-comp-ar {
+        text-align: center !important;
+        align-items: center !important;
+        direction: rtl !important;
+        justify-content: flex-end !important;
+        gap: 4px !important;
+    }
+
+    .preview-comp-divider {
+        margin: 6px auto !important;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        background: #f1f5f9 !important;
+        border: 1.5px solid rgba(148, 163, 184, 0.3) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.3rem !important;
+    }
+
+    .preview-word-fr {
+        font-size: 0.92rem !important;
+        text-align: center !important;
+        word-break: break-word;
+    }
+
+    .preview-word-ar {
+        font-size: 1.15rem !important;
+        text-align: center !important;
+        word-break: break-word;
+    }
+
+    .preview-sub-fr,
+    .preview-sub-ar {
+        text-align: center !important;
+        font-size: 0.74rem !important;
+    }
+
+    /* Mode Saisie Manuelle : 5 colonnes de saisie côte à côte */
+    .custom-words-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .custom-word-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 10px 10px 12px 10px !important;
+        gap: 8px !important;
+        text-align: center !important;
+    }
+
+    .custom-word-badge {
+        align-self: center !important;
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 0.8rem !important;
+    }
+
+    .custom-word-input {
+        text-align: center !important;
+        font-size: 0.9rem !important;
+        width: 100% !important;
+        border-bottom: 1.5px solid rgba(148, 163, 184, 0.3) !important;
+        padding-bottom: 4px !important;
+    }
+}
+
+@media (min-width: 900px) {
+    .vocab-modal-content {
+        max-width: 980px !important;
+        padding: 28px 32px !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .vocab-modal-content {
+        max-width: 1080px !important;
+    }
+}
+
 /* ==========================================================================
    NAVIGATION MOBILE UNIFIÉE (Bottom Navigation Bar & Action Sheet)
    Contrainte Grand Public & Accessibilité WCAG
@@ -4591,7 +4710,8 @@ html[dir="rtl"] .step-content p {
     .app-container,
     .profile-container,
     .studio-container,
-    .communaute-container {
+    .communaute-container,
+    .fiches-container {
         padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     }
 

@@ -81,6 +81,18 @@ class SequentialQueue {
 const vocabCardQueue = new SequentialQueue();
 
 /**
+ * Nettoie et valide un émoji en extrayant le glyphe Unicode (y compris surrogate pairs Unicode 13+)
+ */
+function sanitizeEmoji(iconStr, defaultEmoji = '✨') {
+    if (!iconStr || typeof iconStr !== 'string') return defaultEmoji;
+    const trimmed = iconStr.trim();
+    if (!trimmed) return defaultEmoji;
+    const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u;
+    const match = trimmed.match(emojiRegex);
+    return match ? match[0] : defaultEmoji;
+}
+
+/**
  * 1. Génération sémantique des 5 mots bilingues via Gemini Flash (ou customWords)
  */
 async function generateVocabularyData(theme, customWords = null, level = 'debutant', excludeWords = []) {
@@ -96,7 +108,7 @@ Règles de translittération strictes :
 1. Pour l'arabe : écriture en arabe avec vocalisation complète (Tashkeel / Harakat).
 2. Phonétique pour francophones (phoneticFr) : en alphabet latin découpé en syllabes avec tirets [ex: Mar-ha-ban, Ach-chams]. Conventions : Kh pour خ, Gh pour غ, Ch pour ش, Q pour ق, 'A pour ع.
 3. Phonétique pour arabophones (phoneticAr) : transcription du mot français en lettres arabes avec Tashkeel complet [ex: بُونْژُورْ pour Bonjour, لُو سُولَيّْ pour Le Soleil, لَا كُونْفْيَانْسْ pour La Confiance]. Règle impérative : lettre 'V' = ڤ, son 'J' = ژ, voyelle '-er/-é' = ـِيه.
-4. Choisis un emoji pertinent pour chaque mot.
+4. Choisis EXACTEMENT UN SEUL émoji Unicode standard très évocateur pour chaque mot (ex: 🌳 pour un arbre, 🪚 pour une scie, 🍞 pour du pain). Interdiction d'utiliser du texte ou du code markdown à la place de l'émoji.
 
 Réponds STRICTEMENT au format JSON suivant :
 {
@@ -225,6 +237,12 @@ Le JSON final doit comporter STRICTEMENT 5 mots (les ${cleanCustomWords.length} 
                 continue;
             }
 
+            // Assainissement strict des émojis de chaque mot (Unicode 13+ et surrogate pairs)
+            parsed.words = parsed.words.slice(0, 5).map(w => ({
+                ...w,
+                icon: sanitizeEmoji(w.icon, '✨')
+            }));
+
             return parsed;
         } catch (e) {
             lastError = e;
@@ -286,7 +304,7 @@ function buildHtmlTemplate(vocabData) {
   <title>${escapeHtml(vocabData.titleFr || 'Fiche Vocabulaire')}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Inter:wght@600;700;800;900&family=Noto+Color+Emoji&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Palette officielle Aya Studio */
@@ -560,7 +578,9 @@ function buildHtmlTemplate(vocabData) {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.05rem;
+      font-size: 1.15rem;
+      font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', 'Android Emoji', 'EmojiSymbols', sans-serif;
+      line-height: 1;
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
     }
 
@@ -627,14 +647,17 @@ async function renderCardImage(htmlContent, outputPath) {
         browser = await puppeteer.launch({
             executablePath: browserPath,
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--font-render-hinting=medium'],
             defaultViewport: { width: 1080, height: 1920, deviceScaleFactor: 2.25 }
         });
 
         const page = await browser.newPage();
         await page.goto('file:///' + tempHtmlFile.replace(/\\/g, '/'), { waitUntil: 'networkidle0' });
 
-        // Temporisation de rendu des polices Google
+        // Temporisation et attente explicite du chargement complet des polices Web (Noto Color Emoji, Cairo, Inter)
+        try {
+            await page.evaluate(() => document.fonts.ready);
+        } catch (e) {}
         await new Promise(r => setTimeout(r, 600));
 
         // Test de collision et de troncature DOM

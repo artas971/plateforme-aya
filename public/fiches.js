@@ -120,6 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── 1. Authentification & Solde Utilisateur ──
     async function initUserSession() {
+        // Hydratation immédiate depuis le cache local pour éliminer le clignotement '--'
+        try {
+            const cachedUser = JSON.parse(localStorage.getItem('aya_user') || '{}');
+            if (cachedUser && cachedUser.credits !== undefined) {
+                userAvailableCredits = Number(cachedUser.credits);
+                if (fichesUserCredits) fichesUserCredits.textContent = userAvailableCredits;
+                checkCreditsWarning();
+            }
+        } catch (e) {}
+
         try {
             const res = await fetch('/api/auth/session');
             const data = await res.json();
@@ -128,14 +138,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Récupérer le solde de crédits
+            // Récupérer le profil et le solde réel de crédits
             const profileRes = await fetch('/api/user/profile');
             if (profileRes.ok) {
                 const profileData = await profileRes.json();
-                if (profileData.user && profileData.user.wallet) {
-                    userAvailableCredits = profileData.user.wallet.availableCredits || 0;
+                if (profileData.user) {
+                    const u = profileData.user;
+                    userAvailableCredits = Number(u.credits ?? u.wallet?.availableCredits ?? u.wallet?.credits ?? 0);
                     if (fichesUserCredits) fichesUserCredits.textContent = userAvailableCredits;
                     checkCreditsWarning();
+
+                    // Mise à jour du cache local
+                    try {
+                        const prev = JSON.parse(localStorage.getItem('aya_user') || '{}');
+                        localStorage.setItem('aya_user', JSON.stringify({ ...prev, ...u, credits: userAvailableCredits }));
+                    } catch (e) {}
                 }
             }
         } catch (e) {

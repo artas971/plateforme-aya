@@ -251,13 +251,64 @@ function containsArabic(str) {
 }
 
 /**
+ * Cache LRU en Mémoire pour Traductions Récurrentes du Chat (TICKET-17)
+ * Capacité : 1 000 entrées | TTL : 12 heures | Zéro-Latence (0 ms)
+ */
+class ChatTranslationLRUCache {
+    constructor(maxSize = 1000, ttlMs = 12 * 60 * 60 * 1000) {
+        this.maxSize = maxSize;
+        this.ttlMs = ttlMs;
+        this.cache = new Map();
+    }
+
+    _key(text) {
+        return (text || '').trim().toLowerCase();
+    }
+
+    get(text) {
+        const key = this._key(text);
+        const entry = this.cache.get(key);
+        if (!entry) return null;
+        if (Date.now() > entry.expiresAt) {
+            this.cache.delete(key);
+            return null;
+        }
+        // Rafraîchir la position LRU
+        this.cache.delete(key);
+        this.cache.set(key, entry);
+        return entry.data;
+    }
+
+    set(text, data) {
+        const key = this._key(text);
+        if (this.cache.size >= this.maxSize) {
+            const oldestKey = this.cache.keys().next().value;
+            this.cache.delete(oldestKey);
+        }
+        this.cache.set(key, {
+            data,
+            expiresAt: Date.now() + this.ttlMs
+        });
+    }
+}
+
+const chatTranslationCache = new ChatTranslationLRUCache(1000, 12 * 3600 * 1000);
+
+/**
  * Traduction Bidirectionnelle Automatique (Thomas & Nadine)
  * Détecte la langue source du texte.
  * - Français -> Arabe Palestinien (Ammiya de Gaza)
  * - Arabe -> Français fluide et naturel
- * Cascade de modèles Gemini pour résilience 429/quota
+ * Cascade de modèles Gemini pour résilience 429/quota + Cache LRU (TICKET-17)
  */
 async function translateChatBidirectional(text) {
+    // 1. Vérification Cache LRU (0 ms)
+    const cached = chatTranslationCache.get(text);
+    if (cached) {
+        console.log(`[Chat IA Cache HIT] (0 ms) "${text.substring(0, 30)}..." -> "${cached.translated_text.substring(0, 30)}..."`);
+        return cached;
+    }
+
     const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     const systemPrompt = `Tu es le traducteur expert du chat d'urgence de la plateforme Aya.
 Détecte la langue source du texte. Si le texte est en Français, traduis-le en Arabe Palestinien (Ammiya de Gaza). Si le texte est en Arabe, traduis-le en Français fluide et naturel. Ne répète jamais le texte source.
@@ -325,11 +376,13 @@ Tu dois impérativement répondre au format JSON strict avec exactement ces deux
                     const translated_text = (parsed.translated_text || '').trim();
 
                     console.log(`[Chat IA Succès] Modèle: ${model} | Langue: ${detected_lang} -> ${translated_text.substring(0, 40)}...`);
-                    return {
+                    const result = {
                         detected_lang,
                         translated_text,
                         model_used: model
                     };
+                    chatTranslationCache.set(text, result);
+                    return result;
                 }
             } catch (err) {
                 console.warn(`⚠️ [Chat IA Exception] Modèle ${model} : ${err.message}`);
@@ -350,11 +403,13 @@ Tu dois impérativement répondre au format JSON strict avec exactement ces deux
             translated = data[0].map(chunk => chunk[0]).join('');
         }
         if (translated) {
-            return {
+            const fallbackResult = {
                 detected_lang: isAr ? 'ar' : 'fr',
                 translated_text: translated,
                 model_used: 'gtx-fallback'
             };
+            chatTranslationCache.set(text, fallbackResult);
+            return fallbackResult;
         }
     } catch (e) {
         console.warn("[Fallback gtx error]:", e.message);

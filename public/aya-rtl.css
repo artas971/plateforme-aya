@@ -26,8 +26,16 @@
 /* 1. RÈGLE ARABE (html[dir="rtl"]) : Cairo forcée comme police principale avec interligne aéré 1.7 */
 html[dir="rtl"],
 body[dir="rtl"],
-html[dir="rtl"] * {
+html[dir="rtl"] *:not(.comp-icon-circle):not(.preview-comp-divider):not(.emoji-icon):not([data-emoji]):not(.comp-divider *):not(.aya-toast span:first-child) {
     font-family: var(--font-arabic) !important;
+}
+
+/* Préservation stricte de la police d'émojis même en contexte Arabe / RTL */
+html[dir="rtl"] .comp-icon-circle,
+html[dir="rtl"] .preview-comp-divider,
+html[dir="rtl"] .emoji-icon,
+html[dir="rtl"] [data-emoji] {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', 'Android Emoji', 'EmojiSymbols', sans-serif !important;
 }
 
 /* Interligne aéré spécifique pour la lisibilité des textes arabes (TICKET-18) */
@@ -53,7 +61,13 @@ html[dir="rtl"] .btn-stripe-buy,
 html[dir="rtl"] .btn-recharge,
 html[dir="rtl"] .btn-primary,
 html[dir="rtl"] input,
-html[dir="rtl"] select {
+html[dir="rtl"] select,
+html[dir="rtl"] .preview-badge-tag,
+html[dir="rtl"] .preview-word-fr,
+html[dir="rtl"] .preview-word-ar,
+html[dir="rtl"] .preview-sub-fr,
+html[dir="rtl"] .preview-sub-ar,
+html[dir="rtl"] .custom-word-row {
     line-height: normal !important;
 }
 
