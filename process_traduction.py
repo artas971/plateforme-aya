@@ -606,7 +606,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     Intègre le Context Grounding (user_context) pour l'Agent Jade.
     """
     mode = 'VOAR' if target_lang.lower() == 'ar' else 'VOSTFR'
-    print(f"[PROGRESS] 40% - Analyse IA de l'audio ({total_duration:.1f}s) en mode {mode} (source: {source_lang})...", flush=True)
+    print(f"[PROGRESS] 40% - 🧠 Traduction fidèle du dialecte palestinien...", flush=True)
 
     cache_dir = BASE_DIR / "cache_transcriptions"
     base_name = Path(media_path).stem[:50]
@@ -619,7 +619,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         force_reprocess = True
 
     if force_reprocess:
-        print(f"[PROGRESS] 40% - 🔄 Bypass Cache activé : réanalyse complète forcée pour '{base_name}'...", flush=True)
+        print(f"[PROGRESS] 40% - 🧠 Analyse et traduction fidèle du dialecte...", flush=True)
         # Purge préventive des anciens fichiers de cache pour ce média afin d'assainir le dossier
         if cache_dir.exists():
             for fname in os.listdir(cache_dir):
@@ -657,7 +657,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                                                     "text": txt
                                                 })
                                         found_cache = True
-                                        print("[PROGRESS] 70% - Segments réutilisés instantanément depuis le cache local.", flush=True)
+                                        print("[PROGRESS] 70% - ⏱️ Synchronisation précise mot à mot...", flush=True)
                                         break
                                     else:
                                         print(f"[CACHE AUDIT] ⚠️ Cache invalide ou corrompu ({fname}, {lang_reason}) : invalidation et purge.", flush=True)
@@ -885,7 +885,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
             for w_idx, (w_start, w_end) in enumerate(windows_plan):
                 w_dur = round(w_end - w_start, 2)
                 current_pct = int(40 + (w_idx / total_windows) * 30)
-                print(f"[PROGRESS] {current_pct}% - Analyse IA : Fenêtre {w_idx + 1}/{total_windows} [{w_start:.2f}s -> {w_end:.2f}s] ({w_dur:.2f}s)...", flush=True)
+                print(f"[PROGRESS] {current_pct}% - 🧠 Traduction fidèle du dialecte... (partie {w_idx + 1}/{total_windows})", flush=True)
 
                 chunk_file = temp_dir / f"chunk_{os.getpid()}_{w_idx}.mp3"
                 cmd_cut = [
@@ -914,7 +914,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                 stt_success = True
                 from gemini_translator import LAST_MODEL_USED
                 ai_model_used = f"smart_chunking_adaptive + {LAST_MODEL_USED}"
-                print(f"[PROGRESS] 70% - Toutes les fenêtres ont été transcrites avec succès ({len(all_segments)} sous-titres).", flush=True)
+                print(f"[PROGRESS] 70% - ⏱️ Sous-titres traduits et synchronisés avec succès ({len(all_segments)} répliques).", flush=True)
                 verify_timeline_coverage(all_segments, total_duration, tolerance=0.88, silences=silences)
 
     if not all_segments:
@@ -2147,10 +2147,10 @@ def main():
         print(f"[AYA ENVIRONMENT] 🌐 Mode: {ff_prof['env'].upper()} | Profil: {ff_prof['label']} (FFmpeg: threads {ff_prof['threads']}, preset {ff_prof['preset']}, crf {ff_prof['crf']})", flush=True)
 
         mode_label = "⚡ Mode Express (Texte Uniquement)" if express_mode else "🎬 Vidéo Complète"
-        print(f"[PROGRESS] 5% - Initialisation du pipeline de traduction ({mode_label})...", flush=True)
+        print(f"[PROGRESS] 5% - ✨ Préparation de votre vidéo ({mode_label})...", flush=True)
 
         # 1. Analyse média & Silences réels (Thomas)
-        print("[PROGRESS] 12% - Analyse acoustique et cartographie des silences FFmpeg...", flush=True)
+        print("[PROGRESS] 12% - 🎧 Écoute attentive de la voix et du son...", flush=True)
         t0_probe = time.time()
         media_info = probe_media(media_input)
         is_video = media_info["is_video"]
@@ -2161,7 +2161,7 @@ def main():
 
         silences = detect_audio_silences(media_input, noise_threshold="-30dB", min_duration=0.30)
         record_alexandre_agent("Thomas", "thomas_probe_silences", t0_probe, details=f"Durée: {duration:.1f}s, {len(silences)} silences détectés")
-        print(f"[PROGRESS] 25% - Structure média validée ({duration:.1f}s, {'vidéo' if is_video else 'audio'}, {len(silences)} silences détectés).", flush=True)
+        print(f"[PROGRESS] 25% - ✓ Média prêt pour la traduction ({duration:.1f}s).", flush=True)
 
         # Extraction du contexte utilisateur optionnel (CLI --context ou --context_b64)
         user_context = ""
@@ -2186,10 +2186,10 @@ def main():
         # 2. Transcription & Traduction par Protocole Scan 5s (ou Restyle Rapide)
         restyle_only = '--restyle_only' in sys.argv
         if restyle_only:
-            print("[PROGRESS] 20% - 🎨 Mode Personnalisation Directe : récupération des sous-titres depuis le cache local...", flush=True)
+            print("[PROGRESS] 20% - 🎨 Récupération de vos sous-titres...", flush=True)
             segments = get_cached_segments(media_input, target_lang)
             if not segments:
-                print("[PROGRESS] 30% - ⚠️ Aucun cache trouvé pour ce média. Lancement de l'analyse acoustique normale...", flush=True)
+                print("[PROGRESS] 30% - 🎧 Écoute attentive de la voix...", flush=True)
                 segments, ai_model_used = process_audio_scan_5s(media_input, target_lang, duration, silences, source_lang=source_lang, force_reprocess=False, user_context=user_context)
             else:
                 ai_model_used = "cache_local"
@@ -2221,7 +2221,7 @@ def main():
             record_alexandre_agent("Nadine", "nadine_titre_semantique", t0_nadine_titre, details=f"'{semantic_title}' (Titre conservé)")
             print(f"[TITRE SÉMANTIQUE RECYCLÉ] ✨ '{semantic_title}' (Mode Restyle Rapide)", flush=True)
         else:
-            print("[PROGRESS] 60% - ⚡ Nadine génère le Titre Sémantique Éclair (Max 40 car, synchrone)...", flush=True)
+            print("[PROGRESS] 60% - ✍️ Choix d'un beau titre pour votre vidéo...", flush=True)
             t0_nadine_titre = time.time()
             semantic_title = generate_semantic_title(segments, target_lang=target_lang, user_context=user_context)
 
@@ -2260,7 +2260,7 @@ def main():
             if restyle_only and cover_path.exists():
                 print(f"[RESTYLE ENGINE] 🖼️ Couverture 9:16 existante réutilisée : {cover_filename}", flush=True)
             else:
-                print("[PROGRESS] 65% - 🎨 Lionel produit immédiatement la Couverture 9:16 avec le Titre Sémantique...", flush=True)
+                print("[PROGRESS] 65% - 🖼️ Création de l'image de couverture...", flush=True)
                 t0_lionel = time.time()
                 try:
                     generate_lionel_cover(semantic_title, cover_path, target_lang=target_lang)
@@ -2296,7 +2296,7 @@ def main():
 
         # ⚡ COURT-CIRCUIT MODE EXPRESS (MODULE 2 : TEXTE MARKDOWN EN < 5S)
         if express_mode:
-            print("[PROGRESS] 85% - Formatage Markdown structuré du texte traduit (Mode Express)...", flush=True)
+            print("[PROGRESS] 85% - 📝 Mise en page du texte traduit...", flush=True)
             full_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()])
 
             # Nom du fichier Markdown téléchargeable
@@ -2334,7 +2334,7 @@ def main():
             with open(md_path, 'w', encoding='utf-8') as f:
                 f.write(md_content)
 
-            print(f"[PROGRESS] 100% - Traduction Express prête en Markdown ({len(segments)} segments) !", flush=True)
+            print(f"[PROGRESS] 100% - 🎉 Votre traduction est prête !", flush=True)
 
             context_summary = async_desc_result.get("text") or "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
 
@@ -2366,7 +2366,7 @@ def main():
             return
 
         # 5. Noms des fichiers de sortie normalisés (Max) basés sur le Titre Sémantique
-        print("[PROGRESS] 70% - Renommage et application de la règle Zéro Gap (Max)...", flush=True)
+        print("[PROGRESS] 70% - ⏱️ Synchronisation précise mot à mot...", flush=True)
         mp4_filename, ass_filename = generate_clean_output_filenames(
             media_input, source_lang, target_lang, title_override=clean_title_stem
         )
@@ -2375,20 +2375,20 @@ def main():
         mp4_path = OUTPUT_DIR / mp4_filename
 
         # 6. Génération du fichier .ASS (🎨 Lionel)
-        print("[PROGRESS] 75% - 🎨 Lionel stylise les sous-titres .ASS (couleur & position)...", flush=True)
+        print("[PROGRESS] 75% - 🎨 Création de sous-titres animés et lisibles...", flush=True)
         t0_ass = time.time()
         build_ass_file(segments, ass_path, is_video, width, height, duration, sub_color_hex, sub_margin_v)
         record_alexandre_agent("Lionel", "lionel_ass_styling", t0_ass, details=f"Fichier: {ass_filename}")
 
         # 7. Incrustation vidéo FFmpeg (🎬 Max)
-        print("[PROGRESS] 80% - 🎬 Max ré-incruste la vidéo avec FFmpeg...", flush=True)
+        print("[PROGRESS] 80% - 🎬 Intégration des sous-titres sur votre vidéo...", flush=True)
         t0_ffmpeg = time.time()
         render_video_ffmpeg(media_input, ass_path, mp4_path, is_video, duration, bg_theme=bg_theme, has_audio=has_audio)
         record_alexandre_agent("Max", "max_ffmpeg_encode", t0_ffmpeg, details=f"Encodage final: {mp4_filename}")
 
         # 8. Synchronisation de la Smart Description Asynchrone
         if desc_thread and desc_thread.is_alive():
-            print("[PROGRESS] 97% - Synchronisation de la Smart Description TikTok...", flush=True)
+            print("[PROGRESS] 97% - ✍️ Rédaction du titre et de la description...", flush=True)
             desc_thread.join(timeout=25)
 
         context_summary = async_desc_result.get("text", "")
@@ -2400,7 +2400,7 @@ def main():
                 df.write(context_summary.strip() + '\n')
             print(f"[PACK TIKTOK SUCCÈS] Assets générés : {cover_filename} | {desc_filename}", flush=True)
 
-        print("[PROGRESS] 100% - Vidéo sous-titrée et pack finalisés avec succès !", flush=True)
+        print("[PROGRESS] 100% - 🎉 Votre vidéo est prête à être partagée !", flush=True)
 
         record_alexandre_agent("Pipeline", "total_python_pipeline", t_global_py_start, status="OK", details=f"Durée totale Python: {round(time.time() - t_global_py_start, 2)}s")
 

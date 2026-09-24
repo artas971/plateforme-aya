@@ -1770,14 +1770,14 @@
                         <span class="mode-icon">🎬</span>
                         <div class="mode-details">
                             <div class="mode-title" id="modeVideoTitle">🎬 Vidéo Complète</div>
-                            <div class="mode-sub" id="modeVideoSub">Incrustation sous-titres 9:16 & encodage FFmpeg</div>
+                            <div class="mode-sub" id="modeVideoSub">Sous-titres intégrés directement sur la vidéo</div>
                         </div>
                     </div>
                     <div class="mode-card" data-mode="express" id="modeCardExpress">
                         <span class="mode-icon">⚡</span>
                         <div class="mode-details">
                             <div class="mode-title" id="modeExpressTitle">⚡ Mode Express (Texte Uniquement)</div>
-                            <div class="mode-sub" id="modeExpressSub">Traduction directe en texte Markdown (&lt; 5s)</div>
+                            <div class="mode-sub" id="modeExpressSub">Traduction instantanée du texte (&lt; 5s)</div>
                         </div>
                     </div>
                 </div>
@@ -2332,14 +2332,49 @@
             });
         }
 
+        // Dictionnaire de correspondances arabes pour la progression en direct (Nadine & Thomas)
+        const PROGRESS_AR_MAP = [
+            { test: /préparation|initialisation|prêt/i, ar: "✨ جارٍ تجهيز الفيديو للترجمة..." },
+            { test: /écoute attentive|acoustique/i, ar: "🎧 الاستماع بعناية إلى نبرة الصوت والكلام..." },
+            { test: /média prêt|structure média/i, ar: "✓ تم فحص الفيديو بنجاح، بدء الترجمة..." },
+            { test: /récupération de vos sous-titres|cache/i, ar: "🎨 استرجاع نصوص الترجمة المحفوظة..." },
+            { test: /traduction fidèle|analyse et traduction/i, ar: "🧠 ترجمة دقيقة للهجة الفلسطينية..." },
+            { test: /synchronisation précise/i, ar: "⏱️ مزامنة دقيقة للكلمات والتوقيت..." },
+            { test: /sous-titres traduits et synchronisés/i, ar: "⏱️ تمت الترجمة والمزامنة بنجاح." },
+            { test: /choix d'un beau titre|titre sémantique/i, ar: "✍️ اختيار عنوان معبّر وأنيق للفيديو..." },
+            { test: /création de l'image de couverture|couverture/i, ar: "🖼️ إنشاء وتصميم صورة الغلاف..." },
+            { test: /mise en page du texte|markdown/i, ar: "📝 تنسيق النص المترجم وإعداده..." },
+            { test: /création de sous-titres animés|stylise/i, ar: "🎨 تصميم نصوص ترجمة واضحة ومتحركة..." },
+            { test: /intégration des sous-titres|ré-incruste/i, ar: "🎬 دمج الترجمة بدقة على الفيديو..." },
+            { test: /rédaction du titre et de la description|description/i, ar: "✍️ كتابة العنوان والوصف للمشاركة..." },
+            { test: /vidéo.*prête|finalisés avec succès/i, ar: "🎉 أصبح الفيديو جاهزاً للمشاركة والتنزيل!" },
+            { test: /traduction express prête/i, ar: "🎉 أصبحت ترجمتك جاهزة!" },
+            { test: /téléversement/i, ar: "جارٍ رفع الملف إلى المنصة..." },
+            { test: /connexion au lien telegram|telegram/i, ar: "🔗 جارٍ استيراد الفيديو من تليجرام..." },
+            { test: /importé.*succès/i, ar: "✓ تم استيراد الفيديو بنجاح. بدء الترجمة..." },
+            { test: /préférences de style/i, ar: "🎨 تطبيق نمط الترجمة الجديد..." },
+            { test: /annulé/i, ar: "تم إلغاء المعالجة بواسطة المستخدم." }
+        ];
+
+        function getLocalizedProgressMsg(msg) {
+            if (!msg) return msg;
+            const lang = window.AyaI18n ? window.AyaI18n.currentLang : 'fr';
+            if (lang !== 'ar') return msg;
+            for (const item of PROGRESS_AR_MAP) {
+                if (item.test.test(msg)) return item.ar;
+            }
+            return msg;
+        }
+
         // Mise à jour de la jauge de progression
         function updateProgress(pct, msg) {
             const safePct = Math.min(100, Math.max(0, pct));
             if (progressBarFill) progressBarFill.style.width = `${safePct}%`;
             if (progressPercent) progressPercent.textContent = `${safePct}%`;
             if (msg) {
-                if (statusText) statusText.textContent = msg;
-                if (progressLog) progressLog.textContent = msg;
+                const displayMsg = getLocalizedProgressMsg(msg);
+                if (statusText) statusText.textContent = displayMsg;
+                if (progressLog) progressLog.textContent = displayMsg;
             }
         }
 
@@ -3070,7 +3105,7 @@ ${safeText}
                         if (restyleStatusMsg) {
                             restyleStatusMsg.style.display = 'inline-block';
                             restyleStatusMsg.style.color = '#00838f';
-                            restyleStatusMsg.textContent = dict.restyleProgress || '🎬 Max ré-incruste vos sous-titres avec FFmpeg...';
+                            restyleStatusMsg.textContent = dict.restyleProgress || '🎬 Application de vos préférences sur la vidéo...';
                         }
 
                         const payload = {

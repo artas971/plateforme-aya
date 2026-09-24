@@ -229,6 +229,39 @@
             font-weight: 400;
         }
 
+        .publish-summary-action {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .publish-action-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-turquoise) 100%);
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(11, 83, 148, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .publish-card-summary:hover .publish-action-pill {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(11, 83, 148, 0.3);
+        }
+
+        details[open] .publish-action-pill {
+            background: #f1f5f9;
+            color: #475569;
+            box-shadow: none;
+            border: 1px solid #cbd5e1;
+        }
+
         .publish-toggle-icon {
             font-size: 0.9rem;
             color: #94a3b8;
@@ -1252,12 +1285,12 @@
             </div>
             <div class="communaute-hero-badge">
                 <span class="badge-number" id="heroPostsCount">0</span>
-                <span>Témoignages Archivés</span>
+                <span id="heroPostsLabel">Témoignages Partagés</span>
             </div>
         </section>
 
-        <!-- Formulaire de Publication — Repliable -->
-        <details class="publish-card-collapsible" id="publishDetails" open>
+        <!-- Formulaire de Publication — Repliable (Fermé par défaut) -->
+        <details class="publish-card-collapsible" id="publishDetails">
             <summary class="publish-card-summary" id="publishSummary">
                 <div class="publish-summary-left">
                     <div class="publish-summary-icon">📢</div>
@@ -1266,7 +1299,13 @@
                         <span class="publish-summary-sub" id="publishCardSub">Publiez une vidéo ou un audio traduit — vérifié avant mise en ligne</span>
                     </div>
                 </div>
-                <span class="publish-toggle-icon" aria-hidden="true">▼</span>
+                <div class="publish-summary-action">
+                    <span class="publish-action-pill" id="publishActionPill">
+                        <span class="pill-icon">➕</span>
+                        <span class="pill-text" id="publishActionText">Partager</span>
+                    </span>
+                    <span class="publish-toggle-icon" aria-hidden="true">▼</span>
+                </div>
             </summary>
 
             <div class="publish-card-inner">
@@ -1433,12 +1472,25 @@
             const feedTypeFilters = document.getElementById('feedTypeFilters');
             const publishDetails = document.getElementById('publishDetails');
 
-            // ── Formulaire : replié sur mobile ≤640px par défaut ─────────
+            // ── Formulaire : replié par défaut sur tous les écrans ───────
             (function initFormCollapse() {
                 if (!publishDetails) return;
-                if (window.matchMedia('(max-width: 640px)').matches) {
-                    publishDetails.removeAttribute('open');
-                }
+                publishDetails.removeAttribute('open');
+
+                publishDetails.addEventListener('toggle', () => {
+                    const isOpen = publishDetails.hasAttribute('open');
+                    const actionText = document.getElementById('publishActionText');
+                    const pillIcon = publishDetails.querySelector('.pill-icon');
+                    const isAr = typeof isArabic === 'function' && isArabic();
+                    if (actionText) {
+                        actionText.textContent = isOpen 
+                            ? (isAr ? 'إغلاق' : 'Fermer') 
+                            : (isAr ? 'مشاركة' : 'Partager');
+                    }
+                    if (pillIcon) {
+                        pillIcon.textContent = isOpen ? '✕' : '➕';
+                    }
+                });
             })();
 
             // 1. Initialisation & Auto-Hydratation (State Passing React Router / sessionStorage / History)
@@ -1522,7 +1574,7 @@
 
                             if (mediaPreviewBadge) {
                                 mediaPreviewBadge.style.display = 'inline-flex';
-                                mediaPreviewBadge.innerHTML = `<span>🎬</span> Vidéo traduite (.ass incrusté)`;
+                                mediaPreviewBadge.innerHTML = `<span>🎬</span> Vidéo traduite et sous-titrée`;
                             }
                             if (mediaPreviewName) {
                                 mediaPreviewName.textContent = autoShareData.videoFilename || autoShareData.title || 'Vidéo finale';
@@ -1708,8 +1760,8 @@
                     const isAr = (window.AyaI18n && window.AyaI18n.currentLang === 'ar');
                     const title = isAr ? "✅ تم إرسال الشهادة بنجاح!" : "✅ Témoignage soumis avec succès !";
                     const msg = isAr 
-                        ? "تم استلام منشورك بنجاح. وهو الآن قيد المراجعة والتدقيق من قبل فريق الإشراف (الحالة: قيد الانتظار) قبل ظهوره على الجدار العام."
-                        : "Votre publication a été transmise avec succès. Elle est actuellement en cours d'examen par l'équipe de modération (statut : En attente) avant sa mise en ligne sur le mur public.";
+                        ? "تم استلام شهادتك بنجاح! ستظهر للجميع فور التحقق القصير منها من قبل فريقنا."
+                        : "Votre publication a bien été reçue ! Elle sera visible de tous dès sa courte vérification par notre équipe.";
 
                     showFeedback('success', msg, title);
 

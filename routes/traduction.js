@@ -369,9 +369,9 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
             mediaPath = req.file.path;
             originalName = req.file.originalname;
             fileSizeMb = (req.file.size / (1024 * 1024)).toFixed(2);
-            res.write(`[PROGRESS] 2% - Média reçu sur le serveur. Initialisation du processus Python...\n`);
+            res.write(`[PROGRESS] 2% - ✨ Votre fichier est bien reçu. Préparation en cours...\n`);
         } else {
-            res.write(`[PROGRESS] 5% - Lien Telegram reçu (${telegramUrl}). Connexion et analyse...\n`);
+            res.write(`[PROGRESS] 5% - 🔗 Récupération de votre vidéo Telegram...\n`);
             try {
                 const targetDir = path.join(ROOT_DIR, 'audio_a_traiter');
                 const dlResult = await downloadTelegramMedia(telegramUrl, targetDir, (pct, msg) => {
@@ -380,7 +380,7 @@ router.post('/api/traduction/process', upload.single('media'), async (req, res) 
                 mediaPath = dlResult.filePath;
                 originalName = dlResult.filename;
                 fileSizeMb = (dlResult.size / (1024 * 1024)).toFixed(2);
-                res.write(`[PROGRESS] 40% - Fichier Telegram importé (${fileSizeMb} Mo via ${dlResult.method}). Lancement de l'analyse acoustique...\n`);
+                res.write(`[PROGRESS] 40% - ✓ Vidéo importée avec succès. Début de la traduction...\n`);
             } catch (dlErr) {
                 console.error("[Telegram Import Error]:", dlErr.message);
                 const errorMsg = "Le fichier Telegram est trop lourd (>20Mo) ou protégé. Veuillez le télécharger manuellement et l'uploader via la zone de dépôt.";
@@ -854,7 +854,7 @@ router.post('/api/traduction/restyle', async (req, res) => {
         res.setHeader('Cache-Control', 'no-cache, no-transform');
         res.setHeader('X-Content-Type-Options', 'nosniff');
 
-        res.write(`[PROGRESS] 10% - 🎨 Lionel configure la nouvelle couleur (${subColor}) et position (${subPosition})...\n`);
+        res.write(`[PROGRESS] 10% - 🎨 Application de vos nouvelles préférences de style...\n`);
 
         const pyArgs = [
             scriptPath,

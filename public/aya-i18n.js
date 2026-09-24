@@ -64,6 +64,7 @@
             communauteDocTitle: 'Aya - Mur Communautaire des Témoignages',
             communauteHeroTitle: 'Mur Communautaire des Témoignages',
             communauteHeroSub: 'Espace d\'expression, de diffusion et de mémoire collective. Découvrez et partagez des témoignages sous-titrés authentiques.',
+            heroPostsLabel: 'Témoignages Partagés',
             publishCardTitle: '📢 Partager un témoignage',
             publishCardSub: 'Publiez une vidéo ou un audio traduit avec sa Smart Description. Tout contenu est vérifié par l\'équipe avant mise en ligne.',
             labelPublishAuthor: 'Votre nom ou pseudonyme :',
@@ -106,13 +107,13 @@
             // Mode de traitement (Module 1 vs Module 2)
             labelProcessingMode: '0. Mode de traitement',
             modeVideoTitle: '🎬 Vidéo Complète',
-            modeVideoSub: 'Incrustation des sous-titres & encodage FFmpeg',
+            modeVideoSub: 'Vidéo complète avec sous-titres animés (Format TikTok / Réels)',
             modeExpressTitle: '⚡ Mode Express (Texte Uniquement)',
             modeExpressSub: 'Traduction directe en texte Markdown (< 5s)',
 
             // Restitution Express
             expressResultTitle: '<span>⚡</span> Traduction Texte Express prête',
-            expressSubTitle: 'Restitution instantanée sans encodage vidéo • Format Markdown',
+            expressSubTitle: 'Traduction rapide du texte uniquement (Lecture et copie immédiates)',
             btnCopyText: '📋 Copier le texte',
             btnCopied: '✅ Copié !',
             btnDownloadMarkdown: '⬇️ Télécharger le Markdown (.md)',
@@ -130,9 +131,9 @@
 
             // Sélecteur Langue Cible
             labelTargetLang: '2. Langue cible des sous-titres',
-            targetFrTitle: 'VOSTFR - Français',
+            targetFrTitle: 'Français (Sous-titres en français)',
             targetFrSub: 'Sous-titres traduits ou retranscrits en français',
-            targetArTitle: 'VOAR - Arabe',
+            targetArTitle: 'Arabe (Sous-titres en arabe)',
             targetArSub: 'Sous-titres transcrits en arabe authentique',
 
             // Style & Couleur
@@ -175,7 +176,7 @@
             chkTiktokPackSub: 'Optionnel : Vignette de couverture & Rédaction optimisée SEO',
 
             // Progression
-            statusInit: 'Initialisation du pipeline...',
+            statusInit: '✨ Préparation de votre vidéo...',
             logConnected: 'Connexion au serveur établie...',
 
             // Résultats & Téléchargements
@@ -186,7 +187,7 @@
             btnDownloadSubtitlesMain: '📄 Télécharger les sous-titres',
             btnDownloadMp4Video: '⬇️ Télécharger la Vidéo MP4 (Format original)',
             btnDownloadMp4Audio: '⬇️ Télécharger la Vidéo MP4 (Format Téléphone)',
-            btnDownloadAss: '📄 Télécharger le fichier .ASS',
+            btnDownloadAss: '📄 Télécharger le texte des sous-titres au format ASS',
             btnDownloadCover: '🖼️ Télécharger la Vignette Vidéo',
             btnDownloadDesc: '📝 Télécharger la Smart Description SEO',
             btnDriveBackup: 'Sauvegarder sur Google Drive',
@@ -224,7 +225,7 @@
             btnApplyRestyle: '⚡ Mettre à jour la vidéo',
             restyleNotice: 'Prêt en 2 secondes • Gratuit (0 crédit)',
             btnNewVideo: '➕ Traduire une nouvelle vidéo',
-            restyleProgress: '🎬 Max ré-incruste vos sous-titres avec FFmpeg...',
+            restyleProgress: '🎬 Application de vos nouvelles préférences de style...',
             restyleSuccess: '✨ Sous-titres personnalisés avec succès !',
 
             // Résilience Anti-Quota & Modèle IA
@@ -307,7 +308,7 @@
             walletAvailableLabel: 'Disponibles',
             walletReservedLabel: 'En traitement',
             btnRechargeWallet: '<span>⚡</span> Recharger mon solde',
-            walletHint: '💡 1 crédit = 1 génération vidéo complète (traduction + sous-titrage TikTok + archivage Drive).',
+            walletHint: '💡 1 crédit = 1 vidéo traduite et sous-titrée prête à publier.',
             historyTitle: '<span>🎬</span> Historique de mes Vidéos',
             btnRefreshHistory: '<span>🔄</span> Actualiser',
             historyLoadingText: 'Chargement de votre historique personnel...',
@@ -316,14 +317,14 @@
             btnStartFirstTrad: '<span>✨</span> Lancer une première traduction',
             rechargeModalTitle: '<span>⚡</span> Recharger mes Crédits Aya',
             rechargeBannerTitle: '<span>🛡️</span> Tarification Autofinancée & Transparente',
-            rechargeBannerText: 'Chaque pack couvre strictement les coûts serveurs (Hetzner) et les tokens IA (Gemini). Vos crédits n\'expirent jamais et sont utilisables immédiatement.',
+            rechargeBannerText: 'Chaque recharge couvre strictement les frais techniques de la plateforme. Vos crédits restent valables à vie.',
             paypalSolidarityTitle: '<span>❤️</span> Dons de Solidarité Palestine',
             paypalSolidarityDesc: 'Soutien direct et 100% bénévole à l\'action humanitaire et aux témoins.',
             btnPaypalDonation: '<span>🕊️</span> Don PayPal',
 
             // Packs de recharge Stripe
             pack1Title: '1 Crédit Flash',
-            pack1Desc: '1 vidéo TikTok complète : transcription Faster-Whisper + traduction dialectale + encodage 1080x1920.',
+            pack1Desc: '1 vidéo complète : écoute du dialecte + traduction française + sous-titres animés plein écran.',
             pack1Unit: '0,99 € / vidéo',
             pack1Price: '0,99 €',
             pack1Btn: '<span>💳</span> Acheter',
@@ -375,11 +376,11 @@
             marginHint: 'Ajustez la hauteur verticale pour respecter la zone de sécurité TikTok (Safe Zone) et éviter les boutons de l\'application.',
             sec5Title: '5. Pack Éditorial Post-Vidéo Sélectif',
             editorialHint: 'Cochez les fichiers à inclure automatiquement dans votre pack de téléchargement.',
-            chkMp4: '🎬 Vidéo .MP4',
-            chkAss: '📄 Sous-titres .ASS',
-            chkTxt: '📝 Description .TXT',
-            chkCover: '🎨 Vignette TikTok .TXT',
-            btnGenerateStudio: '⚡ VALIDER & GÉNÉRER LE PACK V3',
+            chkMp4: '🎬 Vidéo finale prête à publier',
+            chkAss: '📄 Fichier de sous-titres (.ASS)',
+            chkTxt: '📝 Description pour TikTok',
+            chkCover: '🎨 Vignette de couverture',
+            btnGenerateStudio: '⚡ VALIDER & CRÉER MA VIDÉO',
             simTitle: '📱 Aperçu Visuel Format Téléphone (TikTok)',
             simRealtime: '● Aperçu Temps Réel Actif',
             optModeVostfr: '🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)',
@@ -447,6 +448,7 @@
             communauteDocTitle: 'منصة آية - جدار المجتمع والشهادات الحية',
             communauteHeroTitle: 'جدار المجتمع والشهادات الإنسانية',
             communauteHeroSub: 'مساحة للتعبير والتوثيق والذاكرة الحية. استكشف وشارك الشهادات المرئية والمسموعة المترجمة بأمانة.',
+            heroPostsLabel: 'شهادات تمت مشاركتها',
             publishCardTitle: '📢 مشاركة شهادة جديدة',
             publishCardSub: 'انشر مقطع فيديو أو صوت مترجم مصحوباً بالوصف الذكي. تخضع جميع المنشورات لمراجعة دقيقة من الفريق قبل الظهور للعامة.',
             labelPublishAuthor: 'اسمك أو اسم مستعار:',
@@ -489,13 +491,13 @@
             // Mode de traitement (Module 1 vs Module 2)
             labelProcessingMode: '٠. نمط المعالجة',
             modeVideoTitle: '🎬 فيديو كامل مدمج',
-            modeVideoSub: 'دمج شريط الترجمة بالكامل وترميز الفيديو 9:16',
+            modeVideoSub: 'فيديو كامل بترجمة متحركة (ملائم لتيك توك وإنستغرام)',
             modeExpressTitle: '⚡ النمط السريع (نص فقط)',
-            modeExpressSub: 'ترجمة نصية مباشرة بتنسيق ماركداون (< 5 ثوانٍ)',
+            modeExpressSub: 'ترجمة نصية سريعة فقط (للقراءة والنسخ الفوري)',
 
             // Restitution Express
             expressResultTitle: '<span>⚡</span> الترجمة النصية السريعة جاهزة',
-            expressSubTitle: 'تسليم فوري بدون ترميز الفيديو • بتنسيق ماركداون',
+            expressSubTitle: 'ترجمة نصية سريعة فقط (للقراءة والنسخ الفوري)',
             btnCopyText: '📋 نسخ النص',
             btnCopied: '✅ تم النسخ!',
             btnDownloadMarkdown: '⬇️ تحميل ملف ماركداون (.md)',
@@ -513,9 +515,9 @@
 
             // Sélecteur Langue Cible
             labelTargetLang: '٢. اللغة المطلوبة للترجمة (الهدف)',
-            targetFrTitle: 'الفرنسية (VOSTFR)',
+            targetFrTitle: 'الفرنسية (ترجمة مكتوبة بالفرنسية)',
             targetFrSub: 'شريط ترجمة بالفرنسية الفصيحة والمعاصرة',
-            targetArTitle: 'العربية (VOAR)',
+            targetArTitle: 'العربية (ترجمة مكتوبة بالعربية)',
             targetArSub: 'شريط ترجمة بالعربية الفلسطينية الأصيلة',
 
             // Style & Couleur
@@ -558,7 +560,7 @@
             chkTiktokPackSub: 'اختياري: غلاف طولي ونصوص ترويجية محسنة (SEO)',
 
             // Progression
-            statusInit: 'جاري تشغيل خط الإنتاج...',
+            statusInit: '✨ جاري تجهيز مقطعكم...',
             logConnected: 'تم الاتصال بالخادم بنجاح...',
 
             // Résultats & Téléchargements
@@ -569,7 +571,7 @@
             btnDownloadSubtitlesMain: '📄 تحميل ملف الترجمة',
             btnDownloadMp4Video: '⬇️ تحميل الفيديو النهائي (MP4)',
             btnDownloadMp4Audio: '⬇️ تحميل الفيديو النهائي (بصيغة طولية)',
-            btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
+            btnDownloadAss: '📄 تحميل نصوص الترجمة بصيغة ASS',
             btnDownloadCover: '🖼️ تحميل غلاف تيك توك',
             btnDownloadDesc: '📝 تحميل نصوص النشر والوصف الذكي',
             btnDriveBackup: 'حفظ على Google Drive',
@@ -607,7 +609,7 @@
             btnApplyRestyle: '⚡ تحديث مظهر الفيديو',
             restyleNotice: 'جاهز خلال ثانيتين • مجاني تماماً (0 رصيد)',
             btnNewVideo: '➕ ترجمة فيديو جديد',
-            restyleProgress: '🎬 ماكس يعيد دمج الترجمة عبر FFmpeg...',
+            restyleProgress: '🎬 جاري تطبيق النمط والألوان التي اخترتها...',
             restyleSuccess: '✨ تم تحديث مظهر الترجمة بنجاح!',
 
             // Résilience Anti-Quota & Modèle IA
@@ -690,7 +692,7 @@
             walletAvailableLabel: 'الأرصدة المتاحة',
             walletReservedLabel: 'قيد المعالجة',
             btnRechargeWallet: '<span>⚡</span> شحن الرصيد',
-            walletHint: '💡 ١ رصيد = فيديو كامل مترجم ومدبلج ومحفوظ تلقائياً.',
+            walletHint: '💡 نقطة واحدة = فيديو واحد مترجم بالكامل وجاهز للنشر مباشرة.',
             historyTitle: '<span>🎬</span> سجل الفيديوهات المترجمة',
             btnRefreshHistory: '<span>🔄</span> تحديث',
             historyLoadingText: 'جاري تحميل سجل فيديوهاتك الشخصية...',
@@ -699,14 +701,14 @@
             btnStartFirstTrad: '<span>✨</span> ابدأ أول ترجمة الآن',
             rechargeModalTitle: '<span>⚡</span> شحن أرصدة منصة آية',
             rechargeBannerTitle: '<span>🛡️</span> تسعير شفاف وتغطية تكلفة',
-            rechargeBannerText: 'كل باقة تغطي حصرياً تكاليف السيرفرات والذكاء الاصطناعي. رصيدك صالح دائماً بدون تاريخ انتهاء.',
+            rechargeBannerText: 'كل باقة تغطي فقط التكاليف التشغيلية للمنصة. رصيدك دائم ولا ينتهي أبداً.',
             paypalSolidarityTitle: '<span>❤️</span> التبرع التضامني المباشر',
             paypalSolidarityDesc: 'دعم مباشر وتطوعي ١٠٠٪ للإغاثة الإنسانية وإيصال صوت الشهود في فلسطين.',
             btnPaypalDonation: '<span>🕊️</span> تبرع عبر PayPal',
 
             // Packs de recharge Stripe
             pack1Title: 'رصيد واحد سريع',
-            pack1Desc: 'فيديو تيك توك كامل: تفريغ صوتي دقيق + ترجمة لهجة شامية + ترميز عالي الدقة 1080x1920.',
+            pack1Desc: 'فيديو واحد متكامل: استماع للهجة + ترجمة فرنسية + ترجمة متحركة بملء الشاشة.',
             pack1Unit: '<span class="aya-bidi-num">0,99 €</span> / للفيديو',
             pack1Price: '<span class="aya-bidi-num">0,99 €</span>',
             pack1Btn: '<span>💳</span> شراء الآن',
@@ -758,11 +760,11 @@
             marginHint: 'اضبط الارتفاع لتفادي تداخل النصوص مع أزرار وأيقونات تطبيق تيك توك (Safe Zone).',
             sec5Title: '٥. حزمة النشر المتكاملة بعد التوليد',
             editorialHint: 'حدد الملفات المطلوب توليدها وتضمينها في حزمة التنزيل النهائية.',
-            chkMp4: '🎬 فيديو مدمج .MP4',
-            chkAss: '📄 ملف ترجمة دقيق .ASS',
-            chkTxt: '📝 نص النشر والوصف .TXT',
-            chkCover: '🎨 موجه غلاف تيك توك .TXT',
-            btnGenerateStudio: '⚡ اعتماد وتوليد حزمة V3',
+            chkMp4: '🎬 فيديو نهائي جاهز للنشر',
+            chkAss: '📄 ملف نصوص الترجمة بصيغة ASS',
+            chkTxt: '📝 نص الوصف لتيك توك',
+            chkCover: '🎨 غلاف الفيديو المصور',
+            btnGenerateStudio: '⚡ اعتماد وإنشاء الفيديو',
             simTitle: '📱 معاينة العرض المرئي للهاتف (تيك توك)',
             simRealtime: '● المعاينة الحية نشطة',
             optModeVostfr: '🇵🇸 عربي فلسطيني (غزة) ➔ 🇫🇷 فرنسي (VOSTFR)',
@@ -898,6 +900,7 @@
             document.title = dict.communauteDocTitle;
             updateElementText('communauteHeroTitle', dict.communauteHeroTitle);
             updateElementText('communauteHeroSub', dict.communauteHeroSub);
+            updateElementText('heroPostsLabel', dict.heroPostsLabel);
             updateElementText('publishCardTitle', dict.publishCardTitle);
             updateElementText('publishCardSub', dict.publishCardSub);
             updateElementText('labelPublishAuthor', dict.labelPublishAuthor);

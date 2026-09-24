@@ -259,10 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
             purgeAudioBtn: '🗑️ Purger cet audio du disque',
             titleChatHeader: 'Chat Éphémère Traduit (Messages & Audios)',
             tabChatAll: '🌍 Salon Général',
-            tabChatDms: '🔒 Mes DMs',
+            tabChatDms: '🔒 Messages privés',
             chatRecipientAll: '🌍 Tout le monde',
             chatEmptyGeneral: '🌍 Aucun message public dans le salon général.',
-            chatEmptyDms: '🔒 Aucun message privé (DM) pour l\'instant.',
+            chatEmptyDms: '🔒 Vous n\'avez pas encore de message privé.',
             badgeChatTimer: '🕒 Suppression automatique après 24h',
             subChatInfo: 'Vos messages texte et vocaux sont automatiquement traduits et vocalisés selon la langue de votre compte. Chaque message est conservé exactement 24h puis définitivement purgé du disque.',
             chatMicBtnTitle: 'Enregistrer une note vocale',
@@ -431,10 +431,10 @@ document.addEventListener('DOMContentLoaded', () => {
             purgeAudioBtn: '🗑️ حذف التسجيل الصوتي من القرص',
             titleChatHeader: 'المحادثة المباشرة المؤقتة المترجمة (رسائل وأصوات)',
             tabChatAll: '🌍 المحادثة العامة',
-            tabChatDms: '🔒 رسائلي الخاصة',
+            tabChatDms: '🔒 محادثات خاصة',
             chatRecipientAll: '🌍 الجميع',
             chatEmptyGeneral: '🌍 لا توجد رسائل عامة حالياً.',
-            chatEmptyDms: '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.',
+            chatEmptyDms: '🔒 لا توجد محادثات خاصة حتى الآن.',
             badgeChatTimer: '🕒 الحذف التلقائي للرسائل بعد 24 ساعة',
             subChatInfo: 'تترجم رسائلك النصية والصوتية تلقائياً حسب لغة حسابك. تُحفظ كل رسالة لمدة 24 ساعة ثم تُحذف تلقائياً من القرص.',
             chatMicBtnTitle: 'تسجيل ملاحظة صوتية',
@@ -673,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Chat Ephemeral Translations
         setInnerHTML('titleChatHeader', dict.titleChatHeader);
         if (tabChatAll) tabChatAll.textContent = dict.tabChatAll || (lang === 'ar' ? '🌍 المحادثة العامة' : '🌍 Salon Général');
-        if (tabChatDms) tabChatDms.textContent = dict.tabChatDms || (lang === 'ar' ? '🔒 رسائلي الخاصة' : '🔒 Mes DMs');
+        if (tabChatDms) tabChatDms.textContent = dict.tabChatDms || (lang === 'ar' ? '🔒 محادثات خاصة' : '🔒 Messages privés');
         setInnerHTML('badgeChatTimer', dict.badgeChatTimer);
         setInnerHTML('subChatInfo', dict.subChatInfo);
         if (chatMicBtn && !isChatRecording) chatMicBtn.setAttribute('title', dict.chatMicBtnTitle);
@@ -2234,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyFilterNotice.style.display = 'block';
             const filterDict = (typeof i18n !== 'undefined' && i18n[currentLang]) ? i18n[currentLang] : {};
             if (activeChatFilter === 'dms') {
-                emptyFilterNotice.textContent = filterDict.chatEmptyDms || (currentLang === 'ar' ? '🔒 لا توجد رسائل خاصة (DMs) حتى الآن.' : '🔒 Aucun message privé (DM) pour l\'instant.');
+                emptyFilterNotice.textContent = filterDict.chatEmptyDms || (currentLang === 'ar' ? '🔒 لا توجد محادثات خاصة حتى الآن.' : '🔒 Vous n\'avez pas encore de message privé.');
             } else {
                 emptyFilterNotice.textContent = filterDict.chatEmptyGeneral || (currentLang === 'ar' ? '🌍 لا توجد رسائل عامة حالياً.' : '🌍 Aucun message public dans le salon général.');
             }
@@ -2767,8 +2767,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isPrivate) {
                 chatPrivateBanner.style.display = 'flex';
                 privateBannerText.innerHTML = currentLang === 'ar'
-                    ? `🔒 أنت تراسل الآن بشكل خاص <strong>@${escapeChatHtml(normalizedTarget)}</strong>. مشفر وسري تماماً.`
-                    : `🔒 Vous écrivez en privé à <strong>@${escapeChatHtml(normalizedTarget)}</strong>. Échange chiffré et strictement confidentiel.`;
+                    ? `🔒 رسالة خاصة إلى <strong>@${escapeChatHtml(normalizedTarget)}</strong> (مرئية بينكما فقط)`
+                    : `🔒 Message privé pour <strong>@${escapeChatHtml(normalizedTarget)}</strong> (visible uniquement entre vous deux)`;
             } else {
                 chatPrivateBanner.style.display = 'none';
             }

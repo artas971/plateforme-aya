@@ -1155,20 +1155,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (vocabPreviewScreen) vocabPreviewScreen.style.display = 'none';
             vocabProgressScreen.style.display = 'block';
             vocabProgressBar.style.width = '15%';
-            if (vocabProgressStep) vocabProgressStep.textContent = "Étape 1/3 : Rendu graphique HD 1080×1920 (Puppeteer Headless)...";
+            const isAr = isRtl();
+            if (vocabProgressStep) vocabProgressStep.textContent = isAr ? "🎨 تصميم لوحة الكلمات الأنيقة..." : "🎨 Création artistique de votre affiche illustrée...";
 
             // Échelonnement réaliste de la progression
             const stepTimers = [
                 setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 2/3 : Synthèse neuronale bilingue native (voix Henri + Sana)...";
+                    if (vocabProgressStep) vocabProgressStep.textContent = isAr ? "🎨 تصميم لوحة الكلمات الأنيقة..." : "🎨 Création artistique de votre affiche illustrée...";
                     if (vocabProgressBar) vocabProgressBar.style.width = '55%';
                 }, 3500),
                 setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Étape 3/3 : Assemblage audio séquentiel et pauses pédagogiques...";
+                    if (vocabProgressStep) vocabProgressStep.textContent = isAr ? "🎙️ تسجيل النطق الصوتي الواضح والطبيعي..." : "🎙️ Enregistrement de la prononciation audio claire et naturelle...";
                     if (vocabProgressBar) vocabProgressBar.style.width = '80%';
                 }, 8500),
                 setTimeout(() => {
-                    if (vocabProgressStep) vocabProgressStep.textContent = "Finalisation de l'affiche et enregistrement haute définition...";
+                    if (vocabProgressStep) vocabProgressStep.textContent = isAr ? "✨ اللمسات النهائية وإعداد بطاقة المراجعة..." : "✨ Touches finales et préparation de votre fiche de révision...";
                     if (vocabProgressBar) vocabProgressBar.style.width = '95%';
                 }, 14000)
             ];
@@ -1368,10 +1369,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button type="button" class="btn-action-sm primary btn-view-card" data-id="${cardId}" title="Aperçu et lecture audio">
                         <span>▶️</span> Écouter
                     </button>
-                    <a href="${c.imageUrl}" download="${cardId}.jpg" class="btn-action-sm" title="Télécharger la fiche HD 1080x1920">
+                    <a href="${c.imageUrl}" download="${cardId}.jpg" class="btn-action-sm" title="${isRtl() ? 'تحميل صورة البطاقة للهاتف' : 'Télécharger l\'image pour téléphone'}">
                         <span>⬇️</span> JPG
                     </a>
-                    <a href="${c.audioUrl}" download="${cardId}.mp3" class="btn-action-sm" title="Télécharger l'audio combiné">
+                    <a href="${c.audioUrl}" download="${cardId}.mp3" class="btn-action-sm" title="${isRtl() ? 'تحميل النطق الصوتي' : 'Télécharger la prononciation audio'}">
                         <span>🎵</span> MP3
                     </a>
                 </div>

@@ -497,17 +497,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Animation des étapes de progression
             if (fichesProgressBar) fichesProgressBar.style.width = '15%';
+            const isAr = window.AyaI18n && window.AyaI18n.currentLang === 'ar';
+            if (fichesProgressStep) fichesProgressStep.textContent = isAr ? "🎨 تصميم لوحة الكلمات الأنيقة..." : "🎨 Création artistique de votre affiche illustrée...";
             const stepTimers = [
                 setTimeout(() => {
-                    if (fichesProgressStep) fichesProgressStep.textContent = "Mise en page haute définition par le moteur Puppeteer Studio...";
+                    if (fichesProgressStep) fichesProgressStep.textContent = isAr ? "🎨 تصميم لوحة الكلمات الأنيقة..." : "🎨 Création artistique de votre affiche illustrée...";
                     if (fichesProgressBar) fichesProgressBar.style.width = '40%';
                 }, 1800),
                 setTimeout(() => {
-                    if (fichesProgressStep) fichesProgressStep.textContent = "Synthèse vocale bilingue et silences pédagogiques...";
+                    if (fichesProgressStep) fichesProgressStep.textContent = isAr ? "🎙️ تسجيل النطق الصوتي الواضح والطبيعي..." : "🎙️ Enregistrement de la prononciation audio claire et naturelle...";
                     if (fichesProgressBar) fichesProgressBar.style.width = '70%';
                 }, 5500),
                 setTimeout(() => {
-                    if (fichesProgressStep) fichesProgressStep.textContent = "Finalisation de l'affiche et enregistrement haute définition...";
+                    if (fichesProgressStep) fichesProgressStep.textContent = isAr ? "✨ اللمسات النهائية وإعداد بطاقة المراجعة..." : "✨ Touches finales et préparation de votre fiche de révision...";
                     if (fichesProgressBar) fichesProgressBar.style.width = '95%';
                 }, 10000)
             ];

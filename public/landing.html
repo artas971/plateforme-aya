@@ -1139,7 +1139,7 @@
         </div>
 
         <div class="hero-guarantees">
-            <span class="guarantee-item">🛡️ <b>Faster-Whisper Local</b> (Zéro fuite acoustique)</span>
+            <span class="guarantee-item" id="guaranteeWhisper">🛡️ <b>Confidentialité absolue</b> (Vos vidéos restent privées)</span>
             <span>•</span>
             <span class="guarantee-item">⏱️ <b>Purge auto 24h</b> (Conforme RGPD)</span>
             <span>•</span>
@@ -1156,8 +1156,8 @@
                     <span class="window-dot dot-yellow"></span>
                     <span class="window-dot dot-green"></span>
                 </div>
-                <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">
-                    Pipeline IA de Production : Audio ➔ Whisper Levantin ➔ Rendu VOSTFR 1080p
+                <div id="pipelineHeader" style="font-size: 0.8rem; color: #64748b; font-weight: 600;">
+                    Comment ça marche : Votre vidéo ➔ Compréhension du dialecte ➔ Vidéo sous-titrée prête à publier
                 </div>
                 <div style="font-size: 0.75rem; color: var(--turquoise); font-weight: 700;">
                     ⚡ 60s chrono
@@ -1170,32 +1170,32 @@
                     <div class="step-item">
                         <div class="step-num">1</div>
                         <div class="step-text">
-                            <h4 id="step1Title">Ingestion Instantanée</h4>
-                            <p id="step1Desc">Glissez une vidéo TikTok, un vocal WhatsApp ou un fichier MP4 brut.</p>
+                            <h4 id="step1Title">1. Déposez votre vidéo</h4>
+                            <p id="step1Desc">Glissez une vidéo TikTok, un vocal WhatsApp ou un fichier vidéo de votre téléphone.</p>
                         </div>
                     </div>
 
                     <div class="step-item">
                         <div class="step-num">2</div>
                         <div class="step-text">
-                            <h4 id="step2Title">Acoustique Levantine Locale</h4>
-                            <p id="step2Desc">Moteur Faster-Whisper optimisé pour l'arabe palestinien sans fuite cloud.</p>
+                            <h4 id="step2Title">2. Écoute et traduction fidèle</h4>
+                            <p id="step2Desc">Compréhension experte du dialecte palestinien avec respect du sens et des émotions.</p>
                         </div>
                     </div>
 
                     <div class="step-item">
                         <div class="step-num">3</div>
                         <div class="step-text">
-                            <h4 id="step3Title">Sous-titrage Animé Impact</h4>
-                            <p id="step3Desc">Incrustation dynamique mot à mot (Karaoké) calibrée pour l'engagement TikTok.</p>
+                            <h4 id="step3Title">3. Sous-titres animés et lisibles</h4>
+                            <p id="step3Desc">Des sous-titres dynamiques mot à mot, parfaitement synchronisés pour captiver votre audience.</p>
                         </div>
                     </div>
 
                     <div class="step-item">
                         <div class="step-num">4</div>
                         <div class="step-text">
-                            <h4 id="step4Title">Export HD & Diffusion Solidaire</h4>
-                            <p id="step4Desc">Téléchargez la vidéo finale ou publiez-la sur le Mur Communautaire.</p>
+                            <h4 id="step4Title">4. Téléchargez et partagez</h4>
+                            <p id="step4Desc">Récupérez votre vidéo haute qualité prête pour TikTok, Instagram ou partagez-la avec la communauté.</p>
                         </div>
                     </div>
                 </div>
@@ -1275,7 +1275,7 @@
             <span class="section-tag" id="pricingTag">Tarification Claire & Éthique</span>
             <h2 class="section-title" id="pricingTitle">Packs de Crédits à Prix Coûtant</h2>
             <p class="section-sub" id="pricingSub">
-                Aucun abonnement récurrent imposé. Vos achats financent strictement les calculs serveurs et les tokens d'IA.
+                Aucun abonnement récurrent imposé. Vos crédits financent le fonctionnement de nos serveurs de calcul.
             </p>
         </div>
 
@@ -1307,7 +1307,7 @@
                 <ul class="price-features">
                     <li><span>✓</span> <span id="p5F1">5 vidéos VOSTFR complètes</span></li>
                     <li><span>✓</span> <span id="p5F2">Économisez 40% sur le tarif unitaire</span></li>
-                    <li><span>✓</span> <span id="p5F3">Priorité dans la file d'encodage</span></li>
+                    <li><span>✓</span> <span id="p5F3">Traitement rapide prioritaire</span></li>
                     <li><span>✓</span> <span id="p5F4">Partage direct Mur Communautaire</span></li>
                 </ul>
                 <a href="/login" class="btn-price-action btn-price-primary" id="btnP5">Choisir ce pack</a>
@@ -1432,7 +1432,17 @@
                     feat4Desc: 'Partagez vos vidéos traduites directement avec la communauté Aya pour amplifier leur portée et soutenir la transmission des témoignages.',
                     pricingTag: 'Tarification Claire & Éthique',
                     pricingTitle: 'Packs de Crédits à Prix Coûtant',
-                    pricingSub: 'Aucun abonnement récurrent imposé. Vos achats financent strictement les calculs serveurs et les tokens d\'IA.',
+                    pricingSub: 'Aucun abonnement récurrent imposé. Vos crédits financent le fonctionnement de nos serveurs de calcul.',
+                    guaranteeWhisper: '🛡️ <b>Confidentialité absolue</b> (Vos vidéos restent privées)',
+                    pipelineHeader: 'Comment ça marche : Votre vidéo ➔ Compréhension du dialecte ➔ Vidéo sous-titrée prête à publier',
+                    step1Title: '1. Déposez votre vidéo',
+                    step1Desc: 'Glissez une vidéo TikTok, un vocal WhatsApp ou un fichier vidéo de votre téléphone.',
+                    step2Title: '2. Écoute et traduction fidèle',
+                    step2Desc: 'Compréhension experte du dialecte palestinien avec respect du sens et des émotions.',
+                    step3Title: '3. Sous-titres animés et lisibles',
+                    step3Desc: 'Des sous-titres dynamiques mot à mot, parfaitement synchronisés pour captiver votre audience.',
+                    step4Title: '4. Téléchargez et partagez',
+                    step4Desc: 'Récupérez votre vidéo haute qualité prête pour TikTok, Instagram ou partagez-la avec la communauté.',
                     p1Title: '1 Crédit Flash',
                     p1Unit: '/ unité',
                     p1Desc: 'Dépannage immédiat pour 1 vidéo TikTok VOSTFR complète.',
@@ -1447,7 +1457,7 @@
                     p5Desc: '~0,60 € / vidéo. Idéal pour publier régulièrement sur TikTok.',
                     p5F1: '5 vidéos VOSTFR complètes',
                     p5F2: 'Économisez 40% sur le tarif unitaire',
-                    p5F3: 'Priorité dans la file d\'encodage',
+                    p5F3: 'Traitement rapide prioritaire',
                     p5F4: 'Partage direct Mur Communautaire',
                     btnP5: 'Choisir ce pack',
                     p25Badge: 'Meilleur Tarif',
@@ -1460,7 +1470,7 @@
                     p25F4: 'Crédits valables sans limite de durée',
                     btnP25: 'Choisir ce pack',
                     paypalTitle: '<span>❤️</span> Soutien Humanitaire Palestine (Totalement Séparé)',
-                    paypalDesc: 'L\'achat de crédits techniques ci-dessus finance uniquement l\'infrastructure d\'hébergement. Si vous désirez soutenir directement l\'équipe bénévole et l\'aide humanitaire en Palestine, les dons volontaires s'effectuent via un lien PayPal dédié 100% indépendant.',
+                    paypalDesc: 'L\'achat de crédits ci-dessus finance uniquement le fonctionnement de nos serveurs. Si vous désirez soutenir directement l\'équipe bénévole et l\'aide humanitaire en Palestine, les dons volontaires s\'effectuent via un lien PayPal dédié 100% indépendant.',
                     btnPaypal: '<span>🕊️</span> Faire un don PayPal',
                     ctaFinalTitle: 'Faites entendre la voix du terrain',
                     ctaFinalSub: 'Rejoignez notre réseau de créateurs et commencez à traduire vos premières vidéos dès aujourd\'hui.',
@@ -1491,7 +1501,17 @@
                     feat4Desc: 'انشر فيديوهاتك المترجمة مباشرة على جدار منصة آية لإيصال أصوات الميدان لأكبر عدد ممكن.',
                     pricingTag: 'تسعير واضح وعادل',
                     pricingTitle: 'باقات رصيد بسعر التكلفة الصافي',
-                    pricingSub: 'لا توجد اشتراكات شهرية إجبارية. مشترياتك تغطي حصرياً تكاليف معالجة الخوادم وسيرفرات الذكاء الاصطناعي.',
+                    pricingSub: 'لا توجد اشتراكات شهرية إجبارية. مشترياتك تغطي حصرياً تكاليف تشغيل الخوادم المخصصة للترجمة.',
+                    guaranteeWhisper: '🛡️ <b>سرية وخصوصية تامة</b> (فيديوهاتك آمنة وخاصة)',
+                    pipelineHeader: 'كيف تعمل المنصة : الفيديو الخاص بك ➔ فهم اللهجة ➔ فيديو مترجم وجاهز للنشر',
+                    step1Title: '١. حمّل الفيديو أو التسجيل',
+                    step1Desc: 'اسحب مقطع تيك توك، تسجيلاً صوتياً من واتساب أو ملف فيديو من هاتفك.',
+                    step2Title: '٢. استماع وترجمة دقيقة',
+                    step2Desc: 'فهم عميق للهجة الفلسطينية وتفاصيلها مع احترام كامل للمشاعر والمعنى.',
+                    step3Title: '٣. نصوص متحركة وواضحة',
+                    step3Desc: 'نصوص ترجمة ديناميكية متزامنة كلمة بكلمة تجذب المشاهد على شبكات التواصل.',
+                    step4Title: '٤. تنزيل ونشر فوري',
+                    step4Desc: 'حمّل الفيديو بجودة عالية وجاهز للنشر على تيك توك وإنستغرام أو شاركه مع المجتمع.',
                     p1Title: 'رصيد واحد سريع',
                     p1Unit: '/ للوحدة',
                     p1Desc: 'حل فوري لإنتاج فيديو تيك توك كامل ومترجم.',
@@ -1506,7 +1526,7 @@
                     p5Desc: '~٠٫٦٠ € / فيديو. مثالية للنشر المنتظم على تيك توك.',
                     p5F1: '٥ فيديوهات كاملة ومترجمة',
                     p5F2: 'وفّر ٤٠٪ مقارنة بالسعر الفردي',
-                    p5F3: 'أولوية في طابور المعالجة والتصدير',
+                    p5F3: 'أولوية في سرعة المعالجة',
                     p5F4: 'مشاركة مباشرة على جدار المجتمع',
                     btnP5: 'اختيار هذه الباقة',
                     p25Badge: 'أفضل قيمة',
@@ -1519,7 +1539,7 @@
                     p25F4: 'أرصدة صالحة بدون أي حد زمني',
                     btnP25: 'اختيار هذه الباقة',
                     paypalTitle: '<span>❤️</span> الدعم الإنساني لفلسطين (منفصل تماماً)',
-                    paypalDesc: 'شراء الأرصدة التقنية أعلاه يغطي حصرياً تكاليف السيرفرات والبنية التحتية. إذا كنت ترغب في دعم الفريق التطوعي والإغاثة الإنسانية في فلسطين مباشرة، فإن التبرعات الطوعية تتم عبر رابط PayPal مستقل ومخصص بالكامل.',
+                    paypalDesc: 'شراء الأرصدة أعلاه يغطي حصرياً تكاليف الخوادم. إذا كنت ترغب في دعم الفريق التطوعي والإغاثة الإنسانية في فلسطين مباشرة، فإن التبرعات الطوعية تتم عبر رابط PayPal مستقل ومخصص بالكامل.',
                     btnPaypal: '<span>🕊️</span> التبرع عبر PayPal',
                     ctaFinalTitle: 'ساهم في إيصال صوت الميدان إلى العالم',
                     ctaFinalSub: 'انضم لشبكة صناع المحتوى وابدأ بترجمة فيديوهاتك الأولى اليوم.',
@@ -1555,6 +1575,17 @@
                 updateTxt('heroSubtitle', d.heroSubtitle);
                 updateTxt('btnHeroCta', d.heroCta, true);
                 updateTxt('btnHeroDemo', d.heroDemo, true);
+
+                updateTxt('guaranteeWhisper', d.guaranteeWhisper, true);
+                updateTxt('pipelineHeader', d.pipelineHeader);
+                updateTxt('step1Title', d.step1Title);
+                updateTxt('step1Desc', d.step1Desc);
+                updateTxt('step2Title', d.step2Title);
+                updateTxt('step2Desc', d.step2Desc);
+                updateTxt('step3Title', d.step3Title);
+                updateTxt('step3Desc', d.step3Desc);
+                updateTxt('step4Title', d.step4Title);
+                updateTxt('step4Desc', d.step4Desc);
 
                 updateTxt('pillarsTag', d.pillarsTag);
                 updateTxt('pillarsTitle', d.pillarsTitle);
