@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aya Studio — Maquette Interactive Navigation & Modules</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b1329;
+            color: #f1f5f9;
+        }
+        .font-arabic {
+            font-family: 'Cairo', sans-serif;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .glow-turquoise {
+            box-shadow: 0 0 25px rgba(0, 188, 212, 0.25);
+        }
+        /* Mobile phone mockup bezel */
+        .phone-frame {
+            width: 375px;
+            height: 720px;
+            border: 10px solid #1e293b;
+            border-radius: 44px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            background: #090e1d;
+        }
+        .phone-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 24px;
+            background: #1e293b;
+            border-bottom-left-radius: 14px;
+            border-bottom-right-radius: 14px;
+            z-index: 50;
+        }
+        /* Desktop mockup bezel */
+        .desktop-frame {
+            max-width: 980px;
+            width: 100%;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+            background: #090e1d;
+            overflow: hidden;
+        }
+        .desktop-header-bar {
+            background: #1e293b;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <!-- Header & Controls -->
+    <div class="max-w-4xl w-full mb-8 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 text-xs font-semibold mb-3">
+            <span>✨</span> Validation Visuelle & Expérience Utilisateur
+        </div>
+        <h1 class="text-2xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
+            Maquette Interactive : Navigation Humaine & Modules Aya
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto">
+            Testez en temps réel l'ergonomie, les libellés sans jargon technique et le dégagement complet de la barre mobile.
+        </p>
+
+        <!-- Command Bar Controls -->
+        <div class="flex flex-wrap items-center justify-center gap-3 mt-6 bg-slate-900/90 p-2 rounded-2xl border border-slate-800 shadow-xl">
+            <!-- View Selector -->
+            <div class="flex bg-slate-800 p-1 rounded-xl">
+                <button id="btnViewMobile" onclick="switchView('mobile')" class="px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition-all bg-cyan-500 text-slate-950 shadow-md">
+                    📱 Vue Smartphone (Mobile)
+                </button>
+                <button id="btnViewDesktop" onclick="switchView('desktop')" class="px-4 py-2 text-xs md:text-sm font-semibold text-slate-300 hover:text-white rounded-lg transition-all">
+                    💻 Vue Ordinateur (Desktop)
+                </button>
+            </div>
+
+            <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+
+            <!-- Language Selector -->
+            <div class="flex bg-slate-800 p-1 rounded-xl">
+                <button id="btnLangFr" onclick="switchLang('fr')" class="px-3 py-2 text-xs md:text-sm font-bold rounded-lg transition-all bg-slate-700 text-white">
+                    🇫🇷 Français
+                </button>
+                <button id="btnLangAr" onclick="switchLang('ar')" class="px-3 py-2 text-xs md:text-sm font-semibold text-slate-400 hover:text-white rounded-lg transition-all">
+                    🇵🇸 عربي
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MOCKUP CONTAINER -->
+    <div class="w-full flex justify-center items-center">
+
+        <!-- =========================================================
+             1. SMARTPHONE VIEW MOCKUP
+             ========================================================= -->
+        <div id="mockupMobile" class="phone-frame flex flex-col justify-between">
+            <div class="phone-notch"></div>
+
+            <!-- Phone Top Status Bar -->
+            <div class="pt-7 px-5 pb-2 flex justify-between items-center text-[10px] text-slate-400 select-none">
+                <span>09:41</span>
+                <div class="flex items-center gap-1.5">
+                    <span>5G</span>
+                    <span class="w-4 h-2.5 border border-slate-400 rounded-sm p-0.5 inline-block"><span class="block bg-slate-400 h-full w-2.5"></span></span>
+                </div>
+            </div>
+
+            <!-- Phone Header (Top Bar Épurée) -->
+            <header class="px-4 py-2.5 bg-slate-900/90 border-b border-cyan-500/20 backdrop-blur-md flex justify-between items-center z-10">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-700 flex items-center justify-center font-bold text-white text-xs shadow-md">
+                        آية
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-white leading-tight">Aya Studio</div>
+                        <div class="text-[9px] text-cyan-400 leading-tight">Plateforme Solidaire</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-semibold flex items-center gap-1 border border-emerald-500/30">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 3 en direct
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
+                        ⚡ 999
+                    </span>
+                </div>
+            </header>
+
+            <!-- Phone Scrollable Body Content -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 text-left relative">
+                
+                <!-- Page Title -->
+                <div class="bg-gradient-to-br from-blue-900/40 to-slate-900/60 p-4 rounded-2xl border border-blue-500/30">
+                    <span class="text-xs uppercase tracking-wider text-cyan-400 font-bold" id="mHeroBadge">Module Sélectionné</span>
+                    <h2 class="text-lg font-bold text-white mt-1" id="mPageTitle">Traduire une vidéo</h2>
+                    <p class="text-xs text-slate-300 mt-1" id="mPageDesc">
+                        Déposez votre propre vidéo filmée sur le terrain pour y intégrer des sous-titres bilingues parfaitement synchronisés.
+                    </p>
+                </div>
+
+                <!-- Mode Selector (Redesigned) -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-300 flex items-center gap-1.5" id="mLabelMode">
+                        <span>🎯</span> Choisissez le type de résultat souhaité :
+                    </label>
+                    
+                    <!-- Mode 1: Vidéo Prête -->
+                    <div id="mModeVideo" onclick="selectMobileMode('video')" class="p-3 rounded-xl border-2 border-cyan-400 bg-cyan-950/30 cursor-pointer transition-all shadow-md">
+                        <div class="flex items-start gap-2.5">
+                            <span class="text-xl">🎬</span>
+                            <div class="flex-1">
+                                <div class="text-xs font-bold text-white flex items-center justify-between">
+                                    <span id="mModeVideoTitle">Vidéo Complète (Prête à publier)</span>
+                                    <span class="text-[9px] bg-cyan-500 text-slate-950 font-extrabold px-1.5 py-0.5 rounded">MP4</span>
+                                </div>
+                                <div class="text-[10px] text-slate-300 mt-1 leading-snug" id="mModeVideoDesc">
+                                    Vidéo finale avec sous-titres incrustés dessus. Prête à poster immédiatement.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode 2: Sous-titres & Description Seuls -->
+                    <div id="mModeExpress" onclick="selectMobileMode('express')" class="p-3 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-slate-600 cursor-pointer transition-all">
+                        <div class="flex items-start gap-2.5">
+                            <span class="text-xl">⚡</span>
+                            <div class="flex-1">
+                                <div class="text-xs font-bold text-white flex items-center justify-between">
+                                    <span id="mModeExpressTitle">Sous-titres & Description Seuls</span>
+                                    <span class="text-[9px] bg-amber-400 text-slate-950 font-extrabold px-1.5 py-0.5 rounded">&lt; 5s</span>
+                                </div>
+                                <div class="text-[10px] text-slate-300 mt-1 leading-snug" id="mModeExpressDesc">
+                                    Fichier de sous-titres (.ASS) + texte de publication TikTok. Sans encodage vidéo.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Drop Zone Simulation -->
+                <div class="border-2 border-dashed border-slate-700 rounded-2xl p-5 text-center bg-slate-900/30">
+                    <span class="text-2xl block mb-1">📁</span>
+                    <span class="text-xs font-semibold text-slate-300" id="mDropText">Glissez votre vidéo ici</span>
+                    <span class="text-[10px] text-slate-500 block mt-0.5">MP4, MOV jusqu'à 500 Mo</span>
+                </div>
+
+                <!-- Spacing to test scroll -->
+                <div class="h-20"></div>
+
+                <!-- Floating Feedback Button (Repositioned ABOVE bottom bar) -->
+                <button type="button" class="absolute bottom-20 right-3 z-30 px-3 py-1.5 rounded-full bg-cyan-500 text-slate-950 font-bold text-[11px] shadow-lg flex items-center gap-1.5 hover:scale-105 transition-transform">
+                    <span>💬</span> <span id="mFeedbackBtn">Feedback Testeur</span>
+                </button>
+            </div>
+
+            <!-- Phone Bottom Navigation Bar (Dégagée et 100% accessible) -->
+            <nav class="bg-slate-900/95 border-t border-slate-800 px-4 py-2 flex justify-around items-center z-40 backdrop-blur-lg">
+                <!-- 1. Salon d'Échange -->
+                <button class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white transition-colors">
+                    <span class="text-lg">💬</span>
+                    <span class="text-[10px] font-semibold" id="mNavChat">Discussions</span>
+                </button>
+
+                <!-- 2. BOUTON CENTRAL REVISITÉ : "Menu" ou "Outils" -->
+                <button onclick="toggleMobileActionSheet()" class="flex flex-col items-center -mt-6 group">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-white text-xl shadow-lg border-2 border-slate-950 group-active:scale-95 transition-transform glow-turquoise">
+                        🗂️
+                    </div>
+                    <span class="text-[10px] font-bold text-cyan-400 mt-1" id="mNavCenterBtn">Menu</span>
+                </button>
+
+                <!-- 3. Mon Compte -->
+                <button class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white transition-colors">
+                    <span class="text-lg">👤</span>
+                    <span class="text-[10px] font-semibold" id="mNavAccount">Mon Compte</span>
+                </button>
+            </nav>
+
+            <!-- Bottom Sheet Action Drawer (Tiroir d'actions coulissant) -->
+            <div id="mobileActionSheet" class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex flex-col justify-end transition-opacity opacity-0 pointer-events-none duration-250">
+                <div class="bg-slate-900 border-t border-slate-700 rounded-t-3xl p-5 space-y-3 transform translate-y-full transition-transform duration-300" id="sheetContent">
+                    <div class="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-2"></div>
+                    
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🗂️</span>
+                            <h3 class="text-sm font-bold text-white" id="mSheetTitle">Que souhaitez-vous faire ?</h3>
+                        </div>
+                        <button onclick="toggleMobileActionSheet()" class="text-slate-400 hover:text-white text-sm bg-slate-800 w-6 h-6 rounded-full flex items-center justify-center">✕</button>
+                    </div>
+
+                    <!-- 4 Clear Modules -->
+                    <div class="space-y-2">
+                        <!-- Module 1: Traduire une vidéo -->
+                        <div class="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/40 flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🎬</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="mMod1Title">Traduire une vidéo</div>
+                                    <div class="text-[10px] text-slate-300" id="mMod1Sub">Ajouter des sous-titres sur une vidéo existante</div>
+                                </div>
+                            </div>
+                            <span class="text-cyan-400 text-xs font-bold">➔</span>
+                        </div>
+
+                        <!-- Module 2: Transformer un audio en vidéo -->
+                        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🎙️</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="mMod2Title">Transformer un audio en vidéo</div>
+                                    <div class="text-[10px] text-slate-400" id="mMod2Sub">Créer une vidéo 9:16 avec image de fond</div>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 text-xs">➔</span>
+                        </div>
+
+                        <!-- Module 3: Fiches Éducatives -->
+                        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🎴</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="mMod3Title">Fiches Éducatives</div>
+                                    <div class="text-[10px] text-slate-400" id="mMod3Sub">Vocabulaire bilingue Shami / Français</div>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 text-xs">➔</span>
+                        </div>
+
+                        <!-- Module 4: Mur des Témoignages -->
+                        <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-slate-600 flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">🌍</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="mMod4Title">Mur des Témoignages</div>
+                                    <div class="text-[10px] text-slate-400" id="mMod4Sub">Récits partagés par la communauté</div>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 text-xs">➔</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================
+             2. DESKTOP VIEW MOCKUP
+             ========================================================= -->
+        <div id="mockupDesktop" class="desktop-frame hidden flex-col">
+            <!-- Simulated Browser Bar -->
+            <div class="desktop-header-bar">
+                <div class="flex gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                </div>
+                <div class="flex-1 max-w-sm mx-auto bg-slate-900 rounded-md px-3 py-1 text-xs text-slate-400 text-center font-mono">
+                    https://aya-studio.org/traduction
+                </div>
+            </div>
+
+            <!-- Desktop Sticky Navigation Header -->
+            <header class="px-6 py-3 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md flex justify-between items-center relative z-30">
+                <!-- Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-700 flex items-center justify-center font-bold text-white text-sm shadow-md">
+                        آية
+                    </div>
+                    <div>
+                        <div class="text-sm font-extrabold text-white">Aya Studio</div>
+                        <div class="text-[10px] text-cyan-400">Plateforme Solidaire de Traduction</div>
+                    </div>
+                </div>
+
+                <!-- Center Navigation (Humanized & Welcoming) -->
+                <nav class="flex items-center gap-6">
+                    <a href="#" class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 py-1">
+                        <span>💬</span> <span id="dNavChat">Discussions</span>
+                    </a>
+
+                    <!-- Dropdown: "Que voulez-vous faire ?" -->
+                    <div class="relative">
+                        <button id="btnDesktopDropdown" onclick="toggleDesktopDropdown()" class="px-3 py-1.5 rounded-lg bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center gap-2 hover:bg-cyan-900/40 transition-all">
+                            <span>🧰</span>
+                            <span id="dNavMenuLabel">Tous les Outils</span>
+                            <span class="text-[10px]">▾</span>
+                        </button>
+
+                        <!-- Dropdown Panel -->
+                        <div id="desktopDropdownMenu" class="absolute left-0 mt-2 w-72 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-2 space-y-1 hidden z-50">
+                            <!-- Option 1 -->
+                            <a href="#" class="p-2 rounded-xl bg-cyan-950/30 border border-cyan-500/30 flex items-start gap-2.5 hover:bg-cyan-900/40 transition-colors">
+                                <span class="text-lg">🎬</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="dMod1Title">Traduire une vidéo</div>
+                                    <div class="text-[10px] text-slate-300" id="dMod1Sub">Ajouter des sous-titres sur une vidéo existante</div>
+                                </div>
+                            </a>
+
+                            <!-- Option 2 -->
+                            <a href="#" class="p-2 rounded-xl hover:bg-slate-800 flex items-start gap-2.5 transition-colors">
+                                <span class="text-lg">🎙️</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="dMod2Title">Transformer un audio en vidéo</div>
+                                    <div class="text-[10px] text-slate-400" id="dMod2Sub">Générer une vidéo 9:16 avec visuel de fond</div>
+                                </div>
+                            </a>
+
+                            <!-- Option 3 -->
+                            <a href="#" class="p-2 rounded-xl hover:bg-slate-800 flex items-start gap-2.5 transition-colors">
+                                <span class="text-lg">🎴</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="dMod3Title">Fiches Éducatives</div>
+                                    <div class="text-[10px] text-slate-400" id="dMod3Sub">Vocabulaire bilingue Shami / Français</div>
+                                </div>
+                            </a>
+
+                            <!-- Option 4 -->
+                            <a href="#" class="p-2 rounded-xl hover:bg-slate-800 flex items-start gap-2.5 transition-colors">
+                                <span class="text-lg">🌍</span>
+                                <div>
+                                    <div class="text-xs font-bold text-white" id="dMod4Title">Mur des Témoignages</div>
+                                    <div class="text-[10px] text-slate-400" id="dMod4Sub">Récits partagés par la communauté</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <a href="#" class="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 py-1">
+                        <span>👤</span> <span id="dNavAccount">Mon Compte</span>
+                    </a>
+                </nav>
+
+                <!-- Right Utilities -->
+                <div class="flex items-center gap-3">
+                    <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 border border-emerald-500/30">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 3 en direct
+                    </span>
+                    <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
+                        ⚡ 999 crédits
+                    </span>
+                </div>
+            </header>
+
+            <!-- Desktop Main Content Simulation -->
+            <div class="p-8 space-y-6 text-left max-w-3xl mx-auto w-full">
+                <div>
+                    <span class="text-xs uppercase font-bold text-cyan-400" id="dHeroBadge">Module 1 : Traduction & Sous-titres</span>
+                    <h2 class="text-2xl font-extrabold text-white mt-1" id="dPageTitle">Traduire une vidéo</h2>
+                    <p class="text-sm text-slate-300 mt-1" id="dPageDesc">
+                        Importez votre propre vidéo et obtenez des sous-titres précis synchronisés mot à mot.
+                    </p>
+                </div>
+
+                <!-- Mode Selection in Desktop -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-300 block" id="dLabelMode">
+                        0. Choisissez votre mode de restitution :
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Mode 1 -->
+                        <div id="dModeVideo" onclick="selectDesktopMode('video')" class="p-4 rounded-xl border-2 border-cyan-400 bg-cyan-950/20 cursor-pointer transition-all shadow-md">
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl">🎬</span>
+                                <div>
+                                    <div class="text-sm font-bold text-white flex items-center gap-2">
+                                        <span id="dModeVideoTitle">Vidéo Complète (Prête à publier)</span>
+                                    </div>
+                                    <p class="text-xs text-slate-300 mt-1" id="dModeVideoDesc">
+                                        Fichier MP4 avec sous-titres incrustés. Idéal pour poster immédiatement sur TikTok.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mode 2 -->
+                        <div id="dModeExpress" onclick="selectDesktopMode('express')" class="p-4 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-slate-600 cursor-pointer transition-all">
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl">⚡</span>
+                                <div>
+                                    <div class="text-sm font-bold text-white flex items-center gap-2">
+                                        <span id="dModeExpressTitle">Sous-titres & Description Seuls</span>
+                                        <span class="text-[10px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.5 rounded">&lt; 5s</span>
+                                    </div>
+                                    <p class="text-xs text-slate-300 mt-1" id="dModeExpressDesc">
+                                        Téléchargez le fichier .ASS et la description sans attendre l'encodage vidéo.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropzone Simulation -->
+                <div class="border-2 border-dashed border-slate-700 rounded-2xl p-8 text-center bg-slate-900/30">
+                    <span class="text-3xl block mb-2">📁</span>
+                    <span class="text-sm font-semibold text-slate-200" id="dDropText">Glissez & Déposez votre vidéo ici</span>
+                    <p class="text-xs text-slate-400 mt-1">MP4, MOV, WEBM jusqu'à 500 Mo</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Interactive Script -->
+    <script>
+        let currentLang = 'fr';
+        let currentView = 'mobile';
+
+        const i18n = {
+            fr: {
+                mHeroBadge: "Module Sélectionné",
+                mPageTitle: "Traduire une vidéo",
+                mPageDesc: "Déposez votre propre vidéo filmée sur le terrain pour y intégrer des sous-titres bilingues parfaitement synchronisés.",
+                mLabelMode: "🎯 Choisissez le type de résultat souhaité :",
+                mModeVideoTitle: "Vidéo Complète (Prête à publier)",
+                mModeVideoDesc: "Vidéo finale avec sous-titres incrustés dessus. Prête à poster immédiatement.",
+                mModeExpressTitle: "Sous-titres & Description Seuls",
+                mModeExpressDesc: "Fichier de sous-titres (.ASS) + texte de publication TikTok. Sans encodage vidéo.",
+                mDropText: "Glissez votre vidéo ici",
+                mFeedbackBtn: "Feedback Testeur",
+                mNavChat: "Discussions",
+                mNavCenterBtn: "Menu",
+                mNavAccount: "Mon Compte",
+                mSheetTitle: "Que souhaitez-vous faire ?",
+                mMod1Title: "Traduire une vidéo",
+                mMod1Sub: "Ajouter des sous-titres sur une vidéo existante",
+                mMod2Title: "Transformer un audio en vidéo",
+                mMod2Sub: "Créer une vidéo 9:16 avec image de fond",
+                mMod3Title: "Fiches Éducatives",
+                mMod3Sub: "Vocabulaire bilingue Shami / Français",
+                mMod4Title: "Mur des Témoignages",
+                mMod4Sub: "Récits partagés par la communauté",
+                
+                dHeroBadge: "Module 1 : Traduction & Sous-titres",
+                dPageTitle: "Traduire une vidéo",
+                dPageDesc: "Importez votre propre vidéo et obtenez des sous-titres précis synchronisés mot à mot.",
+                dNavChat: "Discussions",
+                dNavMenuLabel: "Tous les Outils",
+                dNavAccount: "Mon Compte",
+                dLabelMode: "0. Choisissez votre mode de restitution :",
+                dModeVideoTitle: "Vidéo Complète (Prête à publier)",
+                dModeVideoDesc: "Fichier MP4 avec sous-titres incrustés. Idéal pour poster immédiatement sur TikTok.",
+                dModeExpressTitle: "Sous-titres & Description Seuls",
+                dModeExpressDesc: "Téléchargez le fichier .ASS et la description sans attendre l'encodage vidéo.",
+                dDropText: "Glissez & Déposez votre vidéo ici",
+                dMod1Title: "Traduire une vidéo",
+                dMod1Sub: "Ajouter des sous-titres sur une vidéo existante",
+                dMod2Title: "Transformer un audio en vidéo",
+                dMod2Sub: "Générer une vidéo 9:16 avec visuel de fond",
+                dMod3Title: "Fiches Éducatives",
+                dMod3Sub: "Vocabulaire bilingue Shami / Français",
+                dMod4Title: "Mur des Témoignages",
+                dMod4Sub: "Récits partagés par la communauté"
+            },
+            ar: {
+                mHeroBadge: "القسم المختار",
+                mPageTitle: "ترجمة مقطع فيديو",
+                mPageDesc: "ارفع مقطع الفيديو الخاص بك لإضافة ترجمة دقيقة ومكتوبة عليه مباشرة.",
+                mLabelMode: "🎯 اختر النتيجة المطلوبة :",
+                mModeVideoTitle: "فيديو متكامل (جاهز للنشر)",
+                mModeVideoDesc: "فيديو نهائي بصيغة MP4 مع نصوص الترجمة مدمجة فوقه مباشرة.",
+                mModeExpressTitle: "ملف الترجمة والوصف فقط",
+                mModeExpressDesc: "ملف ترجمة ASS جاهز + نص النشر لتيك توك. بدون انتظار معالجة الفيديو.",
+                mDropText: "اسحب مقطع الفيديو هنا",
+                mFeedbackBtn: "ملاحظات وتواصل",
+                mNavChat: "المحادثة",
+                mNavCenterBtn: "القائمة",
+                mNavAccount: "حسابي",
+                mSheetTitle: "ماذا تريد أن تفعل اليوم؟",
+                mMod1Title: "ترجمة مقطع فيديو",
+                mMod1Sub: "إضافة نصوص ترجمة واضحة على فيديو موجود",
+                mMod2Title: "تحويل مقطع صوتي إلى فيديو",
+                mMod2Sub: "إنشاء فيديو طولي 9:16 مع صورة وخلفية",
+                mMod3Title: "البطاقات التعليمية",
+                mMod3Sub: "مفردات شامية وفرنسية جاهزة للطباعة والمشاركة",
+                mMod4Title: "جدار الشهادات",
+                mMod4Sub: "قصص وشهادات موثقة من المجتمع",
+
+                dHeroBadge: "القسم الأول : ترجمة وإضافة نصوص",
+                dPageTitle: "ترجمة مقطع فيديو",
+                dPageDesc: "ارفع مقطع الفيديو الخاص بك واحصل على نصوص ترجمة متزامنة بدقة عالية.",
+                dNavChat: "المحادثة الفورية",
+                dNavMenuLabel: "أدوات المنصة",
+                dNavAccount: "حسابي الشخصي",
+                dLabelMode: "٠. حدد نوع النتيجة التي تناسبك :",
+                dModeVideoTitle: "فيديو متكامل (جاهز للنشر)",
+                dModeVideoDesc: "فيديو نهائي بصيغة MP4 مع الترجمة مدمجة. جاهز للنشر الفوري.",
+                dModeExpressTitle: "ملف الترجمة والوصف فقط",
+                dModeExpressDesc: "حمّل ملف ASS ونص النشر خلال 5 ثوانٍ دون انتظار المعالجة.",
+                dDropText: "اسحب مقطع الفيديو هنا",
+                dMod1Title: "ترجمة مقطع فيديو",
+                dMod1Sub: "إضافة ترجمة على مقطع فيديو موجود",
+                dMod2Title: "تحويل مقطع صوتي إلى فيديو",
+                dMod2Sub: "إنشاء فيديو طولي 9:16 من تسجيل صوتي",
+                dMod3Title: "البطاقات التعليمية",
+                dMod3Sub: "مفردات وبوسترات تعليمية ثنائية اللغة",
+                dMod4Title: "جدار الشهادات",
+                dMod4Sub: "قصص وتجارب من الميدان"
+            }
+        };
+
+        function switchView(view) {
+            currentView = view;
+            const mobileMockup = document.getElementById('mockupMobile');
+            const desktopMockup = document.getElementById('mockupDesktop');
+            const btnMobile = document.getElementById('btnViewMobile');
+            const btnDesktop = document.getElementById('btnViewDesktop');
+
+            if (view === 'mobile') {
+                mobileMockup.classList.remove('hidden');
+                desktopMockup.classList.add('hidden');
+                btnMobile.className = "px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition-all bg-cyan-500 text-slate-950 shadow-md";
+                btnDesktop.className = "px-4 py-2 text-xs md:text-sm font-semibold text-slate-300 hover:text-white rounded-lg transition-all";
+            } else {
+                mobileMockup.classList.add('hidden');
+                desktopMockup.classList.remove('hidden');
+                btnDesktop.className = "px-4 py-2 text-xs md:text-sm font-bold rounded-lg transition-all bg-cyan-500 text-slate-950 shadow-md";
+                btnMobile.className = "px-4 py-2 text-xs md:text-sm font-semibold text-slate-300 hover:text-white rounded-lg transition-all";
+            }
+        }
+
+        function switchLang(lang) {
+            currentLang = lang;
+            const dict = i18n[lang];
+            const btnFr = document.getElementById('btnLangFr');
+            const btnAr = document.getElementById('btnLangAr');
+
+            if (lang === 'fr') {
+                btnFr.className = "px-3 py-2 text-xs md:text-sm font-bold rounded-lg transition-all bg-slate-700 text-white";
+                btnAr.className = "px-3 py-2 text-xs md:text-sm font-semibold text-slate-400 hover:text-white rounded-lg transition-all";
+                document.getElementById('mockupMobile').dir = 'ltr';
+                document.getElementById('mockupDesktop').dir = 'ltr';
+            } else {
+                btnAr.className = "px-3 py-2 text-xs md:text-sm font-bold rounded-lg transition-all bg-slate-700 text-white";
+                btnFr.className = "px-3 py-2 text-xs md:text-sm font-semibold text-slate-400 hover:text-white rounded-lg transition-all";
+                document.getElementById('mockupMobile').dir = 'rtl';
+                document.getElementById('mockupDesktop').dir = 'rtl';
+            }
+
+            for (const [id, val] of Object.entries(dict)) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            }
+        }
+
+        function toggleMobileActionSheet() {
+            const sheet = document.getElementById('mobileActionSheet');
+            const content = document.getElementById('sheetContent');
+            const isOpen = sheet.classList.contains('opacity-100');
+
+            if (isOpen) {
+                sheet.classList.remove('opacity-100', 'pointer-events-auto');
+                sheet.classList.add('opacity-0', 'pointer-events-none');
+                content.classList.add('translate-y-full');
+            } else {
+                sheet.classList.remove('opacity-0', 'pointer-events-none');
+                sheet.classList.add('opacity-100', 'pointer-events-auto');
+                content.classList.remove('translate-y-full');
+            }
+        }
+
+        function toggleDesktopDropdown() {
+            const menu = document.getElementById('desktopDropdownMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function selectMobileMode(mode) {
+            const cardVid = document.getElementById('mModeVideo');
+            const cardExp = document.getElementById('mModeExpress');
+            if (mode === 'video') {
+                cardVid.className = "p-3 rounded-xl border-2 border-cyan-400 bg-cyan-950/30 cursor-pointer transition-all shadow-md";
+                cardExp.className = "p-3 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-slate-600 cursor-pointer transition-all";
+            } else {
+                cardExp.className = "p-3 rounded-xl border-2 border-amber-400 bg-amber-950/30 cursor-pointer transition-all shadow-md";
+                cardVid.className = "p-3 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-slate-600 cursor-pointer transition-all";
+            }
+        }
+
+        function selectDesktopMode(mode) {
+            const cardVid = document.getElementById('dModeVideo');
+            const cardExp = document.getElementById('dModeExpress');
+            if (mode === 'video') {
+                cardVid.className = "p-4 rounded-xl border-2 border-cyan-400 bg-cyan-950/20 cursor-pointer transition-all shadow-md";
+                cardExp.className = "p-4 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-slate-600 cursor-pointer transition-all";
+            } else {
+                cardExp.className = "p-4 rounded-xl border-2 border-amber-400 bg-amber-950/20 cursor-pointer transition-all shadow-md";
+                cardVid.className = "p-4 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-slate-600 cursor-pointer transition-all";
+            }
+        }
+
+        // Close dropdown when clicked outside
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('btnDesktopDropdown');
+            const menu = document.getElementById('desktopDropdownMenu');
+            if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -26,24 +26,24 @@
             navbarLiveText: 'Actif',
             // Nouveaux termes vulgarisés Grand Public
             navExchangeText: 'Salon d\'Échange',
-            navCreationText: 'Outils de Création',
+            navCreationText: 'Tous les Outils',
             navCreationSub: 'Traductions, vidéos et fiches éducatives',
-            navTranslationText: 'Traducteur Shami',
-            navTranslationSub: 'Traduction instantanée texte et audio',
-            navVideoText: 'Création Vidéo',
-            navVideoSub: 'Doublage et sous-titrage automatique',
+            navTranslationText: 'Traduire une vidéo',
+            navTranslationSub: 'Ajouter des sous-titres sur une vidéo existante',
+            navVideoText: 'Transformer un audio en vidéo',
+            navVideoSub: 'Créer une vidéo 9:16 avec image de fond',
             navCardsText: 'Fiches Éducatives',
             navCardsSub: 'Affiches bilingues & audio TikTok',
-            navCommunityText: 'Galerie Communautaire',
-            navCommunitySub: 'Témoignages et partages collectifs',
+            navCommunityText: 'Mur des Témoignages',
+            navCommunitySub: 'Récits et partages collectifs',
             navAccountText: 'Mon Compte',
             navProfileText: 'Mon Profil',
-            navWalletText: 'Mon Portefeuille & Crédits',
+            navWalletText: 'Mon Portefeuille & Zaytounas',
             navCreationsText: 'Mes Créations & Historique',
             navAdminText: 'Tour de Contrôle',
             navLogoutText: 'Déconnexion',
             navOnlineText: 'en ligne',
-            navCreateActionText: 'Créer',
+            navCreateActionText: 'Menu',
             navCloseSheetText: 'Fermer',
 
             // Page Modération Back-Office (Phase 2.5)
@@ -107,17 +107,19 @@
 
             // Mode de traitement (Module 1 vs Module 2)
             labelProcessingMode: '0. Mode de traitement',
-            modeVideoTitle: '🎬 Vidéo Complète',
-            modeVideoSub: 'Vidéo complète avec sous-titres animés (Format TikTok / Réels)',
-            modeExpressTitle: '⚡ Mode Express (Texte Uniquement)',
-            modeExpressSub: 'Traduction directe en texte Markdown (< 5s)',
+            modeVideoTitle: '🎬 Vidéo Complète (Prête à publier)',
+            modeVideoSub: 'Fichier MP4 avec sous-titres incrustés (Prête à poster)',
+            modeExpressTitle: '⚡ Sous-titres & Description Seuls (Rapide)',
+            modeExpressSub: 'Fichier .ASS et description TikTok en < 5s (sans vidéo)',
 
             // Restitution Express
-            expressResultTitle: '<span>⚡</span> Traduction Texte Express prête',
-            expressSubTitle: 'Traduction rapide du texte uniquement (Lecture et copie immédiates)',
+            expressResultTitle: '<span>⚡</span> Vos sous-titres et description sont prêts',
+            expressSubTitle: 'Fichiers prêts à l\'emploi générés en moins de 5 secondes',
             btnCopyText: '📋 Copier le texte',
             btnCopied: '✅ Copié !',
-            btnDownloadMarkdown: '⬇️ Télécharger le Markdown (.md)',
+            btnDownloadAss: '📄 Télécharger les sous-titres (.ASS)',
+            btnDownloadDesc: '📝 Télécharger la description (.TXT)',
+            btnDownloadMarkdown: '⬇️ Télécharger le texte (.txt)',
             labelFullText: '📜 Texte Traduit Intégral',
             labelTimestamps: '⏱️ Découpage Horodaté',
 
@@ -224,7 +226,7 @@
             restyleColorLabel: 'Couleur des sous-titres :',
             restylePosLabel: 'Emplacement vertical :',
             btnApplyRestyle: '⚡ Mettre à jour la vidéo',
-            restyleNotice: 'Prêt en 2 secondes • Gratuit (0 crédit)',
+            restyleNotice: 'Prêt en 2 secondes • Gratuit (0 Zaytouna)',
             btnNewVideo: '➕ Traduire une nouvelle vidéo',
             restyleProgress: '🎬 Application de vos nouvelles préférences de style...',
             restyleSuccess: '✨ Sous-titres personnalisés avec succès !',
@@ -290,7 +292,7 @@
             // Page Espace Profil & Portefeuille (Issue #19)
             profileDocTitle: 'Aya Studio | Mon Profil & Portefeuille Solidaire',
             profileHeaderTitle: '👤 Espace Profil & Portefeuille Solidaire',
-            profileHeaderSub: 'Gérez votre identité, suivez vos crédits de traduction et retrouvez toutes vos vidéos archivées.',
+            profileHeaderSub: 'Gérez votre identité, suivez vos Zaytounas de traduction et retrouvez toutes vos vidéos archivées.',
             profileAdminTourBtn: '<span>👑</span> Tour de Contrôle Admin',
             profileCardTitle: '<span>✨</span> Mon Identité',
             profileRoleContributor: 'Contributeur',
@@ -309,33 +311,33 @@
             walletAvailableLabel: 'Disponibles',
             walletReservedLabel: 'En traitement',
             btnRechargeWallet: '<span>⚡</span> Recharger mon solde',
-            walletHint: '💡 1 crédit = 1 vidéo traduite et sous-titrée prête à publier.',
+            walletHint: '💡 1 Zaytouna = 1 vidéo traduite et sous-titrée prête à publier.',
             historyTitle: '<span>🎬</span> Historique de mes Vidéos',
             btnRefreshHistory: '<span>🔄</span> Actualiser',
             historyLoadingText: 'Chargement de votre historique personnel...',
             historyEmptyTitle: 'Aucune vidéo générée pour le moment',
             historyEmptySub: 'Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.',
             btnStartFirstTrad: '<span>✨</span> Lancer une première traduction',
-            rechargeModalTitle: '<span>⚡</span> Recharger mes Crédits Aya',
+            rechargeModalTitle: '<span>🫒</span> Recharger mes Zaytounas',
             rechargeBannerTitle: '<span>🛡️</span> Tarification Autofinancée & Transparente',
-            rechargeBannerText: 'Chaque recharge couvre strictement les frais techniques de la plateforme. Vos crédits restent valables à vie.',
+            rechargeBannerText: 'Chaque recharge couvre strictement les frais techniques de la plateforme. Vos Zaytounas restent valables à vie.',
             paypalSolidarityTitle: '<span>❤️</span> Dons de Solidarité Palestine',
             paypalSolidarityDesc: 'Soutien direct et 100% bénévole à l\'action humanitaire et aux témoins.',
             btnPaypalDonation: '<span>🕊️</span> Don PayPal',
 
             // Packs de recharge Stripe
-            pack1Title: '1 Crédit Flash',
+            pack1Title: '1 Zaytouna Flash',
             pack1Desc: '1 vidéo complète : écoute du dialecte + traduction française + sous-titres animés plein écran.',
             pack1Unit: '0,99 € / vidéo',
             pack1Price: '0,99 €',
             pack1Btn: '<span>💳</span> Acheter',
-            pack5Title: 'Pack 5 Crédits',
+            pack5Title: 'Pack 5 Zaytounas',
             pack5Badge: 'Populaire',
             pack5Desc: '5 vidéos complètes avec sous-titres animés et archivage Google Drive.',
             pack5Unit: '~0,60 € / vidéo (Économisez 40%)',
             pack5Price: '2,99 €',
             pack5Btn: '<span>💳</span> Acheter',
-            pack25Title: 'Pack 25 Crédits',
+            pack25Title: 'Pack 25 Zaytounas',
             pack25Badge: 'Meilleur Tarif',
             pack25Desc: '25 vidéos complètes. Le pack idéal pour les créateurs de contenu réguliers.',
             pack25Unit: '~0,40 € / vidéo (Économisez 60%)',
@@ -411,17 +413,17 @@
             navProfilText: 'الملف',
             navbarLiveText: 'متصل',
             // Nouveaux termes vulgarisés Grand Public (Arabe Shami Levantin)
-            navExchangeText: 'غرفة الدردشة',
-            navCreationText: 'أدوات الإنشاء',
-            navCreationSub: 'الترجمة والفيديوهات والبطاقات التعليمية',
-            navTranslationText: 'المترجم الشامي',
-            navTranslationSub: 'ترجمة فورية للنصوص والتسجيلات',
-            navVideoText: 'صانع الفيديوهات',
-            navVideoSub: 'دبلجة وتوليد ترجمة مرئية متزامنة',
+            navExchangeText: 'غرفة المحادثة',
+            navCreationText: 'أدوات المنصة',
+            navCreationSub: 'ترجمة، فيديو وبطاقات تعليمية',
+            navTranslationText: 'ترجمة مقطع فيديو',
+            navTranslationSub: 'إضافة نصوص ترجمة واضحة على فيديو موجود',
+            navVideoText: 'تحويل مقطع صوتي إلى فيديو',
+            navVideoSub: 'إنشاء فيديو طولي 9:16 مع صورة وخلفية',
             navCardsText: 'البطاقات التعليمية',
             navCardsSub: 'بطاقات بلقطات صوتية مزدوجة للتيك توك',
-            navCommunityText: 'جدار المجتمع',
-            navCommunitySub: 'الشهادات والتجارب الحية المشتركة',
+            navCommunityText: 'جدار الشهادات',
+            navCommunitySub: 'قصص وشهادات موثقة من المجتمع',
             navAccountText: 'حسابي ورصيدي',
             navProfileText: 'الملف الشخصي',
             navWalletText: 'المحفظة والرصيد',
@@ -429,7 +431,7 @@
             navAdminText: 'لوحة التحكم والإدارة',
             navLogoutText: 'تسجيل الخروج',
             navOnlineText: 'متصل',
-            navCreateActionText: 'إنشاء',
+            navCreateActionText: 'القائمة',
             navCloseSheetText: 'إغلاق',
 
             // Page Modération Back-Office (Phase 2.5)
@@ -492,18 +494,20 @@
             alertNoMediaOrTelegram: 'يرجى اختيار ملف وسائط أو إدخال رابط تيليجرام عام صحيح.',
 
             // Mode de traitement (Module 1 vs Module 2)
-            labelProcessingMode: '٠. نمط المعالجة',
-            modeVideoTitle: '🎬 فيديو كامل مدمج',
-            modeVideoSub: 'فيديو كامل بترجمة متحركة (ملائم لتيك توك وإنستغرام)',
-            modeExpressTitle: '⚡ النمط السريع (نص فقط)',
-            modeExpressSub: 'ترجمة نصية سريعة فقط (للقراءة والنسخ الفوري)',
+            labelProcessingMode: '٠. نوع النتيجة المطلوبة',
+            modeVideoTitle: '🎬 فيديو متكامل (جاهز للنشر)',
+            modeVideoSub: 'فيديو نهائي بصيغة MP4 مع الترجمة مدمجة فوقه مباشرة',
+            modeExpressTitle: '⚡ ملف الترجمة والوصف فقط (سريع)',
+            modeExpressSub: 'ملف ترجمة ASS ونصوص تيك توك خلال ٥ ثوانٍ (بدون فيديو)',
 
             // Restitution Express
-            expressResultTitle: '<span>⚡</span> الترجمة النصية السريعة جاهزة',
-            expressSubTitle: 'ترجمة نصية سريعة فقط (للقراءة والنسخ الفوري)',
+            expressResultTitle: '<span>⚡</span> ملف الترجمة والوصف جاهزان',
+            expressSubTitle: 'ملفات جاهزة للاستخدام تم توليدها خلال أقل من ٥ ثوانٍ',
             btnCopyText: '📋 نسخ النص',
             btnCopied: '✅ تم النسخ!',
-            btnDownloadMarkdown: '⬇️ تحميل ملف ماركداون (.md)',
+            btnDownloadAss: '📄 تحميل ملف الترجمة (.ASS)',
+            btnDownloadDesc: '📝 تحميل نصوص النشر (.TXT)',
+            btnDownloadMarkdown: '⬇️ تحميل النص (.txt)',
             labelFullText: '📜 النص الكامل المترجم',
             labelTimestamps: '⏱️ التوقيتات والأجزاء',
 
@@ -692,36 +696,36 @@
             profileEmailStatusConfirmed: '<span>✅</span> موثق',
             walletTitle: '<span>💳</span> المحفظة الرقمية',
             walletBadgeText: 'تضامني V2.1',
-            walletAvailableLabel: 'الأرصدة المتاحة',
+            walletAvailableLabel: 'الزيتونات المتاحة',
             walletReservedLabel: 'قيد المعالجة',
             btnRechargeWallet: '<span>⚡</span> شحن الرصيد',
-            walletHint: '💡 نقطة واحدة = فيديو واحد مترجم بالكامل وجاهز للنشر مباشرة.',
+            walletHint: '💡 زيتونة واحدة = فيديو واحد مترجم بالكامل وجاهز للنشر مباشرة.',
             historyTitle: '<span>🎬</span> سجل الفيديوهات المترجمة',
             btnRefreshHistory: '<span>🔄</span> تحديث',
             historyLoadingText: 'جاري تحميل سجل فيديوهاتك الشخصية...',
             historyEmptyTitle: 'لا توجد فيديوهات منشأة حتى الآن',
             historyEmptySub: 'ستظهر جميع الفيديوهات التي تترجمها هنا تلقائياً مع روابط الحفظ والتحميل.',
             btnStartFirstTrad: '<span>✨</span> ابدأ أول ترجمة الآن',
-            rechargeModalTitle: '<span>⚡</span> شحن أرصدة منصة آية',
+            rechargeModalTitle: '<span>🫒</span> شحن باقات الزيتون',
             rechargeBannerTitle: '<span>🛡️</span> تسعير شفاف وتغطية تكلفة',
-            rechargeBannerText: 'كل باقة تغطي فقط التكاليف التشغيلية للمنصة. رصيدك دائم ولا ينتهي أبداً.',
+            rechargeBannerText: 'كل باقة تغطي فقط التكاليف التشغيلية للمنصة. رصيد الزيتون دائم ولا ينتهي أبداً.',
             paypalSolidarityTitle: '<span>❤️</span> التبرع التضامني المباشر',
             paypalSolidarityDesc: 'دعم مباشر وتطوعي ١٠٠٪ للإغاثة الإنسانية وإيصال صوت الشهود في فلسطين.',
             btnPaypalDonation: '<span>🕊️</span> تبرع عبر PayPal',
 
             // Packs de recharge Stripe
-            pack1Title: 'رصيد واحد سريع',
+            pack1Title: 'زيتونة واحدة سريعة',
             pack1Desc: 'فيديو واحد متكامل: استماع للهجة + ترجمة فرنسية + ترجمة متحركة بملء الشاشة.',
             pack1Unit: '<span class="aya-bidi-num">0,99 €</span> / للفيديو',
             pack1Price: '<span class="aya-bidi-num">0,99 €</span>',
             pack1Btn: '<span>💳</span> شراء الآن',
-            pack5Title: 'باقة ٥ أرصدة',
+            pack5Title: 'باقة ٥ زيتونات',
             pack5Badge: 'الأكثر طلباً',
             pack5Desc: '٥ فيديوهات كاملة مع شريط ترجمة متحرك وأرشفة على Google Drive.',
             pack5Unit: '<span class="aya-bidi-num">~0,60 €</span> / للفيديو (وفّر ٤٠٪)',
             pack5Price: '<span class="aya-bidi-num">2,99 €</span>',
             pack5Btn: '<span>💳</span> شراء الآن',
-            pack25Title: 'باقة ٢٥ رصيداً',
+            pack25Title: 'باقة ٢٥ زيتونة',
             pack25Badge: 'أفضل قيمة',
             pack25Desc: '٢٥ فيديو كامل ومترجم. الخيار الأمثل لصناع المحتوى والناشطين المنتظمين.',
             pack25Unit: '<span class="aya-bidi-num">~0,40 €</span> / للفيديو (وفّر ٦٠٪)',
@@ -1328,10 +1332,10 @@
                                 </div>
                             </a>
                             <a href="/profil#packs" class="dropdown-item" role="menuitem">
-                                <span class="dropdown-item-icon">⚡</span>
+                                <span class="dropdown-item-icon">🫒</span>
                                 <div class="dropdown-item-content">
                                     <span class="dropdown-item-title" id="navWalletText">${dict.navWalletText}</span>
-                                    <span class="dropdown-item-desc"><strong id="dropdownCreditsCount">--</strong> crédits restants</span>
+                                    <span class="dropdown-item-desc"><strong id="dropdownCreditsCount">--</strong> ${currentLang === 'ar' ? 'زيتونة متبقية' : 'Zaytounas disponibles'}</span>
                                 </div>
                             </a>
                             <a href="/profil#videos" class="dropdown-item" role="menuitem">
@@ -1365,11 +1369,11 @@
                         <span id="navbarOnlineCount" class="online-count-text">1 en ligne</span>
                     </div>
 
-                    <!-- Badge Solde Crédits -->
-                    <a href="/profil#packs" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض الرصيد والمحفظة' : 'Mon Portefeuille & Crédits'}">
-                        <span class="credit-icon">⚡</span>
+                    <!-- Badge Solde Zaytounas -->
+                    <a href="/profil#packs" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض رصيد الزيتون والمحفظة' : 'Mon Portefeuille & Zaytounas'}">
+                        <span class="credit-icon">🫒</span>
                         <span id="navbarCreditsCount" class="credit-count">--</span>
-                        <span class="credit-unit">${currentLang === 'ar' ? 'رصيد' : 'Cr.'}</span>
+                        <span class="credit-unit">${currentLang === 'ar' ? 'زيتونة' : 'Zaytounas'}</span>
                     </a>
 
                     <!-- Sélecteur de Langue Minimaliste (FR | عربي) -->

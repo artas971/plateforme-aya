@@ -2294,12 +2294,32 @@ def main():
             else:
                 print(f"[RESTYLE ENGINE] 📝 Description TikTok existante réutilisée : {desc_filename}", flush=True)
 
-        # ⚡ COURT-CIRCUIT MODE EXPRESS (MODULE 2 : TEXTE MARKDOWN EN < 5S)
+        # ⚡ COURT-CIRCUIT MODE EXPRESS (SOUS-TITRES .ASS & DESCRIPTION SANS FFMPEG EN < 5S)
         if express_mode:
-            print("[PROGRESS] 85% - 📝 Mise en page du texte traduit...", flush=True)
+            print("[PROGRESS] 80% - 🎨 Création du fichier de sous-titres synchronisé (.ASS)...", flush=True)
             full_text = " ".join([s.get("text", "").strip() for s in segments if s.get("text", "").strip()])
 
-            # Nom du fichier Markdown téléchargeable
+            # 1. Génération du fichier de sous-titres .ASS officiel (Lionel & Nadine)
+            mp4_dummy, ass_filename = generate_clean_output_filenames(
+                media_input, source_lang, target_lang, title_override=clean_title_stem
+            )
+            ass_path = OUTPUT_DIR / ass_filename
+            build_ass_file(segments, ass_path, is_video, width, height, duration, sub_color_hex, sub_margin_v)
+
+            # 2. Synchronisation et sauvegarde de la Description TikTok (Clara)
+            print("[PROGRESS] 90% - ✍️ Finalisation de la description et des mots-clés...", flush=True)
+            if desc_thread and desc_thread.is_alive():
+                desc_thread.join(timeout=8)
+            context_summary = async_desc_result.get("text", "")
+            if not context_summary:
+                context_summary = generate_tiktok_description(segments, semantic_title=semantic_title, target_lang=target_lang, user_context=user_context)
+
+            desc_filename = f"{clean_title_stem} (Description TikTok).txt"
+            desc_path = OUTPUT_DIR / desc_filename
+            with open(desc_path, 'w', encoding='utf-8') as df:
+                df.write(context_summary.strip() + '\n')
+
+            # 3. Fichier Markdown récapitulatif
             md_filename = f"{clean_title_stem} (Traduction Texte).md"
             md_path = OUTPUT_DIR / md_filename
 
@@ -2328,15 +2348,13 @@ def main():
 
             md_lines.append("")
             md_lines.append("---")
-            md_lines.append("*Généré instantanément par le Module 2 de la Plateforme Aya (Protocole V3 - Zéro FFmpeg).*")
+            md_lines.append("*Généré instantanément par le Module Express de la Plateforme Aya (Protocole V3 - Zéro FFmpeg).*")
 
             md_content = "\n".join(md_lines)
             with open(md_path, 'w', encoding='utf-8') as f:
                 f.write(md_content)
 
-            print(f"[PROGRESS] 100% - 🎉 Votre traduction est prête !", flush=True)
-
-            context_summary = async_desc_result.get("text") or "Témoignage vidéo et transcription réalisés sur la Plateforme Aya."
+            print(f"[PROGRESS] 100% - 🎉 Vos fichiers de sous-titres et description sont prêts !", flush=True)
 
             record_alexandre_agent("Pipeline", "total_python_pipeline", t_global_py_start, status="OK", details=f"Durée totale Python Express: {round(time.time() - t_global_py_start, 2)}s")
 
@@ -2352,6 +2370,11 @@ def main():
                 "duration": round(duration, 2),
                 "context_summary": context_summary,
                 "clean_text": full_text,
+                "ass_filename": ass_filename,
+                "ass_url": f"/download/{ass_filename}",
+                "description_filename": desc_filename,
+                "description_url": f"/download/{desc_filename}",
+                "description_text": context_summary,
                 "markdown_text": md_content,
                 "markdown_filename": md_filename,
                 "markdown_url": f"/download/{md_filename}",

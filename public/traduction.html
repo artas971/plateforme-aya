@@ -1769,15 +1769,15 @@
                     <div class="mode-card active" data-mode="video" id="modeCardVideo">
                         <span class="mode-icon">🎬</span>
                         <div class="mode-details">
-                            <div class="mode-title" id="modeVideoTitle">🎬 Vidéo Complète</div>
-                            <div class="mode-sub" id="modeVideoSub">Sous-titres intégrés directement sur la vidéo</div>
+                            <div class="mode-title" id="modeVideoTitle">🎬 Vidéo Complète (Prête à publier)</div>
+                            <div class="mode-sub" id="modeVideoSub">Fichier MP4 avec sous-titres incrustés (Prête à poster)</div>
                         </div>
                     </div>
                     <div class="mode-card" data-mode="express" id="modeCardExpress">
                         <span class="mode-icon">⚡</span>
                         <div class="mode-details">
-                            <div class="mode-title" id="modeExpressTitle">⚡ Mode Express (Texte Uniquement)</div>
-                            <div class="mode-sub" id="modeExpressSub">Traduction instantanée du texte (&lt; 5s)</div>
+                            <div class="mode-title" id="modeExpressTitle">⚡ Sous-titres & Description Seuls (Rapide)</div>
+                            <div class="mode-sub" id="modeExpressSub">Fichier .ASS et description TikTok en &lt; 5s (sans vidéo)</div>
                         </div>
                     </div>
                 </div>
@@ -2734,12 +2734,17 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                                <button type="button" id="btnCopyExpress" class="btn-submit" style="padding: 0.7rem 1.4rem; font-size: 0.92rem; background: var(--color-primary); display: flex; align-items: center; gap: 0.5rem; transition: all 0.25s ease;">
+                                ${finalData.ass_url ? `
+                                <a href="${finalData.ass_url}" download target="_blank" rel="noopener noreferrer" class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.3rem; font-size: 0.9rem; background: var(--color-primary); display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                                    <span>📄</span> <span>${dict.btnDownloadAss || 'Télécharger les Sous-Titres (.ASS)'}</span>
+                                </a>` : ''}
+                                ${finalData.description_url ? `
+                                <a href="${finalData.description_url}" download target="_blank" rel="noopener noreferrer" class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.3rem; font-size: 0.9rem; background: #0284c7; display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                                    <span>📝</span> <span>${dict.btnDownloadDesc || 'Télécharger la Description (.TXT)'}</span>
+                                </a>` : ''}
+                                <button type="button" id="btnCopyExpress" class="btn-submit" style="padding: 0.7rem 1.2rem; font-size: 0.9rem; background: var(--color-turquoise); display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
                                     <span id="btnCopyIcon">📋</span> <span id="btnCopyLabel">${dict.btnCopyText || 'Copier le texte'}</span>
                                 </button>
-                                <a href="${finalData.markdown_url}" download target="_blank" rel="noopener noreferrer" class="btn-submit" style="text-decoration: none; padding: 0.7rem 1.4rem; font-size: 0.92rem; background: var(--color-turquoise); display: flex; align-items: center; gap: 0.5rem;">
-                                    <span>⬇️</span> <span>${dict.btnDownloadMarkdown || 'Télécharger le Markdown (.md)'}</span>
-                                </a>
                             </div>
                         </div>
 
