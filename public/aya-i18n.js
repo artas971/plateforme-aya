@@ -46,6 +46,9 @@
             navOnlineText: 'en ligne',
             navCreateActionText: 'Menu',
             navCloseSheetText: 'Fermer',
+            creditUnit: 'Zaytounas',
+            creditsRemaining: 'Zaytounas disponibles',
+            creditsBadgeTitle: 'Mon Portefeuille & Zaytounas',
 
             // Page d'Accueil & Modules
             homeDocTitle: "Aya Studio — Accueil & Modules",
@@ -488,6 +491,9 @@
             navOnlineText: 'متصل',
             navCreateActionText: 'القائمة',
             navCloseSheetText: 'إغلاق',
+            creditUnit: 'زيتونة',
+            creditsRemaining: 'زيتونة متبقية',
+            creditsBadgeTitle: 'عرض رصيد الزيتون والمحفظة',
 
             // Page d'Accueil & Modules (Arabe Palestinien Soigné)
             homeDocTitle: "استوديو آية — الصفحة الرئيسية وأدوات المنصة",
@@ -894,8 +900,87 @@
         }
     };
 
-    // 2. Gestion de l'état linguistique persistant
+    // 2. Gestion de l'état linguistique persistant & Formatage des Crédits
     let currentLang = localStorage.getItem('aya_lang') || 'fr';
+
+    /**
+     * Normalise les chiffres arabes orientaux (٠-٩) vers des chiffres occidentaux latins (0-9)
+     */
+    function normalizeToWesternDigits(str) {
+        if (typeof str !== 'string') return str;
+        const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+        return str.replace(/[٠-٩]/g, d => {
+            const idx = arabicDigits.indexOf(d);
+            return idx !== -1 ? String(idx) : d;
+        });
+    }
+
+    /**
+     * Formate le nombre de crédits de façon irréprochable selon la langue active :
+     * - En Français : Chiffres français/occidentaux (0, 1, 2, 3...)
+     * - En Arabe : Chiffres arabes (٠، ١، ٢، ٣...)
+     */
+    function formatCreditsNumber(credits, lang) {
+        if (credits === undefined || credits === null || credits === '' || credits === '--') return '--';
+        const cleaned = (typeof credits === 'string') ? normalizeToWesternDigits(credits).trim() : credits;
+        const num = Number(cleaned);
+        if (isNaN(num)) return '--';
+        if (lang === 'ar') {
+            return num.toLocaleString('ar-EG');
+        }
+        // EN VERSION FRANÇAISE : CHIFFRES FRANÇAIS STANDARDS OCCIDENTAUX (0, 1, 2, 3...)
+        return String(num);
+    }
+
+    /**
+     * Met à jour l'ensemble des compteurs et libellés de crédits (navbar, dropdown, pages)
+     */
+    function updateNavbarCredits(credits, lang) {
+        lang = lang || currentLang || 'fr';
+        const dict = translations[lang] || translations.fr;
+        
+        let num = credits;
+        if (num === undefined || num === null) {
+            const u = getUserSession();
+            num = u ? u.credits : null;
+        }
+
+        const formatted = formatCreditsNumber(num, lang);
+        const unitLabel = dict.creditUnit || (lang === 'ar' ? 'زيتونة' : 'Zaytounas');
+        const descLabel = dict.creditsRemaining || (lang === 'ar' ? 'زيتونة متبقية' : 'Zaytounas disponibles');
+        const badgeTitle = dict.creditsBadgeTitle || (lang === 'ar' ? 'عرض رصيد الزيتون والمحفظة' : 'Mon Portefeuille & Zaytounas');
+
+        // 1. Badge flottant navbar
+        const countEl = document.getElementById('navbarCreditsCount');
+        if (countEl) countEl.textContent = formatted;
+
+        document.querySelectorAll('.credit-unit').forEach(el => {
+            el.textContent = unitLabel;
+        });
+
+        const badgeEl = document.getElementById('navbarCreditBadge');
+        if (badgeEl) badgeEl.title = badgeTitle;
+
+        // 2. Dropdown navbar
+        const dropdownCountEl = document.getElementById('dropdownCreditsCount');
+        if (dropdownCountEl) dropdownCountEl.textContent = formatted;
+
+        const dropdownDescEl = document.getElementById('dropdownCreditsDesc');
+        if (dropdownDescEl) {
+            dropdownDescEl.innerHTML = `<strong id="dropdownCreditsCount">${formatted}</strong> ${descLabel}`;
+        }
+
+        // 3. Fiches
+        const fichesCredits = document.getElementById('fichesUserCredits');
+        if (fichesCredits && num !== null && !isNaN(Number(num))) fichesCredits.textContent = formatted;
+
+        // 4. Profil
+        const walletAvailable = document.getElementById('walletAvailableCredits');
+        if (walletAvailable && num !== null && !isNaN(Number(num))) walletAvailable.textContent = formatted;
+
+        const vocabModalCredits = document.getElementById('vocabModalUserCredits');
+        if (vocabModalCredits && num !== null && !isNaN(Number(num))) vocabModalCredits.textContent = formatted;
+    }
 
     function setLanguage(lang) {
         if (!translations[lang]) lang = 'fr';
@@ -973,7 +1058,6 @@
         const userObj = getUserSession();
         const userNameSpan = document.getElementById('navbarUserName');
         const avatarImg = document.getElementById('navbarAvatarImg');
-        const creditsSpan = document.getElementById('navbarCreditsCount');
         if (userNameSpan) {
             const name = userObj ? (userObj.name || userObj.username) : dict.userAnonymous;
             userNameSpan.textContent = name;
@@ -981,9 +1065,9 @@
         if (avatarImg && userObj && userObj.avatar) {
             avatarImg.src = userObj.avatar;
         }
-        if (creditsSpan && userObj && userObj.credits !== undefined) {
-            creditsSpan.textContent = userObj.credits;
-        }
+
+        // Mise à jour uniforme et immédiate des crédits selon la langue (Français strict ou Arabe)
+        updateNavbarCredits(userObj ? userObj.credits : null, lang);
 
         if (!window._ayaUserSyncDone) {
             window._ayaUserSyncDone = true;
@@ -994,10 +1078,9 @@
                         localStorage.setItem('aya_user', JSON.stringify(d.user));
                         const currentAvatar = document.getElementById('navbarAvatarImg');
                         const currentName = document.getElementById('navbarUserName');
-                        const currentCredits = document.getElementById('navbarCreditsCount');
                         if (currentAvatar && d.user.avatar) currentAvatar.src = d.user.avatar;
                         if (currentName) currentName.textContent = d.user.name || d.user.username;
-                        if (currentCredits && d.user.credits !== undefined) currentCredits.textContent = d.user.credits;
+                        updateNavbarCredits(d.user.credits, lang);
                     }
                 })
                 .catch(() => {});
@@ -1515,7 +1598,7 @@
                                 <span class="dropdown-item-icon">🫒</span>
                                 <div class="dropdown-item-content">
                                     <span class="dropdown-item-title" id="navWalletText">${dict.navWalletText}</span>
-                                    <span class="dropdown-item-desc"><strong id="dropdownCreditsCount">--</strong> ${currentLang === 'ar' ? 'زيتونة متبقية' : 'Zaytounas disponibles'}</span>
+                                    <span class="dropdown-item-desc" id="dropdownCreditsDesc"><strong id="dropdownCreditsCount">--</strong> ${currentLang === 'ar' ? 'زيتونة متبقية' : 'Zaytounas disponibles'}</span>
                                 </div>
                             </a>
                             <a href="/profil#videos" class="dropdown-item" role="menuitem">
@@ -1565,6 +1648,9 @@
                 </div>
             </div>
         `;
+
+        // Mise à jour immédiate des crédits selon la langue courante
+        updateNavbarCredits(null, currentLang);
 
         // ── Injection de la Bottom Navigation Mobile ──
         let bottomNav = document.getElementById('ayaBottomNav');
@@ -1914,6 +2000,8 @@
         setLanguage,
         initSharedNavbar,
         initSharedFooter,
+        updateNavbarCredits,
+        formatCreditsNumber,
         getErrorInfo
     };
 

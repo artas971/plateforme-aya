@@ -147,6 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     userAvailableCredits = Number(u.credits ?? u.wallet?.availableCredits ?? u.wallet?.credits ?? 0);
                     if (fichesUserCredits) fichesUserCredits.textContent = userAvailableCredits;
                     checkCreditsWarning();
+                    if (window.AyaI18n && typeof window.AyaI18n.updateNavbarCredits === 'function') {
+                        window.AyaI18n.updateNavbarCredits(userAvailableCredits);
+                    }
 
                     // Mise à jour du cache local
                     try {
@@ -672,7 +675,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btnRefreshHistory.addEventListener('click', loadCardsGallery);
     }
 
-    // Initialisation au chargement
+    // Initialisation au chargement & réactivité linguistique
+    window.addEventListener('aya:languageChanged', () => {
+        initUserSession();
+        loadCardsGallery();
+    });
+
     initUserSession();
     loadVocabThemes();
     loadCardsGallery();

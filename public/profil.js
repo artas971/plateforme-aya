@@ -167,6 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const navName = document.getElementById('navbarUserName');
                 if (navAvatar && user.avatar) navAvatar.src = user.avatar;
                 if (navName) navName.textContent = user.name || user.username;
+                if (window.AyaI18n && typeof window.AyaI18n.updateNavbarCredits === 'function') {
+                    window.AyaI18n.updateNavbarCredits(credits);
+                }
             } else {
                 if (data.requireAuth) {
                     window.location.href = '/login';
@@ -1570,6 +1573,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     handleRouteHash();
     window.addEventListener('hashchange', handleRouteHash);
+
+    // Réactivité au changement de langue
+    window.addEventListener('aya:languageChanged', () => {
+        loadUserProfile();
+        loadVideoHistory();
+        loadVocabCards();
+    });
 
     // Initialisation
     loadUserProfile();
