@@ -11,7 +11,7 @@ if sys.stdout.encoding.lower() != 'utf-8':
     except Exception:
         pass
 
-BASE_DIR = r'c:\Users\artas\Desktop\aya'
+BASE_DIR = os.environ.get('AYA_BASE_DIR', os.path.dirname(os.path.abspath(__file__)))
 AUDIO_IN_DIR = os.path.join(BASE_DIR, 'audio_a_traiter')
 AUDIO_OUT_DIR = os.path.join(BASE_DIR, 'fichiers_reponse_a_envoyer')
 
@@ -95,37 +95,136 @@ def check_api_keys():
         print("[Pôle 3 Warning] Aucune clef API LLM (OPENAI_API_KEY / ANTHROPIC_API_KEY) detectee dans process.env.")
         print("[Pôle 3 Warning] Utilisation du traducteur Gaza Gold Standard avec dictionnaire de raffinement dialectal.")
 
-def split_segments_max_5s(raw_segments, max_duration=5.0):
-    """Protocole Scan 5s (Nadine) : Découpe strictement tout segment > 5 secondes."""
-    processed = []
-    for s in raw_segments:
-        start = s.get("start", 0.0) if isinstance(s, dict) else s.start
-        end = s.get("end", 0.0) if isinstance(s, dict) else s.end
-        text = (s.get("text", "") if isinstance(s, dict) else s.text).strip()
-
-        if not text:
-            continue
-
-        duration = end - start
-        if duration <= max_duration:
-            processed.append({"start": start, "end": end, "text": text})
+def slice_words_into_units(words, silence_threshold=0.30, lead_out=0.15, max_unit_duration=3.8, max_words=8):
+    """
+    Découpage intra-segment strict sur silence > 0.30s avec aplatissement du flux de mots.
+    Clamping du Lead-out (+150ms) : End = min(last_word.end + 0.15, next_word.start)
+    Interdiction de tout overlap et élimination des silences fantômes.
+    """
+    if not words:
+        return []
+        
+    units = []
+    current_words = [words[0]]
+    unit_start = words[0]["start"]
+    
+    for i in range(len(words) - 1):
+        curr_w = words[i]
+        next_w = words[i+1]
+        gap = next_w["start"] - curr_w["end"]
+        
+        is_silence_split = gap > silence_threshold
+        is_duration_split = (curr_w["end"] - unit_start) >= max_unit_duration
+        is_length_split = len(current_words) >= max_words
+        
+        if is_silence_split or is_duration_split or is_length_split:
+            clamped_end = min(curr_w["end"] + lead_out, next_w["start"])
+            units.append({
+                "start": round(unit_start, 2),
+                "end": round(clamped_end, 2),
+                "text": " ".join(w["word"] for w in current_words).strip()
+            })
+            current_words = [next_w]
+            unit_start = next_w["start"]
         else:
-            words = text.split()
-            num_chunks = int(duration // max_duration) + 1
-            words_per_chunk = max(1, len(words) // num_chunks)
-            chunk_duration = duration / num_chunks
+            current_words.append(next_w)
+            
+    if current_words:
+        last_w = current_words[-1]
+        clamped_end = last_w["end"] + lead_out
+        units.append({
+            "start": round(unit_start, 2),
+            "end": round(clamped_end, 2),
+            "text": " ".join(w["word"] for w in current_words).strip()
+        })
+        
+    return units
 
-            for i in range(num_chunks):
-                chunk_start = start + (i * chunk_duration)
-                chunk_end = start + ((i + 1) * chunk_duration)
-                chunk_words = words[i * words_per_chunk : (i + 1) * words_per_chunk] if i < num_chunks - 1 else words[i * words_per_chunk:]
-                if chunk_words:
-                    processed.append({
-                        "start": chunk_start,
-                        "end": chunk_end,
-                        "text": " ".join(chunk_words)
-                    })
-    return processed
+def extract_acoustic_words_strategy(media_path, language="ar"):
+    """
+    Adaptateur Strategy Pattern piloté par la variable WHISPER_BACKEND dans .env :
+    - WHISPER_BACKEND=local : faster-whisper local (modèle base, int8, CPU)
+    - WHISPER_BACKEND=cloud : API Cloud distante (OpenAI Whisper / Groq) avec word_timestamps
+    Retourne strictement une liste normalisée : [{"word": str, "start": float, "end": float}]
+    """
+    backend = os.environ.get("WHISPER_BACKEND", "local").strip().lower()
+    print(f"[Pôle Acoustique Strategy] Mode sélectionné via .env : WHISPER_BACKEND={backend.upper()}")
+    
+    if backend == "cloud":
+        openai_key = os.environ.get("OPENAI_API_KEY")
+        if not openai_key:
+            print("[Pôle Acoustique Strategy] WHISPER_BACKEND=cloud mais OPENAI_API_KEY absente. Bascule en local...")
+            backend = "local"
+        else:
+            try:
+                import urllib.request, uuid
+                boundary = f"----WebKitFormBoundary{uuid.uuid4().hex}"
+                body = bytearray()
+                def add_field(name, value):
+                    body.extend(f"--{boundary}\r\n".encode("utf-8"))
+                    body.extend(f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode("utf-8"))
+                    body.extend(f"{value}\r\n".encode("utf-8"))
+
+                add_field("model", "whisper-1")
+                add_field("response_format", "verbose_json")
+                add_field("timestamp_granularities[]", "word")
+                add_field("language", language)
+
+                with open(media_path, "rb") as f:
+                    file_bytes = f.read()
+
+                filename = os.path.basename(media_path)
+                body.extend(f"--{boundary}\r\n".encode("utf-8"))
+                body.extend(f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'.encode("utf-8"))
+                body.extend(b"Content-Type: audio/mpeg\r\n\r\n")
+                body.extend(file_bytes)
+                body.extend(b"\r\n")
+                body.extend(f"--{boundary}--\r\n".encode("utf-8"))
+
+                req = urllib.request.Request(
+                    "https://api.openai.com/v1/audio/transcriptions",
+                    data=bytes(body),
+                    headers={
+                        "Authorization": f"Bearer {openai_key}",
+                        "Content-Type": f"multipart/form-data; boundary={boundary}"
+                    }
+                )
+                with urllib.request.urlopen(req, timeout=120) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    flat_words = []
+                    for w in data.get("words", []):
+                        word_str = w.get("word", "").strip()
+                        if word_str:
+                            flat_words.append({
+                                "word": word_str,
+                                "start": round(float(w["start"]), 3),
+                                "end": round(float(w["end"]), 3)
+                            })
+                    print(f"[Pôle Acoustique Cloud] ✅ {len(flat_words)} mots extraits avec timestamps physiques !")
+                    return flat_words
+            except Exception as e_cloud:
+                print(f"[Pôle Acoustique Strategy] Erreur Cloud ({e_cloud}), bascule sur fallback local faster-whisper...")
+                backend = "local"
+
+    # Execution locale via faster-whisper
+    from faster_whisper import WhisperModel
+    whisper_model_name = os.environ.get("WHISPER_MODEL", "base").strip()
+    print(f"[Pôle Acoustique Local] Chargement du modèle faster-whisper '{whisper_model_name}' (CPU, int8)...")
+    model = WhisperModel(whisper_model_name, device="cpu", compute_type="int8")
+    segments, _ = model.transcribe(media_path, language=language, word_timestamps=True, vad_filter=True)
+    
+    flat_words = []
+    for s in segments:
+        for w in (s.words or []):
+            word_str = w.word.strip()
+            if word_str:
+                flat_words.append({
+                    "word": word_str,
+                    "start": round(float(w.start), 3),
+                    "end": round(float(w.end), 3)
+                })
+    print(f"[Pôle Acoustique Local] ✅ {len(flat_words)} mots physiques extraits avec précision 10ms !")
+    return flat_words
 
 def refine_gaza_translation(text_raw):
     """Gaza Dialectal Gold Standard Substitutions"""
@@ -336,7 +435,7 @@ def transcribe_via_openai_api(media_path, openai_key, mode='VOSTFR'):
         return None
 
 
-def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, title_color='#D8D0BE', sub_color='#FFFF00', title_margin=380, sub_margin=950, show_header=True, header_text='PALESTINIAN ECHO', header_color='#CE1126', project_uuid=None):
+def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, title_color='#D8D0BE', sub_color='#FFFF00', title_margin=380, sub_margin=950, show_header=True, header_text='PALESTINIAN ECHO', header_color='#CE1126', project_uuid=None, source_lang='auto'):
         # 0. Force Deletion of Old Cache Files (UUID & Media)
     if project_uuid:
         for old_ext in ['.ass', '.mp4', '.txt']:
@@ -350,7 +449,7 @@ def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, 
                 except Exception: pass
 
     print(f"=== DEMARRAGE DU PIPELINE STUDIO V3 DE HAUTE FIDELITE ===")
-    print(f"Media: {media_file_name} | Mode: {mode} | UUID: {project_uuid} | TitleColor: {title_color} | SubColor: {sub_color} | BandColor: {header_color}")
+    print(f"Media: {media_file_name} | Mode: {mode} | SourceLang: {source_lang} | UUID: {project_uuid} | TitleColor: {title_color} | SubColor: {sub_color} | BandColor: {header_color}")
 
     # 1. Resolve Media Path
     media_path = os.path.join(AUDIO_IN_DIR, media_file_name)
@@ -361,52 +460,79 @@ def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, 
     if not os.path.exists(media_path):
         return {"error": f"Fichier media introuvable : {media_file_name}"}
 
-    # 2. Resolve Background Image Path
-    if bg_file_name and os.path.exists(os.path.join(AUDIO_IN_DIR, bg_file_name)):
+    # 2. Resolve Background Image Path (supporte fichier uploadé, preset public/assets/backgrounds ou John Creasy fallback)
+    if bg_file_name and os.path.isabs(bg_file_name) and os.path.exists(bg_file_name):
+        bg_path = bg_file_name
+    elif bg_file_name and os.path.exists(os.path.join(AUDIO_IN_DIR, bg_file_name)):
         bg_path = os.path.join(AUDIO_IN_DIR, bg_file_name)
     elif bg_file_name and os.path.exists(os.path.join(BASE_DIR, bg_file_name)):
         bg_path = os.path.join(BASE_DIR, bg_file_name)
+    elif bg_file_name and os.path.exists(os.path.join(BASE_DIR, 'public', 'assets', 'backgrounds', bg_file_name)):
+        bg_path = os.path.join(BASE_DIR, 'public', 'assets', 'backgrounds', bg_file_name)
+    elif bg_file_name and os.path.exists(os.path.join(BASE_DIR, 'public', 'assets', 'backgrounds', f"{bg_file_name}.jpg")):
+        bg_path = os.path.join(BASE_DIR, 'public', 'assets', 'backgrounds', f"{bg_file_name}.jpg")
     else:
-        bg_path = os.path.join(BASE_DIR, 'john_creasy_signature_bg.jpg')
-        if not os.path.exists(bg_path):
-            bg_path = os.path.join(r'C:\Users\artas\Desktop\test', 'john_creasy_signature_bg.jpg')
+        preset_palestine = os.path.join(BASE_DIR, 'public', 'assets', 'backgrounds', 'bg_palestine.jpg')
+        if os.path.exists(preset_palestine):
+            bg_path = preset_palestine
+        else:
+            bg_path = os.path.join(BASE_DIR, 'john_creasy_signature_bg.jpg')
+            if not os.path.exists(bg_path):
+                bg_path = os.path.join(r'C:\Users\artas\Desktop\test', 'john_creasy_signature_bg.jpg')
 
     total_duration = get_audio_duration(media_path)
-    print(f"Duree totale detectee (ffprobe) : {total_duration:.2f} secondes")
+    print(f"Duree totale detectee (ffprobe) : {total_duration:.2f} secondes | Fond: {bg_path}")
 
-    # 3. Transcribe / Translate (Priority 1: Gemini 2.5 Flash Multimodal Gold Standard, Priority 2: Whisper)
+    # 3. TRANSCRIPTION & TRADUCTION : DÉCOUPLAGE PÔLE ACOUSTIQUE (WHISPER) + PÔLE SÉMANTIQUE (GEMINI FLASH)
     check_api_keys()
     segments = []
 
-    # --- PÔLE 3 : MOTEUR PRINCIPAL GEMINI FLASH MULTIMODAL DIRECT ---
-    gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    if gemini_key:
-        try:
-            from gemini_translator import gemini_audio_transcribe_and_translate
-            gemini_segments = gemini_audio_transcribe_and_translate(media_path, mode=mode, total_duration=total_duration)
-            if gemini_segments and len(gemini_segments) > 0:
-                segments = gemini_segments
-                print(f"[Pôle 3 Succès] {len(segments)} segments obtenus via Gemini Multimodal Gold Standard.")
-        except Exception as e_gem:
-            print(f"[Pôle 3 Gemini Fallback] Erreur Gemini: {e_gem}, bascule vers l'API OpenAI Whisper Cloud...")
+    # Vérification du cache de sous-titres déjà validés
+    cache_dir = os.path.join(BASE_DIR, "cache_transcriptions")
+    base_name = os.path.splitext(os.path.basename(media_path))[0]
+    cache_candidates = [
+        os.path.join(cache_dir, f"{base_name}_{mode}.json"),
+        os.path.join(cache_dir, f"{base_name}_auto_{mode}.json"),
+        os.path.join(cache_dir, f"{base_name}_ar_{mode}.json")
+    ]
+    for cfile in cache_candidates:
+        if os.path.exists(cfile):
+            try:
+                with open(cfile, "r", encoding="utf-8") as cf:
+                    cached_segs = json.load(cf)
+                    if isinstance(cached_segs, list) and len(cached_segs) > 0:
+                        segments = cached_segs
+                        print(f"[Pôle 3 Cache] ⚡ Cache acoustique réutilisé ({len(segments)} sous-titres validés).")
+                        break
+            except Exception:
+                pass
 
-    # --- GESTION STRICTE API CLOUD (ZÉRO CHARGE CPU LOCALE) ---
     if not segments:
-        openai_key = os.environ.get("OPENAI_API_KEY")
-        if openai_key:
-            print("[Pôle 3 Cloud Fallback] Appel de l'API distante OpenAI Whisper...")
-            segments = transcribe_via_openai_api(media_path, openai_key, mode=mode)
+        # A. PÔLE ACOUSTIQUE PHYSIQUE (STRATEGY PATTERN LOCAL / CLOUD)
+        lang_source = "ar" if mode == "VOSTFR" else ("fr" if mode == "VOAR" else "auto")
+        words = extract_acoustic_words_strategy(media_path, language=lang_source)
+        
+        # B. DÉCOUPAGE INTRA-SEGMENT SUR SILENCE > 0.30s AVEC LEAD-OUT CLAMPÉ (+150ms)
+        acoustic_units = slice_words_into_units(words, silence_threshold=0.30, lead_out=0.15, max_unit_duration=3.8, max_words=8)
+        print(f"[Pôle Acoustique] 🎯 {len(acoustic_units)} unités physiques découpées sur silence > 0.30s.")
+        
+        # C. PÔLE SÉMANTIQUE (GEMINI FLASH EN BATCH 1:1 SANS MODIFIER LES TIMESTAMPS)
+        from gemini_translator import gemini_batch_translate_units
+        translated_segments = gemini_batch_translate_units(acoustic_units, mode=mode, user_context=title)
+        if translated_segments and len(translated_segments) > 0:
+            segments = translated_segments
+            print(f"[Pôle Sémantique] ✅ {len(segments)} sous-titres traduits avec conservation 1:1 des timestamps physiques.")
+            # Sauvegarde dans le cache
+            try:
+                save_cache = os.path.join(cache_dir, f"{base_name}_{mode}.json")
+                with open(save_cache, "w", encoding="utf-8") as sc:
+                    json.dump(segments, sc, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
 
-        if not segments or len(segments) == 0:
-            raise RuntimeError(
-                "Échec de la transcription Cloud : Ni l'API Gemini ni l'API OpenAI n'ont pu traiter l'audio. "
-                "Vérifiez vos clés API dans le fichier .env (Aucun modèle local n'a été exécuté pour préserver votre CPU)."
-            )
-
-    # Apply Zero-Gap Rule (End_N == Start_N+1)
-    for i in range(len(segments) - 1):
-        if segments[i+1]["start"] - segments[i]["end"] < 0.35:
-            segments[i]["end"] = segments[i+1]["start"]
+    # Sécurité ultime
+    if not segments or len(segments) == 0:
+        raise RuntimeError("Échec du pipeline acoustique/sémantique : aucune unité sous-titre n'a pu être produite.")
 
     segments[-1]["end"] = total_duration
 
@@ -428,27 +554,15 @@ def run_pipeline(media_file_name, bg_file_name=None, mode='VOSTFR', title=None, 
     # B. Title permanent event across total duration
     ass_events.append(f"Dialogue: 0,0:00:00.00,{format_ass_time(total_duration)},TitleStyle,,0,0,0,,{clean_title}")
 
-    # C. Subtitle timeline events (formatted into 7-8 word blocks)
+    # C. Subtitle timeline events (formatted into 7-8 word blocks, strictly style Impact)
     for seg in segments:
         t_start = format_ass_time(seg["start"])
         t_end = format_ass_time(seg["end"])
         formatted_sub = format_subtitle_blocks(seg["text"])
-        ass_events.append(f"Dialogue: 0,{t_start},{t_end},SubtitleStyle,,0,0,0,,{formatted_sub}")
+        ass_events.append(f"Dialogue: 0,{t_start},{t_end},Impact,,0,0,0,,{formatted_sub}")
 
-    try:
-        sub_m_int = int(sub_margin)
-        # Dans l'UI et le Canvas (résolution 1080x1920), la valeur du slider (500 à 1850px)
-        # représente la position Y depuis le HAUT de l'écran (ex: 1630px = en bas).
-        # Dans le format .ASS, le style SubtitleStyle a Alignment: 2 (Bas-Centre).
-        # Pour Alignment 2, MarginV est la distance mesurée depuis le BAS de l'écran.
-        # Donc pour placer le texte à Y=1630px depuis le haut dans un cadre de 1920px :
-        # MarginV = 1920 - Y = 1920 - 1630 = 290px depuis le bas.
-        if sub_m_int > 300:
-            ass_sub_margin = max(10, 1920 - sub_m_int)
-        else:
-            ass_sub_margin = max(10, sub_m_int)
-    except Exception:
-        ass_sub_margin = 970
+    # MarginV strictement calé à 950 (TikTok Safe Zone - Steve QA Guard)
+    ass_sub_margin = 950
 
     ass_content = f"""[Script Info]
 ScriptType: v4.00+
@@ -460,7 +574,7 @@ ScaledBorderAndShadow: yes
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: HeaderStyle, Arial, 32, &H00FFFFFF, &H00000000, {ass_header_color}, {ass_header_color}, -1, 0, 0, 0, 100, 100, 0, 0, 3, 10, 0, 8, 40, 40, 60, 1
 Style: TitleStyle, Arial Black, 46, {ass_title_color}, &H00000000, &H00000000, &H00000000, -1, 0, 0, 0, 100, 100, 0, 0, 1, 3, 0, 8, 50, 50, {title_margin}, 1
-Style: SubtitleStyle,Impact,72,{ass_sub_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,{ass_sub_margin},1
+Style: Impact,Impact,72,{ass_sub_color},&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,3,2,2,10,10,{ass_sub_margin},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -481,6 +595,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         f.write(ass_content)
 
     print(f"Fichier ASS produit avec succes : {ass_path}")
+
+    # VERROU QUALITÉ STEVE STRICT (LINTER .ASS PRÉ-ENCODAGE)
+    try:
+        from verify_ass_linter import lint_ass_file
+        linter_res = lint_ass_file(ass_path, expected_style="Impact", expected_margin_v=950)
+        if not linter_res["valid"]:
+            err_msg = " | ".join(linter_res["errors"])
+            raise RuntimeError(f"[Linter ASS Bloquant] Le fichier ASS n'est pas conforme aux spécifications : {err_msg}")
+        print(f"[Linter ASS] ✅ Validation réussie : {linter_res['dialogues_count']} sous-titres validés (Style: Impact, MarginV: 950).")
+    except ImportError:
+        print("[Linter ASS Warning] verify_ass_linter introuvable, passage au contrôle standard.")
 
     # VERROU QUALITÉ STEVE (PÔLE 6 QA) : Vérification de la taille (>0 octets) et présence de dialogues réels
     if not os.path.exists(ass_path) or os.path.getsize(ass_path) == 0:
@@ -562,6 +687,7 @@ if __name__ == '__main__':
     header_text = sys.argv[10] if len(sys.argv) > 10 else 'PALESTINIAN ECHO'
     header_color = sys.argv[11] if len(sys.argv) > 11 else '#CE1126'
     project_uuid = sys.argv[12] if len(sys.argv) > 12 else None
+    source_lang = sys.argv[13] if len(sys.argv) > 13 else 'auto'
 
-    res = run_pipeline(media_file, bg_file, mode, title, title_color, sub_color, title_margin, sub_margin, show_header, header_text, header_color, project_uuid)
+    res = run_pipeline(media_file, bg_file, mode, title, title_color, sub_color, title_margin, sub_margin, show_header, header_text, header_color, project_uuid, source_lang)
     print(json.dumps(res, ensure_ascii=False, indent=2))

@@ -239,7 +239,7 @@
         /* Sélecteur de Langue Source */
         .source-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 0.85rem;
         }
 
@@ -1808,6 +1808,13 @@
                             <div class="source-sub" id="sourceFrSub">Discours original en français</div>
                         </div>
                     </div>
+                    <div class="source-card" data-source="he" id="sourceCardHe">
+                        <span class="source-icon">🇮🇱</span>
+                        <div class="source-details">
+                            <div class="source-title" id="sourceHeTitle">Hébreu</div>
+                            <div class="source-sub" id="sourceHeSub">Reportages / Enquêtes en hébreu</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1876,53 +1883,23 @@
                     </div>
                 </div>
 
-                <!-- 5. Choix du Visuel pour Notes Vocales -->
-                <div id="bgThemeSection" style="transition: all 0.3s ease;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-                        <div class="section-label" id="labelBgTheme">5. Choix du visuel (Notes vocales & Audios purs uniquement)</div>
-                        <span style="font-size: 0.78rem; color: var(--accent-color); font-weight: 600;" id="audioNoticeBadge">✨ Vidéo 9:16 automatique pour audios</span>
+                <!-- Info dédiée si audio pur (invitation au Studio) -->
+                <div id="audioStudioNotice" style="display: none; background: rgba(0, 188, 212, 0.08); border: 1.5px dashed var(--accent-color); border-radius: 10px; padding: 0.85rem 1.1rem; font-size: 0.88rem; color: #1e293b; margin-bottom: 0.5rem; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 0.65rem;">
+                        <span style="font-size: 1.3rem;">🎙️</span>
+                        <span><b>Audio pur détecté :</b> Un fond sobre 9:16 sera appliqué. Pour choisir votre visuel, vos titres et votre bandeau d'accroche, utilisez le Studio Dédié.</span>
                     </div>
-                    <div id="videoVisualNotice" style="display: none; background: rgba(11, 83, 148, 0.08); border: 1px dashed var(--color-primary); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--color-primary); margin-bottom: 0.75rem; align-items: center; gap: 0.5rem;">
-                        <span>🎬</span> <span><b>Vidéo détectée :</b> La vidéo originale est conservée intacte. Le choix du visuel est désactivé car réservé aux audios purs.</span>
-                    </div>
-                    <div class="bg-grid" id="bgThemeGrid">
-                        <div class="bg-card active" data-bg="bg_palestine">
-                            <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
-                            <div class="bg-details">
-                                <div class="bg-title" id="bgPalestineTitle">🇵🇸 Palestine Résilience</div>
-                                <div class="bg-sub" id="bgPalestineSub">Noir, Blanc, Vert, Rouge abstrait</div>
-                            </div>
-                        </div>
-                        <div class="bg-card" data-bg="bg_dark">
-                            <img src="/assets/backgrounds/bg_dark.jpg" alt="Noir Profond" class="bg-thumb">
-                            <div class="bg-details">
-                                <div class="bg-title" id="bgDarkTitle">🌑 Noir Profond</div>
-                                <div class="bg-sub" id="bgDarkSub">Minimaliste & contraste OLED</div>
-                            </div>
-                        </div>
-                        <div class="bg-card" data-bg="bg_turquoise">
-                            <img src="/assets/backgrounds/bg_turquoise.jpg" alt="Turquoise Espoir" class="bg-thumb">
-                            <div class="bg-details">
-                                <div class="bg-title" id="bgTurquoiseTitle">🌊 Turquoise Espoir</div>
-                                <div class="bg-sub" id="bgTurquoiseSub">Couleur officielle Aya #00bcd4</div>
-                            </div>
-                        </div>
-                        <div class="bg-card" data-bg="bg_temoignage">
-                            <img src="/assets/backgrounds/bg_temoignage.jpg" alt="Témoignage" class="bg-thumb">
-                            <div class="bg-details">
-                                <div class="bg-title" id="bgTemoignageTitle">🎙️ Témoignage Sobre</div>
-                                <div class="bg-sub" id="bgTemoignageSub">Cadre solennel pour récits</div>
-                            </div>
-                        </div>
-                    </div>
+                    <a href="/studio" style="font-weight: 700; color: #ffffff; background: linear-gradient(135deg, var(--color-primary), var(--accent-color)); padding: 6px 14px; border-radius: 8px; text-decoration: none; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.25);">
+                        Ouvrir le Studio 9:16 ➔
+                    </a>
                 </div>
 
-                <!-- 5bis. Pack Assets TikTok Optionnel (Couverture 9:16 & Copywriting) -->
+                <!-- 5. Pack Assets TikTok Optionnel (Couverture 9:16 & Copywriting) -->
                 <label class="tiktok-pack-box" for="chkGenerateTiktokPack">
                     <div class="tiktok-pack-left">
                         <span class="tiktok-pack-icon">🎨</span>
                         <div>
-                            <div class="tiktok-pack-title" id="chkTiktokPackText">Générer le Pack TikTok (Couverture 9:16 & Copywriting)</div>
+                            <div class="tiktok-pack-title" id="chkTiktokPackText">5. Générer le Pack TikTok (Couverture 9:16 & Copywriting)</div>
                             <div class="tiktok-pack-sub" id="chkTiktokPackSub">Optionnel : Couverture 9:16 abstraite & Rédaction optimisée SEO</div>
                         </div>
                     </div>
@@ -1933,12 +1910,12 @@
                 </label>
             </div>
 
-            <!-- 5ter. Contexte Optionnel Utilisateur (Context Grounding pour IA) -->
+            <!-- 6. Contexte Optionnel Utilisateur (Context Grounding pour IA) -->
             <div class="user-context-section" id="userContextSection" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 1.1rem; margin-bottom: 0.5rem; transition: border-color 0.2s;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
                     <label for="userContextInput" style="font-weight: 700; font-size: 0.95rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; margin: 0; cursor: pointer;">
                         <span style="font-size: 1.2rem;">🧠</span>
-                        <span id="userContextLabelTitle">Contexte & Indices pour l'IA</span>
+                        <span id="userContextLabelTitle">6. Contexte & Indices pour l'IA</span>
                         <span style="font-weight: 500; font-size: 0.78rem; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 12px;">Optionnel</span>
                     </label>
                     <span style="font-size: 0.78rem; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 2px 8px; border-radius: 12px;">
@@ -2081,7 +2058,7 @@
             const isPack = chkGenerateTiktokPack ? chkGenerateTiktokPack.checked : true;
 
             if (pillSourceLang) {
-                pillSourceLang.textContent = `Source : ${activeSource === 'ar' ? '🇵🇸 Arabe' : (activeSource === 'fr' ? '🇫🇷 Français' : '🤖 Auto')}`;
+                pillSourceLang.textContent = `Source : ${activeSource === 'ar' ? '🇵🇸 Arabe' : (activeSource === 'he' ? '🇮🇱 Hébreu' : (activeSource === 'fr' ? '🇫🇷 Français' : '🤖 Auto'))}`;
             }
             if (pillTargetLang) {
                 pillTargetLang.textContent = `Cible : ${activeLang === 'ar' ? '🇵🇸 Arabe' : '🇫🇷 FR'}`;
@@ -2117,7 +2094,6 @@
         enableCardGroup('.lang-card');
         enableCardGroup('.color-card');
         enableCardGroup('.pos-card');
-        enableCardGroup('.bg-card');
 
         // Bascule dynamique des options selon le mode de traitement sélectionné
         const modeCards = document.querySelectorAll('.mode-card');
@@ -2163,26 +2139,8 @@
         });
 
         function resetBgThemeSection() {
-            const badgeEl = document.getElementById('audioNoticeBadge');
-            const bgSec = document.getElementById('bgThemeSection');
-            const bgGrid = document.getElementById('bgThemeGrid');
-            const videoNotice = document.getElementById('videoVisualNotice');
-
-            if (bgSec) {
-                bgSec.style.opacity = '1';
-                bgSec.style.border = 'none';
-                bgSec.style.padding = '0';
-                bgSec.style.background = 'transparent';
-            }
-            if (bgGrid) {
-                bgGrid.style.opacity = '1';
-                bgGrid.style.pointerEvents = 'auto';
-            }
-            if (videoNotice) videoNotice.style.display = 'none';
-            if (badgeEl) {
-                badgeEl.style.display = 'inline-block';
-                badgeEl.textContent = '✨ Vidéo 9:16 automatique pour audios';
-            }
+            const audioNotice = document.getElementById('audioStudioNotice');
+            if (audioNotice) audioNotice.style.display = 'none';
         }
 
         function handleFileSelect(file) {
@@ -2219,43 +2177,9 @@
             const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
             fileSize.textContent = `${sizeInMb} Mo`;
 
-            const badgeEl = document.getElementById('audioNoticeBadge');
-            const bgSec = document.getElementById('bgThemeSection');
-            const bgGrid = document.getElementById('bgThemeGrid');
-            const videoNotice = document.getElementById('videoVisualNotice');
-
-            if (bgSec) {
-                if (isAudio) {
-                    bgSec.style.opacity = '1';
-                    if (bgGrid) {
-                        bgGrid.style.opacity = '1';
-                        bgGrid.style.pointerEvents = 'auto';
-                    }
-                    if (videoNotice) videoNotice.style.display = 'none';
-                    if (badgeEl) {
-                        badgeEl.style.display = 'inline-block';
-                        badgeEl.textContent = '✨ Vidéo 9:16 automatique pour audios';
-                    }
-                    bgSec.style.border = '2px solid var(--accent-color)';
-                    bgSec.style.padding = '0.75rem';
-                    bgSec.style.borderRadius = '10px';
-                    bgSec.style.background = 'rgba(0, 188, 212, 0.04)';
-                } else if (isVideo) {
-                    // Vidéo locale détectée : griser et désactiver le choix de visuel
-                    bgSec.style.opacity = '0.6';
-                    if (bgGrid) {
-                        bgGrid.style.opacity = '0.35';
-                        bgGrid.style.pointerEvents = 'none';
-                    }
-                    if (videoNotice) videoNotice.style.display = 'flex';
-                    if (badgeEl) badgeEl.style.display = 'none';
-                    bgSec.style.border = '1px dashed rgba(153, 153, 153, 0.35)';
-                    bgSec.style.padding = '0.75rem';
-                    bgSec.style.borderRadius = '10px';
-                    bgSec.style.background = '#f8fafc';
-                } else {
-                    resetBgThemeSection();
-                }
+            const audioNotice = document.getElementById('audioStudioNotice');
+            if (audioNotice) {
+                audioNotice.style.display = isAudio ? 'flex' : 'none';
             }
 
             dropZone.style.display = 'none';
@@ -2545,9 +2469,7 @@
             formData.append('force_reprocess', forceReprocess);
             const generateTiktokPack = document.getElementById('chkGenerateTiktokPack')?.checked ? 'true' : 'false';
             formData.append('generate_tiktok_pack', generateTiktokPack);
-            const activeBgCard = document.querySelector('.bg-card.active');
-            const bgTheme = activeBgCard ? (activeBgCard.dataset.bg || 'bg_palestine') : 'bg_palestine';
-            formData.append('bg_theme', bgTheme);
+            formData.append('bg_theme', 'bg_palestine');
             const activeModeCard = document.querySelector('.mode-card.active');
             const expressMode = (activeModeCard && activeModeCard.dataset.mode === 'express') ? 'true' : 'false';
             formData.append('express_mode', expressMode);
@@ -2696,7 +2618,7 @@
             }
 
             const dict = (window.AyaI18n?.translations?.[window.AyaI18n?.currentLang || 'fr']) || {};
-            const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto');
+            const srcLabel = finalData.source_lang === 'ar' ? '🇵🇸 Arabe' : (finalData.source_lang === 'he' ? '🇮🇱 Hébreu' : (finalData.source_lang === 'fr' ? '🇫🇷 Français' : '🤖 Auto'));
             const tgtLabel = finalData.target_lang === 'ar' ? '🇵🇸 Arabe (VOAR)' : '🇫🇷 Français (VOSTFR)';
             const modelUsed = finalData.ai_model_used || 'gemini-2.5-flash';
             const isFallback = modelUsed.toLowerCase().includes('lite') || (modelUsed !== 'gemini-2.5-flash' && !modelUsed.includes('2.5-flash'));

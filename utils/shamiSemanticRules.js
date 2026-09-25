@@ -50,7 +50,208 @@ DIRECTIVES LINGUISTIQUES DE DURCISSEMENT — STYLE IMPACT (AMMIYA SHAMI / PALEST
 - Le discours doit sonner comme un citoyen ou analyste palestinien cultivé s'exprimant à Jérusalem, Ramallah ou Gaza :
   * Utilise le vocabulaire vivant du dialecte levantin : « مش » (au lieu de ليس), « عشان » (au lieu de من أجل), « اللي » (au lieu de الذي/التي), « هلقيت / هسا » (au lieu de الآن), « شو » (au lieu de ماذا), « حكي » (au lieu de كلام), « كتير » (au lieu de كثيراً).
   * Préserve la noblesse des concepts politiques tout en adoptant la fluidité orale et la force percutante du Shami.
+
+6. BANNISSEMENT ABSOLU DU JARGON TRANSLITTÉRÉ ET DES PARENTHÈSES MÉTALINGUISTIQUES :
+- Il est FORMELLEMENT INTERDIT de translittérer des termes abstraits occidentaux ou d'ajouter des parenthèses d'explication du type "(أو الكلام)" :
+  * « Cette rhétorique » ➔ « هاد الخطاب » ou « هاد الحكي » (INTERDICTION ABSOLUE d'écrire « الرتوريكا » !).
+  * Aucun mot de jargon occidental calqué (ex: « رتوريكا », « كونسيبت ») n'est toléré. Traduis toujours par le mot arabe vivant naturel.
+  * ZÉRO note de traducteur ou parenthèse explicative dans le texte final.
+
+7. FAUX-AMIS DIPLOMATIQUES CRITIQUES (RETENUE vs TRÊVE) :
+- Ne confonds JAMAIS la retenue politique avec un cessez-le-feu :
+  * « Cette retenue diplomatique » ➔ « هاد التحفظ الدبلوماسي » ou « هاد الحذر الدبلوماسي ».
+  * INTERDICTION FORMELLE de traduire par « هاي الهدنة الدبلوماسية » (« هدنة » signifie exclusivement une trêve ou un armistice militaire).
+
+8. EXPRESSIONS POLITIQUES IMAGÉES & CYNISME :
+- Ne traduis pas littéralement les métaphores d'impact et de cynisme :
+  * « Pèse lourdement sur le nombre de morts » ➔ « كلفت كتير من أرواح الضحايا » (ou « زادت من حصيلة الضحايا » / « أرواح الشهداء » si le contexte local l'exige). INTERDICTION FORMELLE du registre religieux cérémoniel ou grandiloquent type « كان ثمنها غالي من دماء آلاف الشهداء » ! Conserve la rigueur de l'imputation politique chiffrée et froide. L'impact doit découler de la clarté du fait dénoncé, pas de grandiloquence verbale.
+  * « Opportunisme cynique » ➔ « الانتهازية عديمة المبادئ » (variante dialectale orale admise : « انتهازية بلا حيا »). BANNISSEMENT STRICT de « وقحة » / « الفجة » (qui relèvent de l'impolitesse ou insolence enfantine et non du machiavélisme d'État) ainsi que de « الساخرة ».
+  * Emphase de contraste (« Le Maroc, lui... » / « Quant au Maroc... ») ➔ Employer exclusivement la structure Shami naturelle : « أما النظام المغربي، فهو عم بيسرّع... » (ou « أما المغرب، فهو... ») ou la coordination fluide : « والنظام المغربي عم بيسرّع... ». INTERDICTION FORMELLE ET ABSOLUE de l'hallucination lexicale « المغامر » (qui n'a aucun rapport avec le pronom d'insistance « lui ») !
+
+9. PRÉCISION INSTITUTIONNELLE & DISSOCIATION GÉOPOLITIQUE :
+- Selon la charge critique et la précision institutionnelle du texte source, cadrer strictement le terme employé :
+  * Pour « Le gouvernement marocain » ➔ « الحكومة المغربية » (el-houkoumeh el-maghribiyyeh).
+  * Pour cibler l'appareil d'État / « Le régime marocain » ➔ « النظام المغربي » (en-nizam el-maghribi) ou « نظام المخزن ».
+  * Règle : Interdiction des glissements vagues ou non qualifiés. Respecte la distinction stricte entre gouvernement, régime et peuple.
+  * Respecte la fraternité sacrée avec les peuples qui soutiennent la Palestine dans la rue.
+
+10. FLUIDITÉ ORALE DES ÉNUMÉRATIONS ET LIAISONS LEVANTINES :
+- Dans une liste avec disjonction (« ou » / « أو »), ne place JAMAIS de « و » redondant après une virgule :
+  * Écris « إسبانيا، إيرلندا أو إندونيسيا » (JAMAIS « إسبانيا، وإيرلندا أو إندونيسيا »).
+- Pour lier un nom défini précédé de « pour cette » / « à cette », utilise la contraction levantine fluide « لهالـ » :
+  * « Et la fin de cette diplomatie » ➔ « ونهاية لهالدبلوماسية » (ou « ونهاية لهاي الدبلوماسية »).
+
+11. BANNISSEMENT DES RÉGIONALISMES NON-LEVANTINS (DÉRIVE IRAKIENNE / BÉDOUINE) :
+- Interdiction absolue d'utiliser la racine bédouine/irakienne « انطى » ou « ينطي ».
+- En Shami palestinien authentique, utilise impérativement pour le don ou le soutien accordé : « انعطى » (donné/accordé) ou « انقدّم » (fourni/offert), et « عطى / يعطي » (JAMAIS « انطى » ni « ينطى »).
+
+12. BLINDAGE DE GENRE GRAMMATICAL & ANTI-TRANSFERT DE LA SOURCE FRANÇAISE :
+- Attention absolue au piège des mots féminins en français mais strictement MASCULINS en arabe :
+  * « Cette victoire » ➔ « هاد الفوز » (JAMAIS « هاي الفوز » car فوز est masculin !).
+  * « Dans cette logique / ce contexte » ➔ « بهاد السياق » ou « بهاد المنطق » (JAMAIS « بهاي السياق » car سياق est masculin !).
+  * « Cet accord » ➔ « هاد الاتفاق ».
+
+13. ARBITRAGE DÉSAVOUER UNE FACTION POLITIQUE (ARBITRAGE VALIDÉ 1.B) :
+- « Désavouer une faction armée ou politique » ➔ Traduis par « وتتنكر لإلها » (ou « ويتنكر لإلها » / « تنكر لإلها » : rupture morale, reniement franc et désolidarisation ouverte).
+- INTERDICTION FORMELLE d'utiliser « يتبرأ منها » ou « تتنصل منها » (contresens complet).
+
+14. PASSIF ORAL NATUREL EN AMMIYA vs LOURDEUR DU PASSIF FUSHA (« يتم ») :
+- Au lieu du calque lourd Fusha « يتم تسميته », utilise la forme passée orale Shami : « اتسمّى » ou « تمّت تسميته ».
+- Ex: « aucun dirigeant n'est nommé » ➔ « ولا أي مسؤول إسرائيلي اتسمّى بشكل رسمي أو اتحمّل المسؤولية ».
+
+15. INTÉGRITÉ ORTHOGRAPHIQUE ET PHONÉTIQUE DE HAUTE PRÉCISION :
+- « الكيان الصهيوني » : Présence OBLIGATOIRE de la lettre « هـ » (JAMAIS « الكيان الصيوني » !).
+- « منتخب » (élu) : Écriture exacte avec khâ direct (JAMAIS « منتخاب » avec allongement erroné).
+
+16. ÉRADICATION TOTALE DES RÉSIDUS LATINS / ENCODAGE MIXTE :
+- Aucun caractère latin résiduel ne doit subsister dans la sortie arabe :
+  * « Brigade Golani » ➔ « لواء غولاني » (INTERDICTION ABSOLUE d'écrire « لواء غولani » !).
+
+17. CORRECTION MORPHOLOGIQUE DU VERBE PRÉTENDRE :
+- Rétablir impérativement la consonne ع (ʿayn) avec aspect duratif levantin :
+  * « Se voulant / prétendant défendre... » ➔ « عم بتدّعي إنها بتدافع عن الفلسطينيين » (JAMAIS « بتدّي » sans le ʿayn !).
+
+18. COHÉRENCE ANAPHORIQUE DE GENRE INTRA-PROPOSITION :
+- Si le sujet de la phrase démarre au masculin (« أما النظام المغربي، فهو... »), maintiens impérativement le masculin jusqu'au point :
+  * « وبيدير ضهره » (INTERDICTION FORMELLE du basculement inopiné au féminin « وبتدير ضهرها »).
+
+19. IDIOME PRÉPOSITIONNEL EXACT (« OUVRIR LA PORTE À ») :
+- Proscription absolue du calque français « ouvrir la porte devant » :
+  * « A ouvert la porte à la normalisation » ➔ « فتح الباب للتطبيع » (JAMAIS « فتح الباب قدام التطبيع »).
+
+20. SYNTAXE DE CONTRASTE & CHUTES ORATOIRES (ARBITRAGES VALIDÉS 2.A & 3.C) :
+- Subordonnée de contraste fluide (Zéro « وبينما » orphelin tronqué) :
+  * « دول متل إسبانيا، إيرلندا أو إندونيسيا عم بياخدوا مسافة وبراجعوا اتفاقياتهم... أما النظام المغربي، فهو عم بيسرّع تقاربه وبيدير ضهره... ».
+- Chute oratoire percutante (Arbitrage 2.A) :
+  * « Une question tragique se pose alors pour conclure » ➔ « وبيبقى السؤال اللي بيحرق الضمير: » (BANNISSEMENT ABSOLU de la formule molle « وفي سؤال مأساوي بينطرح »).
+- Dénonciation du double jeu politique (Arbitrage 3.C) :
+  * « Et la fin de cette diplomatie profondément ambiguë » ➔ « ونهاية لهاد التناقض الدبلوماسي المخزي » (JAMAIS l'adjectif neutre et plat « الغامضة كتير »).
 `;
+
+/**
+ * Nettoyeur sémantique et typographique déterministe (Filet de sécurité de 2e ligne)
+ */
+function sanitizeShamiText(text) {
+    if (!text || typeof text !== 'string') return text;
+    let clean = text;
+    const rules = [
+        // 1. Encodage mixte latin-arabe & toponymes/brigades
+        { pattern: /(?<![\u0600-\u06FF])لواء غولani(?![\u0600-\u06FF])/gu, replacement: 'لواء غولاني' },
+        { pattern: /(?<![\u0600-\u06FF])غولani(?![\u0600-\u06FF])/gu, replacement: 'غولاني' },
+
+        // 2. Coquilles d'entité et typographie
+        { pattern: /(?<![\u0600-\u06FF])الكيان الصيوني(?![\u0600-\u06FF])/gu, replacement: 'الكيان الصهيوني' },
+        { pattern: /(?<![\u0600-\u06FF])الصيوني(?![\u0600-\u06FF])/gu, replacement: 'الصهيوني' },
+        { pattern: /(?<![\u0600-\u06FF])الصيونية(?![\u0600-\u06FF])/gu, replacement: 'الصهيونية' },
+        { pattern: /(?<![\u0600-\u06FF])صيوني(?![\u0600-\u06FF])/gu, replacement: 'صهيوني' },
+        { pattern: /(?<![\u0600-\u06FF])منتخاب(?![\u0600-\u06FF])/gu, replacement: 'منتخب' },
+
+        // 3. Morphologie du verbe prétendre (Rétablissement du ʿayn)
+        // 3. Morphologie du verbe prétendre (Rétablissement du ʿayn)
+        { pattern: /(?<![\u0600-\u06FF])(?:عم\s+)?بتدّي\s+(?:إنها|أنها)\s+(?:بتدافع|دافعت|مدافعة)(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي إنها بتدافع' },
+        { pattern: /(?<![\u0600-\u06FF])(?:عم\s+)?بتدّعي\s+(?:إنها|أنها)\s+دافعت(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي إنها بتدافع' },
+        { pattern: /(?<![\u0600-\u06FF])(?:عم\s+)?بتدّي\s+إنها\s+مدافعة(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي إنها بتدافع' },
+        { pattern: /(?<![\u0600-\u06FF])(?:عم\s+)?بتدّعي\s+إنها\s+مدافعة(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي إنها بتدافع' },
+        { pattern: /(?<![\u0600-\u06FF])(?:عم\s+)?بتدّي\s+(?:أنها|إنها)(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي إنها' },
+        { pattern: /(?<![\u0600-\u06FF])(?:عم\s+)?بتدّي(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي' },
+        { pattern: /(?<![\u0600-\u06FF])عم\s+عم\s+بتدّعي(?![\u0600-\u06FF])/gu, replacement: 'عم بتدّعي' },
+
+        // 4. Cohérence anaphorique intra-phrase (Masculin persistant pour le Maroc/régime)
+        { pattern: /(?<![\u0600-\u06FF])وبتدير ضهرها(?![\u0600-\u06FF])/gu, replacement: 'وبيدير ضهره' },
+        { pattern: /(?<![\u0600-\u06FF])بتدير ضهرها(?![\u0600-\u06FF])/gu, replacement: 'بيدير ضهره' },
+
+        // 5. Calque prépositionnel (فتح الباب للتطبيع)
+        { pattern: /(?<![\u0600-\u06FF])فتح الباب قدام التطبيع(?![\u0600-\u06FF])/gu, replacement: 'فتح الباب للتطبيع' },
+        { pattern: /(?<![\u0600-\u06FF])فتح الباب قدام(?![\u0600-\u06FF])/gu, replacement: 'فتح الباب لـ' },
+
+        // 6. Biais de genre français ➔ arabe
+        { pattern: /(?<![\u0600-\u06FF])بهاي السياق(?![\u0600-\u06FF])/gu, replacement: 'بهاد السياق' },
+        { pattern: /(?<![\u0600-\u06FF])هاي السياق(?![\u0600-\u06FF])/gu, replacement: 'هاد السياق' },
+        { pattern: /(?<![\u0600-\u06FF])بهاي الفوز(?![\u0600-\u06FF])/gu, replacement: 'بهاد الفوز' },
+        { pattern: /(?<![\u0600-\u06FF])هاي الفوز(?![\u0600-\u06FF])/gu, replacement: 'هاد الفوز' },
+
+        // 7. Dérive dialectale irakienne/bédouine
+        { pattern: /(?<![\u0600-\u06FF])اللي انطى(?![\u0600-\u06FF])/gu, replacement: 'اللي انقدّم' },
+        { pattern: /(?<![\u0600-\u06FF])انطى(?![\u0600-\u06FF])/gu, replacement: 'انقدّم' },
+        { pattern: /(?<![\u0600-\u06FF])ينطي(?![\u0600-\u06FF])/gu, replacement: 'يعطي' },
+
+        // 8. Arbitrage 1.B : Désavouer les factions ➔ وتتنكر لإلها
+        { pattern: /(?<![\u0600-\u06FF])ويتبرأ منها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])يتبرأ منها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])وتتبرأ منها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])تتبرأ منها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])وينزع الشرعية عنها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])وتنزع الشرعية عنها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])ويتنكر لها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+        { pattern: /(?<![\u0600-\u06FF])وتتنكر لها(?![\u0600-\u06FF])/gu, replacement: 'وتتنكر لإلها' },
+
+        // 9. Passif lourd Fusha
+        { pattern: /(?<![\u0600-\u06FF])يتم تسميته(?![\u0600-\u06FF])/gu, replacement: 'اتسمّى' },
+        { pattern: /(?<![\u0600-\u06FF])أو تحميله المسؤولية(?![\u0600-\u06FF])/gu, replacement: 'أو اتحمّل المسؤولية' },
+
+        // 10. Transittération et jargon
+        { pattern: /(?<![\u0600-\u06FF])هاي الرتوريكا(?![\u0600-\u06FF])/gu, replacement: 'هاد الخطاب' },
+        { pattern: /(?<![\u0600-\u06FF])الرتوريكا(?![\u0600-\u06FF])/gu, replacement: 'الخطاب' },
+        { pattern: /\s*\(أو الكلام\)/gu, replacement: '' },
+
+        // 11. Faux-ami trêve diplomatique
+        { pattern: /(?<![\u0600-\u06FF])هاي الهدنة الدبلوماسية(?![\u0600-\u06FF])/gu, replacement: 'هاد التحفظ الدبلوماسي' },
+        { pattern: /(?<![\u0600-\u06FF])الهدنة الدبلوماسية(?![\u0600-\u06FF])/gu, replacement: 'التحفظ الدبلوماسي' },
+
+        // 12. Calque grand écart
+        { pattern: /(?<![\u0600-\u06FF])النطة الكبيرة(?![\u0600-\u06FF])/gu, replacement: 'اللعب على الحبلين' },
+        { pattern: /(?<![\u0600-\u06FF])النطّة الكبيرة(?![\u0600-\u06FF])/gu, replacement: 'اللعب على الحبلين' },
+
+        // 13. Noms propres
+        { pattern: /(?<![\u0600-\u06FF])دونالد لترومب(?![\u0600-\u06FF])/gu, replacement: 'دونالد ترامب' },
+        { pattern: /(?<![\u0600-\u06FF])لترومب(?![\u0600-\u06FF])/gu, replacement: 'ترامب' },
+
+        // 14. Énumération fluide
+        { pattern: /،\s*وإيرلندا(?=[\s،]|$)/gu, replacement: '، إيرلندا' },
+
+        // 15. Éradication de l'hallucination "المغامر" & Emphase de contraste ("Le Maroc, lui...")
+        { pattern: /(?<![\u0600-\u06FF])المغامر المغربي،?\s*(فهو)?/gu, replacement: 'أما النظام المغربي، فهو' },
+        { pattern: /(?<![\u0600-\u06FF])المغامر عم بيسرّع(?![\u0600-\u06FF])/gu, replacement: 'أما النظام المغربي، فهو عم بيسرّع' },
+        { pattern: /(?<![\u0600-\u06FF])المغرب،?\s*المغامر(?![\u0600-\u06FF])/gu, replacement: 'أما النظام المغربي، فهو' },
+        { pattern: /(?<![\u0600-\u06FF])المغرب المغامر(?![\u0600-\u06FF])/gu, replacement: 'أما النظام المغربي، فهو' },
+        { pattern: /(?<![\u0600-\u06FF])المغرب،?\s*هو\s*عم\s*بيسرّع(?![\u0600-\u06FF])/gu, replacement: 'أما النظام المغربي، فهو عم بيسرّع' },
+        { pattern: /(?<![\u0600-\u06FF])المغرب،?\s*لهاد\s*عم\s*بيسرّع(?![\u0600-\u06FF])/gu, replacement: 'أما النظام المغربي، فهو عم بيسرّع' },
+        { pattern: /(?<![\u0600-\u06FF])النظام المغربي عم بيسرّع تقاربه(?![\u0600-\u06FF])/gu, replacement: 'أما النظام المغربي، فهو عم بيسرّع تقاربه' },
+
+        // 16. Opportunisme cynique : bannissement de "وقحة" et "الفجة" ➔ "عديمة المبادئ"
+        { pattern: /(?<![\u0600-\u06FF])هاي الانتهازية الوقحة(?![\u0600-\u06FF])/gu, replacement: 'هاي الانتهازية عديمة المبادئ' },
+        { pattern: /(?<![\u0600-\u06FF])هاي الانتهازية الفجة(?![\u0600-\u06FF])/gu, replacement: 'هاي الانتهازية عديمة المبادئ' },
+        { pattern: /(?<![\u0600-\u06FF])الانتهازية الوقحة(?![\u0600-\u06FF])/gu, replacement: 'الانتهازية عديمة المبادئ' },
+        { pattern: /(?<![\u0600-\u06FF])الانتهازية الفجة(?![\u0600-\u06FF])/gu, replacement: 'الانتهازية عديمة المبادئ' },
+        { pattern: /(?<![\u0600-\u06FF])انتهازية وقحة(?![\u0600-\u06FF])/gu, replacement: 'انتهازية عديمة المبادئ' },
+        { pattern: /(?<![\u0600-\u06FF])انتهازية فجة(?![\u0600-\u06FF])/gu, replacement: 'انتهازية عديمة المبادئ' },
+        { pattern: /،?\s*وبكل وقاحة،?\s*/gu, replacement: ' ' },
+
+        // 17. Neutralité analytique : Bilan humain froid sans emphase religieuse grandiloquente
+        { pattern: /(?<![\u0600-\u06FF])كان ثمنها غالي من دماء آلاف الشهداء(?![\u0600-\u06FF])/gu, replacement: 'كلفت كتير من أرواح الضحايا' },
+        { pattern: /(?<![\u0600-\u06FF])كان ثمنها غالي من دماء الشهداء(?![\u0600-\u06FF])/gu, replacement: 'كلفت كتير من أرواح الضحايا' },
+        { pattern: /(?<![\u0600-\u06FF])كان ثمنها غالي من دماء الضحايا(?![\u0600-\u06FF])/gu, replacement: 'كلفت كتير من أرواح الضحايا' },
+        { pattern: /(?<![\u0600-\u06FF])ثمنها غالي من دماء(?![\u0600-\u06FF])/gu, replacement: 'كلفت كتير من أرواح الضحايا' },
+
+        // 18. Précision institutionnelle : "Le gouvernement marocain" ➔ الحكومة المغربية
+        { pattern: /(?<![\u0600-\u06FF])هل النظام المغربي مستعد يكون إيديه(?![\u0600-\u06FF])/gu, replacement: 'هل الحكومة المغربية مستعدة تكون إيديها' },
+        { pattern: /(?<![\u0600-\u06FF])هل النظام المغربي مستعد تكون إيديه(?![\u0600-\u06FF])/gu, replacement: 'هل الحكومة المغربية مستعدة تكون إيديها' },
+        { pattern: /(?<![\u0600-\u06FF])هل النظام المغربي مستعد(?![\u0600-\u06FF])/gu, replacement: 'هل الحكومة المغربية مستعدة' },
+
+        // 19. Arbitrage 3.C : Diplomatie profondément ambiguë ➔ ونهاية لهاد التناقض الدبلوماسي المخزي
+        { pattern: /(?<![\u0600-\u06FF])(?:وننتهي|ونهاية)\s*(?:لهاي|لهاد|لهالـ?|لهال)?\s*الدبلوماسية\s*(?:الغامضة كتير|المليانة غموض)?(?![\u0600-\u06FF])/gu, replacement: 'ونهاية لهاد التناقض الدبلوماسي المخزي' },
+        { pattern: /(?<![\u0600-\u06FF])ونهاية\s*لهالدبلوماسية\s*(?:الغامضة كتير|المليانة غموض)?(?![\u0600-\u06FF])/gu, replacement: 'ونهاية لهاد التناقض الدبلوماسي المخزي' },
+        { pattern: /(?<![\u0600-\u06FF])لهاد التناقض الدبلوماسي المخزي\s*الغامضة كتير(?![\u0600-\u06FF])/gu, replacement: 'لهاد التناقض الدبلوماسي المخزي' },
+
+        // 20. Arbitrage 2.A : Chute oratoire ➔ وبيبقى السؤال اللي بيحرق الضمير:
+        { pattern: /(?<![\u0600-\u06FF])(?:وفي|في)?\s*سؤال مأساوي بينطرح(?:\s*بالنهاية|\s*للختام)?:?(?![\u0600-\u06FF])/gu, replacement: 'وبيبقى السؤال اللي بيحرق الضمير:' },
+        { pattern: /(?<![\u0600-\u06FF])وفي\s+وبيبقى السؤال/gu, replacement: 'وبيبقى السؤال' }
+    ];
+    for (const r of rules) {
+        clean = clean.replace(r.pattern, r.replacement);
+    }
+    return clean;
+}
 
 /**
  * Prompt Système Bidirectionnel enrichi pour le Chat (/chat-en-direct)
@@ -77,5 +278,6 @@ Tu dois impérativement répondre au format JSON strict avec exactement ces deux
 
 module.exports = {
     SHAMI_STYLE_IMPACT_DIRECTIVES,
+    sanitizeShamiText,
     getChatSystemPrompt
 };

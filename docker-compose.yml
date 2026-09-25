@@ -1,0 +1,30 @@
+﻿version: '3.8'
+
+services:
+  aya-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aya-studio-v3
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - WHISPER_BACKEND=local
+      - WHISPER_MODEL=base
+    volumes:
+      # Volumes persistants pour entrées, sorties et caches
+      - ./audio_a_traiter:/app/audio_a_traiter
+      - ./fichiers_reponse_a_envoyer:/app/fichiers_reponse_a_envoyer
+      - ./cache_transcriptions:/app/cache_transcriptions
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4096M
+        reservations:
+          cpus: '1.0'
+          memory: 1024M

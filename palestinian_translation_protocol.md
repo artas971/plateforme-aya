@@ -11,6 +11,12 @@ Générer automatiquement des vidéos TikTok 1080x1920 sous-titrées en Françai
   - Interpellation : Mon frère Steve
   - Prénom : Soso (3ème personne narrative : Soso est forte, Soso est patiente...)
   - Lieux : Le Port (Al-Mina), La Ligne Jaune, Gaza
+- Discernement de Scène & Intégrité Documentaire (Règle d'Or Alexandre & Nadine) :
+  - Le contexte éditorial guide obligatoirement la compréhension de la nature de la scène (ex: extraction de restes mortels / martyrs vs secours d'un blessé vivant).
+  - Interdiction formelle de projeter des actions de réconfort pour un vivant sur des gestes de recueil d'effets personnels de personnes décédées.
+  - Les couvertures réclamées dans les décombres de bombardements font office de linceul pour envelopper la dépouille avec respect et pudeur.
+- Cohérence Globale (Sous-titres .ASS ↔ Description .TXT) :
+  - La description TikTok doit impérativement concorder avec les paroles authentiques des protagonistes, sans jamais dériver vers des interprétations mélodramatiques contradictoires.
 - Exhaustivité 100% Intégrale ([DURÉE_TOTALE]) : Interdiction absolue de condenser, résumer ou tronquer la fin du discours. Traiter la totalité du message du premier au dernier mot.
 
 ---

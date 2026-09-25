@@ -27,3 +27,6 @@ google-cloud-speech>=2.21.0
 
 # Utilitaires Réseau HTTP
 requests>=2.31.0
+
+# Tests Unitaires & Validation QA
+pytest>=8.0.0

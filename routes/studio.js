@@ -56,22 +56,43 @@ router.post('/api/generate_v3_studio', uploadStudio.fields([{ name: 'media_file'
     let uploadedBg = false;
 
     try {
-        console.log("[Studio V3 Backend] Réception d'une demande de génération TikTok V3...");
+        console.log("[Studio Backend] Réception d'une nouvelle demande de génération vidéo...");
         const mediaFiles = req.files['media_file'];
         if (!mediaFiles || mediaFiles.length === 0) {
             return res.status(400).json({ status: "error", message: "Fichier média source requis." });
         }
 
         mediaPath = path.resolve(mediaFiles[0].path);
-        bgPath = path.join(ROOT_DIR, 'john_creasy_signature_bg.jpg');
+        
+        const body = req.body || {};
+        const bgTheme = body.bg_theme || 'bg_palestine';
+        const presetBgPath = path.join(ROOT_DIR, 'public', 'assets', 'backgrounds', `${bgTheme}.jpg`);
+        const defaultPalestine = path.join(ROOT_DIR, 'public', 'assets', 'backgrounds', 'bg_palestine.jpg');
 
         if (req.files['bg_file'] && req.files['bg_file'].length > 0) {
             bgPath = path.resolve(req.files['bg_file'][0].path);
             uploadedBg = true;
+        } else if (fs.existsSync(presetBgPath)) {
+            bgPath = presetBgPath;
+        } else if (fs.existsSync(defaultPalestine)) {
+            bgPath = defaultPalestine;
+        } else {
+            bgPath = path.join(ROOT_DIR, 'john_creasy_signature_bg.jpg');
         }
 
-        const body = req.body || {};
-        const mode = body.mode || "VOSTFR";
+        let mode = body.mode || "VOSTFR";
+        let sourceLang = body.source_lang || "auto";
+        let targetLang = body.target_lang || "fr";
+
+        if (mode === "VOSTFR_GEO") {
+            mode = "VOSTFR";
+            sourceLang = "ar_geo";
+        } else if (mode === "VOSTFR_HEB") {
+            mode = "VOSTFR";
+            sourceLang = "he";
+        } else if (targetLang === "ar" || mode === "VOAR") {
+            mode = "VOAR";
+        }
         const title = (body.title || "SOSO NOUS PARLE DU DRAME SURVENU LE 18 AOÛT").replace(/"/g, '\\"');
         const titleColor = body.title_color || "#D8D0BE";
         const subColor = body.sub_color || "#FFFF00";
@@ -86,7 +107,7 @@ router.post('/api/generate_v3_studio', uploadStudio.fields([{ name: 'media_file'
         const pyScript = path.join(ROOT_DIR, 'run_studio_v3_full_pipeline.py');
         const pythonBin = getPythonBin();
 
-        const cmd = `${pythonBin} "${pyScript}" "${mediaPath}" "${bgPath}" "${mode}" "${title}" "${titleColor}" "${subColor}" "${titleMargin}" "${subMargin}" "${showHeader}" "${headerText}" "${headerColor}" "${projectUUID}"`;
+        const cmd = `${pythonBin} "${pyScript}" "${mediaPath}" "${bgPath}" "${mode}" "${title}" "${titleColor}" "${subColor}" "${titleMargin}" "${subMargin}" "${showHeader}" "${headerText}" "${headerColor}" "${projectUUID}" "${sourceLang}"`;
 
         console.log("[Thomas] Exécution de :", cmd);
         const videoStart = process.hrtime.bigint();

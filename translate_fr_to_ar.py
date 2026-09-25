@@ -52,7 +52,7 @@ def translate_to_palestinian_arabic(text_fr):
             return stripped_text
 
     # 1. Traduction IA de haute fidélité via Aya Shami Core (Agent Nadine & Steve - Option A+)
-    from shami_semantic_rules import get_voar_full_text_prompt
+    from shami_semantic_rules import get_voar_full_text_prompt, sanitize_shami_text
 
     keys_list = []
     candidates = [
@@ -100,7 +100,7 @@ def translate_to_palestinian_arabic(text_fr):
                             arabic_out = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
                             if arabic_out:
                                 if any('\u0600' <= char <= '\u06FF' for char in arabic_out):
-                                    return arabic_out
+                                    return sanitize_shami_text(arabic_out)
                     except Exception as e:
                         if attempt < max_attempts - 1:
                             time.sleep(1.0)
@@ -110,27 +110,6 @@ def translate_to_palestinian_arabic(text_fr):
     # 2. Sécurité stricte : Aucun repli Google Translate (gtx) vers du Fusha mot-à-mot
     print("[Gemini Shami Core] 🚨 Tous les modèles LLM sont temporairement indisponibles. Rejet du fallback Fusha mot-à-mot.")
     return content_to_translate
-
-    arabic_refined = arabic_raw
-    replacements = {
-        r'\bاستخلاص المعلومات\b': 'نِحْكي ونِتْطَمَّن عَ بَعَض',
-        r'\bاستجوب\b': 'نِحْكي',
-        r'\bنستجوب\b': 'نِحْكي مَع بَعَض',
-        r'\bأخت غلوبال\b': 'الأُخْت يونيفيرسال',
-        r'\bالأخت العالمية\b': 'الأُخْت يونيفيرسال',
-        r'\bيونيفيرسال\b': 'الأُخْت يونيفيرسال',
-        r'\bوطن\b': 'الأُخْت وَطَن',
-        r'\bباي بال\b': 'بايبال',
-        r'\bبايبال\b': 'بايبال',
-        r'\bأليس كذلك\b': 'صَح؟',
-        r'\bمباشر عبر الإنترنت\b': 'بَثّ مُبَاشِر',
-        r'\bمباشر على الإنترنت\b': 'بَثّ مُبَاشِر',
-        r'\bالبث المباشر\b': 'البَثّ المُمباشِر',
-    }
-    for pattern, replacement in replacements.items():
-        arabic_refined = re.sub(pattern, replacement, arabic_refined)
-
-    return arabic_refined
 
 async def generate_natural_arabic_voice(text_ar, output_filename, voice="ar-JO-SanaNeural", rate="-6%"):
     communicate = edge_tts.Communicate(

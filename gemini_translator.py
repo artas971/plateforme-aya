@@ -25,7 +25,7 @@ import time
 import re
 from collections import OrderedDict
 import threading
-from shami_semantic_rules import SHAMI_STYLE_IMPACT_DIRECTIVES, get_voar_batch_system_prompt
+from shami_semantic_rules import SHAMI_STYLE_IMPACT_DIRECTIVES, get_voar_batch_system_prompt, sanitize_shami_text
 
 class VideoMemoryLRUCache:
     """
@@ -61,14 +61,24 @@ class VideoMemoryLRUCache:
             "le grand écart diplomatique": "اللعب على الحبلين بالدبلوماسية",
             "deux poids, deux mesures": "ازدواجية المعايير",
             "cet opportunisme": "هاي الانتهازية",
-            "cette diplomatie": "هاي الدبلوماسية"
+            "cette diplomatie": "هاي الدبلوماسية",
+            "cette rhétorique": "هاد الخطاب",
+            "cette retenue diplomatique": "هاد التحفظ الدبلوماسي",
+            "cet opportunisme cynique": "هاي الانتهازية عديمة المبادئ",
+            "opportunisme cynique": "الانتهازية عديمة المبادئ",
+            "le maroc lui accélère son rapprochement": "أما النظام المغربي، فهو عم بيسرّع تقاربه وبيدير ضهره للشعب الفلسطيني",
+            "le maroc a ainsi accepté": "النظام المغربي قبل إنه يستضيف على أراضيه لواء غولاني سيء السمعة",
+            "le gouvernement marocain": "الحكومة المغربية",
+            "le régime marocain": "النظام المغربي",
+            "pèse lourdement sur le nombre de morts": "كلفت كتير من أرواح الضحايا"
         }
         for k, v in seeds_voar.items():
             self.set(k, v, mode='VOAR')
 
     def _normalize(self, text: str, mode: str) -> str:
+        mode_clean = (mode or 'VOAR').upper()
         t = re.sub(r'[^\w\s]', '', (text or '').strip().lower())
-        return f"{mode}:{t}"
+        return f"{mode_clean}:{t}"
 
     def get(self, text: str, mode: str = 'VOAR') -> str:
         key = self._normalize(text, mode)
@@ -275,9 +285,23 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
     # Contexte linguistique explicite selon la langue source
     source_context = ""
     lexicon_directive = ""
-    if source_lang in ('ar', 'auto'):
-        if source_lang == 'ar':
-            source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en arabe palestinien (dialecte ammiya de Gaza).\n"
+    if source_lang in ('he', 'heb', 'hebrew'):
+        source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en HÉBREU (reportage d'investigation, témoignage ou document en hébreu).\n"
+        lexicon_directive = (
+            "8. RÈGLES DE TRADUCTION ABSOLUES (HÉBREU VERS FRANÇAIS) :\n"
+            "Traduis fidèlement le discours hébraïque en français soutenu et réaliste sans contresens ni confusion phonétique :\n"
+            "- 'כלא קציעות' = Prison de Ketziot.\n"
+            "- 'ת'אאר אבו עסב' / 'טייר אבועסה' = Thaer Abou Asab.\n"
+            "- 'נקבע מותו' = Sa mort a été constatée (Interdiction formelle de traduire par 'moto').\n"
+            "- 'הוכה בתאו' = A été battu dans sa cellule (Interdiction de traduire par 'ampoule').\n"
+            "- 'לוחמי כליאה' = Gardiens de prison / surveillants pénitentiaires.\n"
+            "- 'שב\"ס' / 'השב\"ס' = Le Shabas (administration pénitentiaire israélienne).\n"
+            "- 'מחבל' = Détenu / prisonnier politique (dans le contexte carcéral israélien).\n"
+            "- 'תחקיר' = Enquête / reportage d'investigation.\n"
+            "- 'מצלמות האבטחה' = Caméras de surveillance / de sécurité.\n\n"
+        )
+    elif source_lang == 'ar':
+        source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en arabe palestinien (dialecte ammiya de Gaza).\n"
         lexicon_directive = (
             "8. RÈGLES DE TRADUCTION ABSOLUES (DIALECTE DE GAZA) :\n"
             "Attention aux pièges phonétiques du dialecte palestinien. Utilise impérativement ce glossaire pour ta traduction :\n"
@@ -293,40 +317,152 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "- 'قصف' (Qasf) = Bombardement, frappe.\n"
             "- 'مأوى / مركز إيواء' = Centre d'hébergement / École.\n"
             "- 'المنادي' (Al-Munadi) = Ne traduis JAMAIS littéralement par 'Le crieur'. Traduis par 'La voix s'est élevée' ou 'Le chant résonne'.\n"
-            "Contexte : L'audio parle de survie sous les bombardements. Refuse toute traduction absurde (matelas, charbon, jet) et privilégie un vocabulaire de guerre dramatique et réaliste.\n\n"
+            "- 'عيد العرش' (Aïd Al-Arch / عيد العرش عندهم) = Fête des Cabanes / Fête de Souccot (fêtes des colons). INTERDICTION ABSOLUE de confondre phonétiquement avec 'عرس' (mariage). Traduis fidèlement par 'leur fête' ou 'la fête des Cabanes (Souccot)'.\n"
+            "- 'بطانية' (Baṭṭāniyye) = Couverture. 'هاتوا بطانية' = 'Apportez une couverture !' (utilisée pour envelopper les corps ou blessés extraits des décombres). INTERDICTION FORMELLE de traduire par 'civière' OU par 'tétine' (ce sont deux objets totalement distincts).\n"
+            "- 'مصاصة' (Maṣṣāṣa) = Tétine / Sucette (de bébé). 'جيبوا لها المصاصة بتاعتها' = 'Apportez-lui sa tétine !'.\n"
+            "- 'ما ينفعش / ما بينفع' (Mā yinfa'sh / Mā byinfa') = Ça ne convient pas / ce n'est pas adapté / ça ne va pas. INTERDICTION de dramatiser arbitrairement par 'ce n'est pas possible'.\n"
+            "- 'هذا صغير' (Hāda ṣghīr) = C'est trop petit / celui-ci est trop petit (qualifie l'objet ou le drap présenté).\n"
+            "- 'اللعب على الحبلين' = Jouer sur les deux tableaux / Le double jeu (INTERDICTION FORMELLE de traduire par 'sur les deux cordes').\n"
+            "- 'بيدين / يدين' = Condamne / Dénonce (INTERDICTION ABSOLUE de traduire par 'aux mains de').\n"
+            "- 'ثمنه الدم / تمنو الدم' = Au prix du sang / Payé avec le sang.\n"
+            "- 'لواء غولاني' = La brigade Golani (brigade d'infanterie d'élite israélienne).\n"
+            "- 'سلطة فلسطينية' = L'Autorité palestinienne.\n"
+            "- 'اتفاق ثلاثي' = Accord tripartite.\n"
+            "- 'الصحراء الغربية' = Le Sahara occidental.\n"
+            "RÈGLE D'INTÉGRITÉ DOCUMENTAIRE ET FACTUELLE STRICTE (ZÉRO HALLUCINATION / CHARTE ANTI-FAKE NEWS) :\n"
+            "Tu es un traducteur-sous-titreur assermenté garant de l'exactitude historique et journalistique absolue des témoignages. "
+            "Il est FORMELLEMENT ET ABSOLUMENT INTERDIT d'inventer, d'extrapoler, d'exagérer ou de deviner des propos qui ne sont pas distinctement prononcés dans l'audio. "
+            "Ne présume JAMAIS du contexte si celui-ci n'est pas expressément exprimé par la voix humaine. "
+            "Toute invention de phrase est une faute déontologique critique pouvant être qualifiée de fausse nouvelle (fake news). "
+            "Si un extrait audio ne contient que du silence, du vent, des bruits de pas, du bruit ambiant ou aucun discours humain clair, TU DOIS OBLIGATOIREMENT RÉPONDRE PAR UN TABLEAU JSON VIDE : [].\n\n"
         )
     elif source_lang == 'fr':
         source_context = "CONTEXTE LANGUE SOURCE : L'audio source est intégralement en français.\n"
+    elif source_lang in ('multi', 'polyglot', 'bilingual'):
+        source_context = (
+            "CONTEXTE LANGUE SOURCE : MULTILINGUE & DIALOGUES CROISÉS (Arabe palestinien, Hébreu, Français).\n"
+            "Cet enregistrement audio contient expressément des locuteurs s'exprimant dans des langues différentes ou alternant entre plusieurs langues (par exemple : interrogatoire soldat/détenu, reportage journaliste/témoin, échange bilingue).\n\n"
+            "DIRECTIVE OBLIGATOIRE DE DIARISATION & IDENTIFICATION LINGUISTIQUE :\n"
+            "1. Détecte avec une précision absolue la langue effective de chaque réplique prononcée.\n"
+            "2. Pour chaque segment dans le JSON final, PRÉFIXE IMPÉRATIVEMENT le texte par le nom de la langue d'origine entre crochets :\n"
+            "   - '[Hébreu] ' si les propos originaux sont prononcés en hébreu.\n"
+            "   - '[Arabe] ' si les propos originaux sont prononcés en arabe (ammiya de Gaza ou standard).\n"
+            "   - '[Français] ' si les propos originaux sont prononcés en français.\n"
+            "   Exemple de sortie JSON attendue :\n"
+            "   [{\"start\": 0.0, \"end\": 3.2, \"text\": \"[Hébreu] Arrêtez-vous et posez votre sac !\"},\n"
+            "    {\"start\": 3.5, \"end\": 6.8, \"text\": \"[Arabe] Je n'ai rien sur moi, nous voulons juste passer.\"}]\n"
+            "3. RÈGLE DE DÉCOUPAGE STRICT : Si la langue change au cours d'une conversation, SCINDE IMMÉDIATEMENT le segment à l'instant précis où le second locuteur commence à parler. Ne regroupe jamais deux langues différentes dans un seul sous-titre.\n\n"
+        )
+        lexicon_directive = (
+            "8. RÈGLES DE FIDÉLITÉ & GLOSSAIRE CROISÉ (ARABE / HÉBREU / FRANÇAIS) :\n"
+            "- Si l'intervenant parle en HÉBREU :\n"
+            "  * 'נקבע מותו' = Sa mort a été constatée.\n"
+            "  * 'כלא קציעות' = Prison de Ketziot.\n"
+            "  * 'לוחמי כليאה' = Surveillants pénitentiaires / gardiens de prison.\n"
+            "  * 'שב\"ס' = Le Shabas (administration pénitentiaire).\n"
+            "  * 'תחקיר' = Enquête / reportage d'investigation.\n"
+            "- Si l'intervenant parle en ARABE PALESTINIEN :\n"
+            "  * 'أم علاء' = Oum Alaa.\n"
+            "  * 'جرافة' = Bulldozer.\n"
+            "  * 'بطانية' = Couverture / linceul.\n"
+            "  * 'كابونة' = Coupon d'aide alimentaire.\n"
+            "  * 'نزوح' = Déplacement forcé.\n"
+            "  * 'جباليا البلد' = Jabalia Al-Balad.\n"
+            "- Si l'intervenant parle en FRANÇAIS : Retranscris fidèlement mot à mot avec ponctuation soignée.\n\n"
+        )
+    else:
+        source_context = "CONTEXTE LANGUE SOURCE : Détection automatique intelligente (Arabe palestinien dialecte de Gaza, Arabe standard / géopolitique, Hébreu ou Français).\n"
+        lexicon_directive = (
+            "8. RÈGLES DE FIDÉLITÉ & PIÈGES PHONÉTIQUES (MULTI-LANGUES ARABE / HÉBREU) :\n"
+            "- Si le discours est en hébreu, traduis fidèlement le reportage en français sans contresens phonétique ('נקבע מותו' = sa mort a été constatée, 'כלא קציעות' = prison de Ketziot, 'לוחمي כליאה' = gardiens de prison).\n"
+            "- Si le discours est en arabe (dialecte ou géopolitique), applique impérativement ces règles lexicales strictes :\n"
+            "  * 'اللعب على الحبلين' = Jouer sur les deux tableaux / Le double jeu (INTERDICTION FORMELLE de traduire par 'sur les deux cordes').\n"
+            "  * 'بيدين / يدين' = Condamne / Dénonce (INTERDICTION ABSOLUE de traduire par 'aux mains de').\n"
+            "  * 'ثمنه الدم / تمنو الدم' = Au prix du sang / Payé avec le sang.\n"
+            "  * 'لواء غولاني' = La brigade Golani.\n"
+            "  * 'سلطة فلسطينية' = L'Autorité palestinienne.\n"
+            "  * 'الصحراء الغربية' = Le Sahara occidental.\n"
+            "  * 'بطانية' (Baṭṭāniyye) = Couverture. 'هاتوا بطانية' = 'Apportez une couverture !' (utilisée pour envelopper les corps ou blessés extraits des décombres). INTERDICTION FORMELLE de traduire par 'civière' OU par 'tétine' (ce sont deux objets totalement distincts).\n"
+            "  * 'مصاصة' (Maṣṣāṣa) = Tétine / Sucette (de bébé). 'جيبوا لها المصاصة بتاعتها' = 'Apportez-lui sa tétine !'.\n"
+            "  * 'ما ينفعش / ما بينفع' (Mā yinfa'sh / Mā byinfa') = Ça ne convient pas / ce n'est pas adapté / ça ne va pas. INTERDICTION de dramatiser arbitrairement par 'ce n'est pas possible'.\n"
+            "  * 'هذا صغير' (Hāda ṣghīr) = C'est trop petit / celui-ci est trop petit (qualifie l'objet ou le drap présenté).\n"
+            "  * 'عيد العرش' (Aïd Al-Arch / عيد العرش عندهم) = Fête des Cabanes / Souccot (fêtes des colons). INTERDICTION de traduire par 'mariage'.\n"
+            "  * 'نزوح' = Déplacement forcé (Jamais Ressusciter / Glissé).\n"
+            "  * 'جرافة' = Bulldozer (Jamais Jet / Avion).\n"
+            "  * 'كابونة' = Coupon d'aide alimentaire (Jamais Charbon).\n"
+            "  * 'راية بيضاء' = Drapeau blanc / Tissu blanc (Jamais Matelas).\n"
+            "  * 'جباليا البلد' = Jabalia Al-Balad.\n"
+            "  * Noms propres : 'أم علاء' = 'Oum Alaa' (Jamais Malaak).\n"
+            "RÈGLE D'INTÉGRITÉ DOCUMENTAIRE ET FACTUELLE STRICTE (ZÉRO HALLUCINATION / CHARTE ANTI-FAKE NEWS) :\n"
+            "Si un extrait audio ne contient que du silence, du vent ou du bruit ambiant sans discours clair, TU DOIS OBLIGATOIREMENT RÉPONDRE PAR UN TABLEAU JSON VIDE : [].\n\n"
+        )
 
     # Directive Contexte Utilisateur (Context Grounding pour l'Agent Jade)
     user_context_directive = ""
     if user_context and user_context.strip():
+        ctx = user_context.strip()
+
+        # Détection sémantique automatique : la scène concerne-t-elle une victime décédée ?
+        death_keywords = [
+            "décédé", "mort", "restes", "martyrs", "martyrisé", "corps", "shahid", "shaheed",
+            "fragments d'os", "ossements", "dépouille", "décombres", "après bombardement",
+            "extraction des corps", "victimes", "tués", "massacrés", "fragment", "bones",
+            "شهيد", "شهداء", "جثة", "رفات", "أشلاء"
+        ]
+        is_death_scene = any(kw.lower() in ctx.lower() for kw in death_keywords)
+
+        scene_directive = ""
+        if is_death_scene:
+            scene_directive = (
+                "⚠️ DIRECTIVE SCÈNE CRITIQUE (AGENT NADINE & JADE — INTÉGRITÉ DOCUMENTAIRE) :\n"
+                "Le contexte révèle que la scène NE concerne PAS une victime vivante. Il s'agit d'une EXTRACTION DE RESTES MORTELS / CORPS D'UN ENFANT DÉCÉDÉ dans les décombres.\n"
+                "CONSÉQUENCES OBLIGATOIRES SUR LA TRADUCTION :\n"
+                "1. Les objets personnels trouvés dans les décombres (tétine, biberon, vêtements, affaires) sont des OBJETS RETROUVÉS PARMI LES RESTES, pas des besoins d'un enfant vivant.\n"
+                "   → INTERDICTION FORMELLE de traduire comme si on apportait ces objets à un enfant vivant pour le réconforter.\n"
+                "   → Les secouristes les RAMASSENT ou les SIGNALENT en les découvrant dans les décombres avec les restes.\n"
+                "2. Les couvertures / linceuls demandés servent à ENVELOPPER LES RESTES AVEC DIGNITÉ, pas à couvrir un blessé vivant.\n"
+                "3. Le registre émotionnel doit être celui du DEUIL PROFOND, de la DIGNITÉ et de l'HORREUR SILENCIEUSE — pas de l'urgence médicale ou du sauvetage.\n"
+                "4. Exemple INTERDIT : 'Apportez-lui sa tétine !' (implique un bébé vivant)\n"
+                "   Exemple CORRECT : 'Voici sa petite tétine...' ou 'Ils ont trouvé sa tétine' ou 'Recueillez ses affaires' (constat de découverte)\n\n"
+            )
+
         user_context_directive = (
-            "DIRECTIVE CONTEXTE UTILISATEUR (CONTEXT GROUNDING) :\n"
-            f"Un contexte éditorial est fourni UNIQUEMENT pour t'aider à orthographier fidèlement les noms propres, les lieux et le vocabulaire spécifique : [CONTEXTE UTILISATEUR : {user_context.strip()}].\n"
-            "ATTENTION STRICTE ET FORMELLE : TU NE DOIS EN AUCUN CAS INVENTER, TRADUIRE OU RÉPÉTER CE TEXTE DE CONTEXTE S'IL N'EST PAS RÉELLEMENT PRONONCÉ PAR LES VOIX DANS L'AUDIO !\n"
-            "Si l'extrait audio est silencieux, ne contient que de la musique ou du bruit de fond sans parole humaine, TU DOIS OBLIGATOIREMENT RÉPONDRE PAR UN TABLEAU JSON VIDE : [].\n\n"
+            "DIRECTIVE CONTEXTE ÉDITORIAL (CONTEXT GROUNDING SCÈNE) :\n"
+            f"Le contexte de cette vidéo est le suivant : [{ctx}].\n"
+            "Utilise ce contexte pour :\n"
+            "  a) Comprendre la NATURE EXACTE de la scène et adapter le REGISTRE ÉMOTIONNEL en conséquence.\n"
+            "  b) Orthographier fidèlement les noms propres, lieux et vocabulaire spécifique.\n"
+            "ATTENTION STRICTE : TU NE DOIS PAS INVENTER OU RÉPÉTER ce texte de contexte s'il n'est pas prononcé dans l'audio.\n"
+            "Si l'extrait audio est silencieux ou sans parole humaine, RÉPONDS PAR UN TABLEAU JSON VIDE : [].\n\n"
+            f"{scene_directive}"
         )
+
 
     if mode == 'VOSTFR':
         prompt = (
-            "Tu es un traducteur et sous-titreur expert d'élite (spécialisé dans l'arabe palestinien de Gaza et le français).\n"
+            "Tu es un traducteur et sous-titreur expert d'élite (spécialisé dans l'arabe palestinien, l'hébreu et le français).\n"
             f"{source_context}"
             f"{user_context_directive}"
             "Écoute attentivement l'intégralité du fichier audio ci-joint.\n"
             "Ta mission : Restituer fidèlement 100% du discours en français authentique, percutant et soigné pour des sous-titres vidéo TikTok/Reels. "
-            "(Si le discours est en arabe palestinien, traduis-le fidèlement en français. Si le discours est déjà en français, retranscris-le fidèlement mot à mot en français).\n\n"
+            "(Si le discours est en hébreu ou en arabe palestinien, traduis-le fidèlement en français. Si le discours est déjà en français, retranscris-le fidèlement mot à mot en français).\n\n"
             "RÈGLES D'OR STRICTES :\n"
+            "0. SILENCE, BRUIT AMBIANT ET ZÉRO HALLUCINATION (CHARTE VÉRITÉ ABSOLUE) : "
+            "Si aucun discours humain intelligible n'est distinctement prononcé dans cet enregistrement (vent, bruits de rue, silence, pas), TU DOIS OBLIGATOIREMENT RÉPONDRE PAR UN TABLEAU VIDE []. "
+            "Il est STRICTEMENT ET FORMELLEMENT INTERDIT d'inventer, de supposer ou de combler le vide sonore. Tout faux texte inventé est une infraction critique.\n"
+            "0bis. SYNCHRONISATION ABSOLUE & PERSISTANCE VOCALE (RÈGLE D'OR : TANT QU'UN MOT N'EST PAS PRONONCÉ IL NE PEUT PAS DISPARAÎTRE) : "
+            "Tant qu'un mot prononcé dans l'audio source n'a pas été intégralement prononcé par la voix, le sous-titre correspondant NE PEUT PAS disparaître de l'écran. "
+            "Si une proposition source se termine par un mot clé (ex: 'غزة', un lieu, un nom, un chiffre, un verbe), le timestamp 'end' du sous-titre doit STRICTEMENT couvrir la fin de la prononciation vocale de ce mot (+200ms à 350ms de marge de confort / Lead-out). INTERDICTION FORMELLE de couper le sous-titre avant que la voix n'ait fini de prononcer le mot correspondant.\n"
             "1. DURÉE & RYTHME TIKTOK D'ÉLITE (RÈGLE CRITIQUE ABSOLUE) : CHAQUE SEGMENT DOIT ÊTRE COURT, PUNCHY ET RYTHMÉ (ENTRE 1.5 ET 3.8 SECONDES, MAXIMUM STRICT 4.2 SECONDES, ET 4 À 8 MOTS MAXIMUM PAR PARTIE). "
             "Il est FORMELLEMENT INTERDIT de générer un pavé de texte ou un segment dépassant 8 mots ou 4.2 secondes. Si une phrase est longue, TU DOIS OBLIGATOIREMENT LA SCINDER TOI-MÊME en plusieurs sous-segments courts synchronisés avec les mots prononcés.\n"
             "2. TIMESTAMPS EN SECONDES RÉELLES (RÈGLE D'ÉCHELLE ABSOLUE) : Les temps 'start' et 'end' doivent être exprimés en SECONDES RÉELLES ENTIÈRES OU DÉCIMALES relatives au début de cet extrait audio (ex: 3.2, 14.8, 28.5). "
             "IL EST STRICTEMENT INTERDIT d'écrire des fractions de minutes ou des valeurs divisées comme 0.05, 0.15, 0.25 ou 0.30 pour désigner 5s, 15s, 25s ou 30s ! "
             "(5 secondes s'écrit 5.0 et JAMAIS 0.05 ; 15 secondes s'écrit 15.0 et JAMAIS 0.15 ; 28 secondes s'écrit 28.0 et JAMAIS 0.28). 'end' doit toujours être supérieur à 'start'.\n"
-            "3. LANGUE CIBLE STRICTE : Tu dois IMPÉRATIVEMENT tout traduire dans la langue cible (ex: Français). Il est FORMELLEMENT INTERDIT d'utiliser l'alphabet arabe dans ta réponse finale. Tout doit être traduit.\n"
+            "3. LANGUE CIBLE STRICTE : Tu dois IMPÉRATIVEMENT tout traduire dans la langue cible (ex: Français). Il est FORMELLEMENT INTERDIT d'utiliser l'alphabet arabe ou hébreu dans ta réponse finale. Tout doit être traduit.\n"
             "4. RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des tics de langage, ou des répétitions inutiles (ex: 'Quatre étages, quatre étages, quatre étages'), LISSE la traduction en français. Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique (ex: 'Quatre étages se sont effondrés'). Ton but est la clarté et la dignité du sous-titre.\n"
             "5. NUMÉROS DE TÉLÉPHONE : Si une personne dicte un numéro avec des pauses, regroupe intelligemment les chiffres dans un même segment logique pour préserver la lisibilité à l'écran.\n"
             "6. PRÉNOMS & VOCATIFS : Conserve 'Mon frère Steve', 'Steve', 'Soso', etc.\n"
-            "7. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria'.\n"
+            "7. LIEUX & TERMES : Conserve 'Le Port (Al-Mina)', 'La Ligne Jaune', 'canonnières de la marine', 'martyrs', 'cafétéria', 'Ketziot'.\n"
             "8. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
             "9. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse attentivement la scène : qui parle, ce qui se passe, le contexte émotionnel et le message principal pour guider la justesse du sous-titrage.\n"
             "10. CONTEXTE CULTUREL, SLOGANS & POÉSIE (DIRECTIVE ÉDITORIALE NADINE) : "
@@ -563,10 +699,10 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
             )
         else:
             prompt = (
-                f"Tu es un traducteur et sous-titreur expert d'élite spécialisé dans le dialecte palestinien et le français (Agent Jade).\n"
+                f"Tu es un traducteur et sous-titreur expert d'élite spécialisé dans les langues du Moyen-Orient (arabe palestinien, hébreu) et le français (Agent Jade).\n"
                 f"{context_directive}"
                 f"Consigne : Traduis fidèlement chacune des phrases numérotées ci-dessous vers un {target_desc} pour des sous-titres vidéo professionnels.\n"
-                f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des pleurs/gémissements répétitifs (ex: 'أهي! أهي!'), ou des répétitions inutiles, LISSE la traduction en français (ex: 'Mon Dieu...', '[Pleurs et gémissements]'). Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique. Ton but est la clarté et la dignité du sous-titre.\n"
+                f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des pleurs/gémissements répétitifs, ou des répétitions inutiles, LISSE la traduction en français. Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique. Ton but est la clarté et la dignité du sous-titre.\n"
                 f"Respecte STRICTEMENT la numérotation de 1 à {len(lines_ar)} sous la forme 'N. Traduction'.\n\n"
                 f"{numbered_prompt}\n\n"
                 f"Réponds UNIQUEMENT par la liste numérotée :"
@@ -605,6 +741,8 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
                             for i, u in enumerate(sub_units):
                                 if i in translated_map and translated_map[i]:
                                     tr_text = translated_map[i]
+                                    if mode == "voar":
+                                        tr_text = sanitize_shami_text(tr_text)
                                 else:
                                     candidate_translated = None
                                     break

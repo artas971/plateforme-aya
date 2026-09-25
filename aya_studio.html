@@ -4,185 +4,562 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Studio Agent Traducteur Aya V3 - TikTok VOSTFR & VOAR</title>
+    <!-- Favicon & Brand Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
     <style>
         :root {
-            --bg-color: #0F172A;
-            --card-bg: #1E293B;
-            --accent-color: #38BDF8;
-            --text-color: #F8FAFC;
-            --border-color: #334155;
+            /* Palette officielle Aya Studio */
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --accent-color: #00bcd4;
+            --primary-color: #0b5394;
+            --text-color: #434343;
+            --text-muted: #64748b;
+            --border-color: rgba(153, 153, 153, 0.25);
             --ivory-meta: #D8D0BE;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; display: flex; flex-direction: column; }
-        header { background: #020617; padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        header h1 { font-size: 1.4rem; color: var(--accent-color); display: flex; align-items: center; gap: 0.5rem; }
-        .user-profile-badge { display: flex; align-items: center; gap: 0.75rem; background: #0f172a; padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color); font-size: 0.9rem; }
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-color); display: flex; align-items: center; justify-content: center; font-weight: bold; color: #020617; }
         
-        .main-container { display: grid; grid-template-columns: 460px 1fr; gap: 2rem; padding: 2rem; max-width: 1600px; margin: 0 auto; width: 100%; flex: 1; }
-        @media (max-width: 1024px) {
-            .main-container { grid-template-columns: 1fr; }
+        .studio-page-header {
+            max-width: 1600px;
+            margin: 24px auto 0 auto;
+            padding: 0 2rem;
+            width: 100%;
         }
-        
-        .control-panel { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1.25rem; overflow-y: auto; max-height: calc(100vh - 120px); }
-        .section-title { font-size: 0.95rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-weight: 700; }
-        .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
-        label { font-size: 0.85rem; color: #94A3B8; font-weight: 500; }
-        select, input[type="text"], input[type="file"], input[type="range"], input[type="color"] { background: #0F172A; border: 1px solid var(--border-color); color: #FFF; padding: 0.65rem; border-radius: 6px; font-size: 0.9rem; width: 100%; }
-        select:focus, input[type="text"]:focus { outline: 2px solid var(--accent-color); }
-        
-        .color-palette { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-top: 0.25rem; }
-        .color-swatch { 
-            height: 38px; 
-            border-radius: 8px; 
-            cursor: pointer !important; 
+        .studio-page-header h2 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+        }
+        .studio-page-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            gap: 2rem;
+            padding: 1.5rem 2rem 2.5rem 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr; padding: 1rem; }
+            .studio-page-header { padding: 0 1rem; }
+        }
+        @media (max-width: 480px) {
+            .main-container { padding: 0.75rem 0.5rem; gap: 1rem; }
+            .control-panel { padding: 1.1rem 0.85rem; }
+            .simulator-container { padding: 1.1rem 0.85rem; position: relative; top: 0; }
+            .canvas-wrapper { max-width: 100%; }
+            .checkbox-group { grid-template-columns: 1fr; }
+            .color-palette { gap: 0.35rem; }
+            .btn-primary { min-height: 44px; }
+        }
+
+        .control-panel {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 1.75rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1.4rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 150px);
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid rgba(0, 188, 212, 0.2);
+            padding-bottom: 0.5rem;
+            font-weight: 800;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        label {
+            font-size: 0.88rem;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        .field-hint {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 2px;
+        }
+
+        select, input[type="text"], input[type="file"], input[type="range"] {
+            background: #ffffff;
+            border: 1px solid rgba(153, 153, 153, 0.35);
+            color: #1e293b;
+            padding: 0.7rem 0.85rem;
+            border-radius: 8px;
+            font-size: 16px !important;
+            min-height: 44px;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.2);
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.35rem;
+        }
+        .color-swatch {
+            height: 44px;
+            min-height: 44px;
+            min-width: 44px;
+            border-radius: 8px;
+            cursor: pointer !important;
             pointer-events: auto !important;
-            border: 2px solid transparent; 
-            transition: all 0.15s ease-in-out; 
-            position: relative; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            border: 2px solid rgba(153, 153, 153, 0.3);
+            transition: all 0.15s ease-in-out;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             user-select: none;
             z-index: 10;
         }
-        .color-swatch:hover { transform: scale(1.1); z-index: 20; }
-        .color-swatch.active { border-color: #FFFFFF !important; box-shadow: 0 0 12px rgba(255,255,255,0.8); transform: scale(1.05); }
-        .color-swatch.active::after { content: '✓'; color: #000000; font-weight: 900; font-size: 15px; text-shadow: 0 0 3px #FFFFFF; }
-
-        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-        .checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #E2E8F0; background: #0F172A; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer; }
-        
-        .btn-primary { 
-            background: linear-gradient(135deg, #0EA5E9, #0284C7); 
-            color: white; 
-            border: none; 
-            padding: 1rem; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            font-size: 1.05rem; 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 0.5rem; 
-            margin-top: 1rem; 
-            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+        .color-swatch:hover {
+            transform: scale(1.08);
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
-        .btn-primary:hover:not(:disabled) { opacity: 0.95; transform: translateY(-2px); }
-        .btn-primary:disabled { opacity: 0.85; cursor: wait; transform: none; box-shadow: none; }
-        .btn-primary.loading { background: linear-gradient(135deg, #F59E0B, #D97706) !important; }
-        .btn-primary.success { background: linear-gradient(135deg, #10B981, #059669) !important; }
+        .color-swatch.active {
+            border-color: #000000 !important;
+            box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent-color);
+            transform: scale(1.04);
+        }
+        .color-swatch.active::after {
+            content: '✓';
+            color: #ffffff;
+            font-weight: 900;
+            font-size: 15px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
 
-        .simulator-container { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #020617; border-radius: 12px; border: 1px solid var(--border-color); padding: 1.5rem; position: relative; }
-        .simulator-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .canvas-wrapper { position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.8); border-radius: 16px; overflow: hidden; border: 2px solid #334155; }
-        canvas { display: block; background: #0F172A; }
-        
-        .filename-info { font-size: 0.8rem; font-weight: 500; color: #94A3B8; background: #0f172a; padding: 6px 10px; border-radius: 6px; display: inline-block; margin-top: 4px; border: 1px solid var(--border-color); }
-        .filename-info.selected { color: #10B981; border-color: #10B981; font-weight: bold; }
-        .filename-info.error { color: #EF4444; border-color: #EF4444; font-weight: bold; }
-        
-        .loader-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 6, 23, 0.88); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; }
-        .modal-card { background: #1E293B; border: 1px solid #334155; padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 540px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
-        .spinner { width: 60px; height: 60px; border: 5px solid #334155; border-top: 5px solid #38BDF8; border-radius: 50%; animation: spin 1s linear infinite; }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            color: #334155;
+            background: #f8fafc;
+            padding: 0.6rem 0.85rem;
+            border-radius: 8px;
+            border: 1px solid rgba(153, 153, 153, 0.25);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.15s, border-color 0.15s;
+            min-height: 44px;
+        }
+        .checkbox-label:hover {
+            background: #f1f5f9;
+            border-color: var(--accent-color);
+        }
+
+        /* Sélecteurs de Langues Source & Cible */
+        .source-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.35rem;
+        }
+        .source-card {
+            background: #ffffff;
+            border: 2px solid rgba(153, 153, 153, 0.25);
+            border-radius: 8px;
+            padding: 0.6rem 0.65rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .source-card:hover {
+            border-color: var(--accent-color);
+            background: #f8fafc;
+        }
+        .source-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+        }
+        .source-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .source-details { display: flex; flex-direction: column; overflow: hidden; }
+        .source-title { font-weight: 700; font-size: 0.8rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .source-sub { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .lang-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.35rem;
+        }
+        .lang-card {
+            background: #ffffff;
+            border: 2px solid rgba(153, 153, 153, 0.25);
+            border-radius: 8px;
+            padding: 0.6rem 0.65rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .lang-card:hover {
+            border-color: var(--accent-color);
+            background: #f8fafc;
+        }
+        .lang-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+        }
+        .lang-flag { font-size: 1.3rem; flex-shrink: 0; }
+        .lang-details { display: flex; flex-direction: column; overflow: hidden; }
+        .lang-title { font-weight: 700; font-size: 0.8rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lang-sub { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Galerie de Visuels de Fond 9:16 */
+        .bg-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+            margin-top: 0.35rem;
+        }
+        .bg-card {
+            background: #ffffff;
+            border: 2px solid rgba(153, 153, 153, 0.25);
+            border-radius: 8px;
+            padding: 0.45rem 0.55rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .bg-card:hover {
+            border-color: var(--accent-color);
+            background: #f8fafc;
+        }
+        .bg-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.25);
+        }
+        .bg-thumb {
+            width: 32px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid rgba(153, 153, 153, 0.35);
+            flex-shrink: 0;
+        }
+        .bg-details { display: flex; flex-direction: column; overflow: hidden; gap: 2px; }
+        .bg-title { font-size: 0.78rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bg-sub { font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #00bcd4 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 15px rgba(11, 83, 148, 0.25);
+        }
+        .btn-primary:hover:not(:disabled) {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.35);
+        }
+        .btn-primary:disabled { opacity: 0.85; cursor: wait; transform: none; box-shadow: none; }
+        .btn-primary.loading { background: linear-gradient(135deg, #f59e0b, #d97706) !important; }
+        .btn-primary.success { background: linear-gradient(135deg, #10b981, #059669) !important; }
+
+        .simulator-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 1.25rem 1.75rem 1.75rem;
+            position: sticky;
+            top: 80px;
+            max-height: calc(100vh - 100px);
+            overflow: hidden;
+            align-self: flex-start;
+        }
+        .simulator-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .canvas-wrapper {
+            position: relative;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 4px solid #0f172a;
+            background: #000000;
+            width: 100%;
+            max-width: 340px;
+        }
+        canvas { display: block; background: #000000; width: 100%; height: auto; }
+
+        .filename-info {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 4px;
+            border: 1px solid rgba(153, 153, 153, 0.25);
+        }
+        .filename-info.selected { color: #059669; border-color: #10b981; background: #ecfdf5; font-weight: bold; }
+        .filename-info.error { color: #dc2626; border-color: #ef4444; background: #fef2f2; font-weight: bold; }
+
+        .loader-modal { position: fixed; inset: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; }
+        .modal-card { background: #ffffff; border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 540px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); display: flex; flex-direction: column; align-items: center; gap: 1.25rem; color: #1e293b; }
+        .spinner { width: 60px; height: 60px; border: 5px solid #e2e8f0; border-top: 5px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .progress-bar-container { width: 100%; height: 10px; background: #0F172A; border-radius: 5px; overflow: hidden; border: 1px solid #334155; }
-        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #38BDF8, #10B981); transition: width 0.3s ease; }
+
+        .progress-bar-container { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); transition: width 0.3s ease; }
         .download-btn { background: #10B981; color: white; padding: 0.85rem 1.5rem; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; transition: background 0.2s; font-size: 1rem; }
         .download-btn:hover { background: #059669; }
     </style>
 </head>
 <body>
 
-<div id="fileProtocolWarning" style="display: none; background: #DC2626; color: white; text-align: center; padding: 0.75rem; font-weight: bold; font-size: 0.95rem;">
-    ⚠️ ATTENTION : Vous avez ouvert la page en fichier local (file://). Veuillez utiliser l'adresse HTTP officielle : <a href="http://localhost:3000/studio.html" style="color: #FFFF00; text-decoration: underline;">http://localhost:3000/studio.html</a>
-</div>
+<header class="app-header" id="ayaGlobalNavbar"></header>
 
-<header>
-    <div style="display: flex; align-items: center; gap: 1.5rem;">
-        <h1>🎬 Studio Agent Traducteur Aya V5</h1>
-        <nav style="display: flex; gap: 0.75rem;">
-            <a href="/" style="color: var(--accent-color); text-decoration: none; font-size: 0.85rem; background: #0f172a; padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color);">🏠 Accueil Chat</a>
-            <a href="/studio.html" style="color: #10B981; text-decoration: none; font-size: 0.85rem; background: #0f172a; padding: 0.35rem 0.75rem; border-radius: 6px; border: 1px solid #10B981; font-weight: bold;">🎬 Studio TikTok</a>
-        </nav>
+<div class="studio-page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div>
+        <h2 id="studioHeroTitle">Studio TikTok 9:16 & Éditeur Sous-Titres</h2>
+        <p id="studioHeroSub">Personnalisez votre bandeau d'accroche, vos titres et générez votre pack vidéo optimisé pour les réseaux sociaux.</p>
     </div>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <button id="langToggleBtn" onclick="toggleLanguage()" style="background: #334155; color: white; border: 1px solid var(--border-color); padding: 0.4rem 0.8rem; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">🌐 FR / 🇵🇸 العربية</button>
-        <div class="user-profile-badge">
-            <div class="user-avatar">S</div>
-            <span>Profil : <strong>Steve (Antigravity)</strong></span>
-        </div>
-    </div>
-</header>
+    <a href="/profil?tab=cards&action=create" style="display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0b5394 0%, #00bcd4 100%); color: #ffffff; padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.92rem; text-decoration: none; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.35); transition: transform 0.2s ease;">
+        <span>🎴</span> <span>Créer Fiche Vocabulaire 9:16</span>
+        <span style="font-size: 0.72rem; background: rgba(255, 255, 255, 0.25); padding: 2px 7px; border-radius: 10px;">Nouveau</span>
+    </a>
+</div>
 
 <div class="main-container">
     <div class="control-panel">
-        <div class="section-title">1. Sens de Traduction & Mode</div>
+        <div class="section-title" id="sec1Title">1. Langues & Sens de Traduction</div>
+        
+        <!-- Langue Source Audio -->
         <div class="form-group">
-            <label for="mode-select">Protocole & Langue Source :</label>
-            <select id="mode-select" onchange="drawCanvas()">
-                <option value="VOSTFR" selected>🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)</option>
-                <option value="VOAR">🇫🇷 Français ➔ 🇵🇸 Arabe Palestinien (Gaza Ammiya) (VOAR)</option>
-            </select>
+            <label id="labelSourceLang">Langue parlée dans l'audio (Source) :</label>
+            <div class="source-grid" id="studioSourceGrid">
+                <div class="source-card active" data-source="ar" onclick="selectStudioSource(this, 'ar')">
+                    <span class="source-icon">🇵🇸</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcArTitle">Arabe palestinien</div>
+                        <div class="source-sub" id="srcArSub">Dialecte ammiya / Gaza</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="auto" onclick="selectStudioSource(this, 'auto')">
+                    <span class="source-icon">🤖</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcAutoTitle">Auto-détection</div>
+                        <div class="source-sub" id="srcAutoSub">Détection IA automatique</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="ar_geo" onclick="selectStudioSource(this, 'ar_geo')">
+                    <span class="source-icon">🌍</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcGeoTitle">Arabe Géopolitique</div>
+                        <div class="source-sub" id="srcGeoSub">Reportages / Levant</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="fr" onclick="selectStudioSource(this, 'fr')">
+                    <span class="source-icon">🇫🇷</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcFrTitle">Français</div>
+                        <div class="source-sub" id="srcFrSub">Discours original français</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="he" onclick="selectStudioSource(this, 'he')">
+                    <span class="source-icon">🇮🇱</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcHeTitle">Hébreu</div>
+                        <div class="source-sub" id="srcHeSub">Médias / Enquêtes</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="section-title">2. Médias Source & Image de Fond</div>
+        <!-- Langue Cible Sous-titres -->
+        <div class="form-group" style="margin-top: 0.35rem;">
+            <label id="labelTargetLang">Langue cible des sous-titres (Cible) :</label>
+            <div class="lang-grid" id="studioTargetGrid">
+                <div class="lang-card active" data-target="fr" onclick="selectStudioTarget(this, 'fr')">
+                    <span class="lang-flag">🇫🇷</span>
+                    <div class="lang-details">
+                        <div class="lang-title" id="targetFrTitle">VOSTFR - Français</div>
+                        <div class="lang-sub" id="targetFrSub">Sous-titres en français</div>
+                    </div>
+                </div>
+                <div class="lang-card" data-target="ar" onclick="selectStudioTarget(this, 'ar')">
+                    <span class="lang-flag">🇵🇸</span>
+                    <div class="lang-details">
+                        <div class="lang-title" id="targetArTitle">VOAR - Arabe</div>
+                        <div class="lang-sub" id="targetArSub">Sous-titres en arabe authentique</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title" id="sec2Title">2. Audio Source & Visuel 9:16</div>
+        
+        <!-- Fichier Audio Source Exclusif -->
         <div class="form-group">
-            <label for="media-type">Format du Média Source :</label>
-            <select id="media-type" onchange="toggleMediaType()">
-                <option value="AUDIO" selected>🎙️ Fichier Audio (.mpeg / .mp3 / .wav / .ogg / .m4a / .opus / .aac / .flac) + Image de Fond</option>
-                <option value="VIDEO">🎬 Fichier Vidéo (.mpeg / .mpg / .mp4 / .mov / .mkv / .webm / .ts)</option>
-            </select>
+            <label for="source-media-file" id="source-media-label">🎙️ 1. Fichier Audio Source :</label>
+            <input type="file" id="source-media-file" accept="audio/*,.mp3,.wav,.ogg,.opus,.m4a,.aac,.flac" onchange="onSourceMediaSelected(event)">
+            <span class="filename-info" id="selected-filename-display">📁 Choisissez votre note vocale ou audio (.mp3, .ogg, .wav, .m4a...)...</span>
+            <div class="field-hint" id="sourceMediaHint">
+                Réservé aux audios purs & notes vocales. Pour sous-titrer directement une vidéo, rendez-vous sur <a href="/traduction" style="color: var(--accent-color); font-weight: 700; text-decoration: none;">Aya Traduction</a>.
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="source-media-file" id="source-media-label">📁 1. Fichier Audio Source :</label>
-            <input type="file" id="source-media-file" accept="audio/*,video/*,.mpeg,.mpg,.mpe,.mp3,.mp4,.wav,.ogg,.opus,.m4a,.aac,.flac,.mov,.mkv,.webm,.ts" onchange="onSourceMediaSelected(event)">
-            <span class="filename-info" id="selected-filename-display">📁 Choisissez votre fichier audio ou vidéo (.mpeg, .mp3, .ogg, .mp4...)...</span>
+        <!-- Galerie de Visuels de Fond 9:16 -->
+        <div class="form-group" id="bg-visual-section">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                <label id="labelBgTheme">🖼️ 2. Choix du Visuel de Fond 9:16 :</label>
+                <span style="font-size: 0.76rem; color: #10B981; font-weight: 700;" id="bgSelectedBadge">✓ Visuel actif (zéro upload requis)</span>
+            </div>
+            <div class="field-hint" style="margin-bottom: 0.5rem;">
+                Sélectionnez un visuel prédéfini ci-dessous (appliqué directement sur le simulateur) ou importez votre propre image 9:16.
+            </div>
+            <div class="bg-grid" id="studioBgGrid">
+                <div class="bg-card active" data-bg="bg_palestine" onclick="selectPresetBg(this, 'bg_palestine', '/assets/backgrounds/bg_palestine.jpg')">
+                    <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgPalestineTitle">🇵🇸 Palestine Résilience</div>
+                        <div class="bg-sub" id="bgPalestineSub">Noir, Blanc, Vert, Rouge</div>
+                    </div>
+                </div>
+                <div class="bg-card" data-bg="bg_dark" onclick="selectPresetBg(this, 'bg_dark', '/assets/backgrounds/bg_dark.jpg')">
+                    <img src="/assets/backgrounds/bg_dark.jpg" alt="Noir Profond" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgDarkTitle">🌑 Noir Profond</div>
+                        <div class="bg-sub" id="bgDarkSub">Contraste OLED sobre</div>
+                    </div>
+                </div>
+                <div class="bg-card" data-bg="bg_turquoise" onclick="selectPresetBg(this, 'bg_turquoise', '/assets/backgrounds/bg_turquoise.jpg')">
+                    <img src="/assets/backgrounds/bg_turquoise.jpg" alt="Turquoise Espoir" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgTurquoiseTitle">🌊 Turquoise Espoir</div>
+                        <div class="bg-sub" id="bgTurquoiseSub">Couleur officielle Aya</div>
+                    </div>
+                </div>
+                <div class="bg-card" data-bg="bg_temoignage" onclick="selectPresetBg(this, 'bg_temoignage', '/assets/backgrounds/bg_temoignage.jpg')">
+                    <img src="/assets/backgrounds/bg_temoignage.jpg" alt="Témoignage" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgTemoignageTitle">🎙️ Témoignage Sobre</div>
+                        <div class="bg-sub" id="bgTemoignageSub">Cadre solennel</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import d'Image Personnalisée Optionnel -->
+            <div style="margin-top: 0.65rem; padding-top: 0.65rem; border-top: 1px dashed rgba(153, 153, 153, 0.25);">
+                <label for="bg-file" style="font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <span>📁 Ou importer une image 9:16 personnalisée :</span>
+                    <span style="font-weight: 500; font-size: 0.74rem; color: #64748b; background: #f1f5f9; padding: 2px 7px; border-radius: 10px;">Optionnel</span>
+                </label>
+                <input type="file" id="bg-file" accept="image/*" onchange="loadCustomBg(event)" style="margin-top: 0.35rem;">
+                <span class="filename-info" id="bg-filename-display" style="display: none;">🖼️ Image personnalisée chargée</span>
+            </div>
         </div>
 
-        <div class="form-group" id="bg-image-group">
-            <label for="bg-file">🖼️ 2. Image de Fond 9:16 (pour Canevas Vidéo) :</label>
-            <input type="file" id="bg-file" accept="image/*" onchange="loadCustomBg(event)">
-            <span class="filename-info" id="bg-filename-display">🖼️ Cliquez pour choisir votre image de fond 9:16...</span>
-        </div>
-
-        <div class="section-title">3. Bandeau, Titres & Couleurs (Panels 10 Nuances)</div>
+        <div class="section-title" id="sec3Title">3. Bandeau, Titres & Couleurs</div>
         
         <div class="form-group">
-            <label class="checkbox-label" style="background: #0F172A; font-weight: bold; color: #38BDF8;">
-                <input type="checkbox" id="header-show-chk" checked onchange="drawCanvas()"> 🏷️ Afficher le Bandeau d'En-tête
+            <label class="checkbox-label">
+                <input type="checkbox" id="header-show-chk" checked onchange="drawCanvas()"> <span id="chkShowHeaderLabel">🏷️ Afficher le Bandeau d'Accroche Supérieur</span>
             </label>
         </div>
 
         <div class="form-group" id="header-text-group">
-            <label for="header-text-input">Texte du Bandeau d'En-tête :</label>
-            <input type="text" id="header-text-input" value="PALESTINIAN ECHO" oninput="drawCanvas()">
+            <label for="header-text-input" id="labelHeaderText">Texte du Bandeau d'En-tête :</label>
+            <input type="text" id="header-text-input" value="TÉMOIGNAGE DIRECT" placeholder="Ex: TÉMOIGNAGE DIRECT, ÉDITION SPÉCIALE, ALERTE INFO..." oninput="drawCanvas()">
+            <div class="field-hint" id="headerTextHint">Court texte d'accroche (1 à 3 mots) affiché dans le bandeau rectangulaire en haut de la vidéo.</div>
         </div>
 
         <div class="form-group" id="header-color-group">
-            <label>Couleur du Bandeau d'En-tête :</label>
+            <label id="labelHeaderColor">Couleur du Bandeau d'En-tête :</label>
             <div class="color-palette" id="header-color-palette">
                 <div class="color-swatch active" style="background: #CE1126;" data-color="#CE1126" title="Rouge Palestine" onclick="setBandColor(this, '#CE1126')"></div>
                 <div class="color-swatch" style="background: #000000;" data-color="#000000" title="Noir Pur" onclick="setBandColor(this, '#000000')"></div>
-                <div class="color-swatch" style="background: #0EA5E9;" data-color="#0EA5E9" title="Bleu Cyan" onclick="setBandColor(this, '#0EA5E9')"></div>
-                <div class="color-swatch" style="background: #10B981;" data-color="#10B981" title="Vert Émeraude" onclick="setBandColor(this, '#10B981')"></div>
+                <div class="color-swatch" style="background: #0b5394;" data-color="#0b5394" title="Bleu Aya" onclick="setBandColor(this, '#0b5394')"></div>
+                <div class="color-swatch" style="background: #00bcd4;" data-color="#00bcd4" title="Turquoise Espoir" onclick="setBandColor(this, '#00bcd4')"></div>
                 <div class="color-swatch" style="background: #8B5CF6;" data-color="#8B5CF6" title="Violet Nuit" onclick="setBandColor(this, '#8B5CF6')"></div>
             </div>
         </div>
 
         <div class="form-group">
-            <label for="video-title">Titre de la Vidéo :</label>
-            <input type="text" id="video-title" value="SOSO NOUS PARLE DU DRAME SURVENU LE 18 AOÛT" oninput="drawCanvas()">
+            <label for="video-title" id="labelVideoTitle">Titre de la Vidéo :</label>
+            <input type="text" id="video-title" value="PAROLES ET TÉMOIGNAGES DU TERRAIN" placeholder="Ex: Titre clair et percutant résumant le sujet..." oninput="drawCanvas()">
+            <div class="field-hint" id="videoTitleHint">Titre principal affiché sous le bandeau, pour capter l'attention dans les 3 premières secondes.</div>
         </div>
 
         <!-- 1. Title Color Palette -->
         <div class="form-group">
-            <label>📌 Couleur du Titre (Panel 10 Nuances) :</label>
+            <label id="labelTitleColor">📌 Couleur du Titre (Nuancier 10 teintes) :</label>
             <div class="color-palette" id="title-color-palette">
                 <div class="color-swatch active" style="background: #D8D0BE;" data-color="#D8D0BE" title="Ivoire Méta" onclick="setTitleColor(this, '#D8D0BE')"></div>
                 <div class="color-swatch" style="background: #FFFFFF;" data-color="#FFFFFF" title="Blanc Pur" onclick="setTitleColor(this, '#FFFFFF')"></div>
@@ -199,7 +576,7 @@
 
         <!-- 2. Subtitle Color Palette -->
         <div class="form-group">
-            <label>💬 Couleur des Sous-Titres (Panel 10 Nuances) :</label>
+            <label id="labelSubColorStudio">💬 Couleur des Sous-Titres (Nuancier 10 teintes) :</label>
             <div class="color-palette" id="sub-color-palette">
                 <div class="color-swatch active" style="background: #FFFF00;" data-color="#FFFF00" title="Jaune Cyber" onclick="setSubColor(this, '#FFFF00')"></div>
                 <div class="color-swatch" style="background: #FFFFFF;" data-color="#FFFFFF" title="Blanc Pur" onclick="setSubColor(this, '#FFFFFF')"></div>
@@ -214,23 +591,25 @@
             </div>
         </div>
 
-        <div class="section-title">4. Positionnement Dynamique (Haut & Bas Max)</div>
+        <div class="section-title" id="sec4Title">4. Positionnement Dynamique & Zone de Sécurité</div>
         <div class="form-group">
-            <label for="title-margin">📌 Position du Titre (MarginV Haut) : <span id="title-margin-val">380px</span></label>
+            <label for="title-margin" id="labelTitleMargin">📌 Position du Titre (Marge Haute) : <span id="title-margin-val">380px</span></label>
             <input type="range" id="title-margin" min="50" max="1000" step="10" value="380" oninput="updateMarginVal()">
         </div>
 
         <div class="form-group">
-            <label for="sub-margin">💬 Position des Sous-Titres (MarginV Bas - Tout en Bas) : <span id="sub-margin-val">950px</span></label>
-            <input type="range" id="sub-margin" min="500" max="1850" step="10" value="950" oninput="updateMarginVal()">
+            <label for="sub-margin" id="labelSubMargin">💬 Position des Sous-Titres (Marge Basse) : <span id="sub-margin-val">1440px</span></label>
+            <input type="range" id="sub-margin" min="500" max="1850" step="10" value="1440" oninput="updateMarginVal()">
+            <div class="field-hint" id="marginHint">Ajustez la hauteur verticale pour respecter la zone de sécurité TikTok (Safe Zone) et éviter les boutons de l'application.</div>
         </div>
 
-        <div class="section-title">5. Pack Éditorial Post-Vidéo Sélectif</div>
+        <div class="section-title" id="sec5Title">5. Pack Éditorial Post-Vidéo Sélectif</div>
+        <div class="field-hint" id="editorialHint" style="margin-bottom: 0.5rem;">Cochez les fichiers à inclure automatiquement dans votre pack de téléchargement.</div>
         <div class="checkbox-group">
-            <label class="checkbox-label"><input type="checkbox" id="chk-mp4" checked> 🎬 Vidéo .MP4</label>
-            <label class="checkbox-label"><input type="checkbox" id="chk-ass" checked> 📄 Sous-titres .ASS</label>
-            <label class="checkbox-label"><input type="checkbox" id="chk-txt" checked> 📝 Description .TXT</label>
-            <label class="checkbox-label"><input type="checkbox" id="chk-cover" checked> 🎨 Cover 9:16 .TXT</label>
+            <label class="checkbox-label"><input type="checkbox" id="chk-mp4" checked> <span id="chkMp4Label">🎬 Vidéo .MP4</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="chk-ass" checked> <span id="chkAssLabel">📄 Sous-titres .ASS</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="chk-txt" checked> <span id="chkTxtLabel">📝 Description .TXT</span></label>
+            <label class="checkbox-label"><input type="checkbox" id="chk-cover" checked> <span id="chkCoverLabel">🎨 Cover 9:16 .TXT</span></label>
         </div>
 
         <button id="btn-submit" class="btn-primary" onclick="generateVideo()">⚡ VALIDER & GÉNÉRER LE PACK V3</button>
@@ -238,8 +617,8 @@
 
     <div class="simulator-container">
         <div class="simulator-header">
-            <span style="font-weight: 600; color: var(--accent-color);">📱 Simulateur Visuel TikTok 9:16 (1080x1920)</span>
-            <span style="font-size: 0.8rem; color: #10B981;">● Aperçu Temps Réel Actif</span>
+            <span id="simTitle" style="font-weight: 700; color: var(--primary-color);">📱 Simulateur Visuel TikTok 9:16 (1080x1920)</span>
+            <span id="simRealtime" style="font-size: 0.8rem; color: #10B981; font-weight: 600;">● Aperçu Temps Réel Actif</span>
         </div>
         <div class="canvas-wrapper">
             <canvas id="tiktokCanvas" width="405" height="720"></canvas>
@@ -250,8 +629,8 @@
 <div id="loaderModal" class="loader-modal" style="display: none;">
     <div class="modal-card" id="modalCard">
         <div class="spinner" id="modalSpinner"></div>
-        <h3 id="modalTitle" style="color: #38BDF8; font-size: 1.25rem;">🚀 Génération du Rendu Vidéo TikTok V3 en cours...</h3>
-        <p id="modalStatus" style="color: #94A3B8; font-size: 0.9rem;">Encodage FFmpeg en cours (traitement réel de l'audio et des sous-titres)...</p>
+        <h3 id="modalTitle" style="color: #38BDF8; font-size: 1.25rem;">Création de votre vidéo en cours…</h3>
+        <p id="modalStatus" style="color: #94A3B8; font-size: 0.9rem;">Synchronisation de l'audio et des sous-titres en temps réel.</p>
         
         <div class="progress-bar-container">
             <div class="progress-bar-fill" id="progressBar"></div>
@@ -274,10 +653,46 @@
 <script>
     var canvas = document.getElementById('tiktokCanvas');
     var ctx = canvas ? canvas.getContext('2d') : null;
-    
+
+    // ─── Dimensions logiques — mises à jour par initCanvasDPR() ─────────────
+    var LOGI_W = 405;
+    var LOGI_H = 720;
+
+    // ─── Calibrage HiDPI — Méthode getBoundingClientRect() ──────────────────
+    // Synchronise la résolution interne du canvas avec sa taille CSS réelle
+    // multipliée par le ratio physique de l'écran (devicePixelRatio).
+    function initCanvasDPR() {
+        if (!canvas) return;
+        var dpr = window.devicePixelRatio || 1;
+        var rect = canvas.getBoundingClientRect();
+
+        if (rect.width === 0 || rect.height === 0) return; // pas encore rendu
+
+        // 1. Résolution interne = taille affichée × DPR (pixels physiques réels)
+        canvas.width  = Math.round(rect.width  * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+
+        // 2. Figer la taille CSS (empêche une boucle de relayout)
+        canvas.style.width  = rect.width  + 'px';
+        canvas.style.height = rect.height + 'px';
+
+        // 3. Adapter le contexte 2D — les coordonnées de dessin restent en px CSS
+        ctx = canvas.getContext('2d');
+        ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform avant scale
+        ctx.scale(dpr, dpr);
+
+        // 4. Mettre à jour les dimensions logiques pour drawCanvas()
+        LOGI_W = rect.width;
+        LOGI_H = rect.height;
+    }
+
     var selectedTitleColor = '#D8D0BE';
     var selectedSubColor = '#FFFF00';
     var selectedHeaderColor = '#CE1126';
+    var currentSourceLang = 'ar';
+    var currentTargetLang = 'fr';
+    var selectedBgTheme = 'bg_palestine';
+    var isCustomBgUploaded = false;
     var bgImage = new Image();
     var isUserImageLoaded = false;
 
@@ -286,8 +701,70 @@
             var warn = document.getElementById('fileProtocolWarning');
             if (warn) warn.style.display = 'block';
         }
-        drawCanvas();
+
+        // Pré-charger le fond 9:16 par défaut (Palestine Résilience)
+        bgImage = new Image();
+        bgImage.onload = function() {
+            isUserImageLoaded = true;
+            drawCanvas();
+        };
+        bgImage.src = '/assets/backgrounds/bg_palestine.jpg';
+
+        // requestAnimationFrame garantit que le layout CSS est complet
+        // avant de mesurer avec getBoundingClientRect()
+        requestAnimationFrame(function() {
+            initCanvasDPR();
+            drawCanvas();
+        });
     };
+
+    function selectStudioSource(cardEl, src) {
+        currentSourceLang = src;
+        var cards = document.querySelectorAll('#studioSourceGrid .source-card');
+        cards.forEach(function(c) { c.classList.remove('active'); });
+        if (cardEl) cardEl.classList.add('active');
+        drawCanvas();
+    }
+
+    function selectStudioTarget(cardEl, tgt) {
+        currentTargetLang = tgt;
+        var cards = document.querySelectorAll('#studioTargetGrid .lang-card');
+        cards.forEach(function(c) { c.classList.remove('active'); });
+        if (cardEl) cardEl.classList.add('active');
+        drawCanvas();
+    }
+
+    function selectPresetBg(cardEl, themeName, imageSrc) {
+        selectedBgTheme = themeName;
+        isCustomBgUploaded = false;
+        var bgFileInput = document.getElementById('bg-file');
+        if (bgFileInput) bgFileInput.value = '';
+        var bgDisplay = document.getElementById('bg-filename-display');
+        if (bgDisplay) bgDisplay.style.display = 'none';
+
+        var cards = document.querySelectorAll('#studioBgGrid .bg-card');
+        cards.forEach(function(c) { c.classList.remove('active'); });
+        if (cardEl) cardEl.classList.add('active');
+
+        var badge = document.getElementById('bgSelectedBadge');
+        if (badge) badge.innerText = '✓ Visuel actif (zéro upload requis)';
+
+        bgImage = new Image();
+        bgImage.onload = function() {
+            isUserImageLoaded = true;
+            drawCanvas();
+        };
+        bgImage.src = imageSrc;
+    }
+
+    // Re-calibrer si la fenêtre est redimensionnée
+    window.addEventListener('resize', function() {
+        requestAnimationFrame(function() {
+            initCanvasDPR();
+            drawCanvas();
+        });
+    });
+
 
     function setTitleColor(el, hex) {
         var items = document.querySelectorAll('#title-color-palette .color-swatch');
@@ -327,59 +804,66 @@
 
     function drawCanvas() {
         if (!canvas || !ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+        ctx.clearRect(0, 0, LOGI_W, LOGI_H);
+
         // 1. Draw Background
         if (isUserImageLoaded && bgImage.complete && bgImage.naturalWidth !== 0) {
-            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImage, 0, 0, LOGI_W, LOGI_H);
         } else {
-            var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            var grad = ctx.createLinearGradient(0, 0, 0, LOGI_H);
             grad.addColorStop(0, '#0F172A');
             grad.addColorStop(0.5, '#1E1B4B');
             grad.addColorStop(1, '#020617');
             ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, LOGI_W, LOGI_H);
 
             ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
-            ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+            ctx.strokeRect(15, 15, LOGI_W - 30, LOGI_H - 30);
             ctx.setLineDash([]);
 
             ctx.fillStyle = '#94A3B8';
-            ctx.font = '13px Arial';
+            ctx.font = '13px "Cairo", Inter, Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('🖼️ Sélectionnez votre image de fond 9:16 à gauche', canvas.width / 2, canvas.height / 2);
+            var emptyNotice = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar')
+                ? '🖼️ اختر صورة الخلفية 9:16 من اللوحة الجانبية'
+                : '🖼️ Sélectionnez votre image de fond 9:16 à gauche';
+            ctx.fillText(emptyNotice, LOGI_W / 2, LOGI_H / 2);
         }
-        
+
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+        ctx.fillRect(0, 0, LOGI_W, LOGI_H);
+
         // 2. Interactive Header Banner / Logo
         var showHeaderChk = document.getElementById('header-show-chk');
         if (showHeaderChk && showHeaderChk.checked) {
             var headerInput = document.getElementById('header-text-input');
-            var headerText = headerInput ? headerInput.value.toUpperCase() : 'PALESTINIAN ECHO';
+            var headerText = headerInput ? headerInput.value.toUpperCase() : 'TÉMOIGNAGE DIRECT';
             ctx.fillStyle = selectedHeaderColor;
-            ctx.fillRect(40, 24, canvas.width - 80, 24);
+            ctx.fillRect(40, 24, LOGI_W - 80, 26);
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 12px Arial';
+            var hasArHeader = /[\u0600-\u06FF]/.test(headerText);
+            ctx.font = hasArHeader ? 'bold 13px "Cairo", sans-serif' : 'bold 12px "Inter", Arial, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(headerText, canvas.width / 2, 40);
+            ctx.fillText(headerText, LOGI_W / 2, 41);
         }
-        
+
         // 3. Title under logo
         var titleMarginEl = document.getElementById('title-margin');
         var marginV = titleMarginEl ? parseInt(titleMarginEl.value) : 380;
-        var titleY = (marginV / 1920) * canvas.height;
-        
+        var titleY = (marginV / 1920) * LOGI_H;
+
         var titleInput = document.getElementById('video-title');
-        var titleText = titleInput ? titleInput.value.toUpperCase() : 'TITRE DE LA VIDÉO';
-        
-        ctx.font = '900 17px "Arial Black", Impact';
-        ctx.fillStyle = selectedTitleColor;
-        ctx.strokeStyle = '#000000';
+        var titleText = titleInput ? titleInput.value.toUpperCase() : 'PAROLES ET TÉMOIGNAGES DU TERRAIN';
+
+        var hasArTitle = /[\u0600-\u06FF]/.test(titleText);
+        ctx.font = hasArTitle ? '700 16px "Cairo", sans-serif' : '900 17px "Arial Black", Impact';
+        ctx.textAlign = 'center';
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
         ctx.lineWidth = 4;
+        ctx.strokeStyle = '#000000';
 
         var words = titleText.split(' ');
         var line = '';
@@ -387,7 +871,7 @@
         for (var n = 0; n < words.length; n++) {
             var testLine = line + words[n] + ' ';
             var metrics = ctx.measureText(testLine);
-            if (metrics.width > canvas.width - 60 && n > 0) {
+            if (metrics.width > LOGI_W - 60 && n > 0) {
                 lines.push(line);
                 line = words[n] + ' ';
             } else {
@@ -395,54 +879,49 @@
             }
         }
         lines.push(line);
-        
+
+        // Stroke d'abord, fill ensuite — ordre correct pour un contour net
         for (var i = 0; i < lines.length; i++) {
-            ctx.strokeText(lines[i], canvas.width / 2, titleY + (i * 22));
-            ctx.fillText(lines[i], canvas.width / 2, titleY + (i * 22));
+            ctx.strokeText(lines[i], LOGI_W / 2, titleY + (i * 22));
+        }
+        ctx.fillStyle = selectedTitleColor;
+        for (var i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], LOGI_W / 2, titleY + (i * 22));
         }
 
         // 4. Subtitles Bottom
         var subMarginEl = document.getElementById('sub-margin');
-        var subMarginV = subMarginEl ? parseInt(subMarginEl.value) : 950;
-        var subY = (subMarginV / 1920) * canvas.height;
-        
-        ctx.font = 'bold 20px Impact';
-        ctx.fillStyle = selectedSubColor;
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
-        
-        var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
-        var modeEl = document.getElementById('mode-select');
-        var mode = modeEl ? modeEl.value : 'VOSTFR';
-        var line1 = isArabicUI 
-            ? (mode === 'VOSTFR' ? "هنا ستظهر الترجمة التوضيحية" : "هنا سيتم عرض الترجمة الصوتية")
-            : (mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض الترجمة الصوتية");
-        var line2 = isArabicUI
-            ? (mode === 'VOSTFR' ? "في أسفل فيديو تيك توك الخاص بك" : "في أسفل الفيديو")
-            : (mode === 'VOSTFR' ? "en bas de votre vidéo TikTok" : "في أسفل الفيديو");
+        var subMarginV = subMarginEl ? parseInt(subMarginEl.value) : 1440;
+        var subY = (subMarginV / 1920) * LOGI_H;
 
-        var subLines = [line1, line2];
+        var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
+        var mode = (currentTargetLang === 'ar') ? 'VOAR' : 'VOSTFR';
+        var subLines = [
+            isArabicUI
+                ? (mode === 'VOSTFR' ? "هنا ستظهر الترجمة التوضيحية" : "هنا سيتم عرض ترجمتك الصوتية")
+                : (mode === 'VOSTFR' ? "C'est ici que vos sous-titres s'afficheront" : "هنا سيتم عرض ترجمتك")
+        ];
+
+        var hasArSub = /[\u0600-\u06FF]/.test(subLines.join(''));
+        ctx.font = hasArSub ? 'bold 13px "Cairo", sans-serif' : 'bold 13px "Inter", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#000000';
+
+        // Stroke d'abord, fill ensuite — ordre correct pour un contour net
         for (var j = 0; j < subLines.length; j++) {
-            ctx.strokeText(subLines[j], canvas.width / 2, subY + (j * 26));
-            ctx.fillText(subLines[j], canvas.width / 2, subY + (j * 26));
+            ctx.strokeText(subLines[j], LOGI_W / 2, subY + (j * 26));
+        }
+        ctx.fillStyle = selectedSubColor;
+        for (var j = 0; j < subLines.length; j++) {
+            ctx.fillText(subLines[j], LOGI_W / 2, subY + (j * 26));
         }
     }
 
     function toggleMediaType() {
-        var typeEl = document.getElementById('media-type');
-        var type = typeEl ? typeEl.value : 'AUDIO';
-        var label = document.getElementById('source-media-label');
-        var mediaInput = document.getElementById('source-media-file');
-        
-        if (type === 'AUDIO') {
-            if (label) label.innerText = '📁 1. Fichier Audio Source :';
-            if (mediaInput) mediaInput.setAttribute('accept', 'audio/*,video/*,.mpeg,.mpg,.mpe,.mp3,.wav,.ogg,.opus,.m4a,.aac,.flac');
-            document.getElementById('bg-image-group').style.display = 'flex';
-        } else {
-            if (label) label.innerText = '📁 1. Fichier Vidéo Source :';
-            if (mediaInput) mediaInput.setAttribute('accept', 'video/*,audio/*,.mpeg,.mpg,.mpe,.mp4,.mov,.mkv,.webm,.ts,.avi');
-            document.getElementById('bg-image-group').style.display = 'none';
-        }
+        // Rétrocompatibilité : le Studio est désormais 100% focalisé sur l'audio pur
         drawCanvas();
     }
 
@@ -450,10 +929,18 @@
         var file = event.target.files[0];
         var display = document.getElementById('selected-filename-display');
         if (file && display) {
-            display.innerText = '✅ Sélectionné : ' + file.name;
-            display.className = 'filename-info selected';
+            var validAudioExts = ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac', '.mpeg', '.mpg'];
+            var fileNameLower = file.name.toLowerCase();
+            var isAudio = validAudioExts.some(function(ext) { return fileNameLower.endsWith(ext); }) || file.type.startsWith('audio/');
+            if (!isAudio) {
+                display.innerText = '⚠️ Format non recommandé : Veuillez choisir un fichier audio (.mp3, .wav, .ogg, .m4a...). Pour les vidéos, utilisez la page Traduction Vidéo.';
+                display.className = 'filename-info error';
+            } else {
+                display.innerText = '✅ Audio sélectionné : ' + file.name;
+                display.className = 'filename-info selected';
+            }
         } else if (display) {
-            display.innerText = '📁 Choisissez votre fichier...';
+            display.innerText = '📁 Choisissez votre note vocale ou audio (.mp3, .ogg, .wav, .m4a...)...';
             display.className = 'filename-info';
         }
         drawCanvas();
@@ -463,10 +950,18 @@
         var file = event.target.files[0];
         var display = document.getElementById('bg-filename-display');
         if (file) {
+            isCustomBgUploaded = true;
+            var cards = document.querySelectorAll('#studioBgGrid .bg-card');
+            cards.forEach(function(c) { c.classList.remove('active'); });
+
             if (display) {
-                display.innerText = '✅ Image sélectionnée : ' + file.name;
+                display.innerText = '✅ Image personnalisée : ' + file.name;
                 display.className = 'filename-info selected';
+                display.style.display = 'inline-block';
             }
+            var badge = document.getElementById('bgSelectedBadge');
+            if (badge) badge.innerText = '✓ Image personnalisée active';
+
             var reader = new FileReader();
             reader.onload = function(e) {
                 bgImage = new Image();
@@ -478,12 +973,9 @@
             };
             reader.readAsDataURL(file);
         } else {
-            isUserImageLoaded = false;
-            if (display) {
-                display.innerText = '🖼️ Cliquez pour choisir votre image de fond 9:16...';
-                display.className = 'filename-info';
-            }
-            drawCanvas();
+            isCustomBgUploaded = false;
+            var defaultCard = document.querySelector('#studioBgGrid .bg-card[data-bg="bg_palestine"]');
+            selectPresetBg(defaultCard, 'bg_palestine', '/assets/backgrounds/bg_palestine.jpg');
         }
     }
 
@@ -491,24 +983,23 @@
         var sourceInput = document.getElementById('source-media-file');
         var mediaFile = sourceInput ? sourceInput.files[0] : null;
         var display = document.getElementById('selected-filename-display');
-        var mediaType = document.getElementById('media-type').value;
 
         if (!mediaFile) {
             if (display) {
-                display.innerText = '⚠️ SÉLECTIONNER UN FICHIER AUDIO OU VIDÉO OBLIGATOIRE !';
+                display.innerText = '⚠️ SÉLECTIONNER UN FICHIER AUDIO OBLIGATOIRE !';
                 display.className = 'filename-info error';
             }
             return;
         }
 
-        var validMediaExts = ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac', '.mpeg', '.mpg', '.mpe', '.mp4', '.mov', '.mkv', '.webm', '.ts', '.avi'];
+        var validMediaExts = ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac', '.mpeg', '.mpg'];
         var fileNameLower = mediaFile.name.toLowerCase();
         var hasValidExt = validMediaExts.some(function(ext) { return fileNameLower.endsWith(ext); });
-        var hasValidMime = mediaFile.type.startsWith('audio/') || mediaFile.type.startsWith('video/') || mediaFile.type.includes('octet-stream') || mediaFile.type.includes('mpeg');
+        var hasValidMime = mediaFile.type.startsWith('audio/') || mediaFile.type.includes('octet-stream') || mediaFile.type.includes('mpeg');
 
         if (!hasValidExt && !hasValidMime) {
             if (display) {
-                display.innerText = '❌ ERREUR FORMAT : Veuillez choisir un fichier audio/vidéo valide (.mpeg, .mp3, .ogg, .wav, .mp4...).';
+                display.innerText = '❌ ERREUR FORMAT : Veuillez choisir un fichier audio valide (.mp3, .ogg, .wav, .m4a...). Pour les vidéos, utilisez la page Traduction Vidéo.';
                 display.className = 'filename-info error';
             }
             return;
@@ -537,11 +1028,24 @@
         formData.append('media_file', mediaFile);
         
         var bgFileInput = document.getElementById('bg-file');
-        if (bgFileInput && bgFileInput.files[0]) {
+        if (isCustomBgUploaded && bgFileInput && bgFileInput.files[0]) {
             formData.append('bg_file', bgFileInput.files[0]);
         }
+        formData.append('bg_theme', selectedBgTheme || 'bg_palestine');
 
-        formData.append('mode', document.getElementById('mode-select').value);
+        // Calcul du mode compatible et transmission des langues source / cible
+        var calculatedMode = 'VOSTFR';
+        if (currentTargetLang === 'ar') {
+            calculatedMode = 'VOAR';
+        } else {
+            if (currentSourceLang === 'he') calculatedMode = 'VOSTFR_HEB';
+            else if (currentSourceLang === 'ar_geo') calculatedMode = 'VOSTFR_GEO';
+            else calculatedMode = 'VOSTFR';
+        }
+
+        formData.append('mode', calculatedMode);
+        formData.append('source_lang', currentSourceLang);
+        formData.append('target_lang', currentTargetLang);
         formData.append('title', document.getElementById('video-title').value);
         formData.append('title_color', selectedTitleColor);
         formData.append('sub_color', selectedSubColor);
@@ -587,17 +1091,17 @@
                 if (progressBar) progressBar.style.width = '100%';
                 if (btn) {
                     btn.className = 'btn-primary success';
-                    btn.innerHTML = '✅ VIDÉO ENCODÉE AVEC SUCCÈS !';
+                    btn.innerHTML = '✅ VIDÉO PRÊTE !';
                 }
-                if (modalTitle) modalTitle.innerText = '🎉 Encodage Réel FFmpeg Terminé !';
-                if (modalStatus) modalStatus.innerText = 'Votre vidéo TikTok 1080x1920 a été générée avec succès par le pipeline Aya. Cliquez ci-dessous :';
+                if (modalTitle) modalTitle.innerText = '🎉 Votre vidéo est prête à être partagée !';
+                if (modalStatus) modalStatus.innerText = 'Rendez-vous dans votre Studio pour voir le résultat.';
                 if (modalSpinner) modalSpinner.style.display = 'none';
                 
                 var dlLink = document.getElementById('downloadMp4Link');
                 if (dlLink) {
                     var fullMp4Url = result.mp4_url.startsWith('http') 
                         ? result.mp4_url 
-                        : (apiBase ? apiBase + result.mp4_url : (window.location.port === '8080' ? 'http://localhost:3000' + result.mp4_url : result.mp4_url));
+                        : result.mp4_url;
                     dlLink.href = fullMp4Url;
                     dlLink.style.display = 'inline-flex';
                     dlLink.setAttribute('download', 'video_tiktok_studio_v3.mp4');
@@ -611,7 +1115,36 @@
                         pContainer.style.display = 'block';
                     }
                 }
-                if (modalActions) modalActions.style.display = 'block';
+                if (modalActions) {
+                    // Bouton CTA "Accéder à mon Studio"
+                    var studioCtaExisting = document.getElementById('studioCtaBtn');
+                    if (!studioCtaExisting) {
+                        var studioCta = document.createElement('a');
+                        studioCta.id = 'studioCtaBtn';
+                        studioCta.href = '/studio';
+                        studioCta.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;margin-top:0.75rem;background:linear-gradient(90deg,#10B981,#38BDF8);color:white;font-weight:bold;font-size:1rem;padding:0.75rem 1.5rem;border-radius:8px;text-decoration:none;width:100%;box-sizing:border-box;transition:opacity 0.2s;';
+                        studioCta.innerHTML = '🎬 Accéder à mon Studio';
+                        studioCta.onmouseover = function() { this.style.opacity = '0.85'; };
+                        studioCta.onmouseout = function() { this.style.opacity = '1'; };
+                        modalActions.insertBefore(studioCta, modalActions.firstChild);
+                    }
+                    modalActions.style.display = 'block';
+                    if (window.AyaRatingWidget) {
+                        var studioRatingContainer = document.getElementById('studioRatingContainer');
+                        if (!studioRatingContainer) {
+                            studioRatingContainer = document.createElement('div');
+                            studioRatingContainer.id = 'studioRatingContainer';
+                            modalActions.appendChild(studioRatingContainer);
+                        }
+                        studioRatingContainer.innerHTML = '';
+                        window.AyaRatingWidget.show({
+                            serviceType: 'studio_916',
+                            jobId: result.jobId || result.mp4_filename || result.mp4_url,
+                            mediaFilename: result.mp4_filename || 'video_tiktok_studio_v3.mp4',
+                            targetContainer: studioRatingContainer
+                        });
+                    }
+                }
             } else {
                 var errDetail = result.message || (result.errors && result.errors[0] ? result.errors[0].user_message : "Échec du pipeline de traitement.");
                 throw new Error(errDetail);
@@ -651,21 +1184,41 @@
         }
     }
 
-    var currentLang = 'FR';
-    function toggleLanguage() {
-        currentLang = (currentLang === 'FR') ? 'AR' : 'FR';
-        var body = document.body;
-        var btn = document.getElementById('langToggleBtn');
-        if (currentLang === 'AR') {
-            body.setAttribute('dir', 'rtl');
-            if (btn) btn.innerText = '🌐 🇵🇸 العربية (FR)';
-        } else {
-            body.setAttribute('dir', 'ltr');
-            if (btn) btn.innerText = '🌐 FR / 🇵🇸 العربية';
-        }
-    }
+        window.addEventListener('aya:languageChanged', function(e) {
+            var lang = e.detail && e.detail.lang ? e.detail.lang : (localStorage.getItem('aya_lang') || 'fr');
+            var headerInput = document.getElementById('header-text-input');
+            var titleInput = document.getElementById('video-title');
+            
+            // Adapter les exemples si l'utilisateur n'a pas personnalisé les champs
+            if (headerInput && (headerInput.value === 'TÉMOIGNAGE DIRECT' || headerInput.value === 'PALESTINIAN ECHO' || headerInput.value === 'شهادة حية من الميدان')) {
+                headerInput.value = (lang === 'ar') ? 'شهادة حية من الميدان' : 'TÉMOIGNAGE DIRECT';
+            }
+            if (titleInput && (titleInput.value === 'PAROLES ET TÉMOIGNAGES DU TERRAIN' || titleInput.value.includes('DRAME') || titleInput.value === 'أصوات ورسائل موثقة من الميدان')) {
+                titleInput.value = (lang === 'ar') ? 'أصوات ورسائل موثقة من الميدان' : 'PAROLES ET TÉMOIGNAGES DU TERRAIN';
+            }
+            toggleMediaType();
+            drawCanvas();
+        });
+    </script>
 
-</script>
+    <!-- Pied de page global légal & solidaire -->
+    <footer class="aya-legal-footer" style="margin-top: 40px; border-radius: 14px;">
+        <div class="aya-legal-footer-inner">
+            <div class="aya-legal-footer-links">
+                <a href="/cgu.html">Conditions Générales (CGU/CGV)</a>
+                <span class="aya-legal-footer-sep">•</span>
+                <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
+                <span class="aya-legal-footer-sep">•</span>
+                <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+            </div>
+            <p class="aya-legal-footer-copyright">
+                © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
+            </p>
+        </div>
+    </footer>
 
+    <script src="/aya-i18n.js"></script>
+    <script src="/feedback-widget.js"></script>
+    <script src="/service-rating-widget.js"></script>
 </body>
 </html>

@@ -188,6 +188,8 @@
             sourceArSub: 'Dialecte ammiya / Gaza',
             sourceFrTitle: 'Français',
             sourceFrSub: 'Discours original en français',
+            sourceHeTitle: 'Hébreu',
+            sourceHeSub: 'Reportages / Enquêtes en hébreu',
 
             // Sélecteur Langue Cible
             labelTargetLang: '2. Langue cible des sous-titres',
@@ -633,6 +635,8 @@
             sourceArSub: 'اللهجة الغزاوية العامية الأصيلة',
             sourceFrTitle: 'الفرنسية',
             sourceFrSub: 'الكلام الأصلي باللغة الفرنسية',
+            sourceHeTitle: 'العبرية',
+            sourceHeSub: 'تقارير وتحقيقات إعلامية بالعبرية',
 
             // Sélecteur Langue Cible
             labelTargetLang: '٢. اللغة المطلوبة للترجمة (الهدف)',
@@ -1219,6 +1223,8 @@
             updateElementText('sourceArSub', dict.sourceArSub);
             updateElementText('sourceFrTitle', dict.sourceFrTitle);
             updateElementText('sourceFrSub', dict.sourceFrSub);
+            updateElementText('sourceHeTitle', dict.sourceHeTitle);
+            updateElementText('sourceHeSub', dict.sourceHeSub);
             updateElementText('labelTargetLang', dict.labelTargetLang);
             updateElementText('targetFrTitle', dict.targetFrTitle);
             updateElementText('targetFrSub', dict.targetFrSub);
@@ -1364,10 +1370,32 @@
             updateElementText('studioHeroTitle', dict.studioHeroTitle);
             updateElementText('studioHeroSub', dict.studioHeroSub);
             updateElementText('sec1Title', dict.sec1Title);
-            updateElementText('labelModeSelect', dict.labelModeSelect);
-            updateElementText('modeHint', dict.modeHint);
+            updateElementText('labelSourceLang', dict.labelSourceLang || 'Langue parlée dans l\'audio (Source) :');
+            updateElementText('labelTargetLang', dict.labelTargetLang || 'Langue cible des sous-titres (Cible) :');
+            updateElementText('srcArTitle', dict.sourceArTitle || 'Arabe palestinien');
+            updateElementText('srcArSub', dict.sourceArSub || 'Dialecte ammiya / Gaza');
+            updateElementText('srcAutoTitle', dict.sourceAutoTitle || 'Auto-détection');
+            updateElementText('srcAutoSub', dict.sourceAutoSub || 'Détection IA automatique');
+            updateElementText('srcFrTitle', dict.sourceFrTitle || 'Français');
+            updateElementText('srcFrSub', dict.sourceFrSub || 'Discours original français');
+            updateElementText('srcHeTitle', dict.sourceHeTitle || 'Hébreu');
+            updateElementText('srcHeSub', dict.sourceHeSub || 'Médias / Enquêtes');
+            updateElementText('targetFrTitle', dict.targetFrTitle || 'VOSTFR - Français');
+            updateElementText('targetFrSub', dict.targetFrSub || 'Sous-titres en français');
+            updateElementText('targetArTitle', dict.targetArTitle || 'VOAR - Arabe');
+            updateElementText('targetArSub', dict.targetArSub || 'Sous-titres en arabe authentique');
+
             updateElementText('sec2Title', dict.sec2Title);
-            updateElementText('labelMediaType', dict.labelMediaType);
+            updateElementText('labelBgTheme', dict.labelBgTheme || '🖼️ 2. Choix du Visuel de Fond 9:16 :');
+            updateElementText('bgPalestineTitle', dict.bgPalestineTitle);
+            updateElementText('bgPalestineSub', dict.bgPalestineSub);
+            updateElementText('bgDarkTitle', dict.bgDarkTitle);
+            updateElementText('bgDarkSub', dict.bgDarkSub);
+            updateElementText('bgTurquoiseTitle', dict.bgTurquoiseTitle);
+            updateElementText('bgTurquoiseSub', dict.bgTurquoiseSub);
+            updateElementText('bgTemoignageTitle', dict.bgTemoignageTitle);
+            updateElementText('bgTemoignageSub', dict.bgTemoignageSub);
+
             updateElementText('sourceMediaHint', dict.sourceMediaHint);
             updateElementText('labelBgFile', dict.labelBgFile);
             updateElementText('bgFileHint', dict.bgFileHint);
@@ -1395,23 +1423,15 @@
             updateElementText('simTitle', dict.simTitle);
             updateElementText('simRealtime', dict.simRealtime);
 
-            updateElementText('optModeVostfr', dict.optModeVostfr);
-            updateElementText('optModeVoar', dict.optModeVoar);
-            updateElementText('optMediaAudio', dict.optMediaAudio);
-            updateElementText('optMediaVideo', dict.optMediaVideo);
-
             const sourceMediaLabel = document.getElementById('source-media-label');
-            const mediaType = document.getElementById('media-type');
-            if (sourceMediaLabel && mediaType) {
-                sourceMediaLabel.innerText = (mediaType.value === 'VIDEO') 
-                    ? dict.sourceMediaVideoLabel 
-                    : dict.sourceMediaAudioLabel;
+            if (sourceMediaLabel) {
+                sourceMediaLabel.innerText = dict.sourceMediaAudioLabel || '🎙️ 1. Fichier Audio Source :';
             }
 
             const selectedFileDisplay = document.getElementById('selected-filename-display');
             const sourceMediaInput = document.getElementById('source-media-file');
             if (selectedFileDisplay && (!sourceMediaInput || !sourceMediaInput.files || sourceMediaInput.files.length === 0)) {
-                selectedFileDisplay.textContent = dict.placeholderAudioFile;
+                selectedFileDisplay.textContent = dict.placeholderAudioFile || '📁 Choisissez votre note vocale ou audio (.mp3, .ogg, .wav, .m4a...)...';
             }
 
             const bgFileDisplay = document.getElementById('bg-filename-display');

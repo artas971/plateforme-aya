@@ -107,6 +107,47 @@
 
 ---
 
+
+---
+
+### 🟢 INCIDENT #009 — CONTRESENS PHONÉTIQUE ARABE GAZAOUI (BATTANIYYA / CIVIÈRE)
+- **Date & Heure :** 2026-09-25 T19:00:00
+- **Référence :** `INC-20260925-BATTANIYYA-MASSASSA` — Vidéo `IMG_6789.MP4` (*Famille Atallah, Gaza*)
+- **Agents Concernés :** Nadine (Dialecte), Jade (Timing), Steve (Lead QA), Alexandre (Audit)
+- **Symptôme Originel :** La traduction produisait *"Apportez une civière !"* au lieu de *"Apportez une couverture !"*, et omettait la tétine retrouvée dans les décombres.
+- **Démarche Analytique d'Alexandre :**
+  1. **Audit acoustique Gemini direct :** Confirmation que le mot crié en boucle est **`بطانية`** (*baṭṭāniyye* = couverture) et non *naqqāla* (civière).
+  2. **Cause Racine #1 — Biais Contextuel :** Biais "secours/décombres = civière".
+  3. **Cause Racine #2 — Manque au Glossaire Gaza :** `بطانية`, `مصاصة`, `ما ينفعش` absents des tables anti-pièges.
+  4. **Cause Racine #3 — Garde-fou Permissif :** `verify_timeline_coverage` validait à tort des flux squelettiques (3 répliques).
+  5. **Corrections déployées :**
+     - Glossaire enrichi dans `gemini_translator.py` (`ar` et `auto`).
+     - `verify_timeline_coverage` durcie (trous > 5.5s, densité < 35%, seuil $\ge 4$ répliques).
+     - Remplacement de l'ensemble des caches par les segments certifiés.
+- **Résultat :** ✅ **RÉSOLU**
+
+---
+
+### 🔴 INCIDENT #010 — ERREUR DE NATURE DE SCÈNE & CONTRADICTION ÉDITORIALE (VIVANT VS DÉCÉDÉ)
+- **Date & Heure :** 2026-09-25 T20:08:00
+- **Référence :** `INC-20260925-SCENE-NATURE-MORTE` — Vidéo `IMG_6789.MP4` (*Famille Atallah, Gaza*)
+- **Agents Concernés :** Tous les agents (Steve, Jade, Nadine, Lionel, Thomas, Alexandre)
+- **Signalé par :** L'utilisateur — Contexte réel : extraction des ossements et vêtements d'un enfant décédé avec biberon et tétine.
+- **Symptômes Originels :**
+  1. Sous-titre erroné : *"Apportez-lui sa tétine !"* (laisse croire à un enfant vivant à consoler).
+  2. Description TikTok contaminée : *"suppliant qu'on apporte une tétine pour un corps trop petit pour ce monde"* (double contresens sur la tétine retrouvée et sur le tissu trop petit).
+- **Gravité :** 🔴 CRITIQUE — Faute de véracité documentaire et d'éthique humaine.
+- **Démarche Analytique d'Alexandre :**
+  1. **Faille dans `user_context_directive` :** Le prompt confinait le contexte utilisateur aux seuls noms propres en lui interdisant de guider la compréhension de la scène.
+  2. **Interprétation terrain rétablie :** Les secouristes découvrent et mettent de côté la tétine parmi les restes mortels (*"Voici sa petite tétine."*). La couverture réclamée sert de linceul pour envelopper la dépouille avec respect. Le morceau de tissu inspecté est jugé trop petit pour couvrir les restes (*"C'est trop petit, ça ne suffit pas."*).
+  3. **Corrections Architecturales (Steve & Nadine) :**
+     - Refonte de `user_context_directive` avec détection automatique de scènes de deuil/martyrs et injection de la **DIRECTIVE SCÈNE CRITIQUE**.
+     - Harmonisation complète de la description TikTok : suppression de la sur-interprétation dramatique au profit d'un récit sobre, digne et rigoureux.
+     - Régénération de l'ASS, du MP4 encodé et du TXT descriptif.
+- **Résultat :** ✅ **RÉSOLU & IMMUNISÉ**
+
+---
+
 ## 📊 REGISTRE MÉMOIRE DES SOLUTIONS CONFRONTÉES (ALEXANDRE)
 
 | Code Erreur | Motif | Correction Mémorisée | Statut |
@@ -123,3 +164,8 @@
 | `ERR_FFMPEG_UNRECOGNIZED_OPTION` | Option `-preset` libx264 invalide | Remplacement par `-preset ultrafast` | ✅ MEMORISÉ |
 | `ERR_EXEC_SYNC_TIMEOUT` | Event loop bloqué sur FFmpeg | Passage en `child_process.exec` asynchrone | ✅ MEMORISÉ |
 | `ERR_MIME_INVALID` | PDF uploadé à la place d'un Audio | Rejet HTTP 400 avec rapport d'erreur Eden | ✅ MEMORISÉ |
+| `ERR_PHONETIC_LEXICON_GAZ_001` | `بطانية` traduit par "civière" — biais contextuel modèle | Règles lexicales Gaza obligatoires dans `gemini_translator.py` (branches `ar` + `auto`) | ✅ MÉMORISÉ |
+| `ERR_SKELETON_TRANSCRIPTION` | 3 segments acceptés comme valides (25s de vidéo) | Garde-fou densité <35% + anti-squelette + seuil min 4 segments | ✅ MÉMORISÉ |
+| `ERR_SCENE_NATURE_MISMATCH` | Scène de mort traduite comme sauvetage d'un vivant | Détection auto scènes de deuil + DIRECTIVE SCÈNE CRITIQUE dans `user_context_directive` | ✅ MÉMORISÉ |
+| `ERR_DESCRIPTION_CONTEXT_DESYNC` | Description TikTok propageant le contresens "tétine demandée" | Alignement éditorial strict : recueil d'effets personnels & linceul digne | ✅ MÉMORISÉ |
+

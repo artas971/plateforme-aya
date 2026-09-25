@@ -375,6 +375,12 @@ def sanitize_translation(text: str) -> str:
     cleaned = re.sub(r'\b[Ll]e crieur a annonc[ée]\b', "La voix s'est élevée", cleaned)
     cleaned = re.sub(r'\b[Ll]e crieur\b', "La voix", cleaned)
 
+    # 6. Remplacement du contresens phonétique 'mariage(s)' par 'fête(s)' (confusion entre 'عيد العرش' Aïd Al-Arch / Souccot et 'عرس' Ourss)
+    cleaned = re.sub(r'\bdébut des mariages\b', 'début de leurs fêtes', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\bleurs mariages\b', 'leurs fêtes', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\bLe mariage commence\b', 'Leur fête commence', cleaned)
+    cleaned = re.sub(r'\ble mariage commence\b', 'leur fête commence', cleaned)
+
     # Nettoyage des espaces résiduels
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
     return cleaned
@@ -441,9 +447,10 @@ def find_smart_cut_point(w_start: float, total_duration: float, silences: list, 
     if remaining <= max_chunk:
         return round(total_duration, 2)
 
-    # RÈGLE ANTI-ORPHELIN : Si le restant total dépasse modérément max_chunk (jusqu'à max_chunk + 12s = 47s),
-    # on absorbe la totalité pour éviter de découper un micro-résidu (1s à 6s) qui hallucinerait en fin de vidéo.
-    if remaining <= max_chunk + 12.0:
+    # RÈGLE ANTI-ORPHELIN : Si le restant total est <= 34.0s,
+    # on absorbe la totalité pour éviter de découper un micro-résidu (< 8s).
+    # Au-delà de 34s, on découpe impérativement sur un silence pour garantir la complétude de l'IA (anti-trou noir terminal).
+    if remaining <= 34.0:
         return round(total_duration, 2)
 
     search_start = w_start + min_chunk
@@ -488,7 +495,7 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
         try:
             from faster_whisper import WhisperModel
             w_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=2)
-            w_lang = "ar" if source_lang in ['ar', 'auto'] else (source_lang if source_lang != 'auto' else None)
+            w_lang = "ar" if source_lang == 'ar' else (source_lang if source_lang not in ('auto', None) else None)
             w_segs, _ = w_model.transcribe(
                 chunk_path,
                 language=w_lang,
@@ -502,13 +509,14 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
             )
             w_list = list(w_segs)
             if w_list:
-                FORBIDDEN_GLYPHS = re.compile(r'[\u0400-\u04FF\uAC00-\uD7AF\u1100-\u11FF\u0590-\u05FF\u3040-\u30FF\u4E00-\u9FFF]')
+                # Filtrer uniquement les glyphes asiatiques / cyrilliques incompatibles, préserver l'hébreu et l'arabe
+                FORBIDDEN_GLYPHS = re.compile(r'[\u0400-\u04FF\uAC00-\uD7AF\u1100-\u11FF\u3040-\u30FF\u4E00-\u9FFF]')
                 units = []
                 for ws in w_list:
                     w_txt = ws.text.strip()
                     if not w_txt:
                         continue
-                    if source_lang in ['ar', 'auto'] and FORBIDDEN_GLYPHS.search(w_txt):
+                    if source_lang == 'ar' and FORBIDDEN_GLYPHS.search(w_txt):
                         continue
                     units.append({"start": round(ws.start, 2), "end": round(ws.end, 2), "text": w_txt})
                 if units:
@@ -519,6 +527,24 @@ def transcribe_window(chunk_path: str, mode: str, window_offset: float, window_d
 
     if not raw_segments or len(raw_segments) == 0:
         return []
+
+    # GARDE-FOU INTÉGRITÉ FACTUELLE (CHARTE ANTI-FAKE NEWS & VAD CHECK) :
+    # Si l'IA Gemini a renvoyé du texte sur ce chunk, on vérifie impérativement par analyse acoustique VAD
+    # qu'il y a bien une présence vocale humaine réelle dans l'extrait audio pour interdire toute hallucination.
+    try:
+        from faster_whisper import WhisperModel
+        w_chk_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=2)
+        chk_segs, _ = w_chk_model.transcribe(
+            chunk_path,
+            vad_filter=True,
+            vad_parameters=dict(min_silence_duration_ms=600),
+            no_speech_threshold=0.65
+        )
+        if not list(chk_segs):
+            print(f"[GARDE-FOU ANTI-HALLUCINATION] 🛡️ Chunk sans voix humaine intelligible (ambiance/vent/silence) : {len(raw_segments)} segment(s) IA rejeté(s) pour prévenir toute fausse information.", flush=True)
+            return []
+    except Exception as e_vad:
+        pass
 
     # Recalibrage d'échelle préventif (Anti-Compression 0.SS / décimales minutes)
     normalized_segments = normalize_and_rescale_segments(raw_segments, window_dur)
@@ -557,10 +583,12 @@ transcribe_window_30s = transcribe_window
 
 def verify_timeline_coverage(segments: list, total_duration: float, tolerance: float = 0.90, silences: list = None) -> bool:
     """
-    Garde-Fou Temporel Assermenté (Agent Alexandre - Ticket Troncature) :
+    Garde-Fou Temporel Assermenté (Agent Alexandre & Steve) :
     Vérifie que les sous-titres couvrent l'intégralité de la chronologie du média.
-    Détecte et bloque les troncatures prématurées (ex: arrêt à 2m20 sur une vidéo de 5min12).
-    Tolérance : 90% par défaut (ou fin de parole détectée avant silence terminal).
+    Détecte et bloque :
+    1. Les troncatures prématurées (arrêt avant la fin).
+    2. Les trous géants / omissions silencieuses (> 5.5s sans segment alors qu'il n'y a pas de silence acoustique).
+    3. Les transcriptions squelettiques (ex: seulement 3 répliques sur une vidéo dense de 26s).
     """
     if not segments:
         return False
@@ -582,32 +610,66 @@ def verify_timeline_coverage(segments: list, total_duration: float, tolerance: f
 
     if not is_valid:
         print(f"[TIMELINE AUDIT] ⚠️ TRONCATURE DÉTECTÉE ! Dernier segment : {max_end:.2f}s, Cible : {effective_target:.2f}s (Couverture : {coverage_ratio*100:.1f}% < {tolerance*100:.0f}%).", flush=True)
-    else:
-        print(f"[TIMELINE AUDIT] ✅ Couverture temporelle validée : {max_end:.2f}s / {total_duration:.2f}s ({min(100.0, coverage_ratio*100):.1f}%).", flush=True)
+        return False
 
-    return is_valid
+    # VÉRIFICATION 2 : GARDE-FOU ANTI-TROUS SUSPECTS (Alexandre & Steve)
+    sorted_segs = sorted(segments, key=lambda x: float(x.get("start", 0.0)))
+    for i in range(len(sorted_segs) - 1):
+        c_end = float(sorted_segs[i].get("end", 0.0))
+        n_start = float(sorted_segs[i + 1].get("start", 0.0))
+        gap = n_start - c_end
+        if gap > 5.5:
+            gap_covered_by_silence = False
+            if silences:
+                for sil_start, sil_end in silences:
+                    if sil_start <= (c_end + 1.2) and sil_end >= (n_start - 1.2):
+                        gap_covered_by_silence = True
+                        break
+            if not gap_covered_by_silence:
+                print(f"[TIMELINE AUDIT] ⚠️ TROU SUSPECT DÉTECTÉ ({gap:.1f}s sans paroles de {c_end:.1f}s à {n_start:.1f}s sans silence acoustique) ! Rejet du bloc pour recalcul.", flush=True)
+                return False
+
+    # VÉRIFICATION 3 : DENSITÉ VOCALE MINIMALE (Anti-fichier vide)
+    total_spoken = sum(max(0.0, float(s.get("end", 0.0)) - float(s.get("start", 0.0))) for s in sorted_segs)
+    if effective_target > 15.0 and total_spoken < (effective_target * 0.35) and len(sorted_segs) <= 3:
+        print(f"[TIMELINE AUDIT] ⚠️ TRANSCRIPTION SQUELETTIQUE ({len(sorted_segs)} segments, {total_spoken:.1f}s parlées sur {effective_target:.1f}s) ! Rejet pour recalcul.", flush=True)
+        return False
+
+    print(f"[TIMELINE AUDIT] ✅ Couverture temporelle validée : {max_end:.2f}s / {total_duration:.2f}s ({min(100.0, coverage_ratio*100):.1f}%, {len(sorted_segs)} segments).", flush=True)
+    return True
 
 
 def get_cached_segments(media_path: str, target_lang: str) -> list:
     """
     Récupère instantanément les segments traduits et synchronisés depuis le cache local (Mode Restyle Rapide).
+    Normalisation tolérante aux préfixes de timestamp Multer et séparateurs (espaces, underscores).
     Court-circuite 100% des appels API (Whisper/Gemini) pour une ré-incrustation en ~2s par Max.
     """
     mode = 'VOAR' if target_lang.lower() == 'ar' else 'VOSTFR'
     cache_dir = BASE_DIR / "cache_transcriptions"
     base_name = Path(media_path).stem[:50]
-    raw_stem = re.sub(r"^\d+_", "", base_name)
+
+    def _norm(s: str) -> str:
+        s = re.sub(r"^\d+_", "", s)
+        s = re.sub(r"[_\s\-\.\(\)]+", "", s).lower()
+        return s
+
+    target_norm = _norm(base_name)
+    # Isole la racine significative en retirant l'extension vidéo si présente dans le nom
+    prefix = target_norm.replace("mp4", "").replace("mov", "").replace("avi", "")
+
     if not cache_dir.exists():
         return []
 
     for fname in sorted(os.listdir(cache_dir), reverse=True):
         if fname.endswith(".json") and mode in fname:
-            f_clean = re.sub(r"^\d+_", "", fname)
-            if raw_stem in f_clean or f_clean.startswith(raw_stem):
+            f_norm = _norm(fname)
+            # Match si le nom normalisé correspond
+            if prefix and len(prefix) >= 4 and (prefix in f_norm or f_norm.startswith(prefix)):
                 try:
                     with open(cache_dir / fname, "r", encoding="utf-8") as cf:
                         cached_segs = json.load(cf)
-                        if isinstance(cached_segs, list) and len(cached_segs) > 0:
+                        if isinstance(cached_segs, list) and len(cached_segs) >= 4:
                             print(f"[RESTYLE ENGINE] ⚡ Cache trouvé pour restyle : {fname} ({len(cached_segs)} segments)", flush=True)
                             return cached_segs
                 except Exception:
@@ -697,7 +759,7 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                 th_arg = cpu_threads_limit if cpu_threads_limit and cpu_threads_limit > 0 else 4
                 print(f"[ACOUSTIC SYNC] 🎙️ Analyse acoustique via Faster-Whisper (cpu_threads={th_arg}, condition_on_previous_text=False, vad_filter=True)...", flush=True)
                 w_model = WhisperModel("base", device="cpu", compute_type="int8", cpu_threads=th_arg)
-                w_lang = "ar" if source_lang in ['ar', 'auto'] else (source_lang if source_lang != 'auto' else None)
+                w_lang = "ar" if source_lang == 'ar' else (source_lang if source_lang not in ('auto', None) else None)
                 w_segments, w_info = w_model.transcribe(
                     media_path,
                     language=w_lang,
@@ -710,17 +772,17 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
                     compression_ratio_threshold=2.4
                 )
                 raw_w_segs = list(w_segments)
-                record_alexandre_agent("Thomas", "thomas_whisper_transcribe", t0_w, status="OK", details=f"{len(raw_w_segs)} segments vocaux (threads: {th_arg}, lang: {w_info.language if w_info else 'ar'})")
+                record_alexandre_agent("Thomas", "thomas_whisper_transcribe", t0_w, status="OK", details=f"{len(raw_w_segs)} segments vocaux (threads: {th_arg}, lang: {w_info.language if w_info else 'auto'})")
                 if raw_w_segs and len(raw_w_segs) > 0:
                     print(f"[ACOUSTIC SYNC] ✅ {len(raw_w_segs)} segments vocaux détectés (langue: {w_info.language}).", flush=True)
-                    FORBIDDEN_GLYPHS = re.compile(r'[\u0400-\u04FF\uAC00-\uD7AF\u1100-\u11FF\u0590-\u05FF\u3040-\u30FF\u4E00-\u9FFF]')
+                    FORBIDDEN_GLYPHS = re.compile(r'[\u0400-\u04FF\uAC00-\uD7AF\u1100-\u11FF\u3040-\u30FF\u4E00-\u9FFF]')
                     merged_units = []
                     curr_u = None
                     for ws in raw_w_segs:
                         w_txt = ws.text.strip()
                         if not w_txt:
                             continue
-                        if source_lang in ['ar', 'auto'] and FORBIDDEN_GLYPHS.search(w_txt):
+                        if source_lang == 'ar' and FORBIDDEN_GLYPHS.search(w_txt):
                             print(f"[WHISPER PURGE] 🧹 Segment rejeté (glyphes corrompus) : '{w_txt}'", flush=True)
                             continue
                         if curr_u is None:
@@ -1080,9 +1142,16 @@ def build_ass_file(
     if is_video:
         play_res_x = width
         play_res_y = height
-        # Échelle de police proportionnelle à la hauteur (72px pour une base 1920)
-        font_size = max(24, int(height * (72 / 1920)))
-        margin_lr = max(15, int(width * 0.025))
+        if width > height:
+            # Format paysage / horizontal 16:9 :
+            # Calibré sur ~50pt pour un canvas 720p (~7% de la hauteur), garantissant une lisibilité optimale sur smartphone et desktop
+            font_size = max(42, int(height * (50 / 720)))
+            margin_lr = max(20, int(width * 0.04))
+        else:
+            # Format portrait / vertical 9:16 (standard TikTok 72pt pour base 1920)
+            font_size = max(36, int(height * (72 / 1920)))
+            margin_lr = max(15, int(width * 0.025))
+
         if sub_margin_v <= 250:
             alignment = 8
             margin_v = max(20, int(height * 0.05))
@@ -1191,7 +1260,7 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
     - DUAL-ENVIRONMENT (Ticket 3C) : Adapte automatiquement le profil d'encodage (-threads, -preset, -crf).
     """
     ff_prof = get_ffmpeg_performance_profile()
-    print(f"[FFMPEG CONFIG] ⚙️ Profil d'encodage actif : {ff_prof['label']} (threads: {ff_prof['threads']}, preset: {ff_prof['preset']}, crf: {ff_prof['crf']})", flush=True)
+    print(f"[FFMPEG CONFIG] ⚙️ Profil d'encodage actif : {ff_prof['label']} (threads: {ff_prof['threads']}, preset: {ff_prof['preset']}, crf: {ff_prof['crf']})", flush=True, file=sys.stderr)
 
     temp_burn_ass = ass_path.parent / f"_temp_burn_{os.getpid()}.ass"
     shutil.copy2(ass_path, temp_burn_ass)
@@ -1199,7 +1268,7 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
 
     try:
         if is_video:
-            print(f"[FFMPEG] Incrustation sur flux vidéo original ({output_mp4_path.name}) - Thème de fond ({bg_theme}) ignoré, vidéo originale conservée intacte.", flush=True)
+            print(f"[FFMPEG] Incrustation sur flux vidéo original ({output_mp4_path.name}) - Thème de fond ({bg_theme}) ignoré, vidéo originale conservée intacte.", flush=True, file=sys.stderr)
             # Sécurisation de la parité des dimensions pour l'encodeur libx264 (évite l'erreur width not divisible by 2)
             vf_filter = f"pad=ceil(iw/2)*2:ceil(ih/2)*2,subtitles='{escaped_ass}'"
             cmd = [
@@ -1227,7 +1296,7 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
             if not bg_target.exists():
                 bg_target = DEFAULT_BG
 
-            print(f"[FFMPEG] Audio pur détecté : Génération vidéo 9:16 avec fond : {bg_target.name} (thème: {bg_theme})...", flush=True)
+            print(f"[FFMPEG] Audio pur détecté : Génération vidéo 9:16 avec fond : {bg_target.name} (thème: {bg_theme})...", flush=True, file=sys.stderr)
             bg_image = str(bg_target.resolve())
             cmd = [
                 'ffmpeg', '-y',
@@ -1249,7 +1318,7 @@ def render_video_ffmpeg(media_path: str, ass_path: Path, output_mp4_path: Path, 
         if res.returncode != 0:
             raise RuntimeError(f"Erreur d'encodage FFmpeg: {res.stderr[-500:]}")
 
-        print(f"[FFMPEG SUCCÈS] Vidéo produite : {output_mp4_path.name} ({output_mp4_path.stat().st_size} octets)")
+        print(f"[FFMPEG SUCCÈS] Vidéo produite : {output_mp4_path.name} ({output_mp4_path.stat().st_size} octets)", file=sys.stderr)
     finally:
         if temp_burn_ass.exists():
             try:
@@ -2163,10 +2232,10 @@ def main():
     try:
         ff_prof = get_ffmpeg_performance_profile()
         record_alexandre_agent("Environment", "execution_profile", time.time(), status="OK", details=ff_prof["label"])
-        print(f"[AYA ENVIRONMENT] 🌐 Mode: {ff_prof['env'].upper()} | Profil: {ff_prof['label']} (FFmpeg: threads {ff_prof['threads']}, preset {ff_prof['preset']}, crf {ff_prof['crf']})", flush=True)
+        print(f"[AYA ENVIRONMENT] 🌐 Mode: {ff_prof['env'].upper()} | Profil: {ff_prof['label']} (threads {ff_prof['threads']}, preset {ff_prof['preset']}, crf {ff_prof['crf']})", flush=True, file=sys.stderr)
 
         mode_label = "⚡ Mode Express (Texte Uniquement)" if express_mode else "🎬 Vidéo Complète"
-        print(f"[PROGRESS] 5% - ✨ Préparation de votre vidéo ({mode_label})...", flush=True)
+        print(f"[PROGRESS] 5% - Nous préparons votre vidéo au format TikTok…", flush=True)
 
         # 1. Analyse média & Silences réels (Thomas)
         print("[PROGRESS] 12% - 🎧 Écoute attentive de la voix et du son...", flush=True)

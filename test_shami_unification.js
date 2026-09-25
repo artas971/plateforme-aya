@@ -23,10 +23,10 @@ const sampleExcerpts = [
         expected: ["بدين", "تدين", "يدين", "استنكار", "بستنكر"]
     },
     {
-        name: "Action politique & Retrait de légitimité (Désavouer)",
+        name: "Action politique & Retrait de légitimité (Désavouer - Arbitrage 1.B)",
         fr: "Rabat n'hésite pas à cibler et désavouer les factions armées palestiniennes.",
-        forbidden: ["تتنصل منها", "يتنصل منها"],
-        expected: ["نزع الشرعية", "تنزع الشرعية", "سحب الشرعية", "ترفض الاعتراف", "رفض الاعتراف", "ترفض تأييد"]
+        forbidden: ["تتنصل منها", "يتنصل منها", "يتبرأ منها", "تتبرأ منها"],
+        expected: ["تنكر لإلها", "تتنكر لإلها", "التنكر لإلها", "نزع الشرعية"]
     },
     {
         name: "Translittération nom propre sans particule française",
@@ -35,10 +35,34 @@ const sampleExcerpts = [
         expected: ["دونالد ترامب", "ترامب"]
     },
     {
-        name: "Accord de genre morphosyntaxique Shami (Féminin abstrait)",
+        name: "Cynisme politique (Vide moral vs impolitesse) & Accord de genre",
         fr: "Cet opportunisme cynique rappelle d'anciennes alliances très controversées du Royaume.",
-        forbidden: ["هاد الانتهازية"],
-        expected: ["هاي الانتهازية", "هادي الانتهازية"]
+        forbidden: ["هاد الانتهازية", "وقحة", "فجة", "الوقحة", "الفجة"],
+        expected: ["عديمة المبادئ", "بلا حيا"]
+    },
+    {
+        name: "Anti-calque de contraste & Bannissement de l'hallucination 'المغامر'",
+        fr: "Le Maroc, lui, accélère son rapprochement et tourne le dos au peuple palestinien.",
+        forbidden: ["المغامر", "المغامرة", "وبتدير ضهرها"],
+        expected: ["أما النظام المغربي", "أما المغرب", "والمغرب"]
+    },
+    {
+        name: "Neutralité analytique vs emphase commémorative religieuse",
+        fr: "Une célébration d'un homme dont l'amitié avec Netanyahou pèse lourdement sur le nombre de morts.",
+        forbidden: ["كان ثمنها غالي من دماء", "دماء آلاف الشهداء"],
+        expected: ["كلفت كتير من أرواح الضحايا", "أرواح الضحايا"]
+    },
+    {
+        name: "Dénonciation du double jeu politique (Arbitrage 3.C)",
+        fr: "Aujourd'hui, le monde attend de la clarté et la fin de cette diplomatie profondément ambiguë.",
+        forbidden: ["الغامضة كتير"],
+        expected: ["المخزي", "التناقض الدبلوماسي"]
+    },
+    {
+        name: "Chute oratoire percutante (Arbitrage 2.A)",
+        fr: "Une question tragique se pose alors pour conclure :",
+        forbidden: ["سؤال مأساوي"],
+        expected: ["بيحرق الضمير"]
     }
 ];
 
@@ -98,8 +122,12 @@ function runPython(command) {
     const formattedCmd = formatPythonCommand(command);
     return new Promise((resolve, reject) => {
         exec(formattedCmd, { cwd: __dirname, env: process.env }, (error, stdout, stderr) => {
-            if (error) reject(error);
-            else resolve(stdout);
+            if (error) {
+                const details = `${stdout || ''}\n${stderr || ''}\n${error.message}`;
+                reject(new Error(details));
+            } else {
+                resolve(stdout);
+            }
         });
     });
 }
@@ -131,9 +159,13 @@ print("✅ Cache LRU Mémoire opérationnel : 'Le grand écart' -> 'اللعب �
 test_cases = [
     ("L'intervention du Maroc à l'ONU met en lumière une diplomatie du grand écart.", ["النطة الكبيرة", "النطة"], ["اللعب على الحبلين", "حبلين"]),
     ("Face aux destructions, le discours officiel dénonce les forces d'occupation.", ["بتبرأ من", "يتبرأ من"], ["بدين", "تدين", "يدين", "استنكار"]),
-    ("Rabat n'hésite pas à cibler et désavouer les factions armées palestiniennes.", ["تتنصل منها", "يتنصل منها"], ["تنزع الشرعية", "سحب الشرعية", "ترفض الاعتراف", "ترفض تأييد"]),
+    ("Rabat n'hésite pas à cibler et désavouer les factions armées palestiniennes.", ["تتنصل منها", "يتنصل منها", "يتبرأ منها", "تتبرأ منها"], ["تنكر لإلها", "تتنكر لإلها", "التنكر لإلها", "نزع الشرعية"]),
     ("L'allégeance va jusqu'à baptiser une voie rapide marocaine au nom de Donald Trump.", ["دونالد لترومب", "لترومب"], ["دونالد ترامب", "ترامب"]),
-    ("Cet opportunisme cynique rappelle d'anciennes alliances très controversées du Royaume.", ["هاد الانتهازية"], ["هاي الانتهازية", "هادي الانتهازية"])
+    ("Cet opportunisme cynique rappelle d'anciennes alliances très controversées du Royaume.", ["هاد الانتهازية", "وقحة", "فجة", "الوقحة", "الفجة"], ["عديمة المبادئ", "بلا حيا"]),
+    ("Le Maroc, lui, accélère son rapprochement et tourne le dos au peuple palestinien.", ["المغامر", "المغامرة", "وبتدير ضهرها"], ["أما النظام المغربي", "أما المغرب", "والمغرب"]),
+    ("Une célébration d'un homme dont l'amitié avec Netanyahou pèse lourdement sur le nombre de morts.", ["كان ثمنها غالي من دماء", "دماء آلاف الشهداء"], ["كلفت كتير من أرواح الضحايا", "أرواح الضحايا"]),
+    ("Aujourd'hui, le monde attend de la clarté et la fin de cette diplomatie profondément ambiguë.", ["الغامضة كتير"], ["المخزي", "التناقض الدبلوماسي"]),
+    ("Une question tragique se pose alors pour conclure :", ["سؤال مأساوي"], ["بيحرق الضمير"])
 ]
 
 all_ok = True

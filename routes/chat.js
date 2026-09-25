@@ -7,7 +7,7 @@ const multer = require('multer');
 const { exec } = require('child_process');
 const { formatPythonCommand } = require('../utils/runtime');
 const { recordEvent } = require('../services/telemetryService');
-const { getChatSystemPrompt } = require('../utils/shamiSemanticRules');
+const { getChatSystemPrompt, sanitizeShamiText } = require('../utils/shamiSemanticRules');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AUDIO_A_TRAITER_DIR = path.join(ROOT_DIR, 'audio_a_traiter');
@@ -359,7 +359,10 @@ async function translateChatBidirectional(text) {
                             const detected_lang = (parsed.detected_lang === 'ar' || parsed.detected_lang === 'fr') 
                                 ? parsed.detected_lang 
                                 : (containsArabic(text) ? 'ar' : 'fr');
-                            const translated_text = (parsed.translated_text || '').trim();
+                            let translated_text = (parsed.translated_text || '').trim();
+                            if (detected_lang === 'fr') {
+                                translated_text = sanitizeShamiText(translated_text);
+                            }
 
                             console.log(`[Chat IA Succès — Aya Shami Core] Modèle: ${model} | ${detected_lang} ➔ ${translated_text.substring(0, 45)}...`);
                             const result = {

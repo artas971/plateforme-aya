@@ -190,6 +190,111 @@
             border-color: var(--accent-color);
         }
 
+        /* Sélecteurs de Langues Source & Cible */
+        .source-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.35rem;
+        }
+        .source-card {
+            background: #ffffff;
+            border: 2px solid rgba(153, 153, 153, 0.25);
+            border-radius: 8px;
+            padding: 0.6rem 0.65rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .source-card:hover {
+            border-color: var(--accent-color);
+            background: #f8fafc;
+        }
+        .source-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+        }
+        .source-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .source-details { display: flex; flex-direction: column; overflow: hidden; }
+        .source-title { font-weight: 700; font-size: 0.8rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .source-sub { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .lang-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.35rem;
+        }
+        .lang-card {
+            background: #ffffff;
+            border: 2px solid rgba(153, 153, 153, 0.25);
+            border-radius: 8px;
+            padding: 0.6rem 0.65rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .lang-card:hover {
+            border-color: var(--accent-color);
+            background: #f8fafc;
+        }
+        .lang-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
+        }
+        .lang-flag { font-size: 1.3rem; flex-shrink: 0; }
+        .lang-details { display: flex; flex-direction: column; overflow: hidden; }
+        .lang-title { font-weight: 700; font-size: 0.8rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lang-sub { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Galerie de Visuels de Fond 9:16 */
+        .bg-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+            margin-top: 0.35rem;
+        }
+        .bg-card {
+            background: #ffffff;
+            border: 2px solid rgba(153, 153, 153, 0.25);
+            border-radius: 8px;
+            padding: 0.45rem 0.55rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .bg-card:hover {
+            border-color: var(--accent-color);
+            background: #f8fafc;
+        }
+        .bg-card.active {
+            border-color: var(--accent-color);
+            background: rgba(0, 188, 212, 0.08);
+            box-shadow: 0 0 12px rgba(0, 188, 212, 0.25);
+        }
+        .bg-thumb {
+            width: 32px;
+            height: 54px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid rgba(153, 153, 153, 0.35);
+            flex-shrink: 0;
+        }
+        .bg-details { display: flex; flex-direction: column; overflow: hidden; gap: 2px; }
+        .bg-title { font-size: 0.78rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bg-sub { font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color) 0%, #00bcd4 100%);
             color: white;
@@ -293,37 +398,132 @@
 
 <div class="main-container">
     <div class="control-panel">
-        <div class="section-title" id="sec1Title">1. Sens de Traduction & Mode</div>
+        <div class="section-title" id="sec1Title">1. Langues & Sens de Traduction</div>
+        
+        <!-- Langue Source Audio -->
         <div class="form-group">
-            <label for="mode-select" id="labelModeSelect">Protocole & Langue Source :</label>
-            <select id="mode-select" onchange="drawCanvas()">
-                <option value="VOSTFR" id="optModeVostfr" selected>🇵🇸 Arabe Palestinien (Gaza) ➔ 🇫🇷 Français (VOSTFR)</option>
-                <option value="VOAR" id="optModeVoar">🇫🇷 Français ➔ 🇵🇸 Arabe Palestinien (Gaza Ammiya) (VOAR)</option>
-            </select>
-            <div class="field-hint" id="modeHint">Détermine la langue parlée dans le fichier et la langue des sous-titres incrustés.</div>
+            <label id="labelSourceLang">Langue parlée dans l'audio (Source) :</label>
+            <div class="source-grid" id="studioSourceGrid">
+                <div class="source-card active" data-source="ar" onclick="selectStudioSource(this, 'ar')">
+                    <span class="source-icon">🇵🇸</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcArTitle">Arabe palestinien</div>
+                        <div class="source-sub" id="srcArSub">Dialecte ammiya / Gaza</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="auto" onclick="selectStudioSource(this, 'auto')">
+                    <span class="source-icon">🤖</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcAutoTitle">Auto-détection</div>
+                        <div class="source-sub" id="srcAutoSub">Détection IA automatique</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="ar_geo" onclick="selectStudioSource(this, 'ar_geo')">
+                    <span class="source-icon">🌍</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcGeoTitle">Arabe Géopolitique</div>
+                        <div class="source-sub" id="srcGeoSub">Reportages / Levant</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="fr" onclick="selectStudioSource(this, 'fr')">
+                    <span class="source-icon">🇫🇷</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcFrTitle">Français</div>
+                        <div class="source-sub" id="srcFrSub">Discours original français</div>
+                    </div>
+                </div>
+                <div class="source-card" data-source="he" onclick="selectStudioSource(this, 'he')">
+                    <span class="source-icon">🇮🇱</span>
+                    <div class="source-details">
+                        <div class="source-title" id="srcHeTitle">Hébreu</div>
+                        <div class="source-sub" id="srcHeSub">Médias / Enquêtes</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="section-title" id="sec2Title">2. Médias Source & Image de Fond</div>
-        <div class="form-group">
-            <label for="media-type" id="labelMediaType">Format du Média Source :</label>
-            <select id="media-type" onchange="toggleMediaType()">
-                <option value="AUDIO" id="optMediaAudio" selected>🎙️ Fichier Audio (.mpeg / .mp3 / .wav / .ogg / .m4a / .opus / .aac / .flac) + Image de Fond</option>
-                <option value="VIDEO" id="optMediaVideo">🎬 Fichier Vidéo (.mpeg / .mpg / .mp4 / .mov / .mkv / .webm / .ts)</option>
-            </select>
+        <!-- Langue Cible Sous-titres -->
+        <div class="form-group" style="margin-top: 0.35rem;">
+            <label id="labelTargetLang">Langue cible des sous-titres (Cible) :</label>
+            <div class="lang-grid" id="studioTargetGrid">
+                <div class="lang-card active" data-target="fr" onclick="selectStudioTarget(this, 'fr')">
+                    <span class="lang-flag">🇫🇷</span>
+                    <div class="lang-details">
+                        <div class="lang-title" id="targetFrTitle">VOSTFR - Français</div>
+                        <div class="lang-sub" id="targetFrSub">Sous-titres en français</div>
+                    </div>
+                </div>
+                <div class="lang-card" data-target="ar" onclick="selectStudioTarget(this, 'ar')">
+                    <span class="lang-flag">🇵🇸</span>
+                    <div class="lang-details">
+                        <div class="lang-title" id="targetArTitle">VOAR - Arabe</div>
+                        <div class="lang-sub" id="targetArSub">Sous-titres en arabe authentique</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <div class="section-title" id="sec2Title">2. Audio Source & Visuel 9:16</div>
+        
+        <!-- Fichier Audio Source Exclusif -->
         <div class="form-group">
-            <label for="source-media-file" id="source-media-label">📁 1. Fichier Audio Source :</label>
-            <input type="file" id="source-media-file" accept="audio/*,video/*,.mpeg,.mpg,.mpe,.mp3,.mp4,.wav,.ogg,.opus,.m4a,.aac,.flac,.mov,.mkv,.webm,.ts" onchange="onSourceMediaSelected(event)">
-            <span class="filename-info" id="selected-filename-display">📁 Choisissez votre fichier audio ou vidéo (.mpeg, .mp3, .ogg, .mp4...)...</span>
-            <div class="field-hint" id="sourceMediaHint">Formats acceptés : MP3, WAV, OGG, M4A, MP4, MOV, MKV... (jusqu'à 500 Mo).</div>
+            <label for="source-media-file" id="source-media-label">🎙️ 1. Fichier Audio Source :</label>
+            <input type="file" id="source-media-file" accept="audio/*,.mp3,.wav,.ogg,.opus,.m4a,.aac,.flac" onchange="onSourceMediaSelected(event)">
+            <span class="filename-info" id="selected-filename-display">📁 Choisissez votre note vocale ou audio (.mp3, .ogg, .wav, .m4a...)...</span>
+            <div class="field-hint" id="sourceMediaHint">
+                Réservé aux audios purs & notes vocales. Pour sous-titrer directement une vidéo, rendez-vous sur <a href="/traduction" style="color: var(--accent-color); font-weight: 700; text-decoration: none;">Aya Traduction</a>.
+            </div>
         </div>
 
-        <div class="form-group" id="bg-image-group">
-            <label for="bg-file" id="labelBgFile">🖼️ 2. Image de Fond 9:16 (pour Canevas Vidéo) :</label>
-            <input type="file" id="bg-file" accept="image/*" onchange="loadCustomBg(event)">
-            <span class="filename-info" id="bg-filename-display">🖼️ Cliquez pour choisir votre image de fond 9:16...</span>
-            <div class="field-hint" id="bgFileHint">Image verticale au format 9:16 (ex: 1080x1920) servant d'arrière-plan pour les fichiers audio.</div>
+        <!-- Galerie de Visuels de Fond 9:16 -->
+        <div class="form-group" id="bg-visual-section">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                <label id="labelBgTheme">🖼️ 2. Choix du Visuel de Fond 9:16 :</label>
+                <span style="font-size: 0.76rem; color: #10B981; font-weight: 700;" id="bgSelectedBadge">✓ Visuel actif (zéro upload requis)</span>
+            </div>
+            <div class="field-hint" style="margin-bottom: 0.5rem;">
+                Sélectionnez un visuel prédéfini ci-dessous (appliqué directement sur le simulateur) ou importez votre propre image 9:16.
+            </div>
+            <div class="bg-grid" id="studioBgGrid">
+                <div class="bg-card active" data-bg="bg_palestine" onclick="selectPresetBg(this, 'bg_palestine', '/assets/backgrounds/bg_palestine.jpg')">
+                    <img src="/assets/backgrounds/bg_palestine.jpg" alt="Palestine" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgPalestineTitle">🇵🇸 Palestine Résilience</div>
+                        <div class="bg-sub" id="bgPalestineSub">Noir, Blanc, Vert, Rouge</div>
+                    </div>
+                </div>
+                <div class="bg-card" data-bg="bg_dark" onclick="selectPresetBg(this, 'bg_dark', '/assets/backgrounds/bg_dark.jpg')">
+                    <img src="/assets/backgrounds/bg_dark.jpg" alt="Noir Profond" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgDarkTitle">🌑 Noir Profond</div>
+                        <div class="bg-sub" id="bgDarkSub">Contraste OLED sobre</div>
+                    </div>
+                </div>
+                <div class="bg-card" data-bg="bg_turquoise" onclick="selectPresetBg(this, 'bg_turquoise', '/assets/backgrounds/bg_turquoise.jpg')">
+                    <img src="/assets/backgrounds/bg_turquoise.jpg" alt="Turquoise Espoir" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgTurquoiseTitle">🌊 Turquoise Espoir</div>
+                        <div class="bg-sub" id="bgTurquoiseSub">Couleur officielle Aya</div>
+                    </div>
+                </div>
+                <div class="bg-card" data-bg="bg_temoignage" onclick="selectPresetBg(this, 'bg_temoignage', '/assets/backgrounds/bg_temoignage.jpg')">
+                    <img src="/assets/backgrounds/bg_temoignage.jpg" alt="Témoignage" class="bg-thumb">
+                    <div class="bg-details">
+                        <div class="bg-title" id="bgTemoignageTitle">🎙️ Témoignage Sobre</div>
+                        <div class="bg-sub" id="bgTemoignageSub">Cadre solennel</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import d'Image Personnalisée Optionnel -->
+            <div style="margin-top: 0.65rem; padding-top: 0.65rem; border-top: 1px dashed rgba(153, 153, 153, 0.25);">
+                <label for="bg-file" style="font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    <span>📁 Ou importer une image 9:16 personnalisée :</span>
+                    <span style="font-weight: 500; font-size: 0.74rem; color: #64748b; background: #f1f5f9; padding: 2px 7px; border-radius: 10px;">Optionnel</span>
+                </label>
+                <input type="file" id="bg-file" accept="image/*" onchange="loadCustomBg(event)" style="margin-top: 0.35rem;">
+                <span class="filename-info" id="bg-filename-display" style="display: none;">🖼️ Image personnalisée chargée</span>
+            </div>
         </div>
 
         <div class="section-title" id="sec3Title">3. Bandeau, Titres & Couleurs</div>
@@ -429,8 +629,8 @@
 <div id="loaderModal" class="loader-modal" style="display: none;">
     <div class="modal-card" id="modalCard">
         <div class="spinner" id="modalSpinner"></div>
-        <h3 id="modalTitle" style="color: #38BDF8; font-size: 1.25rem;">🚀 Génération du Rendu Vidéo TikTok V3 en cours...</h3>
-        <p id="modalStatus" style="color: #94A3B8; font-size: 0.9rem;">Encodage FFmpeg en cours (traitement réel de l'audio et des sous-titres)...</p>
+        <h3 id="modalTitle" style="color: #38BDF8; font-size: 1.25rem;">Création de votre vidéo en cours…</h3>
+        <p id="modalStatus" style="color: #94A3B8; font-size: 0.9rem;">Synchronisation de l'audio et des sous-titres en temps réel.</p>
         
         <div class="progress-bar-container">
             <div class="progress-bar-fill" id="progressBar"></div>
@@ -489,6 +689,10 @@
     var selectedTitleColor = '#D8D0BE';
     var selectedSubColor = '#FFFF00';
     var selectedHeaderColor = '#CE1126';
+    var currentSourceLang = 'ar';
+    var currentTargetLang = 'fr';
+    var selectedBgTheme = 'bg_palestine';
+    var isCustomBgUploaded = false;
     var bgImage = new Image();
     var isUserImageLoaded = false;
 
@@ -497,6 +701,15 @@
             var warn = document.getElementById('fileProtocolWarning');
             if (warn) warn.style.display = 'block';
         }
+
+        // Pré-charger le fond 9:16 par défaut (Palestine Résilience)
+        bgImage = new Image();
+        bgImage.onload = function() {
+            isUserImageLoaded = true;
+            drawCanvas();
+        };
+        bgImage.src = '/assets/backgrounds/bg_palestine.jpg';
+
         // requestAnimationFrame garantit que le layout CSS est complet
         // avant de mesurer avec getBoundingClientRect()
         requestAnimationFrame(function() {
@@ -504,6 +717,45 @@
             drawCanvas();
         });
     };
+
+    function selectStudioSource(cardEl, src) {
+        currentSourceLang = src;
+        var cards = document.querySelectorAll('#studioSourceGrid .source-card');
+        cards.forEach(function(c) { c.classList.remove('active'); });
+        if (cardEl) cardEl.classList.add('active');
+        drawCanvas();
+    }
+
+    function selectStudioTarget(cardEl, tgt) {
+        currentTargetLang = tgt;
+        var cards = document.querySelectorAll('#studioTargetGrid .lang-card');
+        cards.forEach(function(c) { c.classList.remove('active'); });
+        if (cardEl) cardEl.classList.add('active');
+        drawCanvas();
+    }
+
+    function selectPresetBg(cardEl, themeName, imageSrc) {
+        selectedBgTheme = themeName;
+        isCustomBgUploaded = false;
+        var bgFileInput = document.getElementById('bg-file');
+        if (bgFileInput) bgFileInput.value = '';
+        var bgDisplay = document.getElementById('bg-filename-display');
+        if (bgDisplay) bgDisplay.style.display = 'none';
+
+        var cards = document.querySelectorAll('#studioBgGrid .bg-card');
+        cards.forEach(function(c) { c.classList.remove('active'); });
+        if (cardEl) cardEl.classList.add('active');
+
+        var badge = document.getElementById('bgSelectedBadge');
+        if (badge) badge.innerText = '✓ Visuel actif (zéro upload requis)';
+
+        bgImage = new Image();
+        bgImage.onload = function() {
+            isUserImageLoaded = true;
+            drawCanvas();
+        };
+        bgImage.src = imageSrc;
+    }
 
     // Re-calibrer si la fenêtre est redimensionnée
     window.addEventListener('resize', function() {
@@ -643,8 +895,7 @@
         var subY = (subMarginV / 1920) * LOGI_H;
 
         var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
-        var modeEl = document.getElementById('mode-select');
-        var mode = modeEl ? modeEl.value : 'VOSTFR';
+        var mode = (currentTargetLang === 'ar') ? 'VOAR' : 'VOSTFR';
         var subLines = [
             isArabicUI
                 ? (mode === 'VOSTFR' ? "هنا ستظهر الترجمة التوضيحية" : "هنا سيتم عرض ترجمتك الصوتية")
@@ -670,21 +921,7 @@
     }
 
     function toggleMediaType() {
-        var typeEl = document.getElementById('media-type');
-        var type = typeEl ? typeEl.value : 'AUDIO';
-        var label = document.getElementById('source-media-label');
-        var mediaInput = document.getElementById('source-media-file');
-        var isArabicUI = (document.documentElement.getAttribute('dir') === 'rtl' || document.documentElement.lang === 'ar' || (localStorage.getItem('aya_lang') === 'ar'));
-        
-        if (type === 'AUDIO') {
-            if (label) label.innerText = isArabicUI ? '📁 ١. ملف الصوت المصدر:' : '📁 1. Fichier Audio Source :';
-            if (mediaInput) mediaInput.setAttribute('accept', 'audio/*,video/*,.mpeg,.mpg,.mpe,.mp3,.wav,.ogg,.opus,.m4a,.aac,.flac');
-            document.getElementById('bg-image-group').style.display = 'flex';
-        } else {
-            if (label) label.innerText = isArabicUI ? '📁 ١. ملف الفيديو المصدر:' : '📁 1. Fichier Vidéo Source :';
-            if (mediaInput) mediaInput.setAttribute('accept', 'video/*,audio/*,.mpeg,.mpg,.mpe,.mp4,.mov,.mkv,.webm,.ts,.avi');
-            document.getElementById('bg-image-group').style.display = 'none';
-        }
+        // Rétrocompatibilité : le Studio est désormais 100% focalisé sur l'audio pur
         drawCanvas();
     }
 
@@ -692,10 +929,18 @@
         var file = event.target.files[0];
         var display = document.getElementById('selected-filename-display');
         if (file && display) {
-            display.innerText = '✅ Sélectionné : ' + file.name;
-            display.className = 'filename-info selected';
+            var validAudioExts = ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac', '.mpeg', '.mpg'];
+            var fileNameLower = file.name.toLowerCase();
+            var isAudio = validAudioExts.some(function(ext) { return fileNameLower.endsWith(ext); }) || file.type.startsWith('audio/');
+            if (!isAudio) {
+                display.innerText = '⚠️ Format non recommandé : Veuillez choisir un fichier audio (.mp3, .wav, .ogg, .m4a...). Pour les vidéos, utilisez la page Traduction Vidéo.';
+                display.className = 'filename-info error';
+            } else {
+                display.innerText = '✅ Audio sélectionné : ' + file.name;
+                display.className = 'filename-info selected';
+            }
         } else if (display) {
-            display.innerText = '📁 Choisissez votre fichier...';
+            display.innerText = '📁 Choisissez votre note vocale ou audio (.mp3, .ogg, .wav, .m4a...)...';
             display.className = 'filename-info';
         }
         drawCanvas();
@@ -705,10 +950,18 @@
         var file = event.target.files[0];
         var display = document.getElementById('bg-filename-display');
         if (file) {
+            isCustomBgUploaded = true;
+            var cards = document.querySelectorAll('#studioBgGrid .bg-card');
+            cards.forEach(function(c) { c.classList.remove('active'); });
+
             if (display) {
-                display.innerText = '✅ Image sélectionnée : ' + file.name;
+                display.innerText = '✅ Image personnalisée : ' + file.name;
                 display.className = 'filename-info selected';
+                display.style.display = 'inline-block';
             }
+            var badge = document.getElementById('bgSelectedBadge');
+            if (badge) badge.innerText = '✓ Image personnalisée active';
+
             var reader = new FileReader();
             reader.onload = function(e) {
                 bgImage = new Image();
@@ -720,12 +973,9 @@
             };
             reader.readAsDataURL(file);
         } else {
-            isUserImageLoaded = false;
-            if (display) {
-                display.innerText = '🖼️ Cliquez pour choisir votre image de fond 9:16...';
-                display.className = 'filename-info';
-            }
-            drawCanvas();
+            isCustomBgUploaded = false;
+            var defaultCard = document.querySelector('#studioBgGrid .bg-card[data-bg="bg_palestine"]');
+            selectPresetBg(defaultCard, 'bg_palestine', '/assets/backgrounds/bg_palestine.jpg');
         }
     }
 
@@ -733,24 +983,23 @@
         var sourceInput = document.getElementById('source-media-file');
         var mediaFile = sourceInput ? sourceInput.files[0] : null;
         var display = document.getElementById('selected-filename-display');
-        var mediaType = document.getElementById('media-type').value;
 
         if (!mediaFile) {
             if (display) {
-                display.innerText = '⚠️ SÉLECTIONNER UN FICHIER AUDIO OU VIDÉO OBLIGATOIRE !';
+                display.innerText = '⚠️ SÉLECTIONNER UN FICHIER AUDIO OBLIGATOIRE !';
                 display.className = 'filename-info error';
             }
             return;
         }
 
-        var validMediaExts = ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac', '.mpeg', '.mpg', '.mpe', '.mp4', '.mov', '.mkv', '.webm', '.ts', '.avi'];
+        var validMediaExts = ['.mp3', '.wav', '.ogg', '.opus', '.m4a', '.aac', '.flac', '.mpeg', '.mpg'];
         var fileNameLower = mediaFile.name.toLowerCase();
         var hasValidExt = validMediaExts.some(function(ext) { return fileNameLower.endsWith(ext); });
-        var hasValidMime = mediaFile.type.startsWith('audio/') || mediaFile.type.startsWith('video/') || mediaFile.type.includes('octet-stream') || mediaFile.type.includes('mpeg');
+        var hasValidMime = mediaFile.type.startsWith('audio/') || mediaFile.type.includes('octet-stream') || mediaFile.type.includes('mpeg');
 
         if (!hasValidExt && !hasValidMime) {
             if (display) {
-                display.innerText = '❌ ERREUR FORMAT : Veuillez choisir un fichier audio/vidéo valide (.mpeg, .mp3, .ogg, .wav, .mp4...).';
+                display.innerText = '❌ ERREUR FORMAT : Veuillez choisir un fichier audio valide (.mp3, .ogg, .wav, .m4a...). Pour les vidéos, utilisez la page Traduction Vidéo.';
                 display.className = 'filename-info error';
             }
             return;
@@ -779,11 +1028,24 @@
         formData.append('media_file', mediaFile);
         
         var bgFileInput = document.getElementById('bg-file');
-        if (bgFileInput && bgFileInput.files[0]) {
+        if (isCustomBgUploaded && bgFileInput && bgFileInput.files[0]) {
             formData.append('bg_file', bgFileInput.files[0]);
         }
+        formData.append('bg_theme', selectedBgTheme || 'bg_palestine');
 
-        formData.append('mode', document.getElementById('mode-select').value);
+        // Calcul du mode compatible et transmission des langues source / cible
+        var calculatedMode = 'VOSTFR';
+        if (currentTargetLang === 'ar') {
+            calculatedMode = 'VOAR';
+        } else {
+            if (currentSourceLang === 'he') calculatedMode = 'VOSTFR_HEB';
+            else if (currentSourceLang === 'ar_geo') calculatedMode = 'VOSTFR_GEO';
+            else calculatedMode = 'VOSTFR';
+        }
+
+        formData.append('mode', calculatedMode);
+        formData.append('source_lang', currentSourceLang);
+        formData.append('target_lang', currentTargetLang);
         formData.append('title', document.getElementById('video-title').value);
         formData.append('title_color', selectedTitleColor);
         formData.append('sub_color', selectedSubColor);
@@ -829,17 +1091,17 @@
                 if (progressBar) progressBar.style.width = '100%';
                 if (btn) {
                     btn.className = 'btn-primary success';
-                    btn.innerHTML = '✅ VIDÉO ENCODÉE AVEC SUCCÈS !';
+                    btn.innerHTML = '✅ VIDÉO PRÊTE !';
                 }
-                if (modalTitle) modalTitle.innerText = '🎉 Encodage Réel FFmpeg Terminé !';
-                if (modalStatus) modalStatus.innerText = 'Votre vidéo TikTok 1080x1920 a été générée avec succès par le pipeline Aya. Cliquez ci-dessous :';
+                if (modalTitle) modalTitle.innerText = '🎉 Votre vidéo est prête à être partagée !';
+                if (modalStatus) modalStatus.innerText = 'Rendez-vous dans votre Studio pour voir le résultat.';
                 if (modalSpinner) modalSpinner.style.display = 'none';
                 
                 var dlLink = document.getElementById('downloadMp4Link');
                 if (dlLink) {
                     var fullMp4Url = result.mp4_url.startsWith('http') 
                         ? result.mp4_url 
-                        : (apiBase ? apiBase + result.mp4_url : (window.location.port === '8080' ? 'http://localhost:3000' + result.mp4_url : result.mp4_url));
+                        : result.mp4_url;
                     dlLink.href = fullMp4Url;
                     dlLink.style.display = 'inline-flex';
                     dlLink.setAttribute('download', 'video_tiktok_studio_v3.mp4');
@@ -854,6 +1116,18 @@
                     }
                 }
                 if (modalActions) {
+                    // Bouton CTA "Accéder à mon Studio"
+                    var studioCtaExisting = document.getElementById('studioCtaBtn');
+                    if (!studioCtaExisting) {
+                        var studioCta = document.createElement('a');
+                        studioCta.id = 'studioCtaBtn';
+                        studioCta.href = '/studio';
+                        studioCta.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;margin-top:0.75rem;background:linear-gradient(90deg,#10B981,#38BDF8);color:white;font-weight:bold;font-size:1rem;padding:0.75rem 1.5rem;border-radius:8px;text-decoration:none;width:100%;box-sizing:border-box;transition:opacity 0.2s;';
+                        studioCta.innerHTML = '🎬 Accéder à mon Studio';
+                        studioCta.onmouseover = function() { this.style.opacity = '0.85'; };
+                        studioCta.onmouseout = function() { this.style.opacity = '1'; };
+                        modalActions.insertBefore(studioCta, modalActions.firstChild);
+                    }
                     modalActions.style.display = 'block';
                     if (window.AyaRatingWidget) {
                         var studioRatingContainer = document.getElementById('studioRatingContainer');
