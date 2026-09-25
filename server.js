@@ -240,22 +240,19 @@ app.get('/download/:filename', (req, res, next) => {
 app.use('/download', express.static(REPONSED_DIR));
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Racine / et Landing Page : Vitrine publique si visiteur anonyme, redirection automatique vers /chat-en-direct si connecté
-app.get(['/', '/landing', '/landing.html'], (req, res) => {
-    if (req.session && req.session.user && req.session.user.authenticated) {
-        return res.redirect('/chat-en-direct');
-    }
+// Racine / et Nouvelle Page d'Accueil Officielle des Modules (/accueil, /home)
+app.get(['/', '/accueil', '/accueil.html', '/home'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'accueil.html'));
+});
+
+// Ancienne Landing Page de Présentation
+app.get(['/landing', '/landing.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'landing.html'));
 });
 
 // Route canonique du Chat temps réel protégée (/chat-en-direct)
 app.get(['/chat-en-direct', '/chat'], requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Nouvelle Page d'Accueil & Hub des Modules (/accueil)
-app.get(['/accueil', '/accueil.html', '/home'], requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'accueil.html'));
 });
 
 app.get(['/traducteur', '/traducteur.html'], requireAuth, (req, res) => {
