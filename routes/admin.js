@@ -981,7 +981,7 @@ router.get('/telemetry/stats', requireAdminOrAgentToken, (req, res) => {
  * GET /api/admin/telemetry/export
  * Export streamé non-bloquant du journal JSONL du jour (ou d'une date spécifique ?date=YYYY-MM-DD)
  */
-router.get('/telemetry/export', requireAdminOrAgentToken, (req, res) => {
+router.get('/telemetry/export', requireAdminOrAgentToken, async (req, res) => {
     try {
         const { TELEMETRY_DIR } = require('../services/telemetryService');
         const requestedDate = req.query.date || new Date().toISOString().split('T')[0];
@@ -1006,14 +1006,47 @@ router.get('/telemetry/export', requireAdminOrAgentToken, (req, res) => {
             return res.status(404).json({ success: false, error: `Aucun journal de télémétrie trouvé pour la date ${requestedDate}.` });
         }
 
-        const stat = fs.statSync(filePath);
-        res.setHeader('Content-Type', isGz ? 'application/gzip' : 'application/x-ndjson; charset=utf-8');
-        res.setHeader('Content-Length', stat.size);
-        res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+        const { eventType, limit } = req.query;
+        const maxLimit = limit ? parseInt(limit, 10) : Infinity;
 
-        // Streaming direct sans accumulation en mémoire RAM
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
+        // Cas 1 : Aucun filtre supplémentaire -> Direct stream pipe ultra-performant (0 overhead)
+        if (!eventType && (!limit || isNaN(maxLimit))) {
+            const stat = fs.statSync(filePath);
+            res.setHeader('Content-Type', isGz ? 'application/gzip' : 'application/x-ndjson; charset=utf-8');
+            res.setHeader('Content-Length', stat.size);
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+            const fileStream = fs.createReadStream(filePath);
+            return fileStream.pipe(res);
+        }
+
+        // Cas 2 : Filtrage à la volée (eventType / limit) sans accumulation en mémoire RAM
+        res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="export-${requestedDate}${eventType ? '-' + eventType : ''}.jsonl"`);
+
+        const readline = require('readline');
+        const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+        const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+
+        let emittedCount = 0;
+        for await (const line of rl) {
+            if (!line || !line.trim()) continue;
+
+            if (eventType) {
+                // Filtrage rapide sans re-sérialisation
+                if (!line.includes(`"eventType":"${eventType}"`)) {
+                    continue;
+                }
+            }
+
+            res.write(line + '\n');
+            emittedCount++;
+
+            if (emittedCount >= maxLimit) {
+                fileStream.destroy();
+                break;
+            }
+        }
+        res.end();
 
     } catch (e) {
         return res.status(500).json({ success: false, error: e.message });

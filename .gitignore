@@ -89,3 +89,6 @@ chat_archives.json
 data/telemetry/*.jsonl
 data/telemetry/*.jsonl.gz
 !data/telemetry/.gitkeep
+telemetry_data/*.jsonl
+telemetry_data/*.jsonl.gz
+!telemetry_data/.gitkeep
