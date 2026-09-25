@@ -47,6 +47,59 @@
             navCreateActionText: 'Menu',
             navCloseSheetText: 'Fermer',
 
+            // Page d'Accueil & Modules
+            homeDocTitle: "Aya Studio — Accueil & Modules",
+            homeHeroBadge: "Témoignages & Récits de Gaza",
+            homeHeroTitle: "La Voix Authentique des Témoignages de Gaza",
+            homeHeroSubtitle: "Sous-titrage haute fidélité, traduction fidèle du dialecte levantin, fiches éducatives et mémoire collective.",
+            homeHeroBtnStudio: "Traduire une Vidéo",
+            homeHeroBtnChat: "Salon d'Échange",
+            homeSectionTitle: "Tous les Outils de la Plateforme",
+            homeSectionSub: "Accédez directement à chaque espace selon vos besoins de création, de traduction ou d'échange",
+            homePlatformBadge: "Aya Studio",
+            // 7 Modules
+            homeMod1Badge: "Direct",
+            homeMod1Title: "Salon d'Échange",
+            homeMod1Desc: "Dialogue direct bilingue, écoute et envoi de messages vocaux natifs, avec distinction entre salon public et échanges privés.",
+            homeMod1FooterSub: "Notes vocales & texte",
+            homeMod1Link: "Ouvrir le salon ➔",
+
+            homeMod2Badge: "Format 9:16",
+            homeMod2Title: "Traduire une vidéo",
+            homeMod2Desc: "Ajouter des sous-titres synchronisés sur une vidéo existante au format vertical TikTok avec couverture et description prêtes à poster.",
+            homeMod2FooterSub: "Import vidéo ou Telegram",
+            homeMod2Link: "Sous-titrer ➔",
+
+            homeMod3Badge: "Audio ➔ Vidéo",
+            homeMod3Title: "Transformer un audio en vidéo",
+            homeMod3Desc: "Créer une vidéo 9:16 complète à partir d'un fichier audio brut avec une image de fond officielle et sous-titres incrustés.",
+            homeMod3FooterSub: "Génération automatique",
+            homeMod3Link: "Créer la vidéo ➔",
+
+            homeMod4Badge: "< 5s",
+            homeMod4Title: "Studio Traducteur",
+            homeMod4Desc: "Traduction bilingue instantanée de textes et notes vocales sans génération vidéo, respectant scrupuleusement les expressions de Gaza.",
+            homeMod4FooterSub: "Traduction express",
+            homeMod4Link: "Traduire ➔",
+
+            homeMod5Badge: "5 Mots",
+            homeMod5Title: "Fiches Éducatives",
+            homeMod5Desc: "Génération d'affiches de vocabulaire bilingue avec écoute audio native, prononciation, émojis illustratifs et téléchargement direct.",
+            homeMod5FooterSub: "Vocabulaire Shami",
+            homeMod5Link: "Consulter ➔",
+
+            homeMod6Badge: "Solidaire",
+            homeMod6Title: "Mur des Témoignages",
+            homeMod6Desc: "Espace de mémoire collective et galerie publique des vidéos sous-titrées et récits vérifiés par l'équipe pour diffusion internationale.",
+            homeMod6FooterSub: "Récits partagés",
+            homeMod6Link: "Découvrir ➔",
+
+            homeMod7Badge: "Zaytounas 🫒",
+            homeMod7Title: "Mon Compte",
+            homeMod7Desc: "Consultez votre solde de Zaytounas, gérez vos informations, retrouvez l'historique complet de vos projets et téléchargez vos archives.",
+            homeMod7FooterSub: "Portefeuille & Historique",
+            homeMod7Link: "Mon Profil ➔",
+
             // Page Modération Back-Office (Phase 2.5)
             moderationDocTitle: 'AYA Back-Office | Modération des Témoignages',
             moderationHeaderTitle: 'File d\'Attente de Modération',
@@ -435,6 +488,59 @@
             navOnlineText: 'متصل',
             navCreateActionText: 'القائمة',
             navCloseSheetText: 'إغلاق',
+
+            // Page d'Accueil & Modules (Arabe Palestinien Soigné)
+            homeDocTitle: "استوديو آية — الصفحة الرئيسية وأدوات المنصة",
+            homeHeroBadge: "شهادات وروايات حية من غزة",
+            homeHeroTitle: "الصوت الحقيقي لشهادات غزة الحية",
+            homeHeroSubtitle: "دبلجة وترجمة دقيقة للهجة الفلسطينية، بطاقات تعليمية وحفظ الذاكرة الإنسانية الحية.",
+            homeHeroBtnStudio: "ترجمة مقطع فيديو",
+            homeHeroBtnChat: "غرفة المحادثة",
+            homeSectionTitle: "جميع أدوات وخدمات المنصة",
+            homeSectionSub: "الوصول المباشر إلى كل مساحة وفق احتياجاتك في الترجمة، إنتاج الفيديو أو التبادل الصوتي",
+            homePlatformBadge: "استوديو آية",
+            // 7 Modules
+            homeMod1Badge: "مباشر",
+            homeMod1Title: "غرفة المحادثة",
+            homeMod1Desc: "تبادل مباشر ثنائي اللغة، استماع وإرسال ردود صوتية حية مع إمكانية التبديل بين العام والخاص.",
+            homeMod1FooterSub: "رسائل صوتية وكتابية",
+            homeMod1Link: "دخول الغرفة ←",
+
+            homeMod2Badge: "فيديو 9:16",
+            homeMod2Title: "ترجمة مقطع فيديو",
+            homeMod2Desc: "إضافة نصوص ترجمة واضحة ومدمجة على فيديو موجود مسبقاً بمقاس التيك توك مع نصوص جاهزة للنشر.",
+            homeMod2FooterSub: "رفع فيديو أو رابط تيليجرام",
+            homeMod2Link: "بدء الترجمة ←",
+
+            homeMod3Badge: "صوت ← فيديو",
+            homeMod3Title: "تحويل مقطع صوتي إلى فيديو",
+            homeMod3Desc: "إنشاء فيديو طولي متكامل 9:16 من ملف صوتي خام مع صورة خلفية ونصوص مدمجة بدقة عالية.",
+            homeMod3FooterSub: "توليد تلقائي فوري",
+            homeMod3Link: "إنشاء الفيديو ←",
+
+            homeMod4Badge: "< ٥ ثوانٍ",
+            homeMod4Title: "المترجم الصوتي",
+            homeMod4Desc: "ترجمة فورية للنصوص والرسائل الصوتية بدون دمج فيديو، مع المحافظة التامة على تعابير أهل غزة.",
+            homeMod4FooterSub: "ترجمة سريعة",
+            homeMod4Link: "بدء الترجمة ←",
+
+            homeMod5Badge: "٥ كلمات",
+            homeMod5Title: "البطاقات التعليمية",
+            homeMod5Desc: "إنشاء بطاقات ووسائط لتعليم مفردات اللهجة الشامية مصحوبة بنطق صوتي ورموز تعبيرية واضحة.",
+            homeMod5FooterSub: "مفردات شامية حية",
+            homeMod5Link: "استعراض البطاقات ←",
+
+            homeMod6Badge: "تضامني",
+            homeMod6Title: "جدار الشهادات",
+            homeMod6Desc: "مساحة لحفظ الذاكرة وعرض مقاطع الفيديو المترجمة والشهادات المعتمدة من فريق التدقيق.",
+            homeMod6FooterSub: "قصص وشهادات موثقة",
+            homeMod6Link: "استكشاف الجدار ←",
+
+            homeMod7Badge: "زيتونة 🫒",
+            homeMod7Title: "حسابي ورصيدي",
+            homeMod7Desc: "متابعة رصيد الزيتونات، إدارة البيانات الشخصية، وسجل الأعمال المنجزة مع إمكانية تنزيل الأرشيف.",
+            homeMod7FooterSub: "المحفظة وسجل الإنتاج",
+            homeMod7Link: "الملف الشخصي ←",
 
             // Page Modération Back-Office (Phase 2.5)
             moderationDocTitle: 'منصة آية - لوحة الإشراف والمراجعة',
@@ -897,6 +1003,67 @@
                 .catch(() => {});
         }
 
+        // Mise à jour de la marque solidaire (sans mention d'IA)
+        const brandBadgeAi = document.querySelector('.brand-badge-ai');
+        if (brandBadgeAi) {
+            brandBadgeAi.textContent = (lang === 'ar') ? 'فلسطين 🇵🇸' : 'Palestine 🇵🇸';
+        }
+
+        // Mise à jour des textes de la Page d'Accueil & Modules
+        if (document.getElementById('heroMainTitle') || window.location.pathname.includes('accueil') || window.location.pathname === '/' || window.location.pathname === '/index.html') {
+            if (dict.homeDocTitle) document.title = dict.homeDocTitle;
+            updateElementText('heroBadgeText', dict.homeHeroBadge);
+            updateElementText('heroMainTitle', dict.homeHeroTitle);
+            updateElementText('heroSubtitleText', dict.homeHeroSubtitle);
+            updateElementText('heroBtnStudioText', dict.homeHeroBtnStudio);
+            updateElementText('heroBtnChatText', dict.homeHeroBtnChat);
+            updateElementText('sectionToolsTitleText', dict.homeSectionTitle);
+            updateElementText('sectionToolsSub', dict.homeSectionSub);
+            updateElementText('platformBadgeText', dict.homePlatformBadge);
+
+            updateElementText('badgeDirect', dict.homeMod1Badge);
+            updateElementText('modExchangeTitle', dict.homeMod1Title);
+            updateElementText('modExchangeDesc', dict.homeMod1Desc);
+            updateElementText('modExchangeFooterSub', dict.homeMod1FooterSub);
+            updateElementText('lblOpenExchange', dict.homeMod1Link);
+
+            updateElementText('badgeFormat', dict.homeMod2Badge);
+            updateElementText('modVideoTransTitle', dict.homeMod2Title);
+            updateElementText('modVideoTransDesc', dict.homeMod2Desc);
+            updateElementText('modVideoTransFooterSub', dict.homeMod2FooterSub);
+            updateElementText('lblStartTrans', dict.homeMod2Link);
+
+            updateElementText('badgeAudioVideo', dict.homeMod3Badge);
+            updateElementText('modAudioVideoTitle', dict.homeMod3Title);
+            updateElementText('modAudioVideoDesc', dict.homeMod3Desc);
+            updateElementText('modAudioVideoFooterSub', dict.homeMod3FooterSub);
+            updateElementText('lblStartAudioVideo', dict.homeMod3Link);
+
+            updateElementText('badgeExpress', dict.homeMod4Badge);
+            updateElementText('modTranslatorTitle', dict.homeMod4Title);
+            updateElementText('modTranslatorDesc', dict.homeMod4Desc);
+            updateElementText('modTranslatorFooterSub', dict.homeMod4FooterSub);
+            updateElementText('lblOpenTranslator', dict.homeMod4Link);
+
+            updateElementText('badgeCards', dict.homeMod5Badge);
+            updateElementText('modCardsTitle', dict.homeMod5Title);
+            updateElementText('modCardsDesc', dict.homeMod5Desc);
+            updateElementText('modCardsFooterSub', dict.homeMod5FooterSub);
+            updateElementText('lblOpenCards', dict.homeMod5Link);
+
+            updateElementText('badgeWall', dict.homeMod6Badge);
+            updateElementText('modCommunityTitle', dict.homeMod6Title);
+            updateElementText('modCommunityDesc', dict.homeMod6Desc);
+            updateElementText('modCommunityFooterSub', dict.homeMod6FooterSub);
+            updateElementText('lblOpenCommunity', dict.homeMod6Link);
+
+            updateElementText('badgeAccount', dict.homeMod7Badge);
+            updateElementText('modAccountTitle', dict.homeMod7Title);
+            updateElementText('modAccountDesc', dict.homeMod7Desc);
+            updateElementText('modAccountFooterSub', dict.homeMod7FooterSub);
+            updateElementText('lblOpenAccount', dict.homeMod7Link);
+        }
+
         // Mise à jour des textes de la page /moderation
         if (window.location.pathname.includes('moderation')) {
             document.title = dict.moderationDocTitle;
@@ -1263,14 +1430,14 @@
             <div class="navbar-container">
                 <!-- PÔLE GAUCHE : Identité de Marque -->
                 <div class="navbar-brand">
-                    <a href="/chat-en-direct" class="brand-link" title="Aya Studio Accueil">
+                    <a href="/" class="brand-link" title="Aya Studio Accueil">
                         <div class="avatar-badge">
                             <img src="/assets/logo_aya_icon.svg" alt="Aya Studio" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<span class=\'avatar-initials\'>آية</span>'">
                             <span class="status-dot"></span>
                         </div>
                         <div class="brand-text">
                             <span class="brand-title" id="navbarBrandTitle">Aya Studio</span>
-                            <span class="brand-badge-ai">Levant IA</span>
+                            <span class="brand-badge-ai">${currentLang === 'ar' ? 'فلسطين 🇵🇸' : 'Palestine 🇵🇸'}</span>
                         </div>
                     </a>
                 </div>

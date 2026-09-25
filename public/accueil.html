@@ -12,7 +12,7 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <!-- Typographies Officielles : Amiri (Français) & Le Caire / Cairo (Arabe) -->
+    <!-- Typographies Officielles de la Charte : Amiri (Français) & Le Caire / Cairo (Arabe) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -22,273 +22,355 @@
 
     <style>
         :root {
-            --bleu-aya: #0b5394;
-            --turquoise-aya: #00bcd4;
-            --gris-fonce-aya: #434343;
-            --gris-secondaire-aya: #999999;
-            --blanc-aya: #ffffff;
-            --fond-sombre: #070b12;
-            --carte-surface: #0e1726;
-            --bordure-carte: rgba(153, 153, 153, 0.22);
+            /* 1. Charte Graphique Officielle Plateforme Aya */
+            --bleu-aya: #0b5394;            /* Bleu Dominant */
+            --bleu-aya-sombre: #073866;     /* Bleu Profond Hover */
+            --turquoise-aya: #00bcd4;       /* Turquoise Accent */
+            --turquoise-fonce: #00838f;     /* Turquoise Profond Contraste */
+            --gris-fonce-aya: #434343;      /* Gris Foncé Texte & Surfaces */
+            --gris-secondaire-aya: #999999; /* Gris Secondaire Bordures */
+            --blanc-aya: #ffffff;          /* Blanc Immature */
+            --fond-site: #f4f6f9;          /* Fond Global Harmonisé */
+            --carte-blanche: #ffffff;      /* Surface Cartes */
+            --bordure-carte: rgba(153, 153, 153, 0.28);
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--fond-sombre);
-            color: #f1f5f9;
+            background-color: var(--fond-site);
+            color: var(--gris-fonce-aya);
             font-family: 'Amiri', serif;
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            line-height: 1.6;
         }
 
-        /* Typographie ciblée : Amiri pour le contenu narratif, respect des polices UI de la navbar */
-        .hero-title, .hero-subtitle, .module-title, .module-desc {
+        /* Typographie ciblée : Amiri en Français, Le Caire (Cairo) en Arabe */
+        h1, h2, h3, h4, .hero-title, .hero-subtitle, .module-title, .module-desc {
             font-family: 'Amiri', serif;
         }
+
+        html[dir="rtl"] body,
+        html[dir="rtl"] h1,
+        html[dir="rtl"] h2,
+        html[dir="rtl"] h3,
+        html[dir="rtl"] h4,
         html[dir="rtl"] .hero-title,
         html[dir="rtl"] .hero-subtitle,
         html[dir="rtl"] .module-title,
-        html[dir="rtl"] .module-desc {
+        html[dir="rtl"] .module-desc,
+        html[dir="rtl"] * {
             font-family: 'Cairo', sans-serif !important;
+            line-height: 1.7 !important;
         }
 
-        /* Composants de la page d'accueil */
+        /* Conteneur principal */
         .accueil-container {
             max-width: 1140px;
             margin: 0 auto;
             width: 100%;
-            padding: 24px 16px 40px 16px;
+            padding: 28px 16px 48px 16px;
             box-sizing: border-box;
             flex: 1;
         }
 
-        /* Hero Banner */
+        /* 1. Hero Banner Harmonisé (Bleu Aya & Turquoise sur texte blanc immaculé) */
         .accueil-hero {
             text-align: center;
-            padding: 44px 20px;
-            border-radius: 24px;
-            background: linear-gradient(180deg, rgba(11, 83, 148, 0.28) 0%, rgba(7, 11, 18, 0.85) 100%);
-            border: 1px solid var(--bordure-carte);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+            padding: 48px 24px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--bleu-aya) 0%, var(--bleu-aya-sombre) 55%, #054854 100%);
+            border: 1px solid rgba(0, 188, 212, 0.35);
+            box-shadow: 0 12px 32px rgba(11, 83, 148, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
             position: relative;
             overflow: hidden;
-            margin-bottom: 36px;
+            margin-bottom: 38px;
+            color: var(--blanc-aya);
         }
+
+        .accueil-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 188, 212, 0.22) 0%, rgba(0, 188, 212, 0) 70%);
+            pointer-events: none;
+        }
+
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 4px 14px;
+            padding: 6px 16px;
             border-radius: 30px;
-            background: rgba(14, 23, 38, 0.85);
-            border: 1px solid rgba(0, 188, 212, 0.4);
-            color: var(--turquoise-aya);
-            font-size: 0.82rem;
+            background: rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 0.88rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
         }
+
         .hero-title {
-            font-size: 2.3rem;
+            font-size: 2.35rem;
             font-weight: 700;
             color: var(--blanc-aya);
             margin: 0 auto;
-            max-width: 820px;
+            max-width: 860px;
             line-height: 1.25;
+            letter-spacing: -0.01em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
         }
+
         .hero-subtitle {
-            font-size: 1.05rem;
-            color: var(--gris-secondaire-aya);
-            max-width: 680px;
-            margin: 14px auto 0 auto;
-            line-height: 1.6;
+            font-size: 1.15rem;
+            color: #e2e8f0;
+            max-width: 720px;
+            margin: 16px auto 0 auto;
+            line-height: 1.65;
+            font-weight: 400;
         }
+
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-            gap: 14px;
-            margin-top: 26px;
+            gap: 16px;
+            margin-top: 30px;
         }
 
         .btn-action-turquoise {
             background-color: var(--turquoise-aya);
-            color: #070b12;
-            padding: 12px 24px;
+            color: #042642;
+            padding: 13px 26px;
             border-radius: 12px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.22s ease;
-            box-shadow: 0 4px 18px rgba(0, 188, 212, 0.35);
+            gap: 10px;
+            transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 16px rgba(0, 188, 212, 0.35);
             border: none;
             cursor: pointer;
         }
         .btn-action-turquoise:hover {
-            background-color: #00acc1;
+            background-color: #00e5ff;
             transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(0, 188, 212, 0.55);
+            box-shadow: 0 8px 24px rgba(0, 188, 212, 0.5);
+            color: #042642;
         }
 
         .btn-action-bleu {
-            background-color: var(--bleu-aya);
-            color: var(--blanc-aya);
-            padding: 12px 24px;
+            background-color: var(--blanc-aya);
+            color: var(--bleu-aya);
+            padding: 13px 26px;
             border-radius: 12px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.22s ease;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            gap: 10px;
+            transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
             cursor: pointer;
         }
         .btn-action-bleu:hover {
-            background-color: #083c6c;
+            background-color: #f8fafc;
+            color: var(--bleu-aya-sombre);
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
         }
 
-        /* Section Titre */
+        /* 2. En-tête de la Section des Outils */
         .section-header-box {
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: space-between;
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--bordure-carte);
+            padding-bottom: 14px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid rgba(153, 153, 153, 0.2);
         }
         .section-header-box h2 {
-            font-size: 1.35rem;
+            font-size: 1.45rem;
             font-weight: 700;
-            color: var(--blanc-aya);
+            color: var(--gris-fonce-aya);
             margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         .section-header-box p {
-            margin: 4px 0 0 0;
-            font-size: 0.85rem;
-            color: var(--gris-secondaire-aya);
+            margin: 6px 0 0 0;
+            font-size: 0.95rem;
+            color: #666666;
+        }
+        .section-brand-tag {
+            font-size: 0.88rem;
+            color: var(--bleu-aya);
+            font-weight: 700;
+            background: rgba(11, 83, 148, 0.08);
+            padding: 4px 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(11, 83, 148, 0.2);
+            white-space: nowrap;
         }
 
-        /* Grille des Modules */
+        /* 3. Grille des Cartes Outils (Surfaces Blanches contrastées sur fond clair) */
         .modules-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
+            gap: 22px;
         }
 
         .module-card {
-            background: linear-gradient(145deg, #0e1726 0%, #090f1a 100%);
+            background: var(--carte-blanche);
             border: 1px solid var(--bordure-carte);
-            border-radius: 18px;
-            padding: 22px;
+            border-radius: 16px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             text-decoration: none;
             color: inherit;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 4px 16px rgba(11, 83, 148, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
         }
         .module-card:hover {
             border-color: var(--turquoise-aya);
             transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(0, 188, 212, 0.22);
+            box-shadow: 0 12px 28px rgba(0, 188, 212, 0.18), 0 4px 12px rgba(11, 83, 148, 0.08);
         }
 
         .module-top {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
         .module-icon-wrap {
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            background: rgba(11, 83, 148, 0.35);
-            border: 1px solid rgba(0, 188, 212, 0.3);
+            background: rgba(11, 83, 148, 0.08);
+            border: 1px solid rgba(0, 188, 212, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.45rem;
+            color: var(--bleu-aya);
+            transition: all 0.22s ease;
         }
+        .module-card:hover .module-icon-wrap {
+            background: rgba(0, 188, 212, 0.15);
+            border-color: var(--turquoise-aya);
+            transform: scale(1.05);
+        }
+
         .module-badge {
-            font-size: 0.72rem;
+            font-size: 0.74rem;
             font-weight: 700;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 20px;
             background: rgba(0, 188, 212, 0.12);
-            color: var(--turquoise-aya);
+            color: var(--turquoise-fonce);
             border: 1px solid rgba(0, 188, 212, 0.35);
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.02em;
         }
 
         .module-title {
-            font-size: 1.18rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--blanc-aya);
-            margin: 0 0 6px 0;
+            color: var(--gris-fonce-aya);
+            margin: 0 0 8px 0;
+            line-height: 1.35;
             transition: color 0.2s ease;
         }
         .module-card:hover .module-title {
-            color: var(--turquoise-aya);
+            color: var(--bleu-aya);
         }
+
         .module-desc {
-            font-size: 0.88rem;
-            color: var(--gris-secondaire-aya);
-            line-height: 1.55;
+            font-size: 0.95rem;
+            color: #555555;
+            line-height: 1.6;
             margin: 0;
         }
 
         .module-footer {
-            margin-top: 20px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(153, 153, 153, 0.15);
+            margin-top: 22px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(153, 153, 153, 0.22);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
         }
         .module-footer-sub {
-            color: var(--gris-secondaire-aya);
+            color: #777777;
+            font-size: 0.82rem;
         }
         .module-footer-link {
-            color: var(--turquoise-aya);
+            color: var(--turquoise-fonce);
             font-weight: 700;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            transition: color 0.2s ease;
+        }
+        .module-card:hover .module-footer-link {
+            color: var(--bleu-aya);
         }
 
-        /* Mobile Adjustments & Safe Areas */
+        /* Alignements RTL spécifiques pour le confort de lecture en Arabe */
+        html[dir="rtl"] .section-header-box {
+            flex-direction: row-reverse;
+        }
+        html[dir="rtl"] .section-header-box h2 {
+            flex-direction: row-reverse;
+        }
+        html[dir="rtl"] .module-top {
+            flex-direction: row-reverse;
+        }
+        html[dir="rtl"] .module-footer {
+            flex-direction: row-reverse;
+        }
+        html[dir="rtl"] .module-footer-link {
+            flex-direction: row-reverse;
+        }
+        html[dir="rtl"] .hero-actions {
+            flex-direction: row-reverse;
+        }
+
+        /* Adaptations Mobiles (Responsive & Ergonomie tactile) */
         @media (max-width: 768px) {
             .accueil-container {
-                padding: 16px 12px 30px 12px;
+                padding: 16px 12px 32px 12px;
             }
             .accueil-hero {
-                padding: 30px 14px;
+                padding: 32px 16px;
                 border-radius: 18px;
-                margin-bottom: 24px;
+                margin-bottom: 26px;
             }
             .hero-title {
-                font-size: 1.6rem;
+                font-size: 1.65rem;
             }
             .hero-subtitle {
-                font-size: 0.92rem;
+                font-size: 0.98rem;
             }
             .hero-actions {
                 flex-direction: column;
@@ -298,28 +380,36 @@
                 width: 100%;
                 justify-content: center;
                 box-sizing: border-box;
-                min-height: 44px; /* WCAG touch target */
+                min-height: 48px; /* Standard WCAG tactile */
+            }
+            .section-header-box {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            html[dir="rtl"] .section-header-box {
+                align-items: flex-end;
             }
             .modules-grid {
                 grid-template-columns: 1fr;
-                gap: 14px;
+                gap: 16px;
             }
             .module-card {
-                padding: 18px;
-                min-height: 44px;
+                padding: 20px;
+                border-radius: 14px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
+    <!-- Navbar Partagée Globale Officielle (Hydratée par aya-i18n.js) -->
     <header class="app-header" id="ayaGlobalNavbar"></header>
 
     <div class="app-container">
         <main class="accueil-container">
 
-        <!-- 1. Encart d'accroche (Hero) -->
+        <!-- 1. Encart d'accroche (Hero Banner) -->
         <section class="accueil-hero">
             <div class="hero-badge">
                 <span>🇵🇸</span>
@@ -329,7 +419,7 @@
                 La Voix Authentique des Témoignages de Gaza
             </h1>
             <p class="hero-subtitle" id="heroSubtitleText">
-                Sous-titrage haute fidélité, traduction fidèle du dialecte levantin, apprentissage du vocabulaire et mémoire collective.
+                Sous-titrage haute fidélité, traduction fidèle du dialecte levantin, fiches éducatives et mémoire collective.
             </p>
 
             <div class="hero-actions">
@@ -344,24 +434,24 @@
             </div>
         </section>
 
-        <!-- 2. Section des Outils -->
+        <!-- 2. Section des Outils Officiels -->
         <section>
             <div class="section-header-box">
                 <div>
-                    <h2 id="sectionToolsTitle">
+                    <h2>
                         <span style="color: var(--turquoise-aya);">◈</span>
-                        <span>Tous les Outils de la Plateforme</span>
+                        <span id="sectionToolsTitleText">Tous les Outils de la Plateforme</span>
                     </h2>
                     <p id="sectionToolsSub">Accédez directement à chaque espace selon vos besoins de création, de traduction ou d'échange</p>
                 </div>
-                <div style="font-size: 0.85rem; color: var(--turquoise-aya); font-weight: 700;">
+                <div class="section-brand-tag" id="platformBadgeText">
                     Aya Studio
                 </div>
             </div>
 
             <div class="modules-grid">
 
-                <!-- 1. Salon d'Échange -->
+                <!-- Module 1. Salon d'Échange -->
                 <a href="/chat-en-direct" class="module-card">
                     <div>
                         <div class="module-top">
@@ -375,15 +465,15 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modExchangeFooterSub">Notes vocales & texte</span>
-                        <span class="module-footer-link"><span id="lblOpenExchange">Ouvrir le salon</span> ➔</span>
+                        <span class="module-footer-link" id="lblOpenExchange">Ouvrir le salon ➔</span>
                     </div>
                 </a>
 
-                <!-- 2. Traduire une vidéo -->
-                <a href="/traduction" class="module-card" style="border-color: rgba(0, 188, 212, 0.4);">
+                <!-- Module 2. Traduire une vidéo -->
+                <a href="/traduction" class="module-card" style="border-color: rgba(0, 188, 212, 0.45);">
                     <div>
                         <div class="module-top">
-                            <div class="module-icon-wrap" style="background: rgba(0, 188, 212, 0.2);">🎬</div>
+                            <div class="module-icon-wrap" style="background: rgba(0, 188, 212, 0.12);">🎬</div>
                             <span class="module-badge" id="badgeFormat">Format 9:16</span>
                         </div>
                         <h3 class="module-title" id="modVideoTransTitle">Traduire une vidéo</h3>
@@ -393,11 +483,11 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modVideoTransFooterSub">Import vidéo ou Telegram</span>
-                        <span class="module-footer-link"><span id="lblStartTrans">Sous-titrer</span> ➔</span>
+                        <span class="module-footer-link" id="lblStartTrans">Sous-titrer ➔</span>
                     </div>
                 </a>
 
-                <!-- 3. Transformer un audio en vidéo -->
+                <!-- Module 3. Transformer un audio en vidéo -->
                 <a href="/traduction" class="module-card">
                     <div>
                         <div class="module-top">
@@ -411,11 +501,11 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modAudioVideoFooterSub">Génération automatique</span>
-                        <span class="module-footer-link"><span id="lblStartAudioVideo">Créer la vidéo</span> ➔</span>
+                        <span class="module-footer-link" id="lblStartAudioVideo">Créer la vidéo ➔</span>
                     </div>
                 </a>
 
-                <!-- 4. Studio Traducteur -->
+                <!-- Module 4. Studio Traducteur -->
                 <a href="/traducteur" class="module-card">
                     <div>
                         <div class="module-top">
@@ -429,11 +519,11 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modTranslatorFooterSub">Traduction express</span>
-                        <span class="module-footer-link"><span id="lblOpenTranslator">Traduire</span> ➔</span>
+                        <span class="module-footer-link" id="lblOpenTranslator">Traduire ➔</span>
                     </div>
                 </a>
 
-                <!-- 5. Fiches Éducatives -->
+                <!-- Module 5. Fiches Éducatives -->
                 <a href="/fiches" class="module-card">
                     <div>
                         <div class="module-top">
@@ -447,11 +537,11 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modCardsFooterSub">Vocabulaire Shami</span>
-                        <span class="module-footer-link"><span id="lblOpenCards">Consulter</span> ➔</span>
+                        <span class="module-footer-link" id="lblOpenCards">Consulter ➔</span>
                     </div>
                 </a>
 
-                <!-- 6. Mur des Témoignages -->
+                <!-- Module 6. Mur des Témoignages -->
                 <a href="/communaute" class="module-card">
                     <div>
                         <div class="module-top">
@@ -465,11 +555,11 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modCommunityFooterSub">Récits partagés</span>
-                        <span class="module-footer-link"><span id="lblOpenCommunity">Découvrir</span> ➔</span>
+                        <span class="module-footer-link" id="lblOpenCommunity">Découvrir ➔</span>
                     </div>
                 </a>
 
-                <!-- 7. Mon Compte -->
+                <!-- Module 7. Mon Compte -->
                 <a href="/profil" class="module-card">
                     <div>
                         <div class="module-top">
@@ -483,7 +573,7 @@
                     </div>
                     <div class="module-footer">
                         <span class="module-footer-sub" id="modAccountFooterSub">Portefeuille & Historique</span>
-                        <span class="module-footer-link"><span id="lblOpenAccount">Mon Profil</span> ➔</span>
+                        <span class="module-footer-link" id="lblOpenAccount">Mon Profil ➔</span>
                     </div>
                 </a>
 
@@ -493,7 +583,7 @@
         </main>
     </div>
 
-    <!-- Pied de page Légal Harmonisé (TICKET-19) -->
+    <!-- Pied de page Légal et Solidaire Harmonisé (TICKET-19) -->
     <footer class="aya-legal-footer" style="margin-top: 40px; border-radius: 14px;">
         <div class="aya-legal-footer-inner">
             <div class="aya-legal-footer-links">
@@ -509,122 +599,30 @@
         </div>
     </footer>
 
-    <!-- Inclusion des Scripts Officiels : Internationalisation, Navbar, et Widget Feedback -->
+    <!-- Scripts de la Plateforme : i18n & Navigation, Widget Feedback -->
     <script src="/aya-i18n.js"></script>
     <script src="/feedback-widget.js"></script>
     <script>
-        // Synchronisation bilingue spécifique pour la page d'accueil (FR/AR)
+        // Synchronisation réactive bilingue (Français / Arabe Palestinien)
         (function() {
-            const accueilDict = {
-                fr: {
-                    docTitle: "Aya Studio — Accueil & Modules",
-                    heroBadgeText: "Témoignages & Récits de Gaza",
-                    heroMainTitle: "La Voix Authentique des Témoignages de Gaza",
-                    heroSubtitleText: "Sous-titrage haute fidélité, traduction fidèle du dialecte levantin, apprentissage du vocabulaire et mémoire collective.",
-                    heroBtnStudioText: "Traduire une Vidéo",
-                    heroBtnChatText: "Salon d'Échange",
-                    sectionToolsTitle: "Tous les Outils de la Plateforme",
-                    sectionToolsSub: "Accédez directement à chaque espace selon vos besoins de création, de traduction ou d'échange",
-                    badgeDirect: "Direct",
-                    modExchangeTitle: "Salon d'Échange",
-                    modExchangeDesc: "Dialogue direct bilingue, écoute et envoi de messages vocaux natifs, avec distinction entre salon public et échanges privés.",
-                    modExchangeFooterSub: "Notes vocales & texte",
-                    lblOpenExchange: "Ouvrir le salon",
-                    badgeFormat: "Format 9:16",
-                    modVideoTransTitle: "Traduire une vidéo",
-                    modVideoTransDesc: "Ajouter des sous-titres synchronisés sur une vidéo existante au format vertical TikTok avec couverture et description prêtes à poster.",
-                    modVideoTransFooterSub: "Import vidéo ou Telegram",
-                    lblStartTrans: "Sous-titrer",
-                    badgeAudioVideo: "Audio ➔ Vidéo",
-                    modAudioVideoTitle: "Transformer un audio en vidéo",
-                    modAudioVideoDesc: "Créer une vidéo 9:16 complète à partir d'un fichier audio brut avec une image de fond officielle et sous-titres incrustés.",
-                    modAudioVideoFooterSub: "Génération automatique",
-                    lblStartAudioVideo: "Créer la vidéo",
-                    badgeExpress: "< 5s",
-                    modTranslatorTitle: "Studio Traducteur",
-                    modTranslatorDesc: "Traduction bilingue instantanée de textes et notes vocales sans génération vidéo, respectant scrupuleusement les expressions de Gaza.",
-                    modTranslatorFooterSub: "Traduction express",
-                    lblOpenTranslator: "Traduire",
-                    badgeCards: "5 Mots",
-                    modCardsTitle: "Fiches Éducatives",
-                    modCardsDesc: "Génération d'affiches de vocabulaire bilingue avec écoute audio native, prononciation, émojis illustratifs et téléchargement direct.",
-                    modCardsFooterSub: "Vocabulaire Shami",
-                    lblOpenCards: "Consulter",
-                    badgeWall: "Solidaire",
-                    modCommunityTitle: "Mur des Témoignages",
-                    modCommunityDesc: "Espace de mémoire collective et galerie publique des vidéos sous-titrées et récits vérifiés par l'équipe pour diffusion internationale.",
-                    modCommunityFooterSub: "Récits partagés",
-                    lblOpenCommunity: "Découvrir",
-                    badgeAccount: "Zaytounas 🫒",
-                    modAccountTitle: "Mon Compte",
-                    modAccountDesc: "Consultez votre solde de Zaytounas, gérez vos informations, retrouvez l'historique complet de vos projets et téléchargez vos archives.",
-                    modAccountFooterSub: "Portefeuille & Historique",
-                    lblOpenAccount: "Mon Profil"
-                },
-                ar: {
-                    docTitle: "آية ستوديو — الصفحة الرئيسية وأدوات المنصة",
-                    heroBadgeText: "شهادات وروايات حية من غزة",
-                    heroMainTitle: "الصوت الحقيقي لشهادات غزة الحية",
-                    heroSubtitleText: "دبلجة وترجمة دقيقة للهجة الفلسطينية، بطاقات تعليمية وحفظ الذاكرة الإنسانية الحية.",
-                    heroBtnStudioText: "ترجمة مقطع فيديو",
-                    heroBtnChatText: "غرفة المحادثة",
-                    sectionToolsTitle: "جميع أدوات وخدمات المنصة",
-                    sectionToolsSub: "الوصول المباشر إلى كل مساحة وفق احتياجاتك في الترجمة، إنتاج الفيديو أو التبادل الصوتي",
-                    badgeDirect: "مباشر",
-                    modExchangeTitle: "غرفة المحادثة",
-                    modExchangeDesc: "تبادل مباشر ثنائي اللغة، استماع وإرسال ردود صوتية حية مع إمكانية التبديل بين العام والخاص.",
-                    modExchangeFooterSub: "رسائل صوتية وكتابية",
-                    lblOpenExchange: "دخول الغرفة",
-                    badgeFormat: "فيديو 9:16",
-                    modVideoTransTitle: "ترجمة مقطع فيديو",
-                    modVideoTransDesc: "إضافة نصوص ترجمة واضحة ومدمجة على فيديو موجود مسبقاً بمقاس التيك توك مع نصوص جاهزة للنشر.",
-                    modVideoTransFooterSub: "رفع فيديو أو رابط تيليجرام",
-                    lblStartTrans: "بدء الترجمة",
-                    badgeAudioVideo: "صوت ➔ فيديو",
-                    modAudioVideoTitle: "تحويل مقطع صوتي إلى فيديو",
-                    modAudioVideoDesc: "إنشاء فيديو طولي متكامل 9:16 من ملف صوتي خام مع صورة خلفية ونصوص مدمجة بدقة عالية.",
-                    modAudioVideoFooterSub: "توليد تلقائي فوري",
-                    lblStartAudioVideo: "إنشاء الفيديو",
-                    badgeExpress: "< ٥ ثوانٍ",
-                    modTranslatorTitle: "المترجم الصوتي",
-                    modTranslatorDesc: "ترجمة فورية للنصوص والرسائل الصوتية بدون دمج فيديو، مع المحافظة التامة على تعابير أهل غزة.",
-                    modTranslatorFooterSub: "ترجمة سريعة",
-                    lblOpenTranslator: "بدء الترجمة",
-                    badgeCards: "٥ كلمات",
-                    modCardsTitle: "البطاقات التعليمية",
-                    modCardsDesc: "إنشاء بطاقات ووسائط لتعليم مفردات اللهجة الشامية مصحوبة بنطق صوتي ورموز تعبيرية واضحة.",
-                    modCardsFooterSub: "مفردات شامية حية",
-                    lblOpenCards: "استعراض البطاقات",
-                    badgeWall: "تضامني",
-                    modCommunityTitle: "جدار الشهادات",
-                    modCommunityDesc: "مساحة لحفظ الذاكرة وعرض مقاطع الفيديو المترجمة والشهادات المعتمدة من فريق التدقيق.",
-                    modCommunityFooterSub: "قصص وشهادات موثقة",
-                    lblOpenCommunity: "استكشاف الجدار",
-                    badgeAccount: "زيتونة 🫒",
-                    modAccountTitle: "حسابي ورصيدي",
-                    modAccountDesc: "متابعة رصيد الزيتونات، إدارة البيانات الشخصية، وسجل الأعمال المنجزة مع إمكانية تنزيل الأرشيف.",
-                    modAccountFooterSub: "المحفظة وسجل الإنتاج",
-                    lblOpenAccount: "الملف الشخصي"
+            function updateAccueilView(e) {
+                const currentLang = localStorage.getItem('aya_lang') || 'fr';
+                const isAr = (currentLang === 'ar');
+                
+                // Direction et attributs
+                document.documentElement.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+                document.documentElement.setAttribute('lang', currentLang);
+                if (document.body) {
+                    document.body.setAttribute('dir', isAr ? 'rtl' : 'ltr');
                 }
-            };
-
-            function appliquerTraductionsAccueil() {
-                const lang = localStorage.getItem('aya_lang') || 'fr';
-                const d = accueilDict[lang] || accueilDict.fr;
-                document.title = d.docTitle;
-
-                Object.keys(d).forEach(k => {
-                    const el = document.getElementById(k);
-                    if (el) el.textContent = d[k];
-                });
             }
 
-            document.addEventListener('DOMContentLoaded', appliquerTraductionsAccueil);
+            // Écoute des événements émis par aya-i18n.js
+            window.addEventListener('aya:languageChanged', updateAccueilView);
             window.addEventListener('storage', (e) => {
-                if (e.key === 'aya_lang') appliquerTraductionsAccueil();
+                if (e.key === 'aya_lang') updateAccueilView();
             });
-            // Écoute de l'événement personnalisé d'aya-i18n
-            window.addEventListener('aya_lang_changed', appliquerTraductionsAccueil);
+            document.addEventListener('DOMContentLoaded', updateAccueilView);
         })();
     </script>
 </body>
