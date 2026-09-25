@@ -253,6 +253,11 @@ app.get(['/chat-en-direct', '/chat'], requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Nouvelle Page d'Accueil & Hub des Modules (/accueil)
+app.get(['/accueil', '/accueil.html', '/home'], requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'accueil.html'));
+});
+
 app.get(['/traducteur', '/traducteur.html'], requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'traducteur.html'));
 });

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr" id="htmlTag">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Aya Studio — Accueil & Modules</title>
+    
+    <!-- Méta SEO & Mobile PWA -->
+    <meta name="description" content="Plateforme solidaire pour la transmission des voix et des récits authentiques de Gaza. Sous-titrage vidéo, traduction bilingue et fiches éducatives.">
+    <meta name="theme-color" content="#0b5394">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Typographies Officielles : Amiri (Français) & Le Caire / Cairo (Arabe) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/aya-rtl.css">
+
+    <style>
+        :root {
+            --bleu-aya: #0b5394;
+            --turquoise-aya: #00bcd4;
+            --gris-fonce-aya: #434343;
+            --gris-secondaire-aya: #999999;
+            --blanc-aya: #ffffff;
+            --fond-sombre: #070b12;
+            --carte-surface: #0e1726;
+            --bordure-carte: rgba(153, 153, 153, 0.22);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--fond-sombre);
+            color: #f1f5f9;
+            font-family: 'Amiri', serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Application stricte de la typographie selon la direction de lecture */
+        html[dir="ltr"] body, html[dir="ltr"] * {
+            font-family: 'Amiri', serif;
+        }
+        html[dir="rtl"] body, html[dir="rtl"] * {
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        /* Composants de la page d'accueil */
+        .accueil-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 24px 16px 40px 16px;
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        /* Hero Banner */
+        .accueil-hero {
+            text-align: center;
+            padding: 44px 20px;
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(11, 83, 148, 0.28) 0%, rgba(7, 11, 18, 0.85) 100%);
+            border: 1px solid var(--bordure-carte);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 36px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 14px;
+            border-radius: 30px;
+            background: rgba(14, 23, 38, 0.85);
+            border: 1px solid rgba(0, 188, 212, 0.4);
+            color: var(--turquoise-aya);
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .hero-title {
+            font-size: 2.3rem;
+            font-weight: 700;
+            color: var(--blanc-aya);
+            margin: 0 auto;
+            max-width: 820px;
+            line-height: 1.25;
+        }
+        .hero-subtitle {
+            font-size: 1.05rem;
+            color: var(--gris-secondaire-aya);
+            max-width: 680px;
+            margin: 14px auto 0 auto;
+            line-height: 1.6;
+        }
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 26px;
+        }
+
+        .btn-action-turquoise {
+            background-color: var(--turquoise-aya);
+            color: #070b12;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.22s ease;
+            box-shadow: 0 4px 18px rgba(0, 188, 212, 0.35);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-action-turquoise:hover {
+            background-color: #00acc1;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 188, 212, 0.55);
+        }
+
+        .btn-action-bleu {
+            background-color: var(--bleu-aya);
+            color: var(--blanc-aya);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.22s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+        }
+        .btn-action-bleu:hover {
+            background-color: #083c6c;
+            transform: translateY(-2px);
+        }
+
+        /* Section Titre */
+        .section-header-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--bordure-carte);
+        }
+        .section-header-box h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--blanc-aya);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-header-box p {
+            margin: 4px 0 0 0;
+            font-size: 0.85rem;
+            color: var(--gris-secondaire-aya);
+        }
+
+        /* Grille des Modules */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .module-card {
+            background: linear-gradient(145deg, #0e1726 0%, #090f1a 100%);
+            border: 1px solid var(--bordure-carte);
+            border-radius: 18px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        .module-card:hover {
+            border-color: var(--turquoise-aya);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 188, 212, 0.22);
+        }
+
+        .module-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .module-icon-wrap {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(11, 83, 148, 0.35);
+            border: 1px solid rgba(0, 188, 212, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .module-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(0, 188, 212, 0.12);
+            color: var(--turquoise-aya);
+            border: 1px solid rgba(0, 188, 212, 0.35);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .module-title {
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: var(--blanc-aya);
+            margin: 0 0 6px 0;
+            transition: color 0.2s ease;
+        }
+        .module-card:hover .module-title {
+            color: var(--turquoise-aya);
+        }
+        .module-desc {
+            font-size: 0.88rem;
+            color: var(--gris-secondaire-aya);
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .module-footer {
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(153, 153, 153, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.82rem;
+        }
+        .module-footer-sub {
+            color: var(--gris-secondaire-aya);
+        }
+        .module-footer-link {
+            color: var(--turquoise-aya);
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Mobile Adjustments & Safe Areas */
+        @media (max-width: 768px) {
+            .accueil-container {
+                padding: 16px 12px 30px 12px;
+            }
+            .accueil-hero {
+                padding: 30px 14px;
+                border-radius: 18px;
+                margin-bottom: 24px;
+            }
+            .hero-title {
+                font-size: 1.6rem;
+            }
+            .hero-subtitle {
+                font-size: 0.92rem;
+            }
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-action-turquoise, .btn-action-bleu {
+                width: 100%;
+                justify-content: center;
+                box-sizing: border-box;
+                min-height: 44px; /* WCAG touch target */
+            }
+            .modules-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .module-card {
+                padding: 18px;
+                min-height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barre de Navigation Partagée Globale Aya Studio (Injectée par aya-i18n.js) -->
+    <header></header>
+
+    <main class="accueil-container">
+
+        <!-- 1. Encart d'accroche (Hero) -->
+        <section class="accueil-hero">
+            <div class="hero-badge">
+                <span>🇵🇸</span>
+                <span id="heroBadgeText">Témoignages & Récits de Gaza</span>
+            </div>
+            <h1 class="hero-title" id="heroMainTitle">
+                La Voix Authentique des Témoignages de Gaza
+            </h1>
+            <p class="hero-subtitle" id="heroSubtitleText">
+                Sous-titrage haute fidélité, traduction fidèle du dialecte levantin, apprentissage du vocabulaire et mémoire collective.
+            </p>
+
+            <div class="hero-actions">
+                <a href="/traduction" class="btn-action-turquoise" id="heroBtnStudio">
+                    <span>🎬</span>
+                    <span id="heroBtnStudioText">Traduire une Vidéo</span>
+                </a>
+                <a href="/chat-en-direct" class="btn-action-bleu" id="heroBtnChat">
+                    <span>💬</span>
+                    <span id="heroBtnChatText">Salon d'Échange</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 2. Section des Outils -->
+        <section>
+            <div class="section-header-box">
+                <div>
+                    <h2 id="sectionToolsTitle">
+                        <span style="color: var(--turquoise-aya);">◈</span>
+                        <span>Tous les Outils de la Plateforme</span>
+                    </h2>
+                    <p id="sectionToolsSub">Accédez directement à chaque espace selon vos besoins de création, de traduction ou d'échange</p>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--turquoise-aya); font-weight: 700;">
+                    Aya Studio
+                </div>
+            </div>
+
+            <div class="modules-grid">
+
+                <!-- 1. Salon d'Échange -->
+                <a href="/chat-en-direct" class="module-card">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap">💬</div>
+                            <span class="module-badge" id="badgeDirect">Direct</span>
+                        </div>
+                        <h3 class="module-title" id="modExchangeTitle">Salon d'Échange</h3>
+                        <p class="module-desc" id="modExchangeDesc">
+                            Dialogue direct bilingue, écoute et envoi de messages vocaux natifs, avec distinction entre salon public et échanges privés.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modExchangeFooterSub">Notes vocales & texte</span>
+                        <span class="module-footer-link"><span id="lblOpenExchange">Ouvrir le salon</span> ➔</span>
+                    </div>
+                </a>
+
+                <!-- 2. Traduire une vidéo -->
+                <a href="/traduction" class="module-card" style="border-color: rgba(0, 188, 212, 0.4);">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap" style="background: rgba(0, 188, 212, 0.2);">🎬</div>
+                            <span class="module-badge" id="badgeFormat">Format 9:16</span>
+                        </div>
+                        <h3 class="module-title" id="modVideoTransTitle">Traduire une vidéo</h3>
+                        <p class="module-desc" id="modVideoTransDesc">
+                            Ajouter des sous-titres synchronisés sur une vidéo existante au format vertical TikTok avec couverture et description prêtes à poster.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modVideoTransFooterSub">Import vidéo ou Telegram</span>
+                        <span class="module-footer-link"><span id="lblStartTrans">Sous-titrer</span> ➔</span>
+                    </div>
+                </a>
+
+                <!-- 3. Transformer un audio en vidéo -->
+                <a href="/traduction" class="module-card">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap">🎙️</div>
+                            <span class="module-badge" id="badgeAudioVideo">Audio ➔ Vidéo</span>
+                        </div>
+                        <h3 class="module-title" id="modAudioVideoTitle">Transformer un audio en vidéo</h3>
+                        <p class="module-desc" id="modAudioVideoDesc">
+                            Créer une vidéo 9:16 complète à partir d'un fichier audio brut avec une image de fond officielle et sous-titres incrustés.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modAudioVideoFooterSub">Génération automatique</span>
+                        <span class="module-footer-link"><span id="lblStartAudioVideo">Créer la vidéo</span> ➔</span>
+                    </div>
+                </a>
+
+                <!-- 4. Studio Traducteur -->
+                <a href="/traducteur" class="module-card">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap">⚡</div>
+                            <span class="module-badge" id="badgeExpress">&lt; 5s</span>
+                        </div>
+                        <h3 class="module-title" id="modTranslatorTitle">Studio Traducteur</h3>
+                        <p class="module-desc" id="modTranslatorDesc">
+                            Traduction bilingue instantanée de textes et notes vocales sans génération vidéo, respectant scrupuleusement les expressions de Gaza.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modTranslatorFooterSub">Traduction express</span>
+                        <span class="module-footer-link"><span id="lblOpenTranslator">Traduire</span> ➔</span>
+                    </div>
+                </a>
+
+                <!-- 5. Fiches Éducatives -->
+                <a href="/fiches" class="module-card">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap">🎴</div>
+                            <span class="module-badge" id="badgeCards">5 Mots</span>
+                        </div>
+                        <h3 class="module-title" id="modCardsTitle">Fiches Éducatives</h3>
+                        <p class="module-desc" id="modCardsDesc">
+                            Génération d'affiches de vocabulaire bilingue avec écoute audio native, prononciation, émojis illustratifs et téléchargement direct.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modCardsFooterSub">Vocabulaire Shami</span>
+                        <span class="module-footer-link"><span id="lblOpenCards">Consulter</span> ➔</span>
+                    </div>
+                </a>
+
+                <!-- 6. Mur des Témoignages -->
+                <a href="/communaute" class="module-card">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap">🌍</div>
+                            <span class="module-badge" id="badgeWall">Solidaire</span>
+                        </div>
+                        <h3 class="module-title" id="modCommunityTitle">Mur des Témoignages</h3>
+                        <p class="module-desc" id="modCommunityDesc">
+                            Espace de mémoire collective et galerie publique des vidéos sous-titrées et récits vérifiés par l'équipe pour diffusion internationale.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modCommunityFooterSub">Récits partagés</span>
+                        <span class="module-footer-link"><span id="lblOpenCommunity">Découvrir</span> ➔</span>
+                    </div>
+                </a>
+
+                <!-- 7. Mon Compte -->
+                <a href="/profil" class="module-card">
+                    <div>
+                        <div class="module-top">
+                            <div class="module-icon-wrap">👤</div>
+                            <span class="module-badge" id="badgeAccount">Zaytounas 🫒</span>
+                        </div>
+                        <h3 class="module-title" id="modAccountTitle">Mon Compte</h3>
+                        <p class="module-desc" id="modAccountDesc">
+                            Consultez votre solde de Zaytounas, gérez vos informations, retrouvez l'historique complet de vos projets et téléchargez vos archives.
+                        </p>
+                    </div>
+                    <div class="module-footer">
+                        <span class="module-footer-sub" id="modAccountFooterSub">Portefeuille & Historique</span>
+                        <span class="module-footer-link"><span id="lblOpenAccount">Mon Profil</span> ➔</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pied de Page Standardisé Solidaire & Légal (Injecté par aya-i18n.js) -->
+    <footer class="app-footer"></footer>
+
+    <!-- Inclusion des Scripts Officiels : Internationalisation, Navbar, et Widget Feedback -->
+    <script src="/aya-i18n.js"></script>
+    <script src="/feedback-widget.js"></script>
+    <script>
+        // Synchronisation bilingue spécifique pour la page d'accueil (FR/AR)
+        (function() {
+            const accueilDict = {
+                fr: {
+                    docTitle: "Aya Studio — Accueil & Modules",
+                    heroBadgeText: "Témoignages & Récits de Gaza",
+                    heroMainTitle: "La Voix Authentique des Témoignages de Gaza",
+                    heroSubtitleText: "Sous-titrage haute fidélité, traduction fidèle du dialecte levantin, apprentissage du vocabulaire et mémoire collective.",
+                    heroBtnStudioText: "Traduire une Vidéo",
+                    heroBtnChatText: "Salon d'Échange",
+                    sectionToolsTitle: "Tous les Outils de la Plateforme",
+                    sectionToolsSub: "Accédez directement à chaque espace selon vos besoins de création, de traduction ou d'échange",
+                    badgeDirect: "Direct",
+                    modExchangeTitle: "Salon d'Échange",
+                    modExchangeDesc: "Dialogue direct bilingue, écoute et envoi de messages vocaux natifs, avec distinction entre salon public et échanges privés.",
+                    modExchangeFooterSub: "Notes vocales & texte",
+                    lblOpenExchange: "Ouvrir le salon",
+                    badgeFormat: "Format 9:16",
+                    modVideoTransTitle: "Traduire une vidéo",
+                    modVideoTransDesc: "Ajouter des sous-titres synchronisés sur une vidéo existante au format vertical TikTok avec couverture et description prêtes à poster.",
+                    modVideoTransFooterSub: "Import vidéo ou Telegram",
+                    lblStartTrans: "Sous-titrer",
+                    badgeAudioVideo: "Audio ➔ Vidéo",
+                    modAudioVideoTitle: "Transformer un audio en vidéo",
+                    modAudioVideoDesc: "Créer une vidéo 9:16 complète à partir d'un fichier audio brut avec une image de fond officielle et sous-titres incrustés.",
+                    modAudioVideoFooterSub: "Génération automatique",
+                    lblStartAudioVideo: "Créer la vidéo",
+                    badgeExpress: "< 5s",
+                    modTranslatorTitle: "Studio Traducteur",
+                    modTranslatorDesc: "Traduction bilingue instantanée de textes et notes vocales sans génération vidéo, respectant scrupuleusement les expressions de Gaza.",
+                    modTranslatorFooterSub: "Traduction express",
+                    lblOpenTranslator: "Traduire",
+                    badgeCards: "5 Mots",
+                    modCardsTitle: "Fiches Éducatives",
+                    modCardsDesc: "Génération d'affiches de vocabulaire bilingue avec écoute audio native, prononciation, émojis illustratifs et téléchargement direct.",
+                    modCardsFooterSub: "Vocabulaire Shami",
+                    lblOpenCards: "Consulter",
+                    badgeWall: "Solidaire",
+                    modCommunityTitle: "Mur des Témoignages",
+                    modCommunityDesc: "Espace de mémoire collective et galerie publique des vidéos sous-titrées et récits vérifiés par l'équipe pour diffusion internationale.",
+                    modCommunityFooterSub: "Récits partagés",
+                    lblOpenCommunity: "Découvrir",
+                    badgeAccount: "Zaytounas 🫒",
+                    modAccountTitle: "Mon Compte",
+                    modAccountDesc: "Consultez votre solde de Zaytounas, gérez vos informations, retrouvez l'historique complet de vos projets et téléchargez vos archives.",
+                    modAccountFooterSub: "Portefeuille & Historique",
+                    lblOpenAccount: "Mon Profil"
+                },
+                ar: {
+                    docTitle: "آية ستوديو — الصفحة الرئيسية وأدوات المنصة",
+                    heroBadgeText: "شهادات وروايات حية من غزة",
+                    heroMainTitle: "الصوت الحقيقي لشهادات غزة الحية",
+                    heroSubtitleText: "دبلجة وترجمة دقيقة للهجة الفلسطينية، بطاقات تعليمية وحفظ الذاكرة الإنسانية الحية.",
+                    heroBtnStudioText: "ترجمة مقطع فيديو",
+                    heroBtnChatText: "غرفة المحادثة",
+                    sectionToolsTitle: "جميع أدوات وخدمات المنصة",
+                    sectionToolsSub: "الوصول المباشر إلى كل مساحة وفق احتياجاتك في الترجمة، إنتاج الفيديو أو التبادل الصوتي",
+                    badgeDirect: "مباشر",
+                    modExchangeTitle: "غرفة المحادثة",
+                    modExchangeDesc: "تبادل مباشر ثنائي اللغة، استماع وإرسال ردود صوتية حية مع إمكانية التبديل بين العام والخاص.",
+                    modExchangeFooterSub: "رسائل صوتية وكتابية",
+                    lblOpenExchange: "دخول الغرفة",
+                    badgeFormat: "فيديو 9:16",
+                    modVideoTransTitle: "ترجمة مقطع فيديو",
+                    modVideoTransDesc: "إضافة نصوص ترجمة واضحة ومدمجة على فيديو موجود مسبقاً بمقاس التيك توك مع نصوص جاهزة للنشر.",
+                    modVideoTransFooterSub: "رفع فيديو أو رابط تيليجرام",
+                    lblStartTrans: "بدء الترجمة",
+                    badgeAudioVideo: "صوت ➔ فيديو",
+                    modAudioVideoTitle: "تحويل مقطع صوتي إلى فيديو",
+                    modAudioVideoDesc: "إنشاء فيديو طولي متكامل 9:16 من ملف صوتي خام مع صورة خلفية ونصوص مدمجة بدقة عالية.",
+                    modAudioVideoFooterSub: "توليد تلقائي فوري",
+                    lblStartAudioVideo: "إنشاء الفيديو",
+                    badgeExpress: "< ٥ ثوانٍ",
+                    modTranslatorTitle: "المترجم الصوتي",
+                    modTranslatorDesc: "ترجمة فورية للنصوص والرسائل الصوتية بدون دمج فيديو، مع المحافظة التامة على تعابير أهل غزة.",
+                    modTranslatorFooterSub: "ترجمة سريعة",
+                    lblOpenTranslator: "بدء الترجمة",
+                    badgeCards: "٥ كلمات",
+                    modCardsTitle: "البطاقات التعليمية",
+                    modCardsDesc: "إنشاء بطاقات ووسائط لتعليم مفردات اللهجة الشامية مصحوبة بنطق صوتي ورموز تعبيرية واضحة.",
+                    modCardsFooterSub: "مفردات شامية حية",
+                    lblOpenCards: "استعراض البطاقات",
+                    badgeWall: "تضامني",
+                    modCommunityTitle: "جدار الشهادات",
+                    modCommunityDesc: "مساحة لحفظ الذاكرة وعرض مقاطع الفيديو المترجمة والشهادات المعتمدة من فريق التدقيق.",
+                    modCommunityFooterSub: "قصص وشهادات موثقة",
+                    lblOpenCommunity: "استكشاف الجدار",
+                    badgeAccount: "زيتونة 🫒",
+                    modAccountTitle: "حسابي ورصيدي",
+                    modAccountDesc: "متابعة رصيد الزيتونات، إدارة البيانات الشخصية، وسجل الأعمال المنجزة مع إمكانية تنزيل الأرشيف.",
+                    modAccountFooterSub: "المحفظة وسجل الإنتاج",
+                    lblOpenAccount: "الملف الشخصي"
+                }
+            };
+
+            function appliquerTraductionsAccueil() {
+                const lang = localStorage.getItem('aya_lang') || 'fr';
+                const d = accueilDict[lang] || accueilDict.fr;
+                document.title = d.docTitle;
+
+                Object.keys(d).forEach(k => {
+                    const el = document.getElementById(k);
+                    if (el) el.textContent = d[k];
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', appliquerTraductionsAccueil);
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'aya_lang') appliquerTraductionsAccueil();
+            });
+            // Écoute de l'événement personnalisé d'aya-i18n
+            window.addEventListener('aya_lang_changed', appliquerTraductionsAccueil);
+        })();
+    </script>
+</body>
+</html>

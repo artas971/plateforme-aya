@@ -16,6 +16,7 @@
             userConnectedPrefix: '👤 Connecté :',
             userAnonymous: 'Invité / Testeur',
             logoutBtnTitle: 'Se déconnecter',
+            navAccueilText: 'Accueil',
             navHomeText: 'Direct',
             navTraducteurText: 'Studio Traducteur',
             navTraducteurSub: 'Traduction bilingue et notes vocales',
@@ -405,6 +406,7 @@
             userConnectedPrefix: '👤 متصل باسم:',
             userAnonymous: 'زائر / فاحص',
             logoutBtnTitle: 'تسجيل الخروج',
+            navAccueilText: 'الرئيسية',
             navHomeText: 'المحادثة',
             navTraducteurText: 'المترجم الصوتي',
             navTraducteurSub: 'ترجمة فورية وتسجيل ردود صوتية',
@@ -1253,8 +1255,8 @@
         const isModeration = path.includes('moderation');
         const isTraducteur = path.includes('traducteur');
         const isProfil = path.includes('profil');
-        const isFiches = path.includes('fiches');
-        const isChat = path.includes('chat') || path === '/chat-en-direct' || path === '/index.html' || (!isTraduction && !isStudio && !isCommunaute && !isModeration && !isTraducteur && !isProfil && !isFiches && !path.includes('cgu') && !path.includes('confidentialite') && !path.includes('login') && !path.includes('admin'));
+        const isAccueil = path === '/accueil' || path === '/accueil.html' || path === '/home';
+        const isChat = (path.includes('chat') || path === '/chat-en-direct' || path === '/index.html') && !isAccueil;
         const isCreationActive = isTraduction || isStudio || isCommunaute || isTraducteur || isFiches;
 
         const dict = translations[currentLang] || translations.fr;
@@ -1263,20 +1265,26 @@
             <div class="navbar-container">
                 <!-- PÔLE GAUCHE : Identité de Marque -->
                 <div class="navbar-brand">
-                    <a href="/chat-en-direct" class="brand-link" title="Aya Studio Accueil">
+                    <a href="/accueil" class="brand-link" title="Aya Studio Accueil">
                         <div class="avatar-badge">
-                            <img src="/assets/logo_aya_icon.svg" alt="Aya Studio" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<span class=\'avatar-initials\'>آية</span>'">
+                            <img src="/assets/logo_aya_icon.svg" alt="Aya Studio" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<span class=\\'avatar-initials\\'>آية</span>'">
                             <span class="status-dot"></span>
                         </div>
                         <div class="brand-text">
                             <span class="brand-title" id="navbarBrandTitle">Aya Studio</span>
-                            <span class="brand-badge-ai">Levant IA</span>
+                            <span class="brand-badge-ai">Gaza Shami</span>
                         </div>
                     </a>
                 </div>
 
                 <!-- PÔLE CENTRAL : Navigation Épurée avec Menus Déroulants (Desktop) -->
                 <nav class="navbar-nav" aria-label="Navigation principale" role="menubar">
+                    <!-- 0. Accueil -->
+                    <a href="/accueil" class="nav-link-modern ${isAccueil ? 'active' : ''}" id="navAccueilLink" role="menuitem">
+                        <span class="nav-icon-live">🏠</span>
+                        <span id="navAccueilText">${dict.navAccueilText || 'Accueil'}</span>
+                    </a>
+
                     <!-- 1. Salon d'Échange -->
                     <a href="/chat-en-direct" class="nav-link-modern ${isChat ? 'active' : ''}" id="navExchangeLink" role="menuitem">
                         <span class="nav-icon-live">💬</span>

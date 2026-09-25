@@ -237,17 +237,17 @@ document.addEventListener('DOMContentLoaded', () => {
             titleSend: 'Générer une Note Vocale & Traduction',
             labelVoiceSelect: 'Voix Arabe (2 Femmes & 2 Hommes) :',
             voices: [
-                { value: "ar-JO-SanaNeural", label: "🌸 Sana (Femme, Palestinienne / Levant)" },
-                { value: "ar-LB-LaylaNeural", label: "🌸 Layla (Femme, Levant / Liban)" },
-                { value: "ar-JO-TaimNeural", label: "🎙️ Taim (Homme, Palestinien / Levant)" },
-                { value: "ar-LB-RamiNeural", label: "🎙️ Rami (Homme, Levant / Liban)" }
+                { value: "ar-JO-SanaNeural", label: "🌸 Sana (Femme, Palestinienne)" },
+                { value: "ar-LB-LaylaNeural", label: "🌸 Layla (Femme, Levant / Palestine)" },
+                { value: "ar-JO-TaimNeural", label: "🎙️ Obaida (Homme, Palestinien)" },
+                { value: "ar-LB-RamiNeural", label: "🎙️ Siwar (Homme, Levant / Palestine)" }
             ],
             labelVoiceSelectFr: 'Voix Française (2 Femmes & 2 Hommes) :',
             voicesFr: [
-                { value: "fr-FR-VivienneMultilingualNeural", label: "🌸 Vivienne (Femme, Expressive & Naturelle)" },
-                { value: "fr-FR-DeniseNeural", label: "🌸 Denise (Femme, Douce & Fluide)" },
-                { value: "fr-FR-HenriNeural", label: "🎙️ Henri (Homme, Posé & Clair)" },
-                { value: "fr-FR-RemyMultilingualNeural", label: "🎙️ Rémy (Homme, Dynamique & Moderne)" }
+                { value: "fr-FR-VivienneMultilingualNeural", label: "🌸 Rima (Femme, Expressive & Naturelle)" },
+                { value: "fr-FR-DeniseNeural", label: "🌸 Olivia (Femme, Douce & Fluide)" },
+                { value: "fr-FR-HenriNeural", label: "🎙️ George (Homme, Posé & Clair)" },
+                { value: "fr-FR-RemyMultilingualNeural", label: "🎙️ Aymeric (Homme, Dynamique & Moderne)" }
             ],
             labelSectionFrToAr: 'Écrire en Français (Pour note vocale en Arabe Palestinien)',
             labelSectionArToFr: 'Écrire en Arabe (Pour traduire et vocaliser en Français)',
@@ -416,17 +416,17 @@ document.addEventListener('DOMContentLoaded', () => {
             titleSend: 'إنشاء تسجيل صوتي وترجمة',
             labelVoiceSelect: 'اختيار الصوت العربي (صوتان أنثويان وصوتان رجاليان):',
             voices: [
-                { value: "ar-JO-SanaNeural", label: "🌸 سناء (صوت أنثوي فلسطيني / أردني)" },
-                { value: "ar-LB-LaylaNeural", label: "🌸 ليلى (صوت أنثوي شامي / لبناني)" },
-                { value: "ar-JO-TaimNeural", label: "🎙️ تيم (صوت رجالي فلسطيني / أردني)" },
-                { value: "ar-LB-RamiNeural", label: "🎙️ رامي (صوت رجالي بلاد الشام / لبناني)" }
+                { value: "ar-JO-SanaNeural", label: "🌸 سناء (صوت أنثوي فلسطيني)" },
+                { value: "ar-LB-LaylaNeural", label: "🌸 ليلى (صوت أنثوي فلسطيني / شامي)" },
+                { value: "ar-JO-TaimNeural", label: "🎙️ عبيدة (صوت رجالي فلسطيني)" },
+                { value: "ar-LB-RamiNeural", label: "🎙️ سوار (صوت رجالي فلسطيني / شامي)" }
             ],
             labelVoiceSelectFr: 'اختيار الصوت الفرنسي (صوتان أنثويان وصوتان رجاليان):',
             voicesFr: [
-                { value: "fr-FR-VivienneMultilingualNeural", label: "🌸 فيفيان (صوت أنثوي فرنسي معبّر وطبيعي)" },
-                { value: "fr-FR-DeniseNeural", label: "🌸 دينيس (صوت أنثوي فرنسي هادئ وواضح)" },
-                { value: "fr-FR-HenriNeural", label: "🎙️ هنري (صوت رجالي فرنسي وقور وواضح)" },
-                { value: "fr-FR-RemyMultilingualNeural", label: "🎙️ ريمي (صوت رجالي فرنسي عصري ديناميكي)" }
+                { value: "fr-FR-VivienneMultilingualNeural", label: "🌸 ريما (صوت أنثوي فرنسي معبّر وطبيعي)" },
+                { value: "fr-FR-DeniseNeural", label: "🌸 أوليفيا (صوت أنثوي فرنسي نقي وهادئ)" },
+                { value: "fr-FR-HenriNeural", label: "🎙️ جورج (صوت رجالي فرنسي وقور وواضح)" },
+                { value: "fr-FR-RemyMultilingualNeural", label: "🎙️ إيمريك (صوت رجالي فرنسي عصري وديناميكي)" }
             ],
             labelSectionFrToAr: 'كتابة بالفرنسية (لإنشاء تسجيل صوتي بالعربية الفلسطينية)',
             labelSectionArToFr: 'كتابة باللغة العربية (للترجمة والتسجيل الصوتي بالفرنسية)',
