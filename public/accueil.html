@@ -45,11 +45,14 @@
             overflow-x: hidden;
         }
 
-        /* Application stricte de la typographie selon la direction de lecture */
-        html[dir="ltr"] body, html[dir="ltr"] * {
+        /* Typographie ciblée : Amiri pour le contenu narratif, respect des polices UI de la navbar */
+        .hero-title, .hero-subtitle, .module-title, .module-desc {
             font-family: 'Amiri', serif;
         }
-        html[dir="rtl"] body, html[dir="rtl"] * {
+        html[dir="rtl"] .hero-title,
+        html[dir="rtl"] .hero-subtitle,
+        html[dir="rtl"] .module-title,
+        html[dir="rtl"] .module-desc {
             font-family: 'Cairo', sans-serif !important;
         }
 
@@ -310,10 +313,11 @@
 </head>
 <body>
 
-    <!-- Barre de Navigation Partagée Globale Aya Studio (Injectée par aya-i18n.js) -->
-    <header></header>
+    <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
+    <header class="app-header" id="ayaGlobalNavbar"></header>
 
-    <main class="accueil-container">
+    <div class="app-container">
+        <main class="accueil-container">
 
         <!-- 1. Encart d'accroche (Hero) -->
         <section class="accueil-hero">
@@ -486,10 +490,24 @@
             </div>
         </section>
 
-    </main>
+        </main>
+    </div>
 
-    <!-- Pied de Page Standardisé Solidaire & Légal (Injecté par aya-i18n.js) -->
-    <footer class="app-footer"></footer>
+    <!-- Pied de page Légal Harmonisé (TICKET-19) -->
+    <footer class="aya-legal-footer" style="margin-top: 40px; border-radius: 14px;">
+        <div class="aya-legal-footer-inner">
+            <div class="aya-legal-footer-links">
+                <a href="/cgu.html">Conditions Générales (CGU/CGV)</a>
+                <span class="aya-legal-footer-sep">•</span>
+                <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
+                <span class="aya-legal-footer-sep">•</span>
+                <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
+            </div>
+            <p class="aya-legal-footer-copyright">
+                © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
+            </p>
+        </div>
+    </footer>
 
     <!-- Inclusion des Scripts Officiels : Internationalisation, Navbar, et Widget Feedback -->
     <script src="/aya-i18n.js"></script>
