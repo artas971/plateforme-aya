@@ -5,6 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const { exec } = require('child_process');
 const { formatPythonCommand } = require('../utils/runtime');
+const { recordEvent } = require('../services/telemetryService');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AUDIO_A_TRAITER_DIR = path.join(ROOT_DIR, 'audio_a_traiter');
@@ -342,6 +343,7 @@ router.post('/api/video/burn-subtitles', async (req, res) => {
 });
 
 router.post('/api/reply-to-aya', async (req, res) => {
+    const startAudio = process.hrtime.bigint();
     try {
         const { text_fr, voice } = req.body;
         if (!text_fr) return res.status(400).json({ error: 'Texte requis' });
@@ -360,6 +362,30 @@ router.post('/api/reply-to-aya', async (req, res) => {
         if (fs.existsSync(resultPath)) {
             const data = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
             data.audio_url = `/fichiers_reponse_a_envoyer/${data.audio_file}?t=${Date.now()}`;
+            
+            const durationMs = Number(process.hrtime.bigint() - startAudio) / 1e6;
+            let audioSize = 0;
+            const fullAudioPath = path.join(REPONSED_DIR, data.audio_file);
+            try { if (fs.existsSync(fullAudioPath)) audioSize = fs.statSync(fullAudioPath).size; } catch (e) {}
+
+            if (req.telemetryData) req.telemetryData.isCustomRecorded = true;
+            recordEvent({
+                traceId: req.traceId,
+                eventType: 'audio_synthesis_unit',
+                userId: req.session?.user?.id || req.session?.user?.username || 'anon',
+                http: { method: 'POST', route: '/api/reply-to-aya', statusCode: 200, clientIp: req.ip },
+                metrics: {
+                    totalDurationMs: durationMs,
+                    breakdownMs: { audioSynthesisMs: durationMs },
+                    payloadSizeBytes: audioSize
+                },
+                technicalDetails: {
+                    voice: selectedVoice,
+                    textLength: text_fr.length,
+                    audioFile: data.audio_file
+                }
+            });
+
             return res.json(data);
         }
         res.status(500).json({ error: 'Échec de la génération audio' });
@@ -370,6 +396,7 @@ router.post('/api/reply-to-aya', async (req, res) => {
 });
 
 router.post('/api/reply-in-french', async (req, res) => {
+    const startAudio = process.hrtime.bigint();
     try {
         const { text_ar, voice } = req.body;
         if (!text_ar) return res.status(400).json({ error: 'Texte en arabe requis' });
@@ -388,6 +415,30 @@ router.post('/api/reply-in-french', async (req, res) => {
         if (fs.existsSync(resultPath)) {
             const data = JSON.parse(fs.readFileSync(resultPath, 'utf8'));
             data.audio_url = `/fichiers_reponse_a_envoyer/${data.audio_file}?t=${Date.now()}`;
+            
+            const durationMs = Number(process.hrtime.bigint() - startAudio) / 1e6;
+            let audioSize = 0;
+            const fullAudioPath = path.join(REPONSED_DIR, data.audio_file);
+            try { if (fs.existsSync(fullAudioPath)) audioSize = fs.statSync(fullAudioPath).size; } catch (e) {}
+
+            if (req.telemetryData) req.telemetryData.isCustomRecorded = true;
+            recordEvent({
+                traceId: req.traceId,
+                eventType: 'audio_synthesis_unit',
+                userId: req.session?.user?.id || req.session?.user?.username || 'anon',
+                http: { method: 'POST', route: '/api/reply-in-french', statusCode: 200, clientIp: req.ip },
+                metrics: {
+                    totalDurationMs: durationMs,
+                    breakdownMs: { audioSynthesisMs: durationMs },
+                    payloadSizeBytes: audioSize
+                },
+                technicalDetails: {
+                    voice: selectedVoice,
+                    textLength: text_ar.length,
+                    audioFile: data.audio_file
+                }
+            });
+
             return res.json(data);
         }
         res.status(500).json({ error: 'Échec de la génération audio française' });

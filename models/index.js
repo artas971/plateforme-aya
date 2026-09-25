@@ -8,6 +8,7 @@ const Card = require('./Card');
 const FeedbackRating = require('./FeedbackRating');
 const FailureReport = require('./FailureReport');
 const ChatMessage = require('./ChatMessage');
+const TelemetryMetric = require('./TelemetryMetric');
 
 module.exports = {
     connectDB,
@@ -21,5 +22,6 @@ module.exports = {
     Card,
     FeedbackRating,
     FailureReport,
-    ChatMessage
+    ChatMessage,
+    TelemetryMetric
 };

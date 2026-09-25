@@ -84,3 +84,8 @@ whatsapp_payload.json
 chat_db.json
 chat_status.json
 chat_archives.json
+
+# Télémétrie & Logs rotatifs
+data/telemetry/*.jsonl
+data/telemetry/*.jsonl.gz
+!data/telemetry/.gitkeep

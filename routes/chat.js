@@ -5,6 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const { exec } = require('child_process');
 const { formatPythonCommand } = require('../utils/runtime');
+const { recordEvent } = require('../services/telemetryService');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AUDIO_A_TRAITER_DIR = path.join(ROOT_DIR, 'audio_a_traiter');
@@ -252,10 +253,26 @@ const chatTranslationCache = new ChatTranslationLRUCache(1000, 12 * 3600 * 1000)
  * Cascade de modèles Gemini pour résilience 429/quota + Cache LRU (TICKET-17)
  */
 async function translateChatBidirectional(text) {
+    const translationStart = process.hrtime.bigint();
+
     // 1. Vérification Cache LRU (0 ms)
     const cached = chatTranslationCache.get(text);
     if (cached) {
         console.log(`[Chat IA Cache HIT] (0 ms) "${text.substring(0, 30)}..." -> "${cached.translated_text.substring(0, 30)}..."`);
+        recordEvent({
+            eventType: 'shami_translation',
+            metrics: {
+                totalDurationMs: 0,
+                breakdownMs: { aiProcessingMs: 0 },
+                cacheHit: true
+            },
+            technicalDetails: {
+                sourceLang: cached.detected_lang,
+                targetLang: cached.detected_lang === 'fr' ? 'ar' : 'fr',
+                textLength: text.length,
+                cache: 'LRU_1000'
+            }
+        });
         return cached;
     }
 
@@ -332,6 +349,23 @@ Tu dois impérativement répondre au format JSON strict avec exactement ces deux
                         model_used: model
                     };
                     chatTranslationCache.set(text, result);
+
+                    const durationMs = Number(process.hrtime.bigint() - translationStart) / 1e6;
+                    recordEvent({
+                        eventType: 'shami_translation',
+                        metrics: {
+                            totalDurationMs: durationMs,
+                            breakdownMs: { aiProcessingMs: durationMs },
+                            cacheHit: false
+                        },
+                        technicalDetails: {
+                            sourceLang: detected_lang,
+                            targetLang: detected_lang === 'fr' ? 'ar' : 'fr',
+                            textLength: text.length,
+                            modelUsed: model
+                        }
+                    });
+
                     return result;
                 }
             } catch (err) {
@@ -403,6 +437,8 @@ router.get('/stream', (req, res) => {
 
     res.write(': connected\n\n');
 
+    global.__activeSseClientsCount = (global.__activeSseClientsCount || 0) + 1;
+
     const sessionUser = req.session?.user;
     const currentName = (sessionUser && sessionUser.authenticated)
         ? String(sessionUser.name || sessionUser.username || '').trim().toLowerCase()
@@ -420,7 +456,25 @@ router.get('/stream', (req, res) => {
 
     const onNewMessage = (msg) => {
         if (canUserSeeMessage(msg)) {
-            res.write(`event: new_message\ndata: ${JSON.stringify(msg)}\n\n`);
+            const sendStart = process.hrtime.bigint();
+            const payload = JSON.stringify(msg);
+            res.write(`event: new_message\ndata: ${payload}\n\n`);
+            const writeDurationMs = Number(process.hrtime.bigint() - sendStart) / 1e6;
+
+            recordEvent({
+                eventType: 'chat_sse_broadcast',
+                metrics: {
+                    totalDurationMs: writeDurationMs,
+                    breakdownMs: { otherIoMs: writeDurationMs },
+                    payloadSizeBytes: Buffer.byteLength(payload, 'utf8')
+                },
+                technicalDetails: {
+                    sseEvent: 'new_message',
+                    activeSseClients: global.__activeSseClientsCount || 1,
+                    messageId: msg.id,
+                    recipient: msg.recipient
+                }
+            });
         }
     };
 
@@ -452,6 +506,7 @@ router.get('/stream', (req, res) => {
     }, 25000);
 
     req.on('close', () => {
+        global.__activeSseClientsCount = Math.max(0, (global.__activeSseClientsCount || 1) - 1);
         clearInterval(heartbeat);
         chatEventBus.removeListener('new_message', onNewMessage);
         chatEventBus.removeListener('update_message', onUpdateMessage);
