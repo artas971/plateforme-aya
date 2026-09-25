@@ -101,6 +101,11 @@ function requireAuth(req, res, next) {
         return next();
     }
 
+    // 2.5 Jeton d'agent machine-to-machine pour la télémétrie (vérifié ensuite par requireAdminOrAgentToken)
+    if (req.path.startsWith('/api/admin/telemetry') && (req.headers['x-aya-agent-token'] || (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')))) {
+        return next();
+    }
+
     // 3. Vérification de la session active
     if (req.session && req.session.user && req.session.user.authenticated) {
         return next();

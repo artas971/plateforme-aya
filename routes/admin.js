@@ -313,6 +313,37 @@ router.get('/posts/pending', requireModerator, async (req, res) => {
     }
 });
 
+const ROOT_DIR = path.resolve(__dirname, '..');
+const REPONSED_DIR = path.join(ROOT_DIR, 'fichiers_reponse_a_envoyer');
+
+/**
+ * Supprime physiquement les fichiers médias associés à un post rejeté ou supprimé
+ */
+function deletePostMediaFiles(post) {
+    if (!post) return;
+    const mediaUrls = [post.mediaUrl, post.mediaThumbnail, post.audioUrl];
+    for (const url of mediaUrls) {
+        if (!url || typeof url !== 'string') continue;
+        try {
+            const cleanUrl = decodeURIComponent(url.replace(/^https?:\/\/[^\/]+/i, ''));
+            let localPath = null;
+            if (cleanUrl.startsWith('/uploads/')) {
+                localPath = path.join(ROOT_DIR, cleanUrl.replace(/^\//, ''));
+            } else if (cleanUrl.startsWith('/download/')) {
+                localPath = path.join(REPONSED_DIR, cleanUrl.replace('/download/', ''));
+            } else if (cleanUrl.startsWith('/fichiers_reponse_a_envoyer/')) {
+                localPath = path.join(ROOT_DIR, cleanUrl.replace(/^\//, ''));
+            }
+            if (localPath && fs.existsSync(localPath) && !fs.statSync(localPath).isDirectory()) {
+                fs.unlinkSync(localPath);
+                console.log(`🗑️ [MODÉRATION REJET] Fichier média supprimé : ${localPath}`);
+            }
+        } catch (e) {
+            console.warn(`⚠️ [MODÉRATION REJET] Erreur suppression fichier média ${url} :`, e.message);
+        }
+    }
+}
+
 /**
  * PUT /api/admin/posts/:id/status
  * Met à jour le statut d'un témoignage (approved / rejected)
@@ -337,18 +368,24 @@ router.put('/posts/:id/status', requireModerator, async (req, res) => {
         };
 
         if (isDbConnected()) {
-            const updated = await Post.findByIdAndUpdate(
-                id,
-                { $set: updateData },
-                { new: true }
-            );
-
-            if (!updated) {
+            const existingPost = await Post.findById(id);
+            if (!existingPost) {
                 return res.status(404).json({
                     success: false,
                     error: `Témoignage avec l'ID ${id} introuvable.`
                 });
             }
+
+            // Si rejeté, suppression immédiate des fichiers médias lourds du disque
+            if (status === 'rejected') {
+                deletePostMediaFiles(existingPost);
+            }
+
+            const updated = await Post.findByIdAndUpdate(
+                id,
+                { $set: updateData },
+                { new: true }
+            );
 
             return res.json({
                 success: true,
@@ -365,6 +402,11 @@ router.put('/posts/:id/status', requireModerator, async (req, res) => {
                 success: false,
                 error: `Témoignage avec l'ID ${id} introuvable.`
             });
+        }
+
+        // Si rejeté, suppression immédiate des fichiers médias lourds du disque
+        if (status === 'rejected') {
+            deletePostMediaFiles(posts[index]);
         }
 
         posts[index] = {
@@ -882,6 +924,130 @@ router.post('/maintenance/backup-now', requireAdmin, async (req, res) => {
         const { performBackup } = require('../services/backupService');
         const report = await performBackup();
         return res.json({ success: true, report });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * Middleware d'Authentification Hybride pour la Télémétrie
+ * Accepte :
+ * 1. Session Administrateur active (req.session.user)
+ * 2. Jeton Agent Machine-to-Machine (En-tête 'X-Aya-Agent-Token' ou 'Authorization: Bearer ...')
+ */
+function requireAdminOrAgentToken(req, res, next) {
+    const agentToken = req.headers['x-aya-agent-token'] || 
+        (req.headers.authorization && req.headers.authorization.startsWith('Bearer ') ? req.headers.authorization.slice(7).trim() : null);
+
+    const configuredSecret = process.env.AYA_TELEMETRY_SECRET || 'aya_secret_telemetry_token_2026';
+
+    if (agentToken) {
+        try {
+            const bufA = Buffer.from(String(agentToken));
+            const bufB = Buffer.from(String(configuredSecret));
+            if (bufA.length === bufB.length && require('crypto').timingSafeEqual(bufA, bufB)) {
+                req.isAgentCaller = true;
+                return next();
+            }
+        } catch (e) {}
+        console.warn(`[TELEMETRY SECURITY] ⛔ Jeton d'agent invalide présenté depuis ${req.ip}`);
+        return res.status(401).json({ success: false, error: "Jeton de télémétrie d'agent invalide." });
+    }
+
+    // Fallback sur session administrateur classique
+    return requireAdmin(req, res, next);
+}
+
+/**
+ * GET /api/admin/telemetry/stats
+ * Tableau de bord instantané du moteur de télémétrie & métriques récentes
+ */
+router.get('/telemetry/stats', requireAdminOrAgentToken, (req, res) => {
+    try {
+        const { getTelemetryStats, getRecentEvents } = require('../services/telemetryService');
+        const stats = getTelemetryStats();
+        const recent = getRecentEvents(20);
+        return res.json({
+            success: true,
+            stats,
+            recentEvents: recent
+        });
+    } catch (e) {
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+/**
+ * GET /api/admin/telemetry/export
+ * Export streamé non-bloquant du journal JSONL du jour (ou d'une date spécifique ?date=YYYY-MM-DD)
+ */
+router.get('/telemetry/export', requireAdminOrAgentToken, async (req, res) => {
+    try {
+        const { TELEMETRY_DIR } = require('../services/telemetryService');
+        const requestedDate = req.query.date || new Date().toISOString().split('T')[0];
+        
+        // Sécurisation stricte du nom de fichier contre toute traversée de chemin
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+            return res.status(400).json({ success: false, error: "Format de date invalide (attendu: YYYY-MM-DD)." });
+        }
+
+        const targetFile = path.join(TELEMETRY_DIR, `events-${requestedDate}.jsonl`);
+        const targetGz = path.join(TELEMETRY_DIR, `events-${requestedDate}.jsonl.gz`);
+
+        let filePath = null;
+        let isGz = false;
+
+        if (fs.existsSync(targetFile)) {
+            filePath = targetFile;
+        } else if (fs.existsSync(targetGz)) {
+            filePath = targetGz;
+            isGz = true;
+        } else {
+            return res.status(404).json({ success: false, error: `Aucun journal de télémétrie trouvé pour la date ${requestedDate}.` });
+        }
+
+        const { eventType, limit } = req.query;
+        const maxLimit = limit ? parseInt(limit, 10) : Infinity;
+
+        // Cas 1 : Aucun filtre supplémentaire -> Direct stream pipe ultra-performant (0 overhead)
+        if (!eventType && (!limit || isNaN(maxLimit))) {
+            const stat = fs.statSync(filePath);
+            res.setHeader('Content-Type', isGz ? 'application/gzip' : 'application/x-ndjson; charset=utf-8');
+            res.setHeader('Content-Length', stat.size);
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(filePath)}"`);
+            const fileStream = fs.createReadStream(filePath);
+            return fileStream.pipe(res);
+        }
+
+        // Cas 2 : Filtrage à la volée (eventType / limit) sans accumulation en mémoire RAM
+        res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="export-${requestedDate}${eventType ? '-' + eventType : ''}.jsonl"`);
+
+        const readline = require('readline');
+        const fileStream = fs.createReadStream(filePath, { encoding: 'utf8' });
+        const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+
+        let emittedCount = 0;
+        for await (const line of rl) {
+            if (!line || !line.trim()) continue;
+
+            if (eventType) {
+                // Filtrage rapide sans re-sérialisation
+                if (!line.includes(`"eventType":"${eventType}"`)) {
+                    continue;
+                }
+            }
+
+            res.write(line + '\n');
+            emittedCount++;
+
+            if (emittedCount >= maxLimit) {
+                fileStream.destroy();
+                break;
+            }
+        }
+        res.end();
+
     } catch (e) {
         return res.status(500).json({ success: false, error: e.message });
     }

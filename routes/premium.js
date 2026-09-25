@@ -209,11 +209,13 @@ router.post('/vocabulary-card', requireAuth, async (req, res) => {
 
     // 3. Exécution du Pipeline de Génération avec Rollback Garanti
     try {
+        if (req.telemetryData) req.telemetryData.isCustomRecorded = true;
         const cardResult = await vocabCardService.generateFullVocabularyCard({
             theme: safeTheme,
             level: safeLevel,
             customWords: safeCustomWords,
-            validatedVocabData: validatedVocabData && Array.isArray(validatedVocabData.words) && validatedVocabData.words.length >= 5 ? validatedVocabData : null
+            validatedVocabData: validatedVocabData && Array.isArray(validatedVocabData.words) && validatedVocabData.words.length >= 5 ? validatedVocabData : null,
+            userId
         });
 
         // 4A. Validation Définitive du Débit (Commit Phase 2A)

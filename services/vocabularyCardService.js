@@ -16,6 +16,7 @@ const path = require('path');
 const { spawn, execFile } = require('child_process');
 const puppeteer = require('puppeteer-core');
 const { getPythonBin, spawnNice, execFileNice } = require('../utils/runtime');
+const { recordEvent, createTrace } = require('./telemetryService');
 
 // Chemins de stockage
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -914,6 +915,7 @@ async function renderCardImage(htmlContent, outputPath) {
  * Encapsulée avec getPythonBin() et spawnNice (nice -n 15 sous POSIX)
  */
 function synthesizeTtsAudio(text, voice, outputPath) {
+    const ttsStart = process.hrtime.bigint();
     return new Promise((resolve, reject) => {
         const payloadFile = path.join(TEMP_BUILD_DIR, `tts_payload_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.json`);
         fs.writeFileSync(payloadFile, JSON.stringify({
@@ -934,6 +936,24 @@ function synthesizeTtsAudio(text, voice, outputPath) {
         pyProc.on('close', code => {
             if (fs.existsSync(payloadFile)) fs.unlinkSync(payloadFile);
             if (code === 0 && fs.existsSync(outputPath)) {
+                const durationMs = Number(process.hrtime.bigint() - ttsStart) / 1e6;
+                let payloadSizeBytes = 0;
+                try { payloadSizeBytes = fs.statSync(outputPath).size; } catch (e) {}
+
+                recordEvent({
+                    eventType: 'audio_synthesis_unit',
+                    metrics: {
+                        totalDurationMs: durationMs,
+                        breakdownMs: { audioSynthesisMs: durationMs },
+                        payloadSizeBytes
+                    },
+                    technicalDetails: {
+                        voice,
+                        textLength: (text || '').length,
+                        outputFilename: path.basename(outputPath)
+                    }
+                });
+
                 resolve(outputPath);
             } else {
                 reject(new Error(`Erreur TTS (code ${code}): ${stderrData || stdoutData}`));
@@ -1045,32 +1065,70 @@ async function generateCombinedAudio(vocabData, outputFinalMp3) {
  * 🚀 MÉTHODE PUBLIQUE PRINCIPALE : Génération Complète d'une Fiche Vocabulaire Premium
  * Encadrée par la file d'attente séquentielle (concurrency = 1)
  */
-async function generateFullVocabularyCard({ theme, level = 'debutant', customWords = null, outputId = null, validatedVocabData = null }) {
+async function generateFullVocabularyCard({ theme, level = 'debutant', customWords = null, outputId = null, validatedVocabData = null, userId = 'anon' }) {
     return vocabCardQueue.enqueue(async () => {
         const id = outputId || `vcard_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
         const outputJpg = path.join(UPLOADS_CARDS_DIR, `${id}.jpg`);
         const outputMp3 = path.join(UPLOADS_CARDS_DIR, `${id}.mp3`);
 
-        console.log(`[VOCAB SERVICE] 🚀 Démarrage génération fiche ${id} (Thème: "${theme || 'général'}", Niveau: ${level})`);
+        const trace = createTrace({
+            eventType: 'vocab_card_generation',
+            userId,
+            technicalDetails: {
+                cardId: id,
+                theme: theme || 'général',
+                level,
+                hasCustomWords: !!customWords,
+                isPreValidated: !!(validatedVocabData && validatedVocabData.words?.length >= 5)
+            }
+        });
+
+        console.log(`[VOCAB SERVICE] 🚀 Démarrage génération fiche ${id} (Thème: "${theme || 'général'}", Niveau: ${level}) [Trace: ${trace.traceId}]`);
 
         // 1. Sémantique Gemini Flash (ou données pré-validées dans l'écran d'arbitrage)
         let vocabData;
         if (validatedVocabData && Array.isArray(validatedVocabData.words) && validatedVocabData.words.length >= 5) {
             vocabData = validatedVocabData;
+            trace.recordStep('aiProcessingMs', 0);
             console.log(`[VOCAB SERVICE] 🎯 Utilisation des 5 mots pré-validés par l'utilisateur : ${vocabData.words.map(w => w.french).join(', ')}`);
         } else {
+            const aiStart = process.hrtime.bigint();
             vocabData = await generateVocabularyData(theme, customWords, level);
-            console.log(`[VOCAB SERVICE] ✅ Sémantique générée via Gemini (5 mots : ${vocabData.words.map(w => w.french).join(', ')})`);
+            const aiElapsed = Number(process.hrtime.bigint() - aiStart) / 1e6;
+            trace.recordStep('aiProcessingMs', aiElapsed);
+            console.log(`[VOCAB SERVICE] ✅ Sémantique générée via Gemini en ${aiElapsed.toFixed(0)}ms (5 mots : ${vocabData.words.map(w => w.french).join(', ')})`);
         }
 
         // 2. Rendu Graphique Puppeteer
+        const renderStart = process.hrtime.bigint();
         const htmlContent = buildHtmlTemplate(vocabData);
         await renderCardImage(htmlContent, outputJpg);
-        console.log(`[VOCAB SERVICE] 🖼️ Image 1080x1920 générée : ${outputJpg}`);
+        const renderElapsed = Number(process.hrtime.bigint() - renderStart) / 1e6;
+        trace.recordStep('mediaRenderMs', renderElapsed);
+        console.log(`[VOCAB SERVICE] 🖼️ Image 1080x1920 générée en ${renderElapsed.toFixed(0)}ms : ${outputJpg}`);
 
         // 3. Audio combiné FFmpeg + edge-tts
+        const audioStart = process.hrtime.bigint();
         await generateCombinedAudio(vocabData, outputMp3);
-        console.log(`[VOCAB SERVICE] 🎙️ Audio combiné généré : ${outputMp3}`);
+        const audioElapsed = Number(process.hrtime.bigint() - audioStart) / 1e6;
+        trace.recordStep('audioSynthesisMs', audioElapsed);
+        console.log(`[VOCAB SERVICE] 🎙️ Audio combiné généré en ${audioElapsed.toFixed(0)}ms : ${outputMp3}`);
+
+        // Calcul de la taille du livrable généré
+        let totalPayloadBytes = 0;
+        try { if (fs.existsSync(outputJpg)) totalPayloadBytes += fs.statSync(outputJpg).size; } catch (e) {}
+        try { if (fs.existsSync(outputMp3)) totalPayloadBytes += fs.statSync(outputMp3).size; } catch (e) {}
+
+        // Enregistrement télémétrique final
+        trace.finish({
+            statusCode: 200,
+            payloadSizeBytes: totalPayloadBytes,
+            technicalDetails: {
+                titleFr: vocabData.titleFr,
+                titleAr: vocabData.titleAr,
+                wordsCount: vocabData.words?.length || 5
+            }
+        });
 
         return {
             success: true,

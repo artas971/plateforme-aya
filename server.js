@@ -37,6 +37,21 @@ app.use((req, res, next) => {
 
 // Middlewares Globaux & Limites de taille
 app.use(cors());
+
+// Route de Santé / Health Check (Exclue d'office du tracing de télémétrie)
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Middleware de Télémétrie & Observabilité (Phase 1)
+const telemetryMiddleware = require('./middleware/telemetryMiddleware');
+const { startTelemetryWorker } = require('./services/telemetryService');
+app.use(telemetryMiddleware);
+
 app.use(express.json({ 
     limit: '50mb',
     verify: (req, res, buf) => {
@@ -225,6 +240,10 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use('/media', express.static(__dirname));
 app.use('/audio_a_traiter', express.static(AUDIO_A_TRAITER_DIR));
 app.use('/fichiers_reponse_a_envoyer', express.static(REPONSED_DIR));
+app.use('/fichiers_reponse_a_envoyer', (req, res) => {
+    res.status(404).send('Fichier introuvable');
+});
+
 app.get('/download/:filename', (req, res, next) => {
     if (req.query.download === '1' || req.query.download === 'true') {
         const filename = req.params.filename;
@@ -238,7 +257,14 @@ app.get('/download/:filename', (req, res, next) => {
     next();
 });
 app.use('/download', express.static(REPONSED_DIR));
+app.use('/download', (req, res) => {
+    res.status(404).send('Fichier introuvable');
+});
+
 app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/uploads', (req, res) => {
+    res.status(404).send('Fichier uploadé introuvable');
+});
 
 // Racine / et Nouvelle Page d'Accueil Officielle des Modules (/accueil, /home)
 app.get(['/', '/accueil', '/accueil.html', '/home'], (req, res) => {
@@ -341,4 +367,7 @@ app.listen(PORT, async () => {
     // Démarrage du Service de Garbage Collection NVMe (Ticket #27 - TICKET-09)
     const { startGarbageCollectorService } = require('./services/garbageCollectorService');
     startGarbageCollectorService();
+
+    // Démarrage du Worker de Télémétrie & Observabilité (Micro-Batching 5s / 50 événements)
+    startTelemetryWorker();
 });

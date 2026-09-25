@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const multer = require('multer');
 const { execSync } = require('child_process');
 const { getPythonBin } = require('../utils/runtime');
+const { recordEvent } = require('../services/telemetryService');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const REPONSED_DIR = path.join(ROOT_DIR, 'fichiers_reponse_a_envoyer');
@@ -88,7 +89,9 @@ router.post('/api/generate_v3_studio', uploadStudio.fields([{ name: 'media_file'
         const cmd = `${pythonBin} "${pyScript}" "${mediaPath}" "${bgPath}" "${mode}" "${title}" "${titleColor}" "${subColor}" "${titleMargin}" "${subMargin}" "${showHeader}" "${headerText}" "${headerColor}" "${projectUUID}"`;
 
         console.log("[Thomas] Exécution de :", cmd);
+        const videoStart = process.hrtime.bigint();
         execSync(cmd, { cwd: ROOT_DIR, env: process.env });
+        const videoElapsedMs = Number(process.hrtime.bigint() - videoStart) / 1e6;
 
         const finalMp4Path = path.join(REPONSED_DIR, finalFileName);
 
@@ -96,6 +99,34 @@ router.post('/api/generate_v3_studio', uploadStudio.fields([{ name: 'media_file'
             console.error("[Thomas] ERREUR : Le fichier MP4 n'a pas été trouvé après exécution.");
             return res.status(500).json({ status: "error", message: "Le pipeline a échoué silencieusement. Vidéo introuvable." });
         }
+
+        const mp4Size = fs.statSync(finalMp4Path).size;
+
+        // Enregistrement Télémétrie Vidéo TikTok V3
+        if (req.telemetryData) req.telemetryData.isCustomRecorded = true;
+        recordEvent({
+            traceId: req.traceId,
+            eventType: 'video_generation',
+            userId: req.session?.user?.id || req.session?.user?.username || 'anon',
+            http: {
+                method: 'POST',
+                route: '/api/generate_v3_studio',
+                statusCode: 200,
+                clientIp: req.ip
+            },
+            metrics: {
+                totalDurationMs: videoElapsedMs,
+                breakdownMs: {
+                    mediaEncodeMs: videoElapsedMs
+                },
+                payloadSizeBytes: mp4Size
+            },
+            technicalDetails: {
+                projectUUID,
+                mode,
+                finalFileName
+            }
+        });
 
         return res.json({
             success: true,
