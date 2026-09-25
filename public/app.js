@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyFrenchTextBtn = document.getElementById('copyFrenchTextBtn');
 
     const voiceSelect = document.getElementById('voiceSelect');
+    const voiceSelectFr = document.getElementById('voiceSelectFr');
     const replyInputFr = document.getElementById('replyInputFr');
     const replyInputAr = document.getElementById('replyInputAr');
     const generateReplyFrBtn = document.getElementById('generateReplyFrBtn');
@@ -234,12 +235,19 @@ document.addEventListener('DOMContentLoaded', () => {
             copyFrenchTextBtn: '📋 Copier la traduction en Français',
             titleVocab: '💡 Vocabulaire & Mots-clés de l\'audio :',
             titleSend: 'Générer une Note Vocale & Traduction',
-            labelVoiceSelect: 'Voix Arabe :',
+            labelVoiceSelect: 'Voix Arabe (2 Femmes & 2 Hommes) :',
             voices: [
-                { value: "ar-JO-SanaNeural", label: "🌸 Sana (Voix Féminine Levant / Palestinienne)" },
-                { value: "ar-LB-LaylaNeural", label: "🌸 Layla (Voix Féminine Libanaise)" },
-                { value: "ar-LB-RamiNeural", label: "🎙️ Rami (Voix Masculine Levant)" },
-                { value: "ar-EG-SalmaNeural", label: "🌸 Salma (Voix Féminine Égyptienne)" }
+                { value: "ar-JO-SanaNeural", label: "🌸 Sana (Femme, Palestinienne / Levant)" },
+                { value: "ar-LB-LaylaNeural", label: "🌸 Layla (Femme, Levant / Liban)" },
+                { value: "ar-JO-TaimNeural", label: "🎙️ Taim (Homme, Palestinien / Levant)" },
+                { value: "ar-LB-RamiNeural", label: "🎙️ Rami (Homme, Levant / Liban)" }
+            ],
+            labelVoiceSelectFr: 'Voix Française (2 Femmes & 2 Hommes) :',
+            voicesFr: [
+                { value: "fr-FR-VivienneMultilingualNeural", label: "🌸 Vivienne (Femme, Expressive & Naturelle)" },
+                { value: "fr-FR-DeniseNeural", label: "🌸 Denise (Femme, Douce & Fluide)" },
+                { value: "fr-FR-HenriNeural", label: "🎙️ Henri (Homme, Posé & Clair)" },
+                { value: "fr-FR-RemyMultilingualNeural", label: "🎙️ Rémy (Homme, Dynamique & Moderne)" }
             ],
             labelSectionFrToAr: 'Écrire en Français (Pour note vocale en Arabe Palestinien)',
             labelSectionArToFr: 'Écrire en Arabe (Pour traduire et vocaliser en Français)',
@@ -406,12 +414,19 @@ document.addEventListener('DOMContentLoaded', () => {
             copyFrenchTextBtn: '📋 نسخ الترجمة الفرنسية',
             titleVocab: '💡 مفردات وكلمات مفتاحية من التسجيل:',
             titleSend: 'إنشاء تسجيل صوتي وترجمة',
-            labelVoiceSelect: 'اختيار الصوت العربي:',
+            labelVoiceSelect: 'اختيار الصوت العربي (صوتان أنثويان وصوتان رجاليان):',
             voices: [
-                { value: "ar-JO-SanaNeural", label: "🌸 سناء (صوت أنثوي فلسطيني / بلاد الشام)" },
-                { value: "ar-LB-LaylaNeural", label: "🌸 ليلى (صوت أنثوي لبناني)" },
-                { value: "ar-LB-RamiNeural", label: "🎙️ رامي (صوت رجالي بلاد الشام)" },
-                { value: "ar-EG-SalmaNeural", label: "🌸 سلمى (صوت أنثوي مصري)" }
+                { value: "ar-JO-SanaNeural", label: "🌸 سناء (صوت أنثوي فلسطيني / أردني)" },
+                { value: "ar-LB-LaylaNeural", label: "🌸 ليلى (صوت أنثوي شامي / لبناني)" },
+                { value: "ar-JO-TaimNeural", label: "🎙️ تيم (صوت رجالي فلسطيني / أردني)" },
+                { value: "ar-LB-RamiNeural", label: "🎙️ رامي (صوت رجالي بلاد الشام / لبناني)" }
+            ],
+            labelVoiceSelectFr: 'اختيار الصوت الفرنسي (صوتان أنثويان وصوتان رجاليان):',
+            voicesFr: [
+                { value: "fr-FR-VivienneMultilingualNeural", label: "🌸 فيفيان (صوت أنثوي فرنسي معبّر وطبيعي)" },
+                { value: "fr-FR-DeniseNeural", label: "🌸 دينيس (صوت أنثوي فرنسي هادئ وواضح)" },
+                { value: "fr-FR-HenriNeural", label: "🎙️ هنري (صوت رجالي فرنسي وقور وواضح)" },
+                { value: "fr-FR-RemyMultilingualNeural", label: "🎙️ ريمي (صوت رجالي فرنسي عصري ديناميكي)" }
             ],
             labelSectionFrToAr: 'كتابة بالفرنسية (لإنشاء تسجيل صوتي بالعربية الفلسطينية)',
             labelSectionArToFr: 'كتابة باللغة العربية (للترجمة والتسجيل الصوتي بالفرنسية)',
@@ -638,6 +653,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = v.label;
                 if (v.value === currentVoiceVal) opt.selected = true;
                 voiceSelect.appendChild(opt);
+            });
+        }
+
+        setInnerHTML('labelVoiceSelectFr', dict.labelVoiceSelectFr);
+        if (voiceSelectFr && dict.voicesFr) {
+            const currentVoiceFrVal = voiceSelectFr.value || 'fr-FR-VivienneMultilingualNeural';
+            voiceSelectFr.innerHTML = '';
+            dict.voicesFr.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.value;
+                opt.textContent = v.label;
+                if (v.value === currentVoiceFrVal) opt.selected = true;
+                voiceSelectFr.appendChild(opt);
             });
         }
 
@@ -1637,7 +1665,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     body: JSON.stringify({
                         text_ar: inputVal,
-                        voice: 'fr-FR-VivienneMultilingualNeural'
+                        voice: voiceSelectFr ? voiceSelectFr.value : 'fr-FR-VivienneMultilingualNeural'
                     })
                 });
                 if (data.french_translation) {

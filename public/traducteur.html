@@ -1,27 +1,1036 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="htmlTag">
+<html lang="fr" dir="ltr" id="htmlTag">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>وكيل التَّرْجَمَة آيَة | استوديو المترجم ولوحة الإنتاج</title>
+    <title>Aya Studio | وكيل التَّرْجَمَة آيَة — Studio de Traduction Bilingue</title>
+    
+    <!-- Méta PWA & Mobile -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#0b5394">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="آية">
+    <meta name="apple-mobile-web-app-title" content="Aya Traducteur">
+    
     <!-- Favicon & Brand Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Typographies Officielles : Inter, Cairo, Amiri, Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Feuilles de Styles Principales Aya -->
+    <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/aya-rtl.css">
+
+    <style>
+        :root {
+            --color-primary: #0b5394;
+            --color-primary-dark: #073866;
+            --color-primary-light: #e8f2fc;
+            --color-primary-glow: rgba(11, 83, 148, 0.25);
+            --color-turquoise: #00bcd4;
+            --color-turquoise-dark: #0097a7;
+            --color-turquoise-light: #e0f7fa;
+            --color-turquoise-glow: rgba(0, 188, 212, 0.25);
+            --color-dark-gray: #1e293b;
+            --color-secondary-gray: #64748b;
+            --color-white: #ffffff;
+            --color-emerald: #10b981;
+            --color-whatsapp: #25D366;
+            --color-whatsapp-hover: #20ba59;
+            --color-danger: #ef4444;
+            
+            --bg-page: #f4f6f9;
+            --bg-card: #ffffff;
+            --bg-subtle: #f8fafc;
+            --border-card: rgba(153, 153, 153, 0.22);
+            --border-subtle: rgba(153, 153, 153, 0.15);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 22px;
+            
+            --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.02);
+            --shadow-hover: 0 14px 32px rgba(11, 83, 148, 0.12), 0 4px 10px rgba(11, 83, 148, 0.04);
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--color-dark-gray);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Typographie Bilingue Harmonisée ── */
+        html[dir="rtl"] body,
+        html[lang="ar"] body {
+            font-family: 'Cairo', sans-serif !important;
+            line-height: 1.75;
+        }
+
+        /* ── Conteneur Général de Page ── */
+        .traducteur-page-container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 20px 90px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            box-sizing: border-box;
+        }
+
+        /* ── Hero Banner de la Page Traducteur ── */
+        .traducteur-hero {
+            background: linear-gradient(135deg, #0b5394 0%, #0d69b8 50%, #00bcd4 100%);
+            border-radius: var(--radius-xl);
+            padding: 32px 32px;
+            color: #ffffff;
+            box-shadow: 0 12px 30px rgba(11, 83, 148, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .traducteur-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 26px 26px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .traducteur-hero-content {
+            max-width: 720px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .traducteur-hero-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        .live-dot-pulse {
+            width: 8px;
+            height: 8px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #4ade80;
+            animation: heroDotPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes heroDotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .traducteur-hero h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #ffffff;
+        }
+
+        .traducteur-hero p {
+            font-size: 0.98rem;
+            line-height: 1.6;
+            margin: 0;
+            opacity: 0.92;
+            color: #f1f5f9;
+        }
+
+        .traducteur-hero-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-feature-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: var(--radius-md);
+            padding: 8px 14px;
+            backdrop-filter: blur(8px);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* ── Commutateur Onglets Mobile (Visible uniquement sous 900px) ── */
+        .traducteur-mobile-tabs {
+            display: none;
+            background: #ffffff;
+            padding: 6px;
+            border-radius: 14px;
+            border: 1px solid var(--border-card);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+            gap: 6px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .mobile-tab-btn {
+            flex: 1;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--color-secondary-gray);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mobile-tab-btn.active {
+            background: var(--color-primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--color-primary-glow);
+        }
+
+        /* ── Grille Principale Desktop / Tablette ── */
+        .traducteur-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ── Cartes de Studio ── */
+        .studio-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .studio-card:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(0, 188, 212, 0.35);
+        }
+
+        .studio-card-header {
+            padding: 18px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .studio-card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(11, 83, 148, 0.15);
+        }
+
+        .card-icon-badge.turquoise {
+            background: var(--color-turquoise-light);
+            color: var(--color-turquoise-dark);
+            border-color: rgba(0, 188, 212, 0.2);
+        }
+
+        .studio-card-title h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--color-dark-gray);
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        .studio-card-badge {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: var(--color-secondary-gray);
+            border: 1px solid rgba(153, 153, 153, 0.2);
+            white-space: nowrap;
+        }
+
+        .studio-card-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: #ffffff;
+        }
+
+        /* ── Boîtes d'Action & Sections Intérieures ── */
+        .action-box {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .action-box:hover {
+            border-color: rgba(0, 188, 212, 0.35);
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .action-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 2px;
+        }
+
+        .action-box-header h3 {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-box-header .section-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(0, 188, 212, 0.12);
+            color: var(--color-turquoise-dark);
+            border: 1px solid rgba(0, 188, 212, 0.25);
+        }
+
+        .action-box-desc {
+            font-size: 0.86rem;
+            color: var(--color-secondary-gray);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* ── Micro Studio Enregistrement ── */
+        .mic-studio-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-mic-record {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+            transition: all 0.2s ease;
+            flex: 1;
+            min-height: 46px;
+        }
+
+        .btn-mic-record:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+        }
+
+        .btn-mic-record.recording {
+            animation: pulseRecordBtn 1.5s infinite;
+            background: linear-gradient(135deg, #b91c1c, #991b1b);
+        }
+
+        @keyframes pulseRecordBtn {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+
+        .rec-timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--color-danger);
+            font-weight: 800;
+            font-size: 0.95rem;
+            font-variant-numeric: tabular-nums;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        /* ── Champs & Sélecteurs Formulaire ── */
+        .form-group-modern {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .form-label-modern {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .custom-select-modern {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid rgba(153, 153, 153, 0.28);
+            background-color: #ffffff;
+            color: var(--color-dark-gray);
+            font-size: 0.92rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .custom-select-modern:focus {
+            outline: none;
+            border-color: var(--color-turquoise);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.16);
+        }
+
+        .custom-textarea-modern {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid rgba(153, 153, 153, 0.28);
+            background-color: #ffffff;
+            color: var(--color-dark-gray);
+            font-size: 0.96rem;
+            line-height: 1.6;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 85px;
+        }
+
+        .custom-textarea-modern:focus {
+            outline: none;
+            border-color: var(--color-turquoise);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.16);
+            background-color: #ffffff;
+        }
+
+        /* ── Boutons Généraux Plateforme ── */
+        .btn-modern-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, #0d69b8 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px var(--color-primary-glow);
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 46px;
+        }
+
+        .btn-modern-primary:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(11, 83, 148, 0.35);
+        }
+
+        .btn-modern-accent {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-turquoise) 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px var(--color-turquoise-glow);
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 46px;
+        }
+
+        .btn-modern-accent:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 188, 212, 0.35);
+        }
+
+        .btn-modern-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+            transition: all 0.2s ease;
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 46px;
+        }
+
+        .btn-modern-whatsapp:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.38);
+        }
+
+        .btn-modern-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #ffffff;
+            color: var(--color-primary);
+            border: 1.5px solid rgba(11, 83, 148, 0.25);
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .btn-modern-outline:hover:not(:disabled) {
+            background: var(--color-primary-light);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .btn-modern-danger-outline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #ffffff;
+            color: var(--color-danger);
+            border: 1.5px solid rgba(239, 68, 68, 0.25);
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .btn-modern-danger-outline:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: var(--color-danger);
+        }
+
+        /* ── Lecteurs Média Audio / Vidéo ── */
+        .media-modern-wrapper {
+            width: 100%;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+
+        .video-player {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .audio-player {
+            width: 100%;
+            padding: 10px 14px;
+            box-sizing: border-box;
+        }
+
+        /* ── Boîtes de Transcription Bilingue ── */
+        .transcript-card {
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .arabic-transcript-card {
+            background: #f0fdfa;
+            border: 1px solid rgba(0, 188, 212, 0.35);
+        }
+
+        .french-transcript-card {
+            background: #eff6ff;
+            border: 1px solid rgba(11, 83, 148, 0.25);
+        }
+
+        .transcript-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .arabic-transcript-card .transcript-card-header {
+            color: var(--color-primary);
+        }
+
+        .french-transcript-card .transcript-card-header {
+            color: var(--color-primary);
+        }
+
+        .transcript-flag-badge {
+            font-size: 1.15rem;
+        }
+
+        .arabic-text-render {
+            font-family: 'Cairo', sans-serif !important;
+            font-size: 1.25rem;
+            line-height: 1.8;
+            direction: rtl;
+            text-align: right;
+            color: var(--color-dark-gray);
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .arabic-text-render.large {
+            font-size: 1.35rem;
+        }
+
+        .phonetic-text-render {
+            font-size: 0.88rem;
+            color: var(--color-turquoise-dark);
+            font-style: italic;
+            font-weight: 600;
+            padding: 6px 10px;
+            background: rgba(0, 188, 212, 0.08);
+            border-radius: 6px;
+        }
+
+        .french-text-render {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.02rem;
+            line-height: 1.6;
+            color: var(--color-dark-gray);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .transcript-footer-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        /* ── Carte Réponse Vocale Générée ── */
+        .reply-result-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
+            border: 2px solid var(--color-turquoise);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 8px 24px var(--color-turquoise-glow);
+            animation: fadeInResult 0.3s ease-in-out;
+        }
+
+        @keyframes fadeInResult {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .audio-playback-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 188, 212, 0.25);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .audio-info-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .audio-info-icon {
+            font-size: 1.4rem;
+        }
+
+        .audio-info-text strong {
+            font-size: 0.92rem;
+            color: var(--color-dark-gray);
+            display: block;
+        }
+
+        .audio-info-text span {
+            font-size: 0.78rem;
+            color: var(--color-secondary-gray);
+        }
+
+        .custom-audio-player {
+            flex: 1;
+            min-width: 200px;
+            height: 38px;
+        }
+
+        /* ── Chips Vocabulaire ── */
+        .vocab-box {
+            background: #ffffff;
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .vocab-box h4 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vocab-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .vocab-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: var(--color-primary-light);
+            color: var(--color-primary);
+            font-size: 0.84rem;
+            font-weight: 600;
+            border: 1px solid rgba(11, 83, 148, 0.18);
+        }
+
+        /* ── Séparateur Moderne ── */
+        .section-separator-clean {
+            border: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(153, 153, 153, 0.25), transparent);
+            margin: 6px 0;
+        }
+
+        /* ── Modal WhatsApp Guidance Moderne ── */
+        .guidance-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .guidance-card {
+            background: #ffffff;
+            border-radius: var(--radius-xl);
+            max-width: 500px;
+            width: 100%;
+            padding: 28px 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-card);
+            position: relative;
+            animation: modalPop 0.25s ease-out;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .guidance-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .guidance-icon-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .guidance-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--color-secondary-gray);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            line-height: 1;
+        }
+
+        .guidance-close-btn:hover {
+            background: #f1f5f9;
+            color: var(--color-dark-gray);
+        }
+
+        .guidance-card h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--color-dark-gray);
+            margin: 0 0 8px 0;
+        }
+
+        .guidance-sub {
+            font-size: 0.9rem;
+            color: var(--color-secondary-gray);
+            line-height: 1.5;
+            margin: 0 0 20px 0;
+        }
+
+        .filename-badge {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 6px;
+            color: var(--color-primary);
+            font-family: monospace;
+            font-size: 0.88rem;
+        }
+
+        .guidance-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .guidance-step {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .step-content strong {
+            font-size: 0.92rem;
+            color: var(--color-dark-gray);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .step-content p {
+            font-size: 0.84rem;
+            color: var(--color-secondary-gray);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .guidance-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* ── Utilitaires ── */
+        .hidden {
+            display: none !important;
+        }
+
+        .full-width {
+            width: 100% !important;
+        }
+
+        /* ── Responsive Mobile (< 900px) ── */
+        @media (max-width: 900px) {
+            .traducteur-page-container {
+                padding: 14px 12px 90px 12px;
+                gap: 16px;
+            }
+
+            .traducteur-hero {
+                padding: 22px 18px;
+                border-radius: var(--radius-lg);
+            }
+
+            .traducteur-hero h1 {
+                font-size: 1.4rem;
+            }
+
+            .traducteur-hero p {
+                font-size: 0.88rem;
+            }
+
+            .traducteur-mobile-tabs {
+                display: flex;
+            }
+
+            .traducteur-main-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+
+            /* Contrôle d'affichage par onglet sur mobile */
+            .traducteur-column-received.tab-hidden,
+            .traducteur-column-reply.tab-hidden {
+                display: none !important;
+            }
+
+            .studio-card-header {
+                padding: 14px 16px;
+            }
+
+            .studio-card-body {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .action-box {
+                padding: 14px;
+            }
+
+            .audio-playback-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .custom-audio-player {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- WhatsApp Desktop Share Guidance Modal -->
+    <!-- Modal d'Aide WhatsApp Desktop -->
     <div id="whatsappGuidanceModal" class="guidance-overlay hidden">
         <div class="guidance-card">
             <div class="guidance-header">
@@ -36,14 +1045,14 @@
                     <span class="step-num">1</span>
                     <div class="step-content">
                         <strong id="waStep1Title">Fichier prêt dans les Téléchargements</strong>
-                        <p id="waStep1Desc">Le fichier audio MP3 a été enregistré automatiquement sur votre ordinateur.</p>
+                        <p id="waStep1Desc">Le fichier audio MP3 a été enregistré automatiquement sur votre appareil.</p>
                     </div>
                 </div>
                 <div class="guidance-step">
                     <span class="step-num">2</span>
                     <div class="step-content">
                         <strong id="waStep2Title">Ouvrez votre conversation WhatsApp</strong>
-                        <p id="waStep2Desc">Cliquez sur le bouton ci-dessous pour ouvrir WhatsApp Web.</p>
+                        <p id="waStep2Desc">Cliquez sur le bouton ci-dessous pour ouvrir WhatsApp Web ou l'application.</p>
                     </div>
                 </div>
                 <div class="guidance-step">
@@ -56,363 +1065,425 @@
             </div>
 
             <div class="guidance-actions">
-                <button id="waOpenWebBtn" class="btn btn-whatsapp full-width">
+                <button id="waOpenWebBtn" class="btn-modern-whatsapp full-width">
                     💬 <span id="waBtnOpenText">Ouvrir WhatsApp Web</span>
                 </button>
-                <button id="waDismissBtn" class="btn btn-secondary full-width">
+                <button id="waDismissBtn" class="btn-modern-outline full-width">
                     <span id="waBtnDismissText">J'ai compris</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Navbar Partagée Globale (Hydratée par aya-i18n.js) -->
+    <!-- Barre de Navigation Partagée Globale (Hydratée dynamiquement par aya-i18n.js) -->
     <header class="app-header" id="ayaGlobalNavbar"></header>
 
-    <div class="app-container">
+    <div class="traducteur-page-container">
 
-        <!-- Main Content Grid : Ateliers de Production & Outils Média -->
-        <main class="main-grid">
-            <!-- Left Column: Audio Selector & Received Message -->
-            <section class="card message-card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <span class="icon">📥</span>
-                        <h2 id="titleReceived">الملفات والتسجيلات الصوتية الواردة</h2>
+        <!-- Hero Header Bilingue & Statut Studio -->
+        <section class="traducteur-hero">
+            <div class="traducteur-hero-content">
+                <div class="traducteur-hero-pill">
+                    <span class="live-dot-pulse"></span>
+                    <span>Studio Vocal & Traduction Bilingue</span>
+                </div>
+                <h1 id="traducteurHeroTitle">🎙️ وكيل التَّرْجَمَة آيَة & الاستوديو الصوتي</h1>
+                <p id="traducteurHeroSub">Traduction bidirectionnelle instantanée, transcription phonétique et génération de notes vocales naturelles (Français ↔ Arabe Palestinien).</p>
+            </div>
+            <div class="traducteur-hero-badges">
+                <div class="hero-feature-badge">
+                    <span>🇵🇸 ↔ 🇫🇷</span>
+                    <span>Levantin & Français</span>
+                </div>
+                <div class="hero-feature-badge">
+                    <span>🎙️</span>
+                    <span>4 Voix Ar. & 4 Voix Fr. (2F / 2H)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Commutateur d'Onglets Mobile (Masqué sur Desktop) -->
+        <div class="traducteur-mobile-tabs" id="mobileTabsBar" role="tablist">
+            <button type="button" class="mobile-tab-btn active" id="tabBtnReceived" role="tab" aria-selected="true">
+                <span>📥</span> <span id="tabLabelReceived">Fichiers Reçus</span>
+            </button>
+            <button type="button" class="mobile-tab-btn" id="tabBtnReply" role="tab" aria-selected="false">
+                <span>📤</span> <span id="tabLabelReply">Créer & Répondre</span>
+            </button>
+        </div>
+
+        <!-- Grille Principale des 2 Ateliers -->
+        <main class="traducteur-main-grid">
+
+            <!-- Colonne 1 : Audios & Fichiers Reçus / Transcription & Traduction -->
+            <section class="studio-card traducteur-column-received" id="colReceived">
+                <div class="studio-card-header">
+                    <div class="studio-card-title">
+                        <div class="card-icon-badge">📥</div>
+                        <div>
+                            <h2 id="titleReceived">الملفات والتسجيلات الصوتية الواردة</h2>
+                        </div>
                     </div>
-                    <span class="timestamp" id="msgTime">مجلد التسجيلات الواردة</span>
+                    <span class="studio-card-badge" id="msgTime">مجلد التسجيلات الواردة</span>
                 </div>
 
-                <div class="card-body">
-                    <!-- Direct Upload & Translate Box -->
-                    <div class="direct-upload-box">
-                        <h3 id="titleDirectUpload">📤 إرسال ملف صوتي أو فيديو للترجمة</h3>
-                        <p class="mic-sub" id="subDirectUpload">اختر اللغة المطلوبة للترجمة قبل إرسال الملف:</p>
-                        
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <div class="input-group">
-                                <label for="uploadTargetLangSelect" id="labelUploadTargetLang">اللغة المطلوبة للترجمة:</label>
-                                <select id="uploadTargetLangSelect" class="custom-select">
-                                    <option value="fr" id="uploadOptFr" selected>🇫🇷 الترجمة إلى اللغة الفرنسية (الصوت/الفيديو بالعربية)</option>
-                                    <option value="ar" id="uploadOptAr">🇵🇸 الترجمة إلى العربية الفلسطينية (الصوت/الفيديو بالفرنسية)</option>
-                                </select>
-                            </div>
-
-                            <input type="file" id="directFileInput" accept="audio/*,video/*" style="display: none;">
-                            <button class="btn btn-primary full-width" id="triggerFileBrowseBtn">
-                                📁 اختيار ملف صوت/فيديو للترجمة المباشرة
-                            </button>
+                <div class="studio-card-body">
+                    <!-- Zone 1 : Import Direct Fichier Audio/Vidéo -->
+                    <div class="action-box">
+                        <div class="action-box-header">
+                            <h3 id="titleDirectUpload">📤 إرسال ملف صوتي أو فيديو للترجمة</h3>
+                            <span class="section-tag">Audio / Vidéo</span>
                         </div>
-                    </div>
-
-                    <!-- Live Microphone Recording Section -->
-                    <div class="mic-recording-box">
-                        <h3 id="titleMicRec">🎙️ تسجيل ملاحظة صوتية مباشرة (مايكروفون)</h3>
-                        <p class="mic-sub" id="subMicRec">تحدثي في المايكروفون للتسجيل والترجمة المباشرة:</p>
+                        <p class="action-box-desc" id="subDirectUpload">اختر اللغة المطلوبة للترجمة قبل إرسال الملف:</p>
                         
-                        <div class="mic-controls-row">
-                            <button class="btn btn-danger mic-btn" id="recordMicBtn">
-                                <span class="btn-icon" id="recIcon">🔴</span> <span id="recBtnText">بدء التسجيل الصوتي</span>
-                            </button>
-                            <span class="recording-timer hidden" id="recTimer">🔴 00:00</span>
-                        </div>
-                    </div>
-
-                    <!-- Admin Only Local Computer Files Section -->
-                    <div id="adminLocalFilesSection" class="admin-files-box hidden" style="background: rgba(30, 41, 59, 0.85); padding: 16px; border-radius: 12px; margin-bottom: 18px; border: 1px solid #334155; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-                        <div class="input-group">
-                            <label for="audioSelect" id="labelAudioSelect">📂 Choisir l'audio/vidéo à traduire :</label>
-                            <select id="audioSelect" class="custom-select bold-select">
-                                <!-- Populated dynamically via JS -->
+                        <div class="form-group-modern">
+                            <label for="uploadTargetLangSelect" class="form-label-modern" id="labelUploadTargetLang">اللغة المطلوبة للترجمة:</label>
+                            <select id="uploadTargetLangSelect" class="custom-select-modern">
+                                <option value="fr" id="uploadOptFr" selected>🇫🇷 الترجمة إلى اللغة الفرنسية (الصوت/الفيديو بالعربية)</option>
+                                <option value="ar" id="uploadOptAr">🇵🇸 الترجمة إلى العربية الفلسطينية (الصوت/الفيديو بالفرنسية)</option>
                             </select>
                         </div>
 
-                        <div class="input-group" style="margin-top: 10px; margin-bottom: 12px;">
-                            <label for="selectAudioTargetLang" id="labelSelectAudioTargetLang">Langue de la traduction à générer :</label>
-                            <select id="selectAudioTargetLang" class="custom-select">
+                        <input type="file" id="directFileInput" accept="audio/*,video/*" style="display: none;">
+                        <button class="btn-modern-primary full-width" id="triggerFileBrowseBtn">
+                            📁 <span id="btnTriggerBrowseText">اختيار ملف صوت/فيديو للترجمة المباشرة</span>
+                        </button>
+                    </div>
+
+                    <!-- Zone 2 : Enregistrement Microphone en Direct -->
+                    <div class="action-box">
+                        <div class="action-box-header">
+                            <h3 id="titleMicRec">🎙️ تسجيل ملاحظة صوتية مباشرة (مايكروفون)</h3>
+                            <span class="section-tag">Microphone</span>
+                        </div>
+                        <p class="action-box-desc" id="subMicRec">تحدث في المايكروفون للتسجيل والترجمة المباشرة:</p>
+                        
+                        <div class="mic-studio-row">
+                            <button class="btn-mic-record" id="recordMicBtn">
+                                <span id="recIcon">🔴</span> <span id="recBtnText">بدء التسجيل الصوتي</span>
+                            </button>
+                            <span class="rec-timer-badge hidden" id="recTimer">🔴 00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Zone 3 : Fichiers Locaux Admin (Affiché dynamiquement aux administrateurs) -->
+                    <div id="adminLocalFilesSection" class="action-box hidden" style="border: 1.5px solid var(--color-primary); background: #ffffff;">
+                        <div class="action-box-header">
+                            <h3 style="color: var(--color-primary);">📂 Fichiers Serveur (Mode Admin)</h3>
+                            <span class="section-tag" style="background: rgba(11, 83, 148, 0.1); color: var(--color-primary);">Admin</span>
+                        </div>
+                        <div class="form-group-modern">
+                            <label for="audioSelect" class="form-label-modern" id="labelAudioSelect">📂 Choisir l'audio/vidéo à traduire :</label>
+                            <select id="audioSelect" class="custom-select-modern">
+                                <!-- Peuplé dynamiquement par JS -->
+                            </select>
+                        </div>
+
+                        <div class="form-group-modern">
+                            <label for="selectAudioTargetLang" class="form-label-modern" id="labelSelectAudioTargetLang">Langue de la traduction à générer :</label>
+                            <select id="selectAudioTargetLang" class="custom-select-modern">
                                 <option value="fr" id="optSelectTargetFr">🇫🇷 Traduire & Vocaliser en Français</option>
                                 <option value="ar" id="optSelectTargetAr">🇵🇸 Traduire & Vocaliser en Arabe Palestinien</option>
                             </select>
                         </div>
 
-                        <!-- Trigger Processing Button -->
-                        <button class="btn btn-accent full-width" id="processAudioBtn">
-                            <span class="btn-icon">✨</span> إنشاء واستماع باللغة الفرنسية
+                        <button class="btn-modern-accent full-width" id="processAudioBtn">
+                            <span class="btn-icon">✨</span> <span id="btnProcessAudioText">إنشاء واستماع باللغة الفرنسية</span>
                         </button>
                     </div>
 
-                    <!-- Send Audio to John's Folder Button -->
-                    <button class="btn btn-primary full-width" id="sendReceivedAudioToJohnBtn" style="margin-top: -8px;">
-                        📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"
+                    <!-- Bouton Dossier John -->
+                    <button class="btn-modern-outline full-width" id="sendReceivedAudioToJohnBtn">
+                        📥 <span id="btnSendJohnText">إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"</span>
                     </button>
 
-                    <!-- Beta Mode: Video Subtitles Editor (.ASS Preview) -->
-                    <div id="betaSubtitleSection" class="beta-subtitles-card hidden" style="background: #0f172a; padding: 18px; border-radius: 12px; margin-top: 14px; margin-bottom: 14px; border: 1px solid #38bdf8; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15);">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                            <h3 id="betaSubTitle" style="color: #38bdf8; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                🎬 Mode Bêta : Aperçu & Édition des Sous-Titres (.ASS)
-                            </h3>
-                            <span class="badge-tag green">Bêta VOSTFR</span>
+                    <!-- Section Sous-Titres Bêta (.ASS Editor) -->
+                    <div id="betaSubtitleSection" class="action-box hidden" style="border: 1.5px solid var(--color-turquoise); background: #f0fdfa;">
+                        <div class="action-box-header">
+                            <h3 id="betaSubTitle" style="color: var(--color-turquoise-dark);">🎬 Mode Bêta : Aperçu & Édition des Sous-Titres (.ASS)</h3>
+                            <span class="section-tag">Bêta VOSTFR</span>
                         </div>
-                        <p id="betaSubDesc" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 12px;">
-                            Le fichier de sous-titres a été généré en Français avec le timing exact. Vous pouvez relire et modifier le texte ou les horodatages ci-dessous avant d'incruster les sous-titres sur la vidéo finalisée :
+                        <p id="betaSubDesc" class="action-box-desc">
+                            Le fichier de sous-titres a été généré en Français avec le timing exact. Vous pouvez relire et modifier le texte ci-dessous avant d'incruster les sous-titres :
                         </p>
-
-                        <div class="input-group">
-                            <label for="assEditorTextarea" id="labelAssEditor" style="color: #f1f5f9; font-weight: 600;">📝 Contenu du fichier .ASS (Modifiable) :</label>
-                            <textarea id="assEditorTextarea" rows="8" style="font-family: monospace; font-size: 0.88rem; background: #1e293b; color: #38bdf8; border: 1px solid #475569; border-radius: 8px; padding: 10px;"></textarea>
+                        <div class="form-group-modern">
+                            <label for="assEditorTextarea" class="form-label-modern" id="labelAssEditor">📝 Contenu du fichier .ASS :</label>
+                            <textarea id="assEditorTextarea" rows="6" class="custom-textarea-modern" style="font-family: monospace; font-size: 0.85rem;"></textarea>
                         </div>
-
-                        <button class="btn btn-accent full-width" id="btnBurnSubtitles" style="margin-top: 12px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;">
+                        <button class="btn-modern-accent full-width" id="btnBurnSubtitles">
                             🎬 Générer la Vidéo Sous-Titrée MP4 (Incrustation)
                         </button>
                     </div>
 
-                    <!-- Media Player (Audio/Video) -->
-                    <div class="media-container" id="mediaContainer">
+                    <!-- Lecteur Média (Vidéo / Audio) -->
+                    <div class="media-modern-wrapper" id="mediaContainer">
                         <audio id="ayaAudio" controls class="audio-player hidden"></audio>
                         <video id="ayaVideo" controls class="video-player"></video>
                     </div>
 
-                    <!-- Arabic Original Transcript -->
-                    <div class="transcript-box arabic-box">
-                        <div class="box-label">
+                    <!-- Transcription Arabe d'Origine -->
+                    <div class="transcript-card arabic-transcript-card">
+                        <div class="transcript-card-header">
                             <span id="labelArabicBox">النص الأصلي باللغة العربية</span>
-                            <span class="lang-flag">🇵🇸</span>
+                            <span class="transcript-flag-badge">🇵🇸</span>
                         </div>
-                        <p class="arabic-text" id="arabicText">
+                        <p class="arabic-text-render" id="arabicText">
                             جاري تحميل النص العربي...
                         </p>
-                        <div class="phonetic-text" id="phoneticText">
+                        <div class="phonetic-text-render" id="phoneticText">
                         </div>
 
-                        <!-- Copy Buttons Bar -->
-                        <div class="copy-bar">
-                            <button class="btn btn-outline btn-sm" id="copyArabicTextBtn">
-                                📋 نسخ النص العربي
+                        <div class="transcript-footer-actions">
+                            <button class="btn-modern-outline" id="copyArabicTextBtn">
+                                📋 <span id="btnCopyArabicText">نسخ النص العربي</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- French Translation -->
-                    <div class="transcript-box french-box">
-                        <div class="box-label">
+                    <!-- Traduction en Français -->
+                    <div class="transcript-card french-transcript-card">
+                        <div class="transcript-card-header">
                             <span id="labelFrenchBox">Traduction en Français</span>
-                            <span class="lang-flag">🇫🇷</span>
+                            <span class="transcript-flag-badge">🇫🇷</span>
                         </div>
-                        <p class="french-text" id="frenchText">
+                        <p class="french-text-render" id="frenchText">
                             Chargement de la traduction...
                         </p>
 
-                        <!-- Action Bar for French -->
-                        <div class="action-bar-split">
-                            <button class="btn btn-primary" id="playFrenchBtn">
-                                <span class="btn-icon">🔊</span> Écouter en Français
+                        <div class="transcript-footer-actions">
+                            <button class="btn-modern-primary" id="playFrenchBtn">
+                                <span class="btn-icon">🔊</span> <span id="btnPlayFrenchText">Écouter en Français</span>
                             </button>
-                            <button class="btn btn-outline btn-sm" id="copyFrenchTextBtn">
-                                📋 Copier la traduction
+                            <button class="btn-modern-outline" id="copyFrenchTextBtn">
+                                📋 <span id="btnCopyFrenchText">Copier la traduction</span>
                             </button>
-                            <audio id="frenchAudio" src=""></audio>
+                            <audio id="frenchAudio" src="" style="display: none;"></audio>
                         </div>
                     </div>
 
-                    <!-- Action Buttons Stack for Received & Direct Audio -->
-                    <div class="action-buttons-stack hidden" id="receivedAudioActionsStack" style="margin-top: 14px;">
-                        <button class="btn btn-whatsapp full-width" id="sendReceivedAudioWhatsAppBtn">
-                            💬 إرسال التسجيل الصوتي عبر واتساب (مشاركة مباشرة)
+                    <!-- Actions WhatsApp & Téléchargement MP3 -->
+                    <div class="action-buttons-stack hidden" id="receivedAudioActionsStack" style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn-modern-whatsapp full-width" id="sendReceivedAudioWhatsAppBtn">
+                            💬 <span id="btnSendRecWaText">إرسال التسجيل الصوتي عبر واتساب (مشاركة مباشرة)</span>
                         </button>
-                        <button class="btn btn-primary full-width" id="downloadReceivedAudioBtn">
-                            ⬇️ تحميل الملف الصوتي (.mp3)
+                        <button class="btn-modern-primary full-width" id="downloadReceivedAudioBtn">
+                            ⬇️ <span id="btnDownRecText">تحميل الملف الصوتي (.mp3)</span>
                         </button>
                     </div>
 
-                    <!-- Vocabulary Section -->
-                    <div class="vocab-section">
+                    <!-- Vocabulaire & Mots-Clés -->
+                    <div class="vocab-box">
                         <h4 id="titleVocab">💡 مفردات وكلمات مفتاحية من التسجيل:</h4>
-                        <div class="vocab-chips" id="vocabChips">
-                            <!-- Chips inserted dynamically -->
+                        <div class="vocab-chips-container" id="vocabChips">
+                            <!-- Chips injectés dynamiquement -->
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Right Column: Reply / Text Generator -->
-            <section class="card reply-card">
-                <!-- TikTok VOSTFR Video & .ASS Subtitle Creator Card (Protocole V3) -->
-                <div class="card vostfr-creator-card" style="margin-bottom: 24px; background: rgba(15, 23, 42, 0.95); border: 1px solid #3b82f6; border-radius: 12px; padding: 16px; box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);">
-                    <div class="card-header" style="border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 14px;">
-                        <div class="card-title">
-                            <span class="icon">🎬</span>
-                            <h2 style="font-size: 1.2rem; color: #60a5fa; margin: 0;">Créateur de Vidéo TikTok & Sous-titres .ASS (Protocole V3)</h2>
+            <!-- Colonne 2 : Création & Vocalisation Bilingue (Réponses Vocales) -->
+            <section class="studio-card traducteur-column-reply" id="colReply">
+                <div class="studio-card-header">
+                    <div class="studio-card-title">
+                        <div class="card-icon-badge turquoise">📤</div>
+                        <div>
+                            <h2 id="titleSend">إنشاء تسجيل صوتي وترجمة</h2>
                         </div>
                     </div>
-
-                    <div class="card-body">
-                        <p class="section-desc" style="font-size: 0.88rem; color: #94a3b8; margin-bottom: 14px;">
-                            Sélectionnez une photo de fond depuis vos dossiers et saisissez le titre pour créer une vidéo TikTok verticale 1080x1920 avec sous-titres Impact Jaune selon le Protocole V3.
-                        </p>
-
-                        <div class="input-group">
-                            <label for="vostfrMediaFileInput"><b>1. Audio / Vidéo à traduire :</b></label>
-                            <input type="file" id="vostfrMediaFileInput" accept="audio/*,video/*" class="custom-select" style="padding: 6px; width: 100%; box-sizing: border-box;">
-                            <small style="color: #64748b; margin-top: 4px; display: block;">Laissez vide pour utiliser l'audio actuellement chargé dans l'application.</small>
-                        </div>
-
-                        <div class="input-group" style="margin-top: 12px;">
-                            <label for="vostfrVideoTitle"><b>2. Titre de la vidéo :</b></label>
-                            <input type="text" id="vostfrVideoTitle" class="custom-select" placeholder="Ex: Témoignage d'urgence - Gaza 2026" style="padding: 10px; width: 100%; box-sizing: border-box;">
-                        </div>
-
-                        <div class="input-group" style="margin-top: 12px;">
-                            <label for="vostfrBgImageInput"><b>3. Photo de fond d'écran (vos dossiers) :</b></label>
-                            <input type="file" id="vostfrBgImageInput" accept="image/*" class="custom-select" style="padding: 6px; width: 100%; box-sizing: border-box;">
-                        </div>
-
-                        <button class="btn btn-accent full-width" id="generateVostfrVideoBtn" style="margin-top: 16px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); border: none; padding: 12px; font-weight: bold; width: 100%;">
-                            ✨ Générer la Vidéo TikTok 1080x1920 & Sous-titres .ASS
-                        </button>
-
-                        <!-- Results Section -->
-                        <div id="vostfrResultSection" class="hidden" style="margin-top: 18px; padding-top: 16px; border-top: 1px dashed #334155;">
-                            <div class="media-container" style="max-width: 280px; margin: 0 auto 14px auto;">
-                                <video id="vostfrPreviewVideo" controls class="video-player" style="border-radius: 12px; border: 2px solid #3b82f6; width: 100%;"></video>
-                            </div>
-
-                            <div class="action-buttons-stack" style="display: flex; flex-direction: column; gap: 8px;">
-                                <a id="downloadVostfrMp4Btn" href="#" download class="btn btn-primary full-width" style="text-align: center; text-decoration: none; display: block; padding: 10px;">
-                                    📥 Télécharger la Vidéo TikTok (.mp4)
-                                </a>
-                                <a id="downloadAssFileBtn" href="#" download class="btn btn-outline full-width" style="text-align: center; text-decoration: none; display: block; padding: 10px; border-color: #eab308; color: #fef08a;">
-                                    📄 Télécharger les sous-titres .ASS (Protocole V3)
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-header">
-                    <div class="card-title">
-                        <span class="icon">📤</span>
-                        <h2 id="titleSend">إنشاء تسجيل صوتي وترجمة</h2>
-                    </div>
+                    <span class="studio-card-badge" style="background: rgba(0, 188, 212, 0.12); color: var(--color-turquoise-dark);">Synthèse HD</span>
                 </div>
 
-                <div class="card-body">
-                    <!-- SECTION 1: Message en Français ➔ Arabe -->
-                    <div class="input-section-box">
-                        <div class="section-badge-header">
-                            <span class="badge-icon">🇫🇷 ➔ 🇵🇸</span>
+                <div class="studio-card-body">
+                    
+                    <!-- ATELIER 1 : Français ➔ Arabe Palestinien (2 Femmes, 2 Hommes) -->
+                    <div class="action-box" style="border-left: 4px solid var(--color-turquoise);">
+                        <div class="action-box-header">
                             <h3 id="labelSectionFrToAr">كتابة بالفرنسية (لإنشاء تسجيل صوتي بالعربية الفلسطينية)</h3>
+                            <span class="section-tag" style="background: #e0f7fa; color: #00838f;">🇫🇷 ➔ 🇵🇸</span>
                         </div>
 
-                        <div class="form-row">
-                            <div class="input-group flex-1">
-                                <label for="voiceSelect" id="labelVoiceSelect">اختيار الصوت العربي:</label>
-                                <select id="voiceSelect" class="custom-select">
-                                    <option value="ar-JO-SanaNeural" selected>🌸 سناء (صوت أنثوي فلسطيني / بلاد الشام)</option>
-                                    <option value="ar-LB-LaylaNeural">🌸 ليلى (صوت أنثوي لبناني)</option>
-                                    <option value="ar-LB-RamiNeural">🎙️ رامي (صوت رجالي بلاد الشام)</option>
-                                    <option value="ar-EG-SalmaNeural">🌸 سلمى (صوت أنثوي مصري)</option>
-                                </select>
-                            </div>
+                        <!-- Sélecteur de Voix Arabe (2 Femmes & 2 Hommes) -->
+                        <div class="form-group-modern">
+                            <label for="voiceSelect" class="form-label-modern" id="labelVoiceSelect">
+                                🎙️ اختيار الصوت العربي (صوتان أنثويان وصوتان رجاليان):
+                            </label>
+                            <select id="voiceSelect" class="custom-select-modern">
+                                <option value="ar-JO-SanaNeural" selected>🌸 سناء (صوت أنثوي فلسطيني / أردني)</option>
+                                <option value="ar-LB-LaylaNeural">🌸 ليلى (صوت أنثوي شامي / لبناني)</option>
+                                <option value="ar-JO-TaimNeural">🎙️ تيم (صوت رجالي فلسطيني / أردني)</option>
+                                <option value="ar-LB-RamiNeural">🎙️ رامي (صوت رجالي بلاد الشام / لبناني)</option>
+                            </select>
                         </div>
 
-                        <div class="input-group">
-                            <label for="replyInputFr" id="labelReplyInputFr">رسالتك باللغة الفرنسية:</label>
-                            <textarea id="replyInputFr" rows="3" placeholder="اكتب ردك باللغة الفرنسية هنا..."></textarea>
+                        <!-- Zone de Texte Français -->
+                        <div class="form-group-modern">
+                            <label for="replyInputFr" class="form-label-modern" id="labelReplyInputFr">رسالتك باللغة الفرنسية:</label>
+                            <textarea id="replyInputFr" rows="3" class="custom-textarea-modern" placeholder="اكتب ردك باللغة الفرنسية هنا..."></textarea>
                         </div>
 
-                        <button class="btn btn-accent full-width" id="generateReplyFrBtn">
-                            <span class="btn-icon">✨</span> إنشاء التسجيل الصوتي بالعربية
+                        <button class="btn-modern-accent full-width" id="generateReplyFrBtn">
+                            <span class="btn-icon">✨</span> <span id="btnGenReplyFrText">إنشاء التسجيل الصوتي بالعربية</span>
                         </button>
                     </div>
 
-                    <hr class="section-divider">
+                    <hr class="section-separator-clean">
 
-                    <!-- SECTION 2: Message en Arabe ➔ Français -->
-                    <div class="input-section-box arabic-input-section">
-                        <div class="section-badge-header">
-                            <span class="badge-icon">🇵🇸 ➔ 🇫🇷</span>
+                    <!-- ATELIER 2 : Arabe ➔ Français (2 Femmes, 2 Hommes) -->
+                    <div class="action-box" style="border-left: 4px solid var(--color-primary);">
+                        <div class="action-box-header">
                             <h3 id="labelSectionArToFr">كتابة باللغة العربية (للترجمة والتسجيل الصوتي بالفرنسية)</h3>
+                            <span class="section-tag" style="background: #e8f2fc; color: var(--color-primary);">🇵🇸 ➔ 🇫🇷</span>
                         </div>
 
-                        <div class="input-group">
-                            <label for="replyInputAr" id="labelReplyInputAr">الرسالة باللغة العربية:</label>
-                            <textarea id="replyInputAr" rows="3" placeholder="اكتبي رسالتك باللغة العربية هنا..." style="direction: rtl; text-align: right;"></textarea>
+                        <!-- Sélecteur de Voix Française (2 Femmes & 2 Hommes) -->
+                        <div class="form-group-modern">
+                            <label for="voiceSelectFr" class="form-label-modern" id="labelVoiceSelectFr">
+                                🎙️ اختيار الصوت الفرنسي (صوتان أنثويان وصوتان رجاليان):
+                            </label>
+                            <select id="voiceSelectFr" class="custom-select-modern">
+                                <option value="fr-FR-VivienneMultilingualNeural" selected>🌸 Vivienne (Voix Féminine Expressive & Naturelle)</option>
+                                <option value="fr-FR-DeniseNeural">🌸 Denise (Voix Féminine Douce & Fluide)</option>
+                                <option value="fr-FR-HenriNeural">🎙️ Henri (Voix Masculine Posée & Claire)</option>
+                                <option value="fr-FR-RemyMultilingualNeural">🎙️ Rémy (Voix Masculine Dynamique & Moderne)</option>
+                            </select>
                         </div>
 
-                        <button class="btn btn-primary full-width" id="generateReplyArBtn">
-                            <span class="btn-icon">✨</span> إنشاء التسجيل الصوتي والترجمة بالفرنسية
+                        <!-- Zone de Texte Arabe -->
+                        <div class="form-group-modern">
+                            <label for="replyInputAr" class="form-label-modern" id="labelReplyInputAr">الرسالة باللغة العربية:</label>
+                            <textarea id="replyInputAr" rows="3" class="custom-textarea-modern" placeholder="اكتب رسالتك باللغة العربية هنا..." style="direction: rtl; text-align: right;"></textarea>
+                        </div>
+
+                        <button class="btn-modern-primary full-width" id="generateReplyArBtn">
+                            <span class="btn-icon">✨</span> <span id="btnGenReplyArText">إنشاء التسجيل الصوتي والترجمة بالفرنسية</span>
                         </button>
                     </div>
 
-                    <!-- Generated Reply Preview & Action Buttons -->
-                    <div class="reply-result-container hidden" id="replyResult">
-                        <div class="transcript-box arabic-result-box">
-                            <div class="box-label">
+                    <!-- Résultat Généré (Note Vocale & Traduction) -->
+                    <div class="reply-result-card hidden" id="replyResult">
+                        <div class="transcript-card arabic-transcript-card" style="background: #ffffff;">
+                            <div class="transcript-card-header">
                                 <span id="labelArabicResult">الترجمة مع الصوت المسموع</span>
-                                <span class="lang-flag" id="flagResult">🇵🇸</span>
+                                <span class="transcript-flag-badge" id="flagResult">🇵🇸</span>
                             </div>
-                            <p class="arabic-text large" id="arabicReplyText">
+                            <p class="arabic-text-render large" id="arabicReplyText">
                                 ...
                             </p>
-                            <div class="copy-bar">
-                                <button class="btn btn-outline btn-sm" id="copyReplyArabicBtn">
-                                    📋 نسخ النص
+                            <div class="transcript-footer-actions">
+                                <button class="btn-modern-outline" id="copyReplyArabicBtn">
+                                    📋 <span id="btnCopyReplyText">نسخ النص</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="audio-player-card">
-                            <div class="audio-info">
-                                <span class="audio-icon">🎙️</span>
-                                <div>
+                        <!-- Lecteur Audio & Métadonnées -->
+                        <div class="audio-playback-card">
+                            <div class="audio-info-group">
+                                <span class="audio-info-icon">🎙️</span>
+                                <div class="audio-info-text">
                                     <strong id="titleAudioCard">التسجيل الصوتي المنشأ</strong>
-                                    <span class="audio-sub" id="voiceUsedSub">محفوظ في مجلد الردود</span>
+                                    <span id="voiceUsedSub">محفوظ في مجلد الردود</span>
                                 </div>
                             </div>
                             <audio id="arabicReplyAudio" controls class="custom-audio-player"></audio>
                         </div>
 
-                        <!-- Action Buttons Stack -->
-                        <div class="action-buttons-stack">
-                            <button class="btn btn-whatsapp full-width" id="sendAudioWhatsAppBtn">
-                                💬 إرسال التسجيل الصوتي عبر واتساب (مشاركة مباشرة)
+                        <!-- Pile d'actions rapides -->
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="btn-modern-whatsapp full-width" id="sendAudioWhatsAppBtn">
+                                💬 <span id="btnSendWaResultText">إرسال التسجيل الصوتي عبر واتساب (مشاركة مباشرة)</span>
                             </button>
-                            <button class="btn btn-primary full-width" id="downloadAudioBtn">
-                                ⬇️ تحميل الملف الصوتي (.mp3)
+                            <button class="btn-modern-primary full-width" id="downloadAudioBtn">
+                                ⬇️ <span id="btnDownAudioResultText">تحميل الملف الصوتي (.mp3)</span>
                             </button>
-                            <button class="btn btn-accent full-width" id="sendAudioToJohnBtn">
-                                📥 إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"
+                            <button class="btn-modern-outline full-width" id="sendAudioToJohnBtn">
+                                📥 <span id="btnSendJohnResultText">إرسال هذا التسجيل إلى مجلد "رسالة إلى جون"</span>
                             </button>
-                            <button class="btn btn-danger-outline full-width" id="purgeAudioBtn">
-                                🗑️ حذف التسجيل الصوتي من القرص
+                            <button class="btn-modern-danger-outline full-width" id="purgeAudioBtn">
+                                🗑️ <span id="btnPurgeResultText">حذف التسجيل الصوتي من القرص</span>
                             </button>
                         </div>
                     </div>
+
                 </div>
+            </section>
         </main>
     </div>
 
-    <!-- Pied de page Légal Harmonisé -->
-    <footer class="aya-legal-footer" style="margin-top: 40px; border-radius: 14px;">
+    <!-- Pied de Page Légal Harmonisé avec le Reste du Site -->
+    <footer class="aya-legal-footer">
         <div class="aya-legal-footer-inner">
             <div class="aya-legal-footer-links">
                 <a href="/cgu.html">Conditions Générales (CGU/CGV)</a>
                 <span class="aya-legal-footer-sep">•</span>
                 <a href="/confidentialite.html">Politique de Confidentialité (RGPD)</a>
                 <span class="aya-legal-footer-sep">•</span>
+                <a href="/mentions-legales.html">Mentions Légales</a>
+                <span class="aya-legal-footer-sep">•</span>
                 <a href="https://paypal.me/sosoxm2026" target="_blank" rel="noopener noreferrer" class="aya-legal-footer-paypal">❤️ Soutenir l'équipe (PayPal)</a>
             </div>
             <p class="aya-legal-footer-copyright">
-                © 2026 Aya Studio — Plateforme de traduction & sous-titrage solidaire. Tous droits réservés.
+                © 2026 Aya Studio — Plateforme de traduction, vocalisation & sous-titrage solidaire. Tous droits réservés.
             </p>
         </div>
     </footer>
 
+    <!-- Scripts Fondamentaux -->
     <script src="/aya-i18n.js"></script>
     <script src="app.js"></script>
     <script src="/feedback-widget.js"></script>
-    <!-- Bandeau de Cookies Techniques (RGPD) -->
     <script src="/cookie-banner.js"></script>
+
+    <!-- Script de Commutation Mobile pour les 2 Onglets -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabBtnReceived = document.getElementById('tabBtnReceived');
+            const tabBtnReply = document.getElementById('tabBtnReply');
+            const colReceived = document.getElementById('colReceived');
+            const colReply = document.getElementById('colReply');
+
+            if (tabBtnReceived && tabBtnReply && colReceived && colReply) {
+                tabBtnReceived.addEventListener('click', () => {
+                    tabBtnReceived.classList.add('active');
+                    tabBtnReceived.setAttribute('aria-selected', 'true');
+                    tabBtnReply.classList.remove('active');
+                    tabBtnReply.setAttribute('aria-selected', 'false');
+
+                    colReceived.classList.remove('tab-hidden');
+                    colReply.classList.add('tab-hidden');
+                });
+
+                tabBtnReply.addEventListener('click', () => {
+                    tabBtnReply.classList.add('active');
+                    tabBtnReply.setAttribute('aria-selected', 'true');
+                    tabBtnReceived.classList.remove('active');
+                    tabBtnReceived.setAttribute('aria-selected', 'false');
+
+                    colReply.classList.remove('tab-hidden');
+                    colReceived.classList.add('tab-hidden');
+                });
+
+                // Synchronisation Responsive : Réinitialiser si retour sur écran large
+                const handleResize = () => {
+                    if (window.innerWidth > 900) {
+                        colReceived.classList.remove('tab-hidden');
+                        colReply.classList.remove('tab-hidden');
+                    } else {
+                        // En mobile, respecter l'onglet actif
+                        if (tabBtnReceived.classList.contains('active')) {
+                            colReceived.classList.remove('tab-hidden');
+                            colReply.classList.add('tab-hidden');
+                        } else {
+                            colReply.classList.remove('tab-hidden');
+                            colReceived.classList.add('tab-hidden');
+                        }
+                    }
+                };
+
+                window.addEventListener('resize', handleResize);
+                handleResize();
+            }
+        });
+    </script>
 </body>
 </html>
