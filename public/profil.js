@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const langTag = v.targetLang === 'ar' 
             ? (rtl ? 'ترجمة عربية (VOAR)' : 'VOAR (Arabe)') 
             : (rtl ? 'ترجمة فرنسية (VOSTFR)' : 'VOSTFR (Français)');
-        const costTag = rtl ? '-١ رصيد' : '-1 Crédit';
+        const costTag = rtl ? '-١ زيتونة' : '-1 Zaytouna';
         const sizeUnit = rtl ? 'ميغابايت' : 'Mo';
         const playLabel = rtl ? 'تشغيل' : 'Lire';
         const assLabel = rtl ? 'الترجمة (.ASS)' : '.ASS';
@@ -1145,7 +1145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const availableCreditsText = walletAvailableCredits ? walletAvailableCredits.textContent : '0';
             const numCredits = parseInt(availableCreditsText, 10);
             if (!isNaN(numCredits) && numCredits <= 0) {
-                showToast("Solde insuffisant (0 crédit). Veuillez recharger votre compte.", "error");
+                showToast("Solde insuffisant (0 Zaytouna). Veuillez recharger votre compte.", "error");
                 closeVocabCreateModal();
                 openRechargeModal();
                 return;
@@ -1550,7 +1550,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Détection du retour de paiement Stripe
             const paymentParam = urlParams.get('payment');
             if (paymentParam === 'success') {
-                showToast("🎉 Paiement validé avec succès ! Vos crédits sont disponibles.", "success");
+                showToast("🎉 Paiement validé avec succès ! Vos Zaytounas sont disponibles.", "success");
                 loadUserProfile();
                 setTimeout(() => loadUserProfile(), 2000);
                 window.history.replaceState({}, document.title, window.location.pathname);

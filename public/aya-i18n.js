@@ -17,7 +17,8 @@
             userAnonymous: 'Invité / Testeur',
             logoutBtnTitle: 'Se déconnecter',
             navHomeText: 'Direct',
-            navTraducteurText: 'Traducteur',
+            navTraducteurText: 'Studio Traducteur',
+            navTraducteurSub: 'Traduction bilingue et notes vocales',
             navTraductionText: 'Traduction',
             navStudioText: 'Studio Vidéo',
             navCommunauteText: 'Communauté',
@@ -405,7 +406,8 @@
             userAnonymous: 'زائر / فاحص',
             logoutBtnTitle: 'تسجيل الخروج',
             navHomeText: 'المحادثة',
-            navTraducteurText: 'المترجم',
+            navTraducteurText: 'المترجم الصوتي',
+            navTraducteurSub: 'ترجمة فورية وتسجيل ردود صوتية',
             navTraductionText: 'الترجمة',
             navStudioText: 'استوديو الفيديو',
             navCommunauteText: 'المجتمع',
@@ -832,6 +834,8 @@
         updateElementText('navCreationText', dict.navCreationText);
         updateElementText('navTranslationText', dict.navTranslationText);
         updateElementText('navTranslationSub', dict.navTranslationSub);
+        updateElementText('navTraducteurItemText', dict.navTraducteurText);
+        updateElementText('navTraducteurItemSub', dict.navTraducteurSub);
         updateElementText('navVideoText', dict.navVideoText);
         updateElementText('navVideoSub', dict.navVideoSub);
         updateElementText('navCardsText', dict.navCardsText);
@@ -851,6 +855,8 @@
         updateElementText('sheetCreationTitle', dict.navCreationText);
         updateElementText('sheetTransTitle', dict.navTranslationText);
         updateElementText('sheetTransSub', dict.navTranslationSub);
+        updateElementText('sheetTraducteurTitle', dict.navTraducteurText);
+        updateElementText('sheetTraducteurSub', dict.navTraducteurSub);
         updateElementText('sheetVideoTitle', dict.navVideoText);
         updateElementText('sheetVideoSub', dict.navVideoSub);
         updateElementText('sheetCardsTitle', dict.navCardsText);
@@ -1292,6 +1298,13 @@
                                     <span class="dropdown-item-desc" id="navTranslationSub">${dict.navTranslationSub}</span>
                                 </div>
                             </a>
+                            <a href="/traducteur" class="dropdown-item ${isTraducteur ? 'active' : ''}" role="menuitem">
+                                <span class="dropdown-item-icon">🎙️</span>
+                                <div class="dropdown-item-content">
+                                    <span class="dropdown-item-title" id="navTraducteurItemText">${dict.navTraducteurText}</span>
+                                    <span class="dropdown-item-desc" id="navTraducteurItemSub">${dict.navTraducteurSub}</span>
+                                </div>
+                            </a>
                             <a href="/studio" class="dropdown-item ${isStudio ? 'active' : ''}" role="menuitem">
                                 <span class="dropdown-item-icon">🎬</span>
                                 <div class="dropdown-item-content">
@@ -1451,6 +1464,14 @@
                     <div class="sheet-card-info">
                         <strong id="sheetTransTitle">${dict.navTranslationText}</strong>
                         <small id="sheetTransSub">${dict.navTranslationSub}</small>
+                    </div>
+                    <span class="sheet-card-arrow">➔</span>
+                </a>
+                <a href="/traducteur" class="sheet-card ${isTraducteur ? 'active' : ''}">
+                    <div class="sheet-card-icon">🎙️</div>
+                    <div class="sheet-card-info">
+                        <strong id="sheetTraducteurTitle">${dict.navTraducteurText}</strong>
+                        <small id="sheetTraducteurSub">${dict.navTraducteurSub}</small>
                     </div>
                     <span class="sheet-card-arrow">➔</span>
                 </a>

@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (userAvailableCredits <= 0) {
-                showToast("Solde insuffisant (0 crédit). Veuillez recharger votre compte.", "error");
+                showToast("Solde insuffisant (0 Zaytouna). Veuillez recharger votre compte.", "error");
                 openRechargeModal();
                 return;
             }
