@@ -317,6 +317,43 @@ function runPythonPipeline(mediaPath, sourceLang, targetLang, subColor, subPosit
 /**
  * Cycle principal d'ingestion et de traitement (Sécurisé par le sémaphore).
  */
+/**
+ * Vérifie l'état d'occupation de l'espace Google Drive (Anti-Saturation)
+ */
+async function checkDriveQuota(drive) {
+    try {
+        const res = await drive.about.get({ fields: 'storageQuota,user' });
+        if (res.data && res.data.storageQuota) {
+            const { limit, usage } = res.data.storageQuota;
+            if (limit) {
+                const limitMb = (limit / (1024 * 1024)).toFixed(1);
+                const usageMb = (usage / (1024 * 1024)).toFixed(1);
+                const percent = ((usage / limit) * 100).toFixed(1);
+                console.log(`[DRIVE QUOTA] 📊 Espace Google Drive : ${usageMb} Mo / ${limitMb} Mo utilisés (${percent}%)`);
+                if (Number(percent) > 85) {
+                    console.warn(`[DRIVE QUOTA] ⚠️ Alerte saturation : Plus de 85% de l'espace Google Drive est consommé !`);
+                }
+                return { limit, usage, percent: Number(percent) };
+            }
+        }
+    } catch (e) {
+        // En mode Service Account sans scope about, ne pas bloquer
+    }
+    return null;
+}
+
+/**
+ * Vide la corbeille de Google Drive pour libérer immédiatement le quota réel
+ */
+async function emptyDriveTrash(drive) {
+    try {
+        await drive.files.emptyTrash();
+        console.log(`[DRIVE QUOTA] 🗑️ Corbeille Google Drive vidée avec succès (quota libéré).`);
+    } catch (e) {
+        // Ignorer si droits restreints
+    }
+}
+
 async function processDriveQueue() {
     // 1. Verrou anti-conflit (Sémaphore)
     if (isProcessing) {
@@ -335,6 +372,10 @@ async function processDriveQueue() {
     try {
         const drive = getDriveClient();
         const folders = await ensureStateFolders(drive, rootFolderId);
+
+        // 🛡️ Surveillance Quota Drive & Vidage Corbeille Anti-Saturation
+        await checkDriveQuota(drive);
+        await emptyDriveTrash(drive);
 
         // 2. Scrutation des fichiers présents dans "01_A_TRAITER"
         const q = `'${folders.INPUT}' in parents and mimeType != 'application/vnd.google-apps.folder' and trashed = false`;
@@ -438,8 +479,18 @@ async function processDriveQueue() {
                     }
                 }
 
-                // Déplacement du fichier source original dans "03_TERMINE"
-                await moveDriveFile(drive, file.id, folders.IN_PROGRESS, folders.COMPLETED);
+                // Déplacement du fichier source original dans "03_TERMINE" (ou purge pour économie de quota Drive)
+                const shouldPurgeRawSource = process.env.DRIVE_PURGE_SOURCE_ON_COMPLETE === 'true';
+                if (shouldPurgeRawSource && uploadedMp4) {
+                    try {
+                        await drive.files.delete({ fileId: file.id });
+                        console.log(`[DRIVE WORKER] 🧹 Fichier source brut purgé de Drive (économie de quota) : ${file.name}`);
+                    } catch (delErr) {
+                        await moveDriveFile(drive, file.id, folders.IN_PROGRESS, folders.COMPLETED);
+                    }
+                } else {
+                    await moveDriveFile(drive, file.id, folders.IN_PROGRESS, folders.COMPLETED);
+                }
 
                 // ÉTAPE 5 : Enregistrement du succès dans le registre
                 ledger.synced_files[file.id] = {

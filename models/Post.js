@@ -63,6 +63,14 @@ const PostSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    isSensitive: {
+        type: Boolean,
+        default: false
+    },
+    safetyWarning: {
+        type: String,
+        default: null
+    },
     moderatedAt: {
         type: Date,
         default: null

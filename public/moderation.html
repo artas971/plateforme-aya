@@ -660,6 +660,20 @@
                         `;
                     }
 
+                    // Avertissement de sécurité / sensibilité IA
+                    let safetyWarningHtml = '';
+                    if (post.isSensitive || post.safetyWarning) {
+                        safetyWarningHtml = `
+                            <div style="margin-top: 10px; padding: 8px 12px; background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 8px; color: #92400e; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.1rem;">⚠️</span>
+                                <div>
+                                    <div style="font-weight: 700; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.5px; color: #b45309;">Alerte Sensibilité Documentaire IA</div>
+                                    <div>${escapeHtml(post.safetyWarning || 'Scène de conflit / urgence humanitaire détectée. Vérification avec discernement recommandée.')}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
                     card.innerHTML = `
                         <div class="card-media-col">
                             ${mediaHtml}
@@ -677,7 +691,8 @@
                                     <span class="badge-pending">⏳ En Attente</span>
                                 </div>
                                 <div style="margin-top: 14px;">
-                                    <div class="card-text-body">${escapeHtml(post.originalContent)}</div>
+                                    ${safetyWarningHtml}
+                                    <div class="card-text-body" style="margin-top: 8px;">${escapeHtml(post.originalContent)}</div>
                                     <div style="margin-top: 10px;">${tagsHtml}</div>
                                 </div>
                             </div>

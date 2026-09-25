@@ -246,47 +246,63 @@ def format_subtitle_blocks(text: str, max_words_per_line: int = 7) -> str:
     return f"{line1}\\N{line2}"
 
 
-def split_long_segment(segment: dict, max_duration: float = 4.5) -> list:
+def split_long_segment(segment: dict, max_duration: float = 4.2, max_words: int = 8, max_cps: float = 18.0) -> list:
     """
-    Couche de sécurité 1 : Smart Text Splitter.
-    Scinde un segment dépassant max_duration (4.5s) en blocs équilibrés.
-    Divise la durée en deux (ex: 6s devient deux blocs de 3s).
-    Divise le texte proprement en comptant les mots, en coupant sur une virgule ou au milieu exact.
-    Fonctionne de manière récursive si un bloc résultant dépasse encore max_duration.
+    Couche de sécurité 1 : Smart Text & Word Splitter (Protocole Jade & Steve).
+    Scinde un segment s'il dépasse l'un des trois critères de confort :
+    1. Durée > max_duration (4.2s max par segment)
+    2. Nombre de mots > max_words (8 mots max pour affichage vertical TikTok)
+    3. Cadence de lecture > max_cps (18 car/s max pour lisibilité humaine)
+
+    Divise le texte proprement aux virgules / ponctuation, conjonctions ou milieu exact.
+    Alloue la durée proportionnellement au nombre de caractères de chaque partie.
+    Fonctionne récursivement jusqu'à conformité totale.
     """
     start = float(segment.get("start", 0.0))
     end = float(segment.get("end", start + 2.0))
     dur = round(end - start, 2)
     text = segment.get("text", "").strip()
 
-    if dur <= max_duration or not text:
+    if not text:
         return [segment]
 
     words = [w for w in text.split() if w]
-    if len(words) <= 1:
-        # Mot unique ou bruit étiré : scission temporelle simple
-        mid_time = round(start + (dur / 2.0), 2)
-        return [
-            {"start": round(start, 2), "end": mid_time, "text": text},
-            {"start": mid_time, "end": round(end, 2), "text": ""}
-        ]
+    word_count = len(words)
+    cps = (len(text) / dur) if dur > 0 else 0
 
-    # Recherche du point de coupure textuel propre (virgule ou milieu exact)
-    mid_idx = len(words) // 2
+    # Si le segment est suffisamment court en durée et en mots, ou si une scission créerait des blocs trop courts (< 1.1s)
+    if (dur <= max_duration and word_count <= max_words) or dur < 2.2 or word_count <= 4:
+        return [segment]
+
+    if word_count <= 1:
+        return [segment]
+
+    # Recherche du point de coupure textuel propre (virgule, ponctuation, conjonctions ou milieu)
+    mid_idx = word_count // 2
     best_split = mid_idx
 
     found_punct = False
-    for offset in [0, -1, 1, -2, 2, -3, 3]:
+    for offset in [0, -1, 1, -2, 2, -3, 3, -4, 4]:
         idx = mid_idx + offset
-        if 1 <= idx < len(words):
+        if 2 <= idx <= word_count - 2:
             prev_word = words[idx - 1]
-            if prev_word.endswith((',', ';', ':', '.', '!', '?')):
+            if prev_word.endswith((',', ';', ':', '.', '!', '?', '،')):
                 best_split = idx
                 found_punct = True
                 break
 
     if not found_punct:
-        best_split = max(1, mid_idx)
+        conjunctions = {'et', 'ou', 'mais', 'car', 'que', 'qui', 'dont', 'où', 'pour', 'avec', 'sans', 'dans', 'sur', 'و', 'أو', 'ثم', 'ف'}
+        for offset in [0, -1, 1, -2, 2]:
+            idx = mid_idx + offset
+            if 2 <= idx <= word_count - 2:
+                if words[idx].lower() in conjunctions:
+                    best_split = idx
+                    found_punct = True
+                    break
+
+    if not found_punct:
+        best_split = max(2, min(mid_idx, word_count - 2))
 
     part1_text = " ".join(words[:best_split]).strip()
     part2_text = " ".join(words[best_split:]).strip()
@@ -303,9 +319,9 @@ def split_long_segment(segment: dict, max_duration: float = 4.5) -> list:
     else:
         split_time = round(start + (dur / 2.0), 2)
 
-    # Sécurité temporelle : garantir au moins 0.4s par bloc pour la lisibilité
-    min_split = start + 0.4
-    max_split = end - 0.4
+    # Sécurité temporelle : garantir au moins 1.0s par bloc pour le confort de lecture
+    min_split = start + 1.0
+    max_split = end - 1.0
     if min_split < max_split:
         split_time = max(min_split, min(split_time, max_split))
     else:
@@ -314,11 +330,13 @@ def split_long_segment(segment: dict, max_duration: float = 4.5) -> list:
     seg1 = {"start": round(start, 2), "end": split_time, "text": part1_text}
     seg2 = {"start": split_time, "end": round(end, 2), "text": part2_text}
 
-    # Récursion si un sous-bloc dépasse toujours max_duration
+    # Récursion si un sous-bloc dépasse toujours max_duration ou max_words (avec assez de matière pour être scindé)
     sub_results = []
     for s in [seg1, seg2]:
-        if (s["end"] - s["start"]) > max_duration and len(s["text"].split()) > 1:
-            sub_results.extend(split_long_segment(s, max_duration=max_duration))
+        s_dur = round(s["end"] - s["start"], 2)
+        s_words = len([w for w in s["text"].split() if w])
+        if (s_dur > max_duration or s_words > max_words) and s_words >= 6 and s_dur >= 2.2:
+            sub_results.extend(split_long_segment(s, max_duration=max_duration, max_words=max_words, max_cps=max_cps))
         else:
             sub_results.append(s)
 
@@ -964,12 +982,20 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
         seg["start"] = max(0.0, min(seg["start"], total_duration))
         seg["end"] = max(seg["start"] + 0.2, min(seg["end"], total_duration))
 
+    # COUCHE DE SÉCURITÉ 1 : Smart Text & Word Splitter (Protocole Jade & Steve : max 4.2s, max 8 mots, max 18 car/s)
+    print("[POST-TRAITEMENT] Contrôle de durée maximale (<= 4.2s), nombre de mots (<= 8) et scission intelligente...", flush=True)
+    splitted_segments = []
+    for seg in all_segments:
+        splitted_segments.extend(split_long_segment(seg, max_duration=4.2, max_words=8, max_cps=18.0))
+    all_segments = splitted_segments
+
     # RÈGLE DU PLAFONNEMENT DE FIN STRICT (ANTI-ÉTALEMENT SUR BRUIT DE FOND & RESPECT FIN DE PAROLE) :
-    # Si le dernier segment est court, il ne doit pas s'étaler artificiellement dans le silence ou le bruit.
+    # Appliqué après le split pour que chaque sous-segment conserve son timing naturel.
     if all_segments:
         last_seg = all_segments[-1]
         char_len = len(last_seg.get("text", ""))
-        max_last_dur = max(1.8, min(3.8, char_len * 0.08 + 1.2))
+        # Durée maximale proportionnelle au texte du dernier sous-segment (max 4.2s)
+        max_last_dur = max(1.8, min(4.2, char_len * 0.08 + 1.2))
         if last_seg["end"] - last_seg["start"] > max_last_dur:
             last_seg["end"] = round(last_seg["start"] + max_last_dur, 2)
         last_seg["end"] = min(total_duration, last_seg["end"])
@@ -978,13 +1004,6 @@ def process_audio_scan_5s(media_path: str, target_lang: str, total_duration: flo
     for seg in all_segments:
         if seg["end"] <= seg["start"]:
             seg["end"] = min(total_duration, seg["start"] + 1.0)
-
-    # COUCHE DE SÉCURITÉ 1 : Smart Text Splitter (max 4.5s)
-    print("[POST-TRAITEMENT] Contrôle de durée maximale (<= 4.5s) et scission intelligente...", flush=True)
-    splitted_segments = []
-    for seg in all_segments:
-        splitted_segments.extend(split_long_segment(seg, max_duration=4.5))
-    all_segments = splitted_segments
 
     # COUCHE DE SÉCURITÉ 2 : Post-Processing Lexical Anti-Hallucinations
     print("[POST-TRAITEMENT] Application du filtre lexical (Search & Replace anti-hallucinations)...", flush=True)

@@ -23,6 +23,73 @@ if os.path.exists(env_file):
 
 import time
 import re
+from collections import OrderedDict
+import threading
+from shami_semantic_rules import SHAMI_STYLE_IMPACT_DIRECTIVES, get_voar_batch_system_prompt
+
+class VideoMemoryLRUCache:
+    """
+    Cache LRU Mémoire haute performance pour micro-segments et expressions récurrentes.
+    Permet une résolution en 0 ms sans appel API Gemini (Steve & Thomas).
+    """
+    def __init__(self, max_size=2000):
+        self.max_size = max_size
+        self.cache = OrderedDict()
+        self.lock = threading.Lock()
+        self._seed_cache()
+
+    def _seed_cache(self):
+        seeds_voar = {
+            "bonjour": "مرحبا",
+            "bonjour à tous": "مرحبا بالجميع",
+            "salut": "مرحبا",
+            "merci": "شكراً كتير",
+            "merci beaucoup": "شكراً جزيلاً",
+            "au revoir": "مع السلامة",
+            "s'il vous plaît": "لو سمحتوا",
+            "s'il te plaît": "لو سمحت",
+            "regardez ça": "شوفوا هاد",
+            "regardez ici": "شوفوا هون",
+            "mon frère steve": "أخوي ستيف",
+            "mon frère": "أخوي",
+            "ma soeur": "أختي",
+            "ma soeur soso": "أختي سوسو",
+            "prends soin de toi": "دير بالك على حالك",
+            "on est avec vous": "إحنا معكم على طول",
+            "la situation est difficile": "الوضع صعب كتير",
+            "le grand écart": "اللعب على الحبلين",
+            "le grand écart diplomatique": "اللعب على الحبلين بالدبلوماسية",
+            "deux poids, deux mesures": "ازدواجية المعايير",
+            "cet opportunisme": "هاي الانتهازية",
+            "cette diplomatie": "هاي الدبلوماسية"
+        }
+        for k, v in seeds_voar.items():
+            self.set(k, v, mode='VOAR')
+
+    def _normalize(self, text: str, mode: str) -> str:
+        t = re.sub(r'[^\w\s]', '', (text or '').strip().lower())
+        return f"{mode}:{t}"
+
+    def get(self, text: str, mode: str = 'VOAR') -> str:
+        key = self._normalize(text, mode)
+        with self.lock:
+            if key in self.cache:
+                self.cache.move_to_end(key)
+                return self.cache[key]
+        return None
+
+    def set(self, text: str, translated_text: str, mode: str = 'VOAR'):
+        if not text or not translated_text:
+            return
+        key = self._normalize(text, mode)
+        with self.lock:
+            if key in self.cache:
+                self.cache.move_to_end(key)
+            self.cache[key] = translated_text.strip()
+            if len(self.cache) > self.max_size:
+                self.cache.popitem(last=False)
+
+VIDEO_LRU_CACHE = VideoMemoryLRUCache(max_size=2000)
 
 LAST_MODEL_USED = "gemini-flash-lite-latest"
 LAST_TELEMETRY = {
@@ -250,8 +317,8 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
             "Ta mission : Restituer fidèlement 100% du discours en français authentique, percutant et soigné pour des sous-titres vidéo TikTok/Reels. "
             "(Si le discours est en arabe palestinien, traduis-le fidèlement en français. Si le discours est déjà en français, retranscris-le fidèlement mot à mot en français).\n\n"
             "RÈGLES D'OR STRICTES :\n"
-            "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : CHAQUE SEGMENT DOIT DURER ENTRE 1.5 ET 4.0 SECONDES (MAXIMUM STRICT 5.0 SECONDES). "
-            "Il est FORMELLEMENT INTERDIT de générer un segment de plus de 5 secondes. Si une phrase est longue, TU DOIS OBLIGATOIREMENT LA SCINDER TOI-MÊME en plusieurs sous-segments courts synchronisés avec les mots prononcés.\n"
+            "1. DURÉE & RYTHME TIKTOK D'ÉLITE (RÈGLE CRITIQUE ABSOLUE) : CHAQUE SEGMENT DOIT ÊTRE COURT, PUNCHY ET RYTHMÉ (ENTRE 1.5 ET 3.8 SECONDES, MAXIMUM STRICT 4.2 SECONDES, ET 4 À 8 MOTS MAXIMUM PAR PARTIE). "
+            "Il est FORMELLEMENT INTERDIT de générer un pavé de texte ou un segment dépassant 8 mots ou 4.2 secondes. Si une phrase est longue, TU DOIS OBLIGATOIREMENT LA SCINDER TOI-MÊME en plusieurs sous-segments courts synchronisés avec les mots prononcés.\n"
             "2. TIMESTAMPS EN SECONDES RÉELLES (RÈGLE D'ÉCHELLE ABSOLUE) : Les temps 'start' et 'end' doivent être exprimés en SECONDES RÉELLES ENTIÈRES OU DÉCIMALES relatives au début de cet extrait audio (ex: 3.2, 14.8, 28.5). "
             "IL EST STRICTEMENT INTERDIT d'écrire des fractions de minutes ou des valeurs divisées comme 0.05, 0.15, 0.25 ou 0.30 pour désigner 5s, 15s, 25s ou 30s ! "
             "(5 secondes s'écrit 5.0 et JAMAIS 0.05 ; 15 secondes s'écrit 15.0 et JAMAIS 0.15 ; 28 secondes s'écrit 28.0 et JAMAIS 0.28). 'end' doit toujours être supérieur à 'start'.\n"
@@ -272,34 +339,24 @@ def gemini_audio_transcribe_and_translate(media_path, mode='VOSTFR', total_durat
         )
     else: # VOAR (Français ou autre vers Arabe Palestinien de Gaza)
         prompt = (
-            "Tu es un traducteur et transcripteur expert d'élite, linguiste assermenté du dialecte arabe palestinien de Gaza (Ammiya de Gaza - العامية الغزاوية) et du français.\n"
+            "Tu es un traducteur et transcripteur expert d'élite, linguiste assermenté du dialecte arabe palestinien de Gaza (Ammiya de Gaza - العامية الغزاوية) et du français (Agent Nadine & Steve).\n"
             f"{source_context}"
             f"{user_context_directive}"
             "Écoute attentivement l'enregistrement audio ci-joint.\n"
             "Ta mission : Restituer fidèlement 100% du discours en ARABE PALESTINIEN AUTHENTIQUE DE GAZA pour des sous-titres vidéo et transcriptions (VOAR).\n"
             "(Si le discours est en français ou autre langue, traduis-le fidèlement en arabe dialectal de Gaza. Si le discours est déjà en arabe palestinien, retranscris-le fidèlement mot à mot).\n\n"
-            "DIRECTIVES LINGUISTIQUES MAJEURES (AGENT THOMAS & NADINE) :\n\n"
-            "1. RÈGLE STRICTE DU DIALECTE (AMMIYA DE GAZA) :\n"
-            "Si la traduction est du Français vers l'Arabe (VOAR), TU DOIS OBLIGATOIREMENT utiliser l'Arabe Palestinien dialectal (Ammiya de Gaza). "
-            "N'utilise JAMAIS l'arabe classique (Fusha). Utilise le vocabulaire quotidien (ex: 'صحون' au lieu de 'أطباق', 'اللي' au lieu de 'أولئك الذين', "
-            "'هلقيت / هسا' au lieu de 'الآن', 'بدي / بدنا' au lieu de 'أريد / نريد', 'عشان' au lieu de 'من أجل / لكي', 'مش' au lieu de 'ليس', 'شو' au lieu de 'ماذا', 'حكي' au lieu de 'كلام', 'كتير' au lieu de 'كثيراً').\n\n"
-            "2. RÈGLE DES NUANCES & ANALYSE SÉMANTIQUE PROFONDE :\n"
-            "Fais une analyse sémantique profonde des expressions idiomatiques et des doubles négations françaises (ex: 'ne... que') avant de traduire, pour préserver le sens originel exact.\n"
-            "ATTENTION MAJEURE AUX TOURNURES RESTRICTIVES :\n"
-            "Par exemple, la phrase 'Il n'y a pas de violence qu'avec des armes' signifie qu'il existe d'autres formes de violence en dehors des armes (la violence n'est pas uniquement armée). "
-            "Traduis rigoureusement par le sens authentique en ammiya : 'العنف مش بس بالسلاح' ou 'في عنف مش بس بالسلاح'. "
-            "Il est STRICTEMENT INTERDIT de faire un contre-sens en affirmant l'inverse (ex: 'العنف بس بالسلاح' est proscrit).\n\n"
-            "3. VOCATIFS & TERMES FRATERNELS DE SOUTIEN :\n"
+            "PROTOCOLE DE TRADUCTION OPTION A+ (IN-FLIGHT SEMANTIC PRE-DECOMPOSITION) :\n"
+            "Analyse mentalement chaque expression idiomatique, métaphore politique, et nom propre français pour en dégager l'équivalent Shami authentique avant d'émettre les sous-titres.\n\n"
+            f"{SHAMI_STYLE_IMPACT_DIRECTIVES}\n\n"
+            "DIRECTIVES TECHNIQUES DE SOUS-TITRAGE :\n"
+            "1. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 1.5 à 4.0 secondes). TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en plusieurs sous-segments courts synchronisés.\n"
+            "2. TIMESTAMPS EN SECONDES RÉELLES : Les temps 'start' et 'end' doivent être exprimés en SECONDES RÉELLES relatives au DÉBUT de cet extrait (ex: 2.8, 12.4). Interdiction formelle d'écrire des valeurs divisées (0.12 au lieu de 12.0s).\n"
+            "3. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
+            "4. VOCATIFS & TERMES FRATERNELS DE SOUTIEN :\n"
             "- 'Mon frère Steve' ➔ 'أخوي ستيف'\n"
             "- 'Ma sœur Soso' ➔ 'أختي سوسو'\n"
             "- 'Prends soin de toi' ➔ 'ديري بالك على حالك' (féminin) / 'دير بالك على حالك' (masculin)\n"
             "- 'On est avec vous / On est ensemble' ➔ 'إحنا معكم / إحنا معكم على طول'\n\n"
-            "4. DURÉE MAXIMALE STRICTE (RÈGLE CRITIQUE ABSOLUE) : AUCUN SEGMENT NE DOIT DÉPASSER 5.0 SECONDES (idéalement 1.5 à 4.0 secondes). "
-            "TU DOIS OBLIGATOIREMENT SCINDER toute phrase longue en plusieurs sous-segments courts synchronisés.\n"
-            "5. TIMESTAMPS EN SECONDES RÉELLES (RÈGLE D'ÉCHELLE ABSOLUE) : Les temps 'start' et 'end' doivent être exprimés en SECONDES RÉELLES ENTIÈRES OU DÉCIMALES relatives au DÉBUT de cet extrait audio (ex: 2.8, 12.4, 27.0). "
-            "INTERDICTION FORMELLE d'écrire des valeurs comme 0.12 ou 0.27 pour désigner 12s ou 27s ! 'end' > 'start'.\n"
-            "6. FIDÉLITÉ TEMPORELLE ABSOLUE : Reste fidèle à TOUT le discours sans jamais résumer, paraphraser, tronquer ou omettre de phrases.\n"
-            "7. ANALYSE DE CONTEXTE (DIRECTIVE NADINE & THOMAS) : Analyse la scène (qui parle, ce qui se passe, le contexte et le message principal) pour garantir l'adéquation parfaite des sous-titres avec la réalité vécue.\n\n"
             "FORMAT DE SORTIE : Réponds UNIQUEMENT par un tableau JSON valide d'objets avec les clés 'start' (secondes réelles float, ex: 12.5), 'end' (secondes réelles float, ex: 16.0), et 'text' (arabe palestinien de Gaza).\n"
             "Exemple : [{\"start\": 0.0, \"end\": 2.8, \"text\": \"أخوي ستيف، العنف مش بس بالسلاح...\"}, {\"start\": 2.8, \"end\": 6.5, \"text\": \"في وجع تاني الناس مش شايفتو.\"}]"
         )
@@ -471,17 +528,49 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
     for b_start in range(0, len(units), BATCH_SIZE):
         sub_units = units[b_start:b_start + BATCH_SIZE]
         lines_ar = [u.get("text", "").strip() for u in sub_units]
+
+        # 1. Vérification Cache LRU Mémoire (0 ms) pour les micro-segments récurrents
+        all_cached = True
+        cached_segments = []
+        for u in sub_units:
+            u_text = u.get("text", "").strip()
+            cached_trans = VIDEO_LRU_CACHE.get(u_text, mode=mode)
+            if cached_trans:
+                print(f"[VIDEO LRU CACHE HIT] ⚡ (0 ms) '{u_text[:25]}' -> '{cached_trans[:25]}'", flush=True)
+                cached_segments.append({
+                    "start": round(float(u["start"]), 2),
+                    "end": round(float(u["end"]), 2),
+                    "text": cached_trans
+                })
+            else:
+                all_cached = False
+                break
+
+        if all_cached and len(cached_segments) == len(sub_units):
+            all_translated_segments.extend(cached_segments)
+            LAST_MODEL_USED = "Memory LRU Cache (0 ms)"
+            continue
+
         numbered_prompt = "\n".join([f"{i+1}. {txt}" for i, txt in enumerate(lines_ar)])
 
-        prompt = (
-            f"Tu es un traducteur et sous-titreur expert d'élite spécialisé dans le dialecte palestinien et le français (Agent Jade).\n"
-            f"{context_directive}"
-            f"Consigne : Traduis fidèlement chacune des phrases numérotées ci-dessous vers un {target_desc} pour des sous-titres vidéo professionnels.\n"
-            f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des pleurs/gémissements répétitifs (ex: 'أهي! أهي!'), ou des répétitions inutiles, LISSE la traduction en français (ex: 'Mon Dieu...', '[Pleurs et gémissements]'). Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique. Ton but est la clarté et la dignité du sous-titre.\n"
-            f"Respecte STRICTEMENT la numérotation de 1 à {len(lines_ar)} sous la forme 'N. Traduction'.\n\n"
-            f"{numbered_prompt}\n\n"
-            f"Réponds UNIQUEMENT par la liste numérotée :"
-        )
+        if mode == 'VOAR':
+            # Option A+ : Décomposition sémantique interne et directives Style Impact
+            prompt = (
+                f"{get_voar_batch_system_prompt(len(lines_ar), user_context)}\n\n"
+                f"Phrases numérotées à traduire :\n"
+                f"{numbered_prompt}\n\n"
+                f"Réponds UNIQUEMENT par la liste numérotée :"
+            )
+        else:
+            prompt = (
+                f"Tu es un traducteur et sous-titreur expert d'élite spécialisé dans le dialecte palestinien et le français (Agent Jade).\n"
+                f"{context_directive}"
+                f"Consigne : Traduis fidèlement chacune des phrases numérotées ci-dessous vers un {target_desc} pour des sous-titres vidéo professionnels.\n"
+                f"RÈGLE DE FLUIDITÉ ET DÉDUPLICATION (DIRECTIVE MAJEURE JADE) : Si l'audio original contient des bégaiements, des pleurs/gémissements répétitifs (ex: 'أهي! أهي!'), ou des répétitions inutiles, LISSE la traduction en français (ex: 'Mon Dieu...', '[Pleurs et gémissements]'). Ne traduis l'idée qu'une seule fois ou adapte-la pour que cela sonne naturel et tragique. Ton but est la clarté et la dignité du sous-titre.\n"
+                f"Respecte STRICTEMENT la numérotation de 1 à {len(lines_ar)} sous la forme 'N. Traduction'.\n\n"
+                f"{numbered_prompt}\n\n"
+                f"Réponds UNIQUEMENT par la liste numérotée :"
+            )
 
         req_payload = {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -527,6 +616,9 @@ def gemini_batch_translate_units(units: list, mode: str = 'VOSTFR', user_context
 
                             if candidate_translated is not None:
                                 sub_batch_translated = candidate_translated
+                                # Enregistrement dans le Cache LRU Mémoire pour accélérer les prochaines occurrences
+                                for u_orig, s_trans in zip(sub_units, candidate_translated):
+                                    VIDEO_LRU_CACHE.set(u_orig.get("text", ""), s_trans["text"], mode=mode)
                                 LAST_MODEL_USED = f"Whisper + {model_name}"
                                 break
                     except urllib.error.HTTPError as he:

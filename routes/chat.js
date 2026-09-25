@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const path = require('path');
@@ -6,6 +7,7 @@ const multer = require('multer');
 const { exec } = require('child_process');
 const { formatPythonCommand } = require('../utils/runtime');
 const { recordEvent } = require('../services/telemetryService');
+const { getChatSystemPrompt } = require('../utils/shamiSemanticRules');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const AUDIO_A_TRAITER_DIR = path.join(ROOT_DIR, 'audio_a_traiter');
@@ -276,133 +278,132 @@ async function translateChatBidirectional(text) {
         return cached;
     }
 
-    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    const systemPrompt = `Tu es le traducteur expert du chat d'urgence de la plateforme Aya.
-Détecte la langue source du texte. Si le texte est en Français, traduis-le en Arabe Palestinien (Ammiya de Gaza). Si le texte est en Arabe, traduis-le en Français fluide et naturel. Ne répète jamais le texte source.
+    // Récupération de toutes les clés d'API Gemini disponibles (Failover Multi-Clés)
+    const geminiKeys = [];
+    [
+        process.env.GEMINI_API_KEY,
+        process.env.GOOGLE_API_KEY,
+        process.env.GEMINI_API_KEY_FALLBACK,
+        process.env.GEMINI_API_KEY_2
+    ].forEach(val => {
+        if (val) {
+            val.split(',').map(k => k.trim().replace(/^['"]|['"]$/g, '')).forEach(k => {
+                if (k && !geminiKeys.includes(k)) geminiKeys.push(k);
+            });
+        }
+    });
 
-Tu dois impérativement répondre au format JSON strict avec exactement ces deux champs :
-{
-  "detected_lang": "fr" ou "ar",
-  "translated_text": "traduction ici"
-}`;
+    const systemPrompt = getChatSystemPrompt();
 
-    if (geminiKey) {
+    if (geminiKeys.length > 0) {
         const models = [
             'gemini-2.5-flash',
             'gemini-flash-latest',
             'gemini-flash-lite-latest',
             'gemini-3.5-flash',
             'gemini-3.5-flash-lite',
+            'gemini-3.1-flash-lite',
             'gemini-pro-latest'
         ];
 
-        for (const model of models) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [
-                            {
-                                role: 'user',
-                                parts: [{ text: `Texte à analyser et traduire :\n${text}` }]
+        for (const geminiKey of geminiKeys) {
+            for (const model of models) {
+                const maxAttempts = 2;
+                for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                    try {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [
+                                    {
+                                        role: 'user',
+                                        parts: [{ text: `Texte à analyser et traduire :\n${text}` }]
+                                    }
+                                ],
+                                systemInstruction: {
+                                    parts: [{ text: systemPrompt }]
+                                },
+                                generationConfig: {
+                                    responseMimeType: 'application/json',
+                                    temperature: 0.2
+                                }
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errText = await response.text();
+                            const isQuota = response.status === 429 || errText.includes('RESOURCE_EXHAUSTED');
+                            const is503 = response.status === 503 || errText.toLowerCase().includes('demand');
+
+                            if ((isQuota || is503) && attempt < maxAttempts) {
+                                const backoffMs = 500 * attempt;
+                                console.warn(`⚠️ [Chat Quota ${response.status}] Modèle ${model}. Tentative de retry dans ${backoffMs}ms...`);
+                                await new Promise(r => setTimeout(r, backoffMs));
+                                continue;
                             }
-                        ],
-                        systemInstruction: {
-                            parts: [{ text: systemPrompt }]
-                        },
-                        generationConfig: {
-                            responseMimeType: 'application/json',
-                            temperature: 0.2
-                        }
-                    })
-                });
 
-                if (!response.ok) {
-                    const errText = await response.text();
-                    if (response.status === 429 || response.status === 503 || errText.includes('RESOURCE_EXHAUSTED')) {
-                        console.warn(`⚠️ [Chat Quota] Modèle ${model} indisponible (${response.status}), bascule sur modèle de secours...`);
-                        continue;
+                            console.warn(`[Chat IA Cascade] Modèle ${model} indisponible (${response.status}), bascule vers le candidat suivant...`);
+                            break;
+                        }
+
+                        const data = await response.json();
+                        const candidate = data.candidates && data.candidates[0];
+                        const contentPart = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0];
+                        const textResponse = contentPart ? contentPart.text : '';
+
+                        if (textResponse) {
+                            const cleanJson = textResponse.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+                            const parsed = JSON.parse(cleanJson);
+                            const detected_lang = (parsed.detected_lang === 'ar' || parsed.detected_lang === 'fr') 
+                                ? parsed.detected_lang 
+                                : (containsArabic(text) ? 'ar' : 'fr');
+                            const translated_text = (parsed.translated_text || '').trim();
+
+                            console.log(`[Chat IA Succès — Aya Shami Core] Modèle: ${model} | ${detected_lang} ➔ ${translated_text.substring(0, 45)}...`);
+                            const result = {
+                                detected_lang,
+                                translated_text,
+                                model_used: model
+                            };
+                            chatTranslationCache.set(text, result);
+
+                            const durationMs = Number(process.hrtime.bigint() - translationStart) / 1e6;
+                            recordEvent({
+                                eventType: 'shami_translation',
+                                metrics: {
+                                    totalDurationMs: durationMs,
+                                    breakdownMs: { aiProcessingMs: durationMs },
+                                    cacheHit: false
+                                },
+                                technicalDetails: {
+                                    sourceLang: detected_lang,
+                                    targetLang: detected_lang === 'fr' ? 'ar' : 'fr',
+                                    textLength: text.length,
+                                    modelUsed: model
+                                }
+                            });
+
+                            return result;
+                        }
+                    } catch (err) {
+                        console.warn(`⚠️ [Chat IA Exception] Modèle ${model} (Tentative ${attempt}) : ${err.message}`);
                     }
-                    console.warn(`[Chat IA Warning] ${model} HTTP ${response.status}: ${errText.substring(0, 120)}`);
-                    continue;
                 }
-
-                const data = await response.json();
-                const candidate = data.candidates && data.candidates[0];
-                const contentPart = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0];
-                const textResponse = contentPart ? contentPart.text : '';
-
-                if (textResponse) {
-                    const cleanJson = textResponse.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
-                    const parsed = JSON.parse(cleanJson);
-                    const detected_lang = (parsed.detected_lang === 'ar' || parsed.detected_lang === 'fr') 
-                        ? parsed.detected_lang 
-                        : (containsArabic(text) ? 'ar' : 'fr');
-                    const translated_text = (parsed.translated_text || '').trim();
-
-                    console.log(`[Chat IA Succès] Modèle: ${model} | Langue: ${detected_lang} -> ${translated_text.substring(0, 40)}...`);
-                    const result = {
-                        detected_lang,
-                        translated_text,
-                        model_used: model
-                    };
-                    chatTranslationCache.set(text, result);
-
-                    const durationMs = Number(process.hrtime.bigint() - translationStart) / 1e6;
-                    recordEvent({
-                        eventType: 'shami_translation',
-                        metrics: {
-                            totalDurationMs: durationMs,
-                            breakdownMs: { aiProcessingMs: durationMs },
-                            cacheHit: false
-                        },
-                        technicalDetails: {
-                            sourceLang: detected_lang,
-                            targetLang: detected_lang === 'fr' ? 'ar' : 'fr',
-                            textLength: text.length,
-                            modelUsed: model
-                        }
-                    });
-
-                    return result;
-                }
-            } catch (err) {
-                console.warn(`⚠️ [Chat IA Exception] Modèle ${model} : ${err.message}`);
             }
         }
     }
 
-    // Fallback de secours rapide si tous les quotas Gemini sont temporairement épuisés
-    console.warn("⚠️ [Chat IA Fallback] Utilisation du secours rapide pour la traduction.");
+    // Sécurité stricte : AUCUN fallback Google Translate (gtx) vers du Fusha mot-à-mot !
+    // Si tous les modèles ont échoué, on protège l'intégrité sémantique Shami.
+    console.error("🚨 [Chat IA Alerte] Tous les modèles LLM Shami sont temporairement saturés. Rejet formel du fallback Fusha mot-à-mot.");
     const isAr = containsArabic(text);
-    const target = isAr ? 'fr' : 'ar';
-    try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=` + encodeURIComponent(text.substring(0, 1500));
-        const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-        const data = await res.json();
-        let translated = '';
-        if (data && Array.isArray(data[0])) {
-            translated = data[0].map(chunk => chunk[0]).join('');
-        }
-        if (translated) {
-            const fallbackResult = {
-                detected_lang: isAr ? 'ar' : 'fr',
-                translated_text: translated,
-                model_used: 'gtx-fallback'
-            };
-            chatTranslationCache.set(text, fallbackResult);
-            return fallbackResult;
-        }
-    } catch (e) {
-        console.warn("[Fallback gtx error]:", e.message);
-    }
-
     return {
         detected_lang: isAr ? 'ar' : 'fr',
-        translated_text: text,
-        model_used: 'fallback-emergency'
+        translated_text: text, // Préservation stricte sans distorsion
+        model_used: 'fallback-pass-through',
+        warning: 'LLM_TEMPORARILY_BUSY'
     };
 }
 
@@ -746,4 +747,6 @@ router.post('/send-audio', upload.single('audio'), async (req, res) => {
     }
 });
 
+router.translateChatBidirectional = translateChatBidirectional;
 module.exports = router;
+module.exports.translateChatBidirectional = translateChatBidirectional;

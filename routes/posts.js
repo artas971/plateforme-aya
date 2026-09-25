@@ -15,6 +15,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { Post, isDbConnected } = require('../models');
+const { auditContentSafety } = require('../services/contentSafetyService');
 
 // Configuration des répertoires de stockage
 const ROOT_DIR = path.resolve(__dirname, '..');
@@ -303,6 +304,41 @@ router.post('/', upload.single('media'), async (req, res) => {
             "Anonyme"
         ).trim();
 
+        // 🛡️ BOUCLIER DE SÉCURITÉ IA (Safety Shield : Anti-Pornographie / NSFW)
+        let filePathToAudit = req.file ? req.file.path : null;
+        if (!filePathToAudit && mediaUrl) {
+            const clean = decodeURIComponent(mediaUrl.replace(/^https?:\/\/[^\/]+/i, ''));
+            if (clean.startsWith('/uploads/')) {
+                filePathToAudit = path.join(ROOT_DIR, clean.replace(/^\//, ''));
+            } else if (clean.startsWith('/download/')) {
+                filePathToAudit = path.join(REPONSED_DIR, clean.replace('/download/', ''));
+            }
+        }
+
+        let thumbPathToAudit = null;
+        if (mediaThumbnail) {
+            const cleanTh = decodeURIComponent(mediaThumbnail.replace(/^https?:\/\/[^\/]+/i, ''));
+            if (cleanTh.startsWith('/uploads/')) {
+                thumbPathToAudit = path.join(ROOT_DIR, cleanTh.replace(/^\//, ''));
+            }
+        }
+
+        const safetyVerdict = await auditContentSafety({
+            filePath: filePathToAudit,
+            text: `${content} ${(Array.isArray(body.tags) ? body.tags.join(' ') : body.tags || '')}`,
+            thumbnailPath: thumbPathToAudit
+        });
+
+        if (!safetyVerdict.allowed) {
+            if (req.file && fs.existsSync(req.file.path)) {
+                try { fs.unlinkSync(req.file.path); } catch (e) {}
+            }
+            return res.status(400).json({
+                success: false,
+                error: safetyVerdict.reason || "Publication refusée : ce contenu enfreint les règles de dignité et de sécurité de la plateforme."
+            });
+        }
+
         // Création de l'objet témoignage (statut STRICTEMENT 'pending')
         const postData = {
             authorName,
@@ -314,6 +350,8 @@ router.post('/', upload.single('media'), async (req, res) => {
             mediaUrl,
             mediaThumbnail: mediaThumbnail || body.mediaThumbnail || null,
             tags,
+            isSensitive: safetyVerdict.isSensitive || false,
+            safetyWarning: safetyVerdict.safetyWarning || null,
             moderationStatus: 'pending', // Verrou de sécurité exigé
             likesCount: 0,
             viewsCount: 0,
@@ -421,6 +459,34 @@ function requireAdmin(req, res, next) {
 }
 
 /**
+ * Supprime physiquement les fichiers médias associés à un post supprimé
+ */
+function deletePostMediaFiles(post) {
+    if (!post) return;
+    const mediaUrls = [post.mediaUrl, post.mediaThumbnail, post.audioUrl];
+    for (const url of mediaUrls) {
+        if (!url || typeof url !== 'string') continue;
+        try {
+            const cleanUrl = decodeURIComponent(url.replace(/^https?:\/\/[^\/]+/i, ''));
+            let localPath = null;
+            if (cleanUrl.startsWith('/uploads/')) {
+                localPath = path.join(ROOT_DIR, cleanUrl.replace(/^\//, ''));
+            } else if (cleanUrl.startsWith('/download/')) {
+                localPath = path.join(REPONSED_DIR, cleanUrl.replace('/download/', ''));
+            } else if (cleanUrl.startsWith('/fichiers_reponse_a_envoyer/')) {
+                localPath = path.join(ROOT_DIR, cleanUrl.replace(/^\//, ''));
+            }
+            if (localPath && fs.existsSync(localPath) && !fs.statSync(localPath).isDirectory()) {
+                fs.unlinkSync(localPath);
+                console.log(`🗑️ [COMMUNAUTÉ DELETE] Fichier média supprimé : ${localPath}`);
+            }
+        } catch (e) {
+            console.warn(`⚠️ [COMMUNAUTÉ DELETE] Erreur suppression fichier média ${url} :`, e.message);
+        }
+    }
+}
+
+/**
  * DELETE /api/posts/:id
  * Suppression définitive d'un témoignage (Admin uniquement)
  */
@@ -429,15 +495,23 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         const { id } = req.params;
 
         if (isDbConnected()) {
+            let targetPost = null;
             if (id.match(/^[0-9a-fA-F]{24}$/)) {
-                await Post.findByIdAndDelete(id);
+                targetPost = await Post.findByIdAndDelete(id);
             } else {
-                await Post.findOneAndDelete({ $or: [{ _id: id }, { id: id }] });
+                targetPost = await Post.findOneAndDelete({ $or: [{ _id: id }, { id: id }] });
+            }
+            if (targetPost) {
+                deletePostMediaFiles(targetPost);
             }
         }
 
         // Nettoyage systématique dans le fichier de repli posts.json
         let fallbackList = readFallbackPosts();
+        const postToDelete = fallbackList.find(p => p._id === id || p.id === id);
+        if (postToDelete) {
+            deletePostMediaFiles(postToDelete);
+        }
         fallbackList = fallbackList.filter(p => p._id !== id && p.id !== id);
         writeFallbackPosts(fallbackList);
 

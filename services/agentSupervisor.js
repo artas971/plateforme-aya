@@ -159,6 +159,10 @@ function analyzeAssFile(assFilePath) {
     let totalWords = 0;
     let totalChars = 0;
     let longSegmentsCount = 0;
+    let heavyWordsCount = 0;
+    let highCpsCount = 0;
+    let maxWords = 0;
+    let maxCps = 0;
     let arabicResidualCount = 0;
     const arabicRegex = /[\u0600-\u06FF]/;
     const matchedDialectKeywords = new Set();
@@ -167,7 +171,11 @@ function analyzeAssFile(assFilePath) {
     for (let i = 0; i < events.length; i++) {
         const ev = events[i];
         if (ev.duration > maxDuration) maxDuration = ev.duration;
-        if (ev.duration > 4.5) longSegmentsCount++;
+        if (ev.duration > 4.2) longSegmentsCount++;
+        if (ev.wordCount > maxWords) maxWords = ev.wordCount;
+        if (ev.wordCount > 8) heavyWordsCount++;
+        if (ev.cps > maxCps) maxCps = ev.cps;
+        if (ev.cps > 18.0) highCpsCount++;
         totalDuration += ev.duration;
         totalWords += ev.wordCount;
         totalChars += ev.charCount;
@@ -189,8 +197,12 @@ function analyzeAssFile(assFilePath) {
         maxDuration,
         avgDuration: totalEvents > 0 ? (totalDuration / totalEvents) : 0,
         totalWords,
+        maxWords,
+        heavyWordsCount,
         totalChars,
         avgCps: totalDuration > 0 ? (totalChars / totalDuration) : 0,
+        maxCps,
+        highCpsCount,
         longSegmentsCount,
         arabicResidualCount,
         matchedDialectKeywords: Array.from(matchedDialectKeywords),
@@ -225,22 +237,30 @@ function runAutomatedAudit({ assFilename, mp4Filename, mediaInfo = {} }) {
     const agentsReports = {};
 
     // 1. JADE (Senior Linguiste & Synchronisation)
-    const jadeViolations = assAnalysis ? assAnalysis.longSegmentsCount : 0;
+    const jadeLongViolations = assAnalysis ? assAnalysis.longSegmentsCount : 0;
+    const jadeHeavyWords = assAnalysis ? assAnalysis.heavyWordsCount : 0;
+    const jadeHighCps = assAnalysis ? assAnalysis.highCpsCount : 0;
     const jadeMaxDur = assAnalysis ? assAnalysis.maxDuration : 0;
+    const jadeMaxWords = assAnalysis ? assAnalysis.maxWords : 0;
+    const jadeMaxCps = assAnalysis ? assAnalysis.maxCps : 0;
     const jadeAvgCps = assAnalysis ? assAnalysis.avgCps : 0;
     let jadeScore = 100;
     let jadeStatus = 'success';
     let jadeDiagnosis = '';
     let jadeReco = '';
 
-    if (jadeViolations > 0) {
-        jadeScore -= (jadeViolations * 5);
+    if (jadeLongViolations > 0 || jadeHeavyWords > 0 || jadeHighCps > 0) {
+        jadeScore -= (jadeLongViolations * 5 + jadeHeavyWords * 3 + jadeHighCps * 3);
         jadeStatus = 'warning';
-        jadeDiagnosis = `${jadeViolations} segment(s) dépassent le seuil de confort (durée max: ${jadeMaxDur.toFixed(2)}s > 4.5s).`;
-        jadeReco = "Appliquer un split automatique supplémentaire pour alléger les blocs longs.";
+        const issues = [];
+        if (jadeLongViolations > 0) issues.push(`${jadeLongViolations} segment(s) > 4.2s (max: ${jadeMaxDur.toFixed(2)}s)`);
+        if (jadeHeavyWords > 0) issues.push(`${jadeHeavyWords} segment(s) > 8 mots (max: ${jadeMaxWords} mots)`);
+        if (jadeHighCps > 0) issues.push(`${jadeHighCps} segment(s) > 18 car/s (pic: ${jadeMaxCps.toFixed(1)} car/s)`);
+        jadeDiagnosis = `Alerte densité / timing : ${issues.join(', ')}.`;
+        jadeReco = "Appliquer un découpage hybride supplémentaire (seuil 8 mots / 18 car/s) pour garantir un affichage aéré.";
     } else {
-        jadeDiagnosis = `Synchronisation & Lip-Sync parfaits : ${assAnalysis?.totalEvents || 0} segments analysés. Durée maximale de ${jadeMaxDur.toFixed(2)}s (seuil 4.5s respecté à 100%). Vitesse de lecture optimale (${jadeAvgCps.toFixed(1)} car/s).`;
-        jadeReco = "Règle Zéro Gap parfaitement observée, lecture fluide sans friction.";
+        jadeDiagnosis = `Synchronisation & Lip-Sync parfaits : ${assAnalysis?.totalEvents || 0} segments analysés. Durée max de ${jadeMaxDur.toFixed(2)}s (<= 4.2s), max ${jadeMaxWords} mots/partie, cadence optimale (${jadeAvgCps.toFixed(1)} car/s, pic ${jadeMaxCps.toFixed(1)} car/s).`;
+        jadeReco = "Rythme TikTok dynamique et confortable, zéro pavé textuel.";
     }
     agentsReports.jade = {
         agent: AGENTS.jade,

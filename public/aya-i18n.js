@@ -97,7 +97,7 @@
             homeMod6FooterSub: "Récits partagés",
             homeMod6Link: "Découvrir ➔",
 
-            homeMod7Badge: "Zaytounas 🫒",
+            homeMod7Badge: 'Zaytounas <img src="/assets/zaytouna_icon.svg" alt="Zaytouna" class="zaytouna-icon">',
             homeMod7Title: "Mon Compte",
             homeMod7Desc: "Consultez votre solde de Zaytounas, gérez vos informations, retrouvez l'historique complet de vos projets et téléchargez vos archives.",
             homeMod7FooterSub: "Portefeuille & Historique",
@@ -368,14 +368,14 @@
             walletAvailableLabel: 'Disponibles',
             walletReservedLabel: 'En traitement',
             btnRechargeWallet: '<span>⚡</span> Recharger mon solde',
-            walletHint: '💡 1 Zaytouna = 1 vidéo traduite et sous-titrée prête à publier.',
+            walletHint: '<img src="/assets/zaytouna_icon.svg" alt="Zaytouna" class="zaytouna-icon"> 1 Zaytouna = 1 vidéo traduite et sous-titrée prête à publier.',
             historyTitle: '<span>🎬</span> Historique de mes Vidéos',
             btnRefreshHistory: '<span>🔄</span> Actualiser',
             historyLoadingText: 'Chargement de votre historique personnel...',
             historyEmptyTitle: 'Aucune vidéo générée pour le moment',
             historyEmptySub: 'Vos vidéos traduites, doublées et sous-titrées apparaîtront automatiquement ici avec leurs liens Google Drive et livrables téléchargeables.',
             btnStartFirstTrad: '<span>✨</span> Lancer une première traduction',
-            rechargeModalTitle: '<span>🫒</span> Recharger mes Zaytounas',
+            rechargeModalTitle: '<span><img src="/assets/zaytouna_icon.svg" alt="Zaytouna" class="zaytouna-icon-lg"></span> Recharger mes Zaytounas',
             rechargeBannerTitle: '<span>🛡️</span> Tarification Autofinancée & Transparente',
             rechargeBannerText: 'Chaque recharge couvre strictement les frais techniques de la plateforme. Vos Zaytounas restent valables à vie.',
             paypalSolidarityTitle: '<span>❤️</span> Dons de Solidarité Palestine',
@@ -542,7 +542,7 @@
             homeMod6FooterSub: "قصص وشهادات موثقة",
             homeMod6Link: "استكشاف الجدار ←",
 
-            homeMod7Badge: "زيتونة 🫒",
+            homeMod7Badge: 'زيتونة <img src="/assets/zaytouna_icon.svg" alt="زيتونة" class="zaytouna-icon">',
             homeMod7Title: "حسابي ورصيدي",
             homeMod7Desc: "متابعة رصيد الزيتونات، إدارة البيانات الشخصية، وسجل الأعمال المنجزة مع إمكانية تنزيل الأرشيف.",
             homeMod7FooterSub: "المحفظة وسجل الإنتاج",
@@ -813,14 +813,14 @@
             walletAvailableLabel: 'الزيتونات المتاحة',
             walletReservedLabel: 'قيد المعالجة',
             btnRechargeWallet: '<span>⚡</span> شحن الرصيد',
-            walletHint: '💡 زيتونة واحدة = فيديو واحد مترجم بالكامل وجاهز للنشر مباشرة.',
+            walletHint: '<img src="/assets/zaytouna_icon.svg" alt="زيتونة" class="zaytouna-icon"> زيتونة واحدة = فيديو واحد مترجم بالكامل وجاهز للنشر مباشرة.',
             historyTitle: '<span>🎬</span> سجل الفيديوهات المترجمة',
             btnRefreshHistory: '<span>🔄</span> تحديث',
             historyLoadingText: 'جاري تحميل سجل فيديوهاتك الشخصية...',
             historyEmptyTitle: 'لا توجد فيديوهات منشأة حتى الآن',
             historyEmptySub: 'ستظهر جميع الفيديوهات التي تترجمها هنا تلقائياً مع روابط الحفظ والتحميل.',
             btnStartFirstTrad: '<span>✨</span> ابدأ أول ترجمة الآن',
-            rechargeModalTitle: '<span>🫒</span> شحن باقات الزيتون',
+            rechargeModalTitle: '<span><img src="/assets/zaytouna_icon.svg" alt="زيتونة" class="zaytouna-icon-lg"></span> شحن باقات الزيتون',
             rechargeBannerTitle: '<span>🛡️</span> تسعير شفاف وتغطية تكلفة',
             rechargeBannerText: 'كل باقة تغطي فقط التكاليف التشغيلية للمنصة. رصيد الزيتون دائم ولا ينتهي أبداً.',
             paypalSolidarityTitle: '<span>❤️</span> التبرع التضامني المباشر',
@@ -1140,7 +1140,7 @@
             updateElementText('modCommunityFooterSub', dict.homeMod6FooterSub);
             updateElementText('lblOpenCommunity', dict.homeMod6Link);
 
-            updateElementText('badgeAccount', dict.homeMod7Badge);
+            updateElementText('badgeAccount', dict.homeMod7Badge, true);
             updateElementText('modAccountTitle', dict.homeMod7Title);
             updateElementText('modAccountDesc', dict.homeMod7Desc);
             updateElementText('modAccountFooterSub', dict.homeMod7FooterSub);
@@ -1294,7 +1294,7 @@
             updateElementText('walletAvailableLabel', dict.walletAvailableLabel);
             updateElementText('walletReservedLabel', dict.walletReservedLabel);
             updateElementText('btnRechargeWallet', dict.btnRechargeWallet, true);
-            updateElementText('walletHint', dict.walletHint);
+            updateElementText('walletHint', dict.walletHint, true);
             updateElementText('historyTitleText', dict.historyTitle, true);
             updateElementText('btnRefreshHistory', dict.btnRefreshHistory, true);
             updateElementText('historyLoadingText', dict.historyLoadingText);
@@ -1595,7 +1595,7 @@
                                 </div>
                             </a>
                             <a href="/profil#packs" class="dropdown-item" role="menuitem">
-                                <span class="dropdown-item-icon">🫒</span>
+                                <span class="dropdown-item-icon"><img src="/assets/zaytouna_icon.svg" alt="Zaytouna" class="zaytouna-icon"></span>
                                 <div class="dropdown-item-content">
                                     <span class="dropdown-item-title" id="navWalletText">${dict.navWalletText}</span>
                                     <span class="dropdown-item-desc" id="dropdownCreditsDesc"><strong id="dropdownCreditsCount">--</strong> ${currentLang === 'ar' ? 'زيتونة متبقية' : 'Zaytounas disponibles'}</span>
@@ -1634,7 +1634,7 @@
 
                     <!-- Badge Solde Zaytounas -->
                     <a href="/profil#packs" class="navbar-credits-pill" id="navbarCreditBadge" title="${currentLang === 'ar' ? 'عرض رصيد الزيتون والمحفظة' : 'Mon Portefeuille & Zaytounas'}">
-                        <span class="credit-icon">🫒</span>
+                        <span class="credit-icon"><img src="/assets/zaytouna_icon.svg" alt="Zaytouna" class="zaytouna-icon"></span>
                         <span id="navbarCreditsCount" class="credit-count">--</span>
                         <span class="credit-unit">${currentLang === 'ar' ? 'زيتونة' : 'Zaytounas'}</span>
                     </a>
